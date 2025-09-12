@@ -1,0 +1,50 @@
+services:
+  - type: web
+    name: spainrp-backend
+    env: node
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: PUBLIC_BASE_URL
+        fromService:
+          type: web
+          name: spainrp-frontend
+          property: host
+      - key: BOT_API_URL
+        value: http://localhost:3020
+      - key: BOLSA_API_URL
+        value: http://localhost:3050
+      - key: ECONOMIA_API_URL
+        value: http://localhost:3010
+      - key: DISCORD_CLIENT_ID
+        sync: false
+      - key: DISCORD_CLIENT_SECRET
+        sync: false
+      - key: DISCORD_REDIRECT_URI
+        value: https://spainrp-backend.onrender.com/auth/callback
+      - key: DISCORD_GUILD_ID
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
+
+  - type: web
+    name: spainrp-frontend
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://spainrp-backend.onrender.com
+      - key: VITE_BOT_URL
+        value: http://localhost:3020
+      - key: VITE_SHOP_URL
+        value: http://localhost:4002
+      - key: VITE_PPT_URL
+        value: http://localhost:4001
