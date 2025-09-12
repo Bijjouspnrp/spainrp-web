@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: spainrp-ppt
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node ppt-online.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4001
+      - key: FRONTEND_URL
+        fromService:
+          type: web
+          name: spainrp-frontend
+          property: host

@@ -1,0 +1,98 @@
+.daily-calendar {
+  background: rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 1.5rem 1rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px #FFD70022;
+  text-align: center;
+  animation: fadeInCard 1s;
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.calendar-title {
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: #FFD700;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1.2rem;
+}
+.calendar-day {
+  background: rgba(255,255,255,0.12);
+  border-radius: 8px;
+  padding: 0.7rem 0.2rem;
+  font-weight: 700;
+  color: #FFD700;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #FFD70022;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+  position: relative;
+}
+.calendar-day.claimed {
+  background: #FFD700;
+  color: #23272a;
+}
+.calendar-day.today {
+  border: 2px solid #FFD700;
+  box-shadow: 0 0 0 4px #FFD70033;
+}
+.calendar-day.reward {
+  background: linear-gradient(135deg,#FFD700 0%,#fbbf24 100%);
+  color: #fff;
+}
+.calendar-day .calendar-icon {
+  font-size: 1.3rem;
+  margin-bottom: 2px;
+}
+.calendar-day-number {
+  font-size: 0.95rem;
+}
+.calendar-streak {
+  margin-top: 0.7rem;
+  color: #FFD700;
+  font-size: 1.1rem;
+}
+.calendar-reward-modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.calendar-reward-icon {
+  font-size: 3rem;
+  color: #FFD700;
+  margin-bottom: 1rem;
+}
+.calendar-reward-text {
+  background: #fff;
+  color: #23272a;
+  border-radius: 12px;
+  padding: 2rem 2.5rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  box-shadow: 0 2px 16px #FFD70033;
+  text-align: center;
+}
+.pulse {
+  animation: pulse 1s infinite;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}

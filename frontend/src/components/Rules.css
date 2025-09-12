@@ -1,0 +1,277 @@
+/* Fondo y layout */
+.rules-bg {
+  min-height: 100vh;
+  background: linear-gradient(135deg,#23272a 0,#181818 100%);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 0 3rem 0;
+  width: 100vw;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+.rules-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin: 2.5rem 0 1.5rem 0;
+  color: #FFD700;
+  text-shadow: 0 0 12px #FFD70033;
+  display: flex;
+  align-items: center;
+  letter-spacing: 1px;
+  word-break: break-word;
+  text-align: center;
+}
+.rules-cards {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 2.5rem;
+  width: 100vw;
+  max-width: 100vw;
+  box-sizing: border-box;
+}
+.rules-card {
+  background: #181818;
+  border: 2.5px solid #00ff99;
+  border-radius: 18px;
+  padding: 2.2rem 2.2rem 1.5rem 2.2rem;
+  min-width: 220px;
+  max-width: 340px;
+  width: 90vw;
+  box-shadow: 0 4px 24px #00ff9933;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 220ms cubic-bezier(.2,.9,.2,1), box-shadow 220ms;
+  position: relative;
+  overflow: hidden;
+  animation: cardPopIn 0.7s cubic-bezier(.2,.9,.2,1);
+  box-sizing: border-box;
+}
+.rules-card:hover {
+  transform: translateY(-8px) scale(1.03) rotate(-1deg);
+  box-shadow: 0 12px 32px #FFD70044;
+  border-color: #FFD700;
+}
+.rules-card-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.7rem;
+  animation: iconBounce 1.2s infinite alternate cubic-bezier(.2,.9,.2,1);
+}
+.rules-card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+.rules-card-arrow {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  font-size: 1.5rem;
+  color: #FFD700;
+  opacity: 0.7;
+  transition: transform 0.2s;
+}
+.rules-card:hover .rules-card-arrow {
+  transform: translateX(6px) scale(1.2);
+  opacity: 1;
+}
+@keyframes cardPopIn {
+  0% { opacity: 0; transform: scale(0.95) translateY(20px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes iconBounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-8px) scale(1.08); }
+}
+
+/* Modal animaciones (reutiliza las de BlackMarket) */
+.rules-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10010;
+  animation: overlayFadeIn 260ms ease-out;
+  width: 100vw;
+  height: 100vh;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+.rules-modal-content {
+  background: #23272a;
+  border-radius: 16px;
+  border: 2.5px solid #FFD700;
+  padding: 1.1rem 1.1rem 1.1rem 1.1rem;
+  min-width: 0;
+  max-width: 98vw;
+  width: 98vw;
+  max-height: 92vh;
+  overflow-y: auto;
+  color: #fff;
+  box-shadow: 0 8px 32px #FFD70033;
+  animation: contentPopIn 320ms cubic-bezier(.2,.9,.2,1);
+  position: relative;
+  scrollbar-width: thin;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  box-sizing: border-box;
+}
+.rules-modal-header {
+  display: flex;
+  align-items: center;
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-bottom: 0.7rem;
+  letter-spacing: 1px;
+  gap: 8px;
+  text-align: left;
+  line-height: 1.2;
+}
+.rules-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.1rem 0;
+}
+.rules-list li {
+  display: flex;
+  align-items: flex-start;
+  font-size: 1.01rem;
+  margin-bottom: 0.5rem;
+  color: #FFD700;
+  background: #181818;
+  border-radius: 7px;
+  padding: 0.5rem 0.7rem;
+  box-shadow: 0 2px 8px #FFD70022;
+  animation: fadeInCard 0.7s;
+  word-break: break-word;
+  white-space: pre-line;
+}
+.rules-modal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0.5rem 0 1.1rem 0;
+  gap: 0.5rem;
+}
+.rules-modal-nav-btn {
+  background: #FFD700;
+  color: #23272a;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1.1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #FFD70033;
+  transition: background 0.2s, color 0.2s, transform 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.rules-modal-nav-btn:disabled {
+  background: #bdbdbd;
+  color: #888;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+.rules-modal-nav-index {
+  color: #FFD700;
+  font-size: 1.05rem;
+  font-weight: 600;
+  background: #181818;
+  border-radius: 6px;
+  padding: 0.3rem 0.7rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.rules-list-icon {
+  margin-right: 10px;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  animation: iconBounce 1.2s infinite alternate cubic-bezier(.2,.9,.2,1);
+}
+.rules-modal-close {
+  background: #FFD700;
+  color: #23272a;
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #FFD70033;
+  transition: background 0.2s, color 0.2s, transform 0.15s;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+}
+.rules-modal-close:hover {
+  background: #00ff99;
+  color: #181818;
+  transform: scale(1.04);
+}
+.rules-footer {
+  margin-top: 2.5rem;
+  font-size: 1.1rem;
+  color: #FFD700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: 1px;
+  text-shadow: 0 0 6px #FFD70033;
+}
+@media (max-width: 900px) {
+  .rules-cards {
+    flex-direction: column;
+    gap: 1.2rem;
+    width: 100vw;
+    max-width: 100vw;
+    padding: 0 0.5rem;
+  }
+  .rules-card {
+    min-width: 0;
+    max-width: 98vw;
+    width: 98vw;
+    padding: 1.1rem 0.7rem 1rem 0.7rem;
+    font-size: 1.01rem;
+  }
+  .rules-modal-content {
+    min-width: 0;
+    max-width: 99vw;
+    width: 99vw;
+    padding: 0.7rem 0.5rem;
+    font-size: 0.98rem;
+  }
+  .rules-title {
+    font-size: 1.3rem;
+    margin: 1.2rem 0 1rem 0;
+  }
+}
+@media (max-width: 480px) {
+  .rules-title {
+    font-size: 1.05rem;
+    margin: 0.7rem 0 0.7rem 0;
+  }
+  .rules-modal-content {
+    font-size: 0.93rem;
+    padding: 0.5rem 0.2rem;
+  }
+  .rules-card {
+    font-size: 0.97rem;
+    padding: 0.7rem 0.2rem 0.7rem 0.2rem;
+  }
+  .rules-footer {
+    font-size: 0.93rem;
+    margin-top: 1.2rem;
+  }
+}

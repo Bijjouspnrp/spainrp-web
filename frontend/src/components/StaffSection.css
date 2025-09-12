@@ -1,0 +1,207 @@
+.staff-section {
+  padding: 4rem 0;
+  background: rgba(255, 255, 255, 0.02);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.staff-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.staff-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 1rem;
+}
+
+.staff-title .highlight {
+  background: linear-gradient(135deg, #4a90e2 0%, #7289da 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.staff-subtitle {
+  font-size: 1.1rem;
+  color: #b0b0b0;
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.staff-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.staff-card {
+  box-shadow: 0 4px 24px rgba(74, 144, 226, 0.10);
+  border-radius: 16px;
+  background: rgba(255,255,255,0.04);
+  padding: 2rem 1.5rem;
+  margin-bottom: 2rem;
+  transition: transform 0.25s cubic-bezier(.4,2,.6,1), box-shadow 0.25s;
+  animation: fadeInUp 0.7s;
+  border: 1.5px solid rgba(74,144,226,0.08);
+}
+
+.staff-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--role-color);
+  opacity: 0.8;
+}
+
+.staff-card:hover, .staff-card:focus {
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 8px 32px rgba(74, 144, 226, 0.18);
+  z-index: 2;
+}
+
+.staff-avatar-container {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.staff-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 3px solid var(--role-color);
+  object-fit: cover;
+  transition: all 0.3s ease;
+}
+
+.staff-card:hover .staff-avatar {
+  transform: scale(1.05);
+  border-color: var(--role-color);
+  box-shadow: 0 0 20px rgba(var(--role-color), 0.3);
+}
+
+.staff-role-badge {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  background: var(--role-color);
+  color: #fff;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  border: 2px solid #0a0a0a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.staff-info {
+  text-align: center;
+}
+
+.staff-name {
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+}
+
+.staff-role {
+  color: var(--role-color);
+  font-size: 0.9rem;
+  font-weight: 500;
+  background: rgba(var(--role-color), 0.1);
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  display: inline-block;
+}
+
+.staff-cta {
+  text-align: center;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.staff-cta p {
+  color: #b0b0b0;
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .staff-section {
+    padding: 3rem 0;
+  }
+
+  .staff-title {
+    font-size: 2rem;
+  }
+
+  .staff-subtitle {
+    font-size: 1rem;
+  }
+
+  .staff-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+
+  .staff-card {
+    padding: 1.2rem 0.7rem;
+    font-size: 15px;
+  }
+
+  .staff-avatar {
+    width: 60px;
+    height: 60px;
+  }
+
+  .staff-role-badge {
+    width: 25px;
+    height: 25px;
+    font-size: 0.7rem;
+  }
+
+  .staff-name {
+    font-size: 1rem;
+  }
+
+  .staff-role {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .staff-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .staff-card {
+    padding: 1rem;
+  }
+
+  .staff-avatar {
+    width: 50px;
+    height: 50px;
+  }
+
+  .staff-role-badge {
+    width: 20px;
+    height: 20px;
+    font-size: 0.6rem;
+  }
+} 

@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: spainrp-shop-simulator
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node shop-simulator.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4002
+      - key: FRONTEND_URL
+        fromService:
+          type: web
+          name: spainrp-frontend
+          property: host
