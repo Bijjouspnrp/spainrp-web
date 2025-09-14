@@ -219,4 +219,8 @@ export default defineConfig({
       // Elimina proxy /admin para que Vite maneje la ruta como SPA
     }
   }
+  ,
+  build: {
+    chunkSizeWarningLimit: 2000
+  }
 })
