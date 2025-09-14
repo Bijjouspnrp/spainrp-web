@@ -82,6 +82,8 @@ const ITEMS = [
   
 ];
 
+// ...existing code...
+  // ...existing code...
 // Bolsa Negra Stocks
 const STOCKS = [
   { name: 'CryptoCoin', price: 320, color: '#22d3ee' },
@@ -171,6 +173,43 @@ export default function BlackMarket() {
   const [stockPrices, setStockPrices] = useState(STOCKS.map(s => s.price));
   const [priceChanges, setPriceChanges] = useState(STOCKS.map(() => 0));
   const [priceFlash, setPriceFlash] = useState(STOCKS.map(() => false));
+
+  // Quick balance admin panel states
+  const [showQuickBalance, setShowQuickBalance] = useState(false);
+  const [quickId, setQuickId] = useState('');
+  const [quickCash, setQuickCash] = useState('');
+  const [quickBank, setQuickBank] = useState('');
+  const [quickLoading, setQuickLoading] = useState(false);
+  const [quickResult, setQuickResult] = useState('');
+
+  // Quick balance handler
+  const handleQuickBalance = async (e) => {
+    e.preventDefault();
+    setQuickLoading(true);
+    setQuickResult('');
+    try {
+      const resp = await fetch('http://37.27.21.91:5021/api/proxy/admin/setbalance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: quickId,
+          cash: parseInt(quickCash) || 0,
+          bank: parseInt(quickBank) || 0,
+          adminUserId: user?.id
+        })
+      });
+      const data = await resp.json();
+      if (resp.ok && !data.error) {
+        setQuickResult('✅ Saldo actualizado correctamente');
+      } else {
+        setQuickResult('❌ Error: ' + (data.error || 'No se pudo actualizar el saldo'));
+      }
+    } catch (err) {
+      setQuickResult('❌ Error de red');
+    } finally {
+      setQuickLoading(false);
+    }
+  };
   // Animación de precios y flash
   React.useEffect(() => {
     const interval = setInterval(() => {
@@ -232,6 +271,18 @@ export default function BlackMarket() {
             setAuthorized(ok);
             console.log('[BlackMarket] membership/role check:', { isMember: member?.isMember, hasRole: ok });
             
+            // Cargar saldo del usuario
+            try {
+              const saldoRes = await fetch(`http://37.27.21.91:5021/api/blackmarket/saldo/${encodeURIComponent(data.user.id)}`);
+              const saldoData = await saldoRes.json();
+              if (saldoRes.ok && saldoData) {
+                setUserBalanceState(saldoData.saldo || 0);
+                console.log('[BlackMarket] saldo cargado:', saldoData);
+              }
+            } catch (e) {
+              console.warn('[BlackMarket] error cargando saldo:', e);
+            }
+
             // Verificar si es administrador total
             if (ok) {
               try {
@@ -296,10 +347,52 @@ export default function BlackMarket() {
     if (!query.trim() || !isAdmin) return;
     setAdminLoading(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/proxy/admin/search/${encodeURIComponent(query)}?adminUserId=${user.id}`);
+      let response;
+      let users = [];
+      try {
+        response = await fetch(`http://37.27.21.91:5021/api/proxy/admin/search?query=${encodeURIComponent(query)}`);
+        if (!response.ok || response.headers.get('content-type')?.includes('text/html')) {
+          throw new Error('API externa no disponible');
+        }
+      } catch (e) {
+        console.log('[BlackMarket] API externa no disponible, usando backend local');
+        response = await fetch(`http://localhost:3001/api/proxy/admin/search/${encodeURIComponent(query)}?adminUserId=${user.id}`);
+      }
       const data = await response.json();
       if (response.ok) {
-        setSearchResults(data.users || []);
+        // Si la respuesta es un array de usuarios, úsala
+        if (Array.isArray(data.users)) {
+          users = data.users;
+        } else if (Array.isArray(data)) {
+          users = data;
+        } else if (data.userId) {
+          // Si es búsqueda por ID Discord, adaptar a formato de usuario
+          users = [{
+            id: data.userId,
+            username: data.userId,
+            balance: data.balance,
+            found: data.found,
+            type: data.type || 'discord_id'
+          }];
+        }
+        // Si el input parece un ID Discord y no hay resultados, crear resultado manual
+        if (users.length === 0 && /^\d{15,21}$/.test(query)) {
+          users = [{
+            id: query,
+            username: `ID Discord: ${query}`,
+            balance: null,
+            found: false,
+            type: 'discord_id'
+          }];
+        }
+        // Si algún usuario tiene type 'discord_id', mostrarlo como ID
+        users = users.map(u => ({
+          ...u,
+          username: u.type === 'discord_id' ? `ID Discord: ${u.id}` : (u.username || u.id)
+        }));
+        setSearchResults(users);
+        if (users.length === 0) setAdminMessage('No se encontraron resultados para la búsqueda.');
+        else setAdminMessage('');
       } else {
         setAdminMessage('Error al buscar usuarios: ' + (data.error || 'Error desconocido'));
       }
@@ -311,18 +404,38 @@ export default function BlackMarket() {
   };
 
   const selectUser = async (user) => {
+    // Evitar llamadas duplicadas si el usuario ya está seleccionado
+    if (selectedUser && selectedUser.id === user.id) return;
     setSelectedUser(user);
     setAdminLoading(true);
     try {
       // Cargar inventario del usuario
-      const inventoryRes = await fetch(`http://localhost:3001/api/proxy/admin/inventory/${user.id}?adminUserId=${user.id}`);
+      let inventoryRes;
+      try {
+        inventoryRes = await fetch(`http://37.27.21.91:5021/api/proxy/admin/inventory/${user.id || user.userId}`);
+        if (!inventoryRes.ok || inventoryRes.headers.get('content-type')?.includes('text/html')) {
+          throw new Error('API externa no disponible');
+        }
+      } catch (e) {
+        console.log('[BlackMarket] API externa no disponible para inventario, usando backend local');
+        inventoryRes = await fetch(`http://localhost:3001/api/proxy/admin/inventory/${user.id || user.userId}?adminUserId=${user.id || user.userId}`);
+      }
       const inventoryData = await inventoryRes.json();
       if (inventoryRes.ok) {
         setUserInventory(inventoryData.inventario || []);
       }
 
       // Cargar saldo del usuario
-      const balanceRes = await fetch(`http://localhost:3001/api/proxy/admin/balance/${user.id}?adminUserId=${user.id}`);
+      let balanceRes;
+      try {
+        balanceRes = await fetch(`http://37.27.21.91:5021/api/proxy/admin/balance/${user.id || user.userId}`);
+        if (!balanceRes.ok || balanceRes.headers.get('content-type')?.includes('text/html')) {
+          throw new Error('API externa no disponible');
+        }
+      } catch (e) {
+        console.log('[BlackMarket] API externa no disponible para saldo, usando backend local');
+        balanceRes = await fetch(`http://localhost:3001/api/proxy/admin/balance/${user.id || user.userId}?adminUserId=${user.id || user.userId}`);
+      }
       const balanceData = await balanceRes.json();
       if (balanceRes.ok) {
         setUserBalance(balanceData);
@@ -337,17 +450,35 @@ export default function BlackMarket() {
   const addItemToUser = async (itemId, amount) => {
     if (!selectedUser || !isAdmin) return;
     setAdminLoading(true);
+    const uid = selectedUser.id || selectedUser.userId;
     try {
-      const response = await fetch('http://localhost:3001/api/proxy/admin/additem', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          targetUserId: selectedUser.id,
-          itemId,
-          amount: parseInt(amount),
-          adminUserId: user.id
-        })
-      });
+      let response;
+      try {
+        response = await fetch('http://37.27.21.91:5021/api/proxy/admin/additem', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: uid,
+            itemId,
+            amount: parseInt(amount)
+          })
+        });
+        if (!response.ok || response.headers.get('content-type')?.includes('text/html')) {
+          throw new Error('API externa no disponible');
+        }
+      } catch (e) {
+        console.log('[BlackMarket] API externa no disponible para additem, usando backend local');
+        response = await fetch('http://localhost:3001/api/proxy/admin/additem', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: uid,
+            itemId,
+            amount: parseInt(amount),
+            adminUserId: user.id
+          })
+        });
+      }
       const data = await response.json();
       if (response.ok) {
         setAdminMessage(`✅ Item agregado exitosamente`);
@@ -366,17 +497,35 @@ export default function BlackMarket() {
   const removeItemFromUser = async (itemId, amount) => {
     if (!selectedUser || !isAdmin) return;
     setAdminLoading(true);
+    const uid = selectedUser.id || selectedUser.userId;
     try {
-      const response = await fetch('http://localhost:3001/api/proxy/admin/removeitem', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          targetUserId: selectedUser.id,
-          itemId,
-          amount: parseInt(amount),
-          adminUserId: user.id
-        })
-      });
+      let response;
+      try {
+        response = await fetch('http://37.27.21.91:5021/api/proxy/admin/removeitem', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: uid,
+            itemId,
+            amount: parseInt(amount)
+          })
+        });
+        if (!response.ok || response.headers.get('content-type')?.includes('text/html')) {
+          throw new Error('API externa no disponible');
+        }
+      } catch (e) {
+        console.log('[BlackMarket] API externa no disponible para removeitem, usando backend local');
+        response = await fetch('http://localhost:3001/api/proxy/admin/removeitem', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: uid,
+            itemId,
+            amount: parseInt(amount),
+            adminUserId: user.id
+          })
+        });
+      }
       const data = await response.json();
       if (response.ok) {
         setAdminMessage(`✅ Item retirado exitosamente`);
@@ -395,17 +544,35 @@ export default function BlackMarket() {
   const setUserBalance = async (cash, bank) => {
     if (!selectedUser || !isAdmin) return;
     setAdminLoading(true);
+    const uid = selectedUser.id || selectedUser.userId;
     try {
-      const response = await fetch('http://localhost:3001/api/proxy/admin/setbalance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          targetUserId: selectedUser.id,
-          cash: parseInt(cash) || 0,
-          bank: parseInt(bank) || 0,
-          adminUserId: user.id
-        })
-      });
+      let response;
+      try {
+        response = await fetch('http://37.27.21.91:5021/api/proxy/admin/setbalance', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: uid,
+            cash: parseInt(cash) || 0,
+            bank: parseInt(bank) || 0
+          })
+        });
+        if (!response.ok || response.headers.get('content-type')?.includes('text/html')) {
+          throw new Error('API externa no disponible');
+        }
+      } catch (e) {
+        console.log('[BlackMarket] API externa no disponible para setbalance, usando backend local');
+        response = await fetch('http://localhost:3001/api/proxy/admin/setbalance', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: uid,
+            cash: parseInt(cash) || 0,
+            bank: parseInt(bank) || 0,
+            adminUserId: user.id
+          })
+        });
+      }
       const data = await response.json();
       if (response.ok) {
         setAdminMessage(`✅ Saldo actualizado exitosamente`);
@@ -457,6 +624,7 @@ if (loading || roleChecking) {
       </div>
     );
   }
+
   // Inyecta la animación del spinner solo una vez
   if (typeof window !== 'undefined' && !document.getElementById('blackmarket-spinner-style')) {
     const style = document.createElement('style');
@@ -467,22 +635,18 @@ if (loading || roleChecking) {
 
   return (
     <div className="blackmarket-hack-bg">
-      <div style={{
-        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        minHeight: '60vh', width: '100%',
-      }}>
-        <div style={{
-          width: 64,
-          height: 64,
-          border: '7px solid #23272a',
-          borderTop: '7px solid #FFD700',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite',
-          marginBottom: 24
-        }} />
-        <div style={{ color: '#FFD700', fontWeight: 800, fontSize: '1.3rem', textShadow: '0 0 8px #FFD70055', marginBottom: 8 }}>
-          Entrando al BlackMarket...
-        </div>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+        <div
+          style={{
+            width: 48,
+            height: 48,
+            border: '6px solid #0ea5e9',
+            borderTop: '6px solid #fff',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            marginBottom: 24
+          }}
+        />
         <div style={{ color: '#fff', opacity: 0.85, fontSize: '1.05rem' }}>Verificando acceso y permisos</div>
       </div>
 
@@ -573,7 +737,7 @@ if (!user) {
               setInventoryLoading(true);
               setInventoryError('');
               console.log('[BlackMarket] Fetch inventario for', user.id);
-              const resp = await fetch(`http://localhost:3001/api/proxy/blackmarket/inventario/${encodeURIComponent(user.id)}`);
+              const resp = await fetch(`http://37.27.21.91:5021/api/blackmarket/inventario/${encodeURIComponent(user.id)}`);
               const data = await resp.json();
               if (!resp.ok || data?.error) {
                 setInventoryError(data?.error || 'No se pudo recuperar el inventario');
@@ -605,32 +769,111 @@ if (!user) {
       )}
       
       {isAdmin && (
-        <button
-          className="admin-fab"
-          title="Panel de Administración"
-          onClick={() => setShowAdminPanel(true)}
-          style={{
-            position: 'fixed',
-            top: '20px',
-            left: '20px',
-            width: '60px',
-            height: '60px',
-            borderRadius: '50%',
-            background: 'linear-gradient(135deg, #ff6b6b, #ee5a24)',
-            border: 'none',
-            color: 'white',
-            fontSize: '24px',
-            cursor: 'pointer',
-            boxShadow: '0 4px 15px rgba(255, 107, 107, 0.4)',
-            zIndex: 1000,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.3s ease'
-          }}
-        >
-          ⚙️
-        </button>
+        <>
+          <button
+            className="admin-fab"
+            title="Panel de Administración"
+            onClick={() => setShowAdminPanel(true)}
+            style={{
+              position: 'fixed',
+              top: '20px',
+              left: '20px',
+              width: '60px',
+              height: '60px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #ff6b6b, #ee5a24)',
+              border: 'none',
+              color: 'white',
+              fontSize: '24px',
+              cursor: 'pointer',
+              boxShadow: '0 4px 15px rgba(255, 107, 107, 0.4)',
+              zIndex: 1000,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            ⚙️
+          </button>
+          <button
+            className="quick-balance-fab"
+            title="Solo admins: Modificar saldo por ID Discord"
+            onClick={() => setShowQuickBalance(v => !v)}
+            disabled={quickLoading}
+            style={{
+              position: 'fixed',
+              top: '90px',
+              left: '20px',
+              width: '60px',
+              height: '60px',
+              borderRadius: '50%',
+              background: quickLoading ? 'linear-gradient(135deg, #a3a3a3, #38bdf8)' : 'linear-gradient(135deg, #22d3ee, #0ea5e9)',
+              border: 'none',
+              color: quickLoading ? '#e0e0e0' : 'white',
+              fontSize: '24px',
+              cursor: quickLoading ? 'not-allowed' : 'pointer',
+              boxShadow: '0 4px 15px rgba(34, 211, 238, 0.4)',
+              zIndex: 1000,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.3s ease',
+              opacity: quickLoading ? 0.7 : 1
+            }}
+          >
+            {quickLoading ? <span style={{animation:'spin 1s linear infinite', display:'inline-block'}}>⏳</span> : '💸'}
+          </button>
+        </>
+      )}
+      {/* Panel rápido para modificar saldo por ID Discord */}
+      {showQuickBalance && (
+        <div style={{
+          position: 'fixed',
+          top: '170px',
+          left: '20px',
+          width: '340px',
+          background: '#fff',
+          borderRadius: '18px',
+          boxShadow: '0 4px 24px #22d3ee33',
+          padding: '1.7rem 1.5rem 1.2rem 1.5rem',
+          zIndex: 2000,
+          border: quickResult ? (quickResult.startsWith('✅') ? '2px solid #22c55e' : '2px solid #ef4444') : '2px solid #0ea5e9',
+          transition: 'border 0.2s'
+        }}>
+          <h3 style={{marginBottom: '1rem', color: '#0ea5e9', fontWeight:800}}>Modificar saldo por ID Discord</h3>
+          <form onSubmit={handleQuickBalance}>
+            <div style={{marginBottom: '0.8rem'}}>
+              <label style={{fontWeight:700}}>ID Discord</label>
+              <input type="text" value={quickId} onChange={e => setQuickId(e.target.value)} style={{width:'100%',padding:'0.6rem',borderRadius:8,border:'1px solid #eee',marginTop:4,fontWeight:600,fontSize:'1.05rem'}} required disabled={quickLoading} />
+            </div>
+            <div style={{marginBottom: '0.8rem'}}>
+              <label style={{fontWeight:700}}>Efectivo (cash)</label>
+              <input type="number" value={quickCash} onChange={e => setQuickCash(e.target.value)} style={{width:'100%',padding:'0.6rem',borderRadius:8,border:'1px solid #eee',marginTop:4,fontWeight:600,fontSize:'1.05rem'}} required min={0} disabled={quickLoading} />
+            </div>
+            <div style={{marginBottom: '0.8rem'}}>
+              <label style={{fontWeight:700}}>Banco (bank)</label>
+              <input type="number" value={quickBank} onChange={e => setQuickBank(e.target.value)} style={{width:'100%',padding:'0.6rem',borderRadius:8,border:'1px solid #eee',marginTop:4,fontWeight:600,fontSize:'1.05rem'}} required min={0} disabled={quickLoading} />
+            </div>
+            <button type="submit" disabled={quickLoading || !quickId || !quickCash || !quickBank} style={{
+              width:'100%',
+              background: quickLoading ? '#a3a3a3' : '#0ea5e9',
+              color:'#fff',
+              border:'none',
+              borderRadius:10,
+              padding:'0.9rem',
+              fontWeight:800,
+              fontSize:'1.15rem',
+              marginTop:8,
+              boxShadow:'0 2px 8px #22d3ee33',
+              cursor: quickLoading ? 'not-allowed' : 'pointer',
+              opacity: quickLoading ? 0.7 : 1,
+              transition:'background 0.2s, opacity 0.2s'
+            }}>{quickLoading ? 'Procesando...' : 'Modificar saldo'}</button>
+          </form>
+          {quickResult && <div style={{marginTop:'1rem',color:quickResult.startsWith('✅')?'#22c55e':'#ef4444',fontWeight:700,transition:'color 0.2s'}}>{quickResult}</div>}
+          <button onClick={()=>setShowQuickBalance(false)} style={{marginTop:'1.2rem',background:'#eee',color:'#0ea5e9',border:'none',borderRadius:8,padding:'0.7rem 1.2rem',fontWeight:700,cursor:'pointer'}}>Cerrar</button>
+        </div>
       )}
       <div className="blackmarket-hack-tabs">
         {[...ITEMS.map((cat, idx) => (
@@ -695,7 +938,7 @@ if (!user) {
                 setPurchaseState({ visible: true, status: 'loading', message: 'Procesando compra...' });
                 try {
                   if (modalItem.itemId) {
-                    const resp = await fetch('http://localhost:3001/api/proxy/blackmarket/purchase', {
+                    const resp = await fetch('http://37.27.21.91:5021/api/blackmarket/purchase', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ userId: user?.id, itemId: modalItem.itemId })
@@ -744,7 +987,7 @@ if (!user) {
                       try {
                         setInventoryLoading(true);
                         setInventoryError('');
-                        const resp = await fetch(`http://localhost:3001/api/proxy/blackmarket/inventario/${encodeURIComponent(user.id)}`);
+                        const resp = await fetch(`http://37.27.21.91:5021/api/blackmarket/inventario/${encodeURIComponent(user.id)}`);
                         const data = await resp.json();
                         if (!resp.ok || data?.error) {
                           setInventoryError(data?.error || 'No se pudo recuperar el inventario');
@@ -818,7 +1061,7 @@ if (!user) {
                                     onClick={async () => {
                                       try {
                                         setPurchaseState({ visible: true, status: 'loading', message: 'Vendiendo 1 objeto...' });
-                                        const resp = await fetch('http://localhost:3001/api/proxy/blackmarket/sellone', {
+                                        const resp = await fetch('http://37.27.21.91:5021/api/blackmarket/sellone', {
                                           method: 'POST', headers: { 'Content-Type': 'application/json' },
                                           body: JSON.stringify({ userId: user.id, itemId: it.itemId, amount: 1 })
                                         });
@@ -830,7 +1073,7 @@ if (!user) {
                                           // refrescar inventario
                                           try {
                                             setInventoryLoading(true);
-                                            const r2 = await fetch(`http://localhost:3001/api/proxy/blackmarket/inventario/${encodeURIComponent(user.id)}`);
+                                            const r2 = await fetch(`http://37.27.21.91:5021/api/blackmarket/inventario/${encodeURIComponent(user.id)}`);
                                             const d2 = await r2.json();
                                             const arr = Array.isArray(d2?.inventario) ? d2.inventario : [];
                                             const normalized = arr.map((row) => {
@@ -875,7 +1118,7 @@ if (!user) {
                           .map(it => ({ itemId: it.itemId, amount: it.amount ?? 1 }));
                         if (sellList.length === 0) return;
                         setPurchaseState({ visible: true, status: 'loading', message: 'Procesando venta...' });
-                        const resp = await fetch('http://localhost:3001/api/proxy/blackmarket/sell', {
+                        const resp = await fetch('http://37.27.21.91:5021/api/blackmarket/sell', {
                           method: 'POST', headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({ userId: user.id, items: sellList })
                         });
@@ -887,7 +1130,7 @@ if (!user) {
                           // refrescar inventario
                           try {
                             setInventoryLoading(true);
-                            const r2 = await fetch(`http://localhost:3001/api/proxy/blackmarket/inventario/${encodeURIComponent(user.id)}`);
+                            const r2 = await fetch(`http://37.27.21.91:5021/api/blackmarket/inventario/${encodeURIComponent(user.id)}`);
                             const d2 = await r2.json();
                             const arr = Array.isArray(d2?.inventario) ? d2.inventario : [];
                             const normalized = arr.map((it) => {
@@ -969,6 +1212,13 @@ if (!user) {
                           )}
                         </div>
                         <div className="user-id">ID: {user.id}</div>
+                        {user.balance && (
+                          <div className="user-balance-preview">
+                            <span>💰 {user.balance.cash}€ / 🏦 {user.balance.bank}€</span>
+                          </div>
+                        )}
+                        {user.type && <div className="user-type">Tipo: {user.type}</div>}
+                        {user.found === false && <div className="user-notfound">No encontrado</div>}
                       </div>
                     ))}
                   </div>

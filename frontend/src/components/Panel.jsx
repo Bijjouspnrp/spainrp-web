@@ -33,12 +33,23 @@ import {
   FaUsers,
   FaCog as FaSettings,
   FaHistory,
-  FaClipboardList
+  FaClipboardList,
+  FaCheckCircle,
+  FaSpinner
 } from 'react-icons/fa';
 
 const TERMS_KEY = 'spainrp_terms_accepted';
 
 const Panel = () => {
+  // Estado para input y verificación Roblox
+  const [robloxUsername, setRobloxUsername] = useState("");
+  const [robloxError, setRobloxError] = useState("");
+  const [robloxLoading, setRobloxLoading] = useState(false);
+  const [robloxProfile, setRobloxProfile] = useState(null); // Datos del perfil Roblox
+  const [robloxVerified, setRobloxVerified] = useState(false);
+  const [robloxConfirming, setRobloxConfirming] = useState(false);
+  const [robloxUnlinkSuccess, setRobloxUnlinkSuccess] = useState(false);
+  const [robloxUnlinkModal, setRobloxUnlinkModal] = useState(false);
   const [user, setUser] = useState(null);
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -119,7 +130,25 @@ const Panel = () => {
       })
       .catch(() => setLoading(false));
   }, []);
-
+  // Consultar perfil Roblox verificado al cargar usuario
+  useEffect(() => {
+    if (user?.id) {
+      fetch(`/api/roblox/profile/${user.id}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data && data.robloxUserId) {
+            setRobloxProfile({
+              userId: data.robloxUserId,
+              username: data.robloxUsername,
+              displayName: data.robloxDisplayName,
+              avatarUrl: data.robloxAvatarUrl
+            });
+            setRobloxVerified(true);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [user?.id]);
   // Manejar navegación por URL
   useEffect(() => {
     const handleRouteChange = () => {
@@ -176,6 +205,55 @@ const Panel = () => {
   const [reportLoading, setReportLoading] = useState(false);
   const [toast, setToast] = useState(null);
 
+
+  // Estado para totales generales
+  const [statsTotals, setStatsTotals] = useState({ antecedentes: 0, arrestos: 0, multasPendientes: 0 });
+  // Estado para antecedentes y multas individuales
+  const [userRecords, setUserRecords] = useState({ antecedentes: 0, multasTotal: 0, multasPendientes: 0 });
+
+  useEffect(() => {
+    fetch('/api/admin-records/stats/records')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data) setStatsTotals({
+          antecedentes: data.antecedentes || 0,
+          arrestos: data.arrestos || 0,
+          multasPendientes: data.multasPendientes || 0
+        });
+      })
+      .catch(() => {});
+  }, []);
+
+  // Consultar antecedentes y multas del usuario autenticado
+  useEffect(() => {
+    if (user?.id) {
+      fetch(`/api/admin-records/antecedentes/${user.id}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          setUserRecords(r => ({ ...r, antecedentes: data?.total || 0 }));
+        })
+        .catch(() => {});
+      fetch(`/api/admin-records/multas/${user.id}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          setUserRecords(r => ({
+            ...r,
+            multasTotal: data?.total || 0,
+            multasPendientes: data?.pendientes || 0
+          }));
+        })
+        .catch(() => {});
+    }
+  }, [user?.id]);
+
+  const allZero =
+    statsTotals.antecedentes === 0 &&
+    statsTotals.arrestos === 0 &&
+    statsTotals.multasPendientes === 0 &&
+    userRecords.antecedentes === 0 &&
+    userRecords.multasTotal === 0 &&
+    userRecords.multasPendientes === 0;
+
   const renderOverview = () => (
     <div className="overview-section">
       <div className="welcome-card">
@@ -192,14 +270,34 @@ const Panel = () => {
         </div>
       </div>
 
+
       <div className="stats-grid">
+        {allZero && (
+          <div style={{
+            background: '#fffbe6',
+            color: '#856404',
+            border: '1px solid #ffeeba',
+            borderRadius: 10,
+            padding: '16px 24px',
+            marginBottom: 18,
+            textAlign: 'center',
+            fontWeight: 500,
+            fontSize: 16
+          }}>
+            <span role="img" aria-label="info" style={{marginRight:8}}>ℹ️</span>
+            No tienes registros, arrestos ni multas pendientes actualmente.<br/>
+            Si esperabas ver datos, contacta con el staff o recarga más tarde.
+          </div>
+        )}
+
+        {/* DNI digital */}
         <div className="stat-card" style={{gridColumn:'span 2',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'1.2rem 0'}}>
           <div className="stat-icon" style={{marginBottom:8}}>
             <FaIdCard />
           </div>
           <div className="stat-content" style={{width:'100%',textAlign:'center'}}>
             <h3 style={{marginBottom:8}}>DNI digital</h3>
-
+            {/* ...existing code DNI... */}
             {dniExists === true ? (
               <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
                 {/* Flip Card */}
@@ -283,120 +381,37 @@ const Panel = () => {
               <div style={{height:120,display:'flex',alignItems:'center',justifyContent:'center',color:'#bbb',fontSize:15}}>Comprobando DNI...</div>
             )}
             <div style={{marginTop:8,fontSize:13,color:'#888'}}>Puedes usar este DNI en el servidor y exportarlo como imagen.<br/>Haz click en el DNI para girar y ver el reverso.</div>
-
-      {/* Modal para reportar problemas con el DNI (Formcarry + reCAPTCHA) */}
-
-      {showReport && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h3>Reportar problema con el DNI</h3>
-            <p>Por favor, rellena todos los campos. El equipo de SpainRP lo revisará.</p>
-            <form
-              method="POST"
-              action="https://formcarry.com/s/MTax-JUiWPu"
-              target="_blank"
-              onSubmit={e => {
-                // Validación simple en frontend
-                const form = e.target;
-                if (!form.name.value.trim() || !form.email.value.trim() || !form.message.value.trim()) {
-                  e.preventDefault();
-                  setToast({ type: 'error', msg: 'Por favor rellena todos los campos.' });
-                  return false;
-                }
-                setShowReport(false);
-                setToast({ type: 'success', msg: '¡Reporte enviado correctamente!' });
-                setReportMsg("");
-                return true;
-              }}
-            >
-              <input
-                type="text"
-                name="name"
-                placeholder="Tu nombre o usuario Discord"
-                defaultValue={user?.username || ''}
-                style={{width:'100%',marginBottom:8,padding:6,borderRadius:6,border:'1px solid #ccc',fontSize:14}}
-                required
-                autoFocus
-              />
-              <input
-                type="email"
-                name="email"
-                placeholder="Tu email de contacto"
-                style={{width:'100%',marginBottom:8,padding:6,borderRadius:6,border:'1px solid #ccc',fontSize:14}}
-                required
-              />
-              <textarea
-                name="message"
-                style={{width:'100%',minHeight:60,marginBottom:12,padding:6,borderRadius:6,border:'1px solid #ccc',fontSize:14}}
-                placeholder="Describe el problema..."
-                value={reportMsg}
-                onChange={e => setReportMsg(e.target.value)}
-                required
-              />
-              <div style={{display:'flex',justifyContent:'flex-end',gap:8}}>
-                <button type="button" className="btn-secondary" onClick={()=>setShowReport(false)}>Cancelar</button>
-                <button type="submit" className="btn-primary">Enviar</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Toast de éxito/error */}
-      {toast && (
-        <div style={{position:'fixed',bottom:24,left:'50%',transform:'translateX(-50%)',zIndex:9999,padding:'12px 24px',borderRadius:8,background:toast.type==='success'?'#d4edda':'#f8d7da',color:toast.type==='success'?'#155724':'#721c24',boxShadow:'0 2px 12px #23272a44',fontWeight:500}}>
-          {toast.msg}
-        </div>
-      )}
-
-            {/*
-              IDEAS EXTRA PARA LA SECCIÓN DNI:
-              - Mostrar QR escaneable con enlace a perfil o verificación.
-              - Botón para compartir DNI en Discord (webhook o DM).
-              - Mostrar historial de DNIs generados (si aplica).
-              - Añadir animación de "flip" para ver anverso/reverso.
-              - Mostrar estado de validez o caducidad del DNI.
-              - Permitir personalizar foto/avatar del DNI.
-              - Botón para reportar problemas con el DNI.
-              - Mostrar cuándo fue generado el DNI y por quién.
-              - Integrar con apps RP para validar identidad en tiempo real.
-            */}
+            {/* ...fin DNI... */}
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-icon">
-            <FaFolderOpen />
-          </div>
-          <div className="stat-content">
-            <h3>Antecedentes</h3>
-            <p className="stat-value">0</p>
-            <span className="stat-label">Registros</span>
+        {/* Estadísticas ordenadas */}
+        <div className="stat-row" style={{display:'flex',gap:24,marginTop:16,flexWrap:'wrap'}}>
+          <div className="stat-card" style={{flex:1,minWidth:180}}>
+            <div className="stat-icon"><FaFolderOpen /></div>
+            <div className="stat-content">
+              <h3>Antecedentes</h3>
+              <div style={{fontSize:15,fontWeight:600}}>Tus registros: <span style={{color:'#007bff'}}>{userRecords.antecedentes}</span></div>
+              <div style={{fontSize:14,color:'#888',marginTop:2}}>Total global: <span style={{color:'#333'}}>{statsTotals.antecedentes}</span></div>
             </div>
           </div>
-
-        <div className="stat-card">
-          <div className="stat-icon">
-            <FaGavel />
+          <div className="stat-card" style={{flex:1,minWidth:180}}>
+            <div className="stat-icon"><FaGavel /></div>
+            <div className="stat-content">
+              <h3>Arrestos</h3>
+              <div style={{fontSize:15,fontWeight:600}}>Global: <span style={{color:'#333'}}>{statsTotals.arrestos}</span></div>
+            </div>
           </div>
-          <div className="stat-content">
-            <h3>Arrestos</h3>
-            <p className="stat-value">0</p>
-            <span className="stat-label">Total</span>
+          <div className="stat-card" style={{flex:1,minWidth:180}}>
+            <div className="stat-icon"><FaCoins /></div>
+            <div className="stat-content">
+              <h3>Multas</h3>
+              <div style={{fontSize:15,fontWeight:600}}>Tus pendientes: <span style={{color:'#d9534f'}}>{userRecords.multasPendientes}</span></div>
+              <div style={{fontSize:14,color:'#888',marginTop:2}}>Total usuario: <span style={{color:'#333'}}>{userRecords.multasTotal}</span> | Global: <span style={{color:'#333'}}>{statsTotals.multasPendientes}</span></div>
+            </div>
           </div>
         </div>
-
-        <div className="stat-card">
-          <div className="stat-icon">
-            <FaCoins />
-            </div>
-          <div className="stat-content">
-            <h3>Multas</h3>
-            <p className="stat-value">0</p>
-            <span className="stat-label">Pendientes</span>
-            </div>
-            </div>
-          </div>
+      </div>
 
       <div className="calendar-section">
         <h2><FaCalendarCheck /> Registro Diario</h2>
@@ -415,27 +430,399 @@ const Panel = () => {
             className="profile-avatar"
           />
           <div className="profile-info">
-            <h2>{user?.username}#{user?.discriminator}</h2>
+            <h2>{user?.username}#{user?.discriminator}
+              {/* Etiqueta Staff si corresponde */}
+              {isAdmin && (
+                <span style={{
+                  background: 'linear-gradient(90deg,#007bff,#0056b3)',
+                  color: '#fff',
+                  borderRadius: '8px',
+                  padding: '2px 10px',
+                  marginLeft: 10,
+                  fontWeight: 700,
+                  fontSize: 13,
+                  verticalAlign: 'middle',
+                  boxShadow: '0 1px 6px #0056b333',
+                  display: 'inline-block',
+                }} title="Staff SpainRP">
+                  <FaUserShield style={{marginRight:5,verticalAlign:'middle'}} />STAFF
+                </span>
+              )}
+              {/* Etiqueta especial si está verificado con Roblox */}
+              {robloxVerified && robloxProfile && (
+                <span style={{
+                  background: 'linear-gradient(90deg,#0099ff,#00e0ff)',
+                  color: '#fff',
+                  borderRadius: '10px',
+                  padding: '2px 14px 2px 8px',
+                  marginLeft: 10,
+                  fontWeight: 700,
+                  fontSize: 14,
+                  verticalAlign: 'middle',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  boxShadow: '0 1px 8px #0099ff33',
+                  gap: 7,
+                  border: '1.5px solid #00e0ff',
+                  position: 'relative'
+                }} title={`Verificado con Roblox: ${robloxProfile.username}`}>
+                  <img src={robloxProfile.avatarUrl} alt="Roblox avatar" style={{width:22,height:22,borderRadius:'50%',marginRight:6,boxShadow:'0 1px 6px #0099ff33',border:'1px solid #fff'}} />
+                  <span style={{fontWeight:700}}>Roblox</span>
+                  <span style={{fontSize:12,background:'#fff2',color:'#fff',borderRadius:6,padding:'0 6px',marginLeft:6}}>{robloxProfile.username}</span>
+                  <button
+                    style={{
+                      background:'none',
+                      border:'none',
+                      color:'#fff',
+                      fontSize:16,
+                      marginLeft:8,
+                      cursor:'pointer',
+                      opacity:0.7,
+                      transition:'opacity 0.2s',
+                      padding:0
+                    }}
+                    title="Desvincular perfil Roblox"
+                    onClick={e => {
+                      e.stopPropagation();
+                      setRobloxUnlinkModal(true);
+                    }}
+                  >✖</button>
+                </span>
+              )}
+              {/* Insignias automáticas ordenadas por prioridad y sin duplicados */}
+              {roles.some(r => r.name?.toLowerCase().includes('dueño')) && (
+                <span style={{background:'#c62828',color:'#fff',borderRadius:'8px',padding:'2px 10px',marginLeft:10,fontWeight:700,fontSize:13,verticalAlign:'middle',display:'inline-block'}} title="Dueño">👑 Dueño</span>
+              )}
+              {roles.some(r => r.name?.toLowerCase().includes('socio fundador spainrp')) && (
+                <span style={{background:'#ffd700',color:'#333',borderRadius:'8px',padding:'2px 10px',marginLeft:10,fontWeight:700,fontSize:13,verticalAlign:'middle',display:'inline-block'}} title="Socio Fundador SpainRP">👑 Socio Fundador</span>
+              )}
+              {roles.some(r => r.name?.toLowerCase().includes('developer')) && (
+                <span style={{background:'#00bcd4',color:'#fff',borderRadius:'8px',padding:'2px 10px',marginLeft:10,fontWeight:700,fontSize:13,verticalAlign:'middle',display:'inline-block'}} title="Developer">💻 Developer</span>
+              )}
+              {roles.some(r => r.name?.toLowerCase().includes('empresario') || r.name?.toLowerCase().includes('dueño de empresa')) && (
+                <span style={{background:'linear-gradient(90deg,#00c853,#009624)',color:'#fff',borderRadius:'8px',padding:'2px 10px',marginLeft:10,fontWeight:700,fontSize:13,verticalAlign:'middle',boxShadow:'0 1px 6px #00962433',display:'inline-block'}} title="Empresario SpainRP">🏢 EMPRESARIO</span>
+              )}
+              {roles.some(r => ['donador','booster','nitro','patrocinador'].some(tag => r.name?.toLowerCase().includes(tag))) && (
+                <span style={{background:'linear-gradient(90deg,#ffd700,#ff9800)',color:'#333',borderRadius:'8px',padding:'2px 10px',marginLeft:10,fontWeight:700,fontSize:13,verticalAlign:'middle',boxShadow:'0 1px 6px #ffd70033',display:'inline-block'}} title="Donador SpainRP">💎 DONADOR</span>
+              )}
+              {roles.some(r => r.name?.toLowerCase().includes('policia nacional')) && (
+                <span style={{background:'#1976d2',color:'#fff',borderRadius:'8px',padding:'2px 10px',marginLeft:10,fontWeight:700,fontSize:13,verticalAlign:'middle',display:'inline-block'}} title="Policia Nacional">👮‍♂️ Policia Nacional</span>
+              )}
+              {roles.some(r => r.name?.toLowerCase().includes('guardia civil')) && (
+                <span style={{background:'#388e3c',color:'#fff',borderRadius:'8px',padding:'2px 10px',marginLeft:10,fontWeight:700,fontSize:13,verticalAlign:'middle',display:'inline-block'}} title="Guardia Civil">🚔 Guardia Civil</span>
+              )}
+              {roles.some(r => r.name?.toLowerCase().includes('cuerpo de bomberos')) && (
+                <span style={{background:'#ff9800',color:'#333',borderRadius:'8px',padding:'2px 10px',marginLeft:10,fontWeight:700,fontSize:13,verticalAlign:'middle',display:'inline-block'}} title="Cuerpo de Bomberos">🔥 Bomberos</span>
+              )}
+              {roles.some(r => r.name?.toLowerCase().includes('civil')) && (
+                <span style={{background:'#607d8b',color:'#fff',borderRadius:'8px',padding:'2px 10px',marginLeft:10,fontWeight:700,fontSize:13,verticalAlign:'middle',display:'inline-block'}} title="Civil">🧑‍🤝‍🧑 Civil</span>
+              )}
+              {roles.some(r => r.name?.toLowerCase().includes('mafia administrativa')) && (
+                <span style={{background:'#212121',color:'#fff',borderRadius:'8px',padding:'2px 10px',marginLeft:10,fontWeight:700,fontSize:13,verticalAlign:'middle',display:'inline-block'}} title="Mafia Administrativa">🔪 Mafia</span>
+              )}
+              {roles.some(r => r.name?.toLowerCase().includes('noticiero')) && (
+                <span style={{background:'#ffeb3b',color:'#333',borderRadius:'8px',padding:'2px 10px',marginLeft:10,fontWeight:700,fontSize:13,verticalAlign:'middle',display:'inline-block'}} title="Noticiero">🗞️ Noticiero</span>
+              )}
+              {roles.some(r => r.name?.toLowerCase().includes('criminal')) && (
+                <span style={{background:'#b71c1c',color:'#fff',borderRadius:'8px',padding:'2px 10px',marginLeft:10,fontWeight:700,fontSize:13,verticalAlign:'middle',display:'inline-block'}} title="Criminal">🔫 Criminal</span>
+              )}
+              {roles.some(r => r.name?.toLowerCase().includes('españa')) && (
+                <span style={{background:'#1976d2',color:'#fff',borderRadius:'8px',padding:'2px 10px',marginLeft:10,fontWeight:700,fontSize:13,verticalAlign:'middle',display:'inline-block'}} title="España">🇪🇸 España</span>
+              )}
+              {roles.some(r => r.name?.toLowerCase().includes('verano 2025')) && (
+                <span style={{background:'#ff9800',color:'#333',borderRadius:'8px',padding:'2px 10px',marginLeft:10,fontWeight:700,fontSize:13,verticalAlign:'middle',display:'inline-block'}} title="Verano 2025">🌞 Verano 2025</span>
+              )}
+              {roles.some(r => r.name?.toLowerCase().includes('delitos penales')) && (
+                <span style={{background:'#616161',color:'#fff',borderRadius:'8px',padding:'2px 10px',marginLeft:10,fontWeight:700,fontSize:13,verticalAlign:'middle',display:'inline-block'}} title="Delitos Penales">⛓️ Delitos Penales</span>
+              )}
+              {roles.some(r => r.name?.toLowerCase().includes('dni')) && (
+                <span style={{background:'#90caf9',color:'#333',borderRadius:'8px',padding:'2px 10px',marginLeft:10,fontWeight:700,fontSize:13,verticalAlign:'middle',display:'inline-block'}} title="DNI">🪪 DNI</span>
+              )}
+              {/* Insignia OG si corresponde (soporta string, timestamp, y más formatos) */}
+              {(() => {
+                if (!user?.joinedAt) {
+                  console.log('[OG Badge] joinedAt no existe:', user?.joinedAt);
+                  return null;
+                }
+                let joinedDate = null;
+                let raw = user.joinedAt;
+                // ISO string
+                if (typeof raw === 'string' && !isNaN(Date.parse(raw))) {
+                  joinedDate = new Date(raw);
+                  console.log('[OG Badge] Formato ISO:', raw, joinedDate);
+                }
+                // Timestamp (segundos o ms)
+                else if (typeof raw === 'number') {
+                  joinedDate = new Date(raw < 1e12 ? raw * 1000 : raw);
+                  console.log('[OG Badge] Formato timestamp:', raw, joinedDate);
+                }
+                // Formato fecha corta (dd/mm/yyyy)
+                else if (typeof raw === 'string' && /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(raw)) {
+                  const [d, m, y] = raw.split('/').map(Number);
+                  joinedDate = new Date(y, m - 1, d);
+                  console.log('[OG Badge] Formato dd/mm/yyyy:', raw, joinedDate);
+                }
+                // Formato fecha larga (ej: 14 de septiembre de 2025)
+                else if (typeof raw === 'string' && /de/.test(raw)) {
+                  // Intentar parsear con Intl
+                  try {
+                    const parts = raw.match(/(\d{1,2}) de ([a-zA-Z]+) de (\d{4})/);
+                    if (parts) {
+                      const day = Number(parts[1]);
+                      const month = {
+                        enero:0, febrero:1, marzo:2, abril:3, mayo:4, junio:5, julio:6, agosto:7, septiembre:8, octubre:9, noviembre:10, diciembre:11
+                      }[parts[2].toLowerCase()];
+                      const year = Number(parts[3]);
+                      if (month !== undefined) {
+                        joinedDate = new Date(year, month, day);
+                        console.log('[OG Badge] Formato largo ES:', raw, joinedDate);
+                      }
+                    }
+                  } catch (e) {
+                    console.log('[OG Badge] Error parseando fecha larga:', raw, e);
+                  }
+                }
+                // Si no se pudo parsear
+                if (!joinedDate || isNaN(joinedDate.getTime())) {
+                  console.log('[OG Badge] joinedAt formato no soportado:', raw);
+                  return null;
+                }
+                // Ajuste: considerar OG si la fecha es el mismo día o anterior (independiente de la hora)
+                const ogYear = 2025, ogMonth = 5, ogDay = 17; // Mes 5 = junio
+                const joinedYear = joinedDate.getUTCFullYear();
+                const joinedMonth = joinedDate.getUTCMonth();
+                const joinedDay = joinedDate.getUTCDate();
+                const isOg =
+                  joinedYear < ogYear ||
+                  (joinedYear === ogYear && joinedMonth < ogMonth) ||
+                  (joinedYear === ogYear && joinedMonth === ogMonth && joinedDay <= ogDay);
+                if (isOg) {
+                  console.log('[OG Badge] Usuario es OG:', raw, joinedDate);
+                  return (
+                    <span style={{
+                      background: 'linear-gradient(90deg,#ff2a2a,#b30000)',
+                      color: '#fff',
+                      borderRadius: '8px',
+                      padding: '2px 10px',
+                      marginLeft: 10,
+                      fontWeight: 700,
+                      fontSize: 13,
+                      verticalAlign: 'middle',
+                      boxShadow: '0 1px 6px #b3000033',
+                      display: 'inline-block',
+                    }} title="Miembro OG SpainRP">OG</span>
+                  );
+                }
+                console.log('[OG Badge] Usuario NO es OG:', raw, joinedDate);
+                return null;
+              })()}
+            </h2>
             <p>ID: {user?.id}</p>
+            {/* Botón verificar con Roblox mejorado */}
+            <div style={{margin:'10px 0'}}>
+              {!robloxVerified ? (
+                <div>
+                  {!robloxProfile ? (
+                    <form style={{display:'flex',alignItems:'center',gap:12}} onSubmit={async e => {
+                      e.preventDefault();
+                      setRobloxLoading(true);
+                      setRobloxError("");
+                      setRobloxProfile(null);
+                      try {
+                        // Consultar perfil Roblox desde backend para evitar CORS
+                        const res = await fetch('/api/roblox/verify', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ username: robloxUsername, discordId: user?.id })
+                        });
+                        const data = await res.json();
+                        if (res.ok && data?.userId) {
+                          setRobloxProfile(data);
+                          setRobloxError("");
+                          setRobloxConfirming(true);
+                        } else {
+                          setRobloxError(data?.error || "Usuario no encontrado en Roblox.");
+                        }
+                      } catch (e) {
+                        setRobloxError("Error al consultar Roblox. Intenta de nuevo.");
+                      }
+                      setRobloxLoading(false);
+                    }}>
+                      <input
+                        type="text"
+                        value={robloxUsername}
+                        onChange={e => setRobloxUsername(e.target.value)}
+                        placeholder="Tu usuario de Roblox"
+                        style={{padding:'7px 14px',fontSize:15,borderRadius:8,border:'1px solid #bbb',minWidth:140,transition:'box-shadow 0.3s'}}
+                        required
+                        disabled={robloxLoading}
+                        autoFocus
+                      />
+                      <button
+                        className="btn-primary"
+                        style={{
+                          padding:'6px 20px',
+                          fontSize:15,
+                          borderRadius:8,
+                          minWidth:160,
+                          display:'flex',
+                          alignItems:'center',
+                          gap:8,
+                          boxShadow:'0 2px 8px #0099ff22',
+                          position:'relative',
+                          transition:'background 0.3s'
+                        }}
+                        disabled={robloxLoading || !robloxUsername}
+                        title="Verifica tu cuenta para obtener la insignia Roblox."
+                        type="submit"
+                      >
+                        <span style={{fontSize:18,verticalAlign:'middle'}}>
+                          {robloxLoading ? <FaSpinner className="fa-spin" /> : <FaCheckCircle color="#0099ff" />}
+                        </span>
+                        {robloxLoading ? 'Verificando...' : 'Verificar con Roblox'}
+                      </button>
+                      <span style={{color:'#888',fontSize:13}}>
+                        Escribe tu usuario de Roblox para obtener la insignia especial.
+                      </span>
+                    </form>
+                  ) : (
+                    <div className="roblox-confirm-card" style={{
+                      background:'#f4f8ff',
+                      border:'1px solid #b3d1ff',
+                      borderRadius:12,
+                      padding:'18px 24px',
+                      boxShadow:'0 2px 12px #0099ff22',
+                      display:'flex',
+                      flexDirection:'column',
+                      alignItems:'center',
+                      animation:'fadeInScale 0.6s cubic-bezier(.4,2,.6,1)'
+                    }}>
+                      <img src={robloxProfile.avatarUrl} alt="Roblox avatar" style={{width:80,height:80,borderRadius:'50%',marginBottom:10,boxShadow:'0 2px 8px #0099ff33'}} />
+                      <div style={{fontWeight:700,fontSize:17,color:'#0099ff',marginBottom:4}}>{robloxProfile.displayName || robloxProfile.username}</div>
+                      <div style={{fontSize:14,color:'#555',marginBottom:8}}>Usuario: <b>{robloxProfile.username}</b> | ID: <span style={{color:'#888'}}>{robloxProfile.userId}</span></div>
+                      <div style={{fontSize:13,color:'#888',marginBottom:12}}>¿Es este tu perfil de Roblox?<br/>Confirma para guardar y obtener la insignia.</div>
+                      <div style={{display:'flex',gap:16}}>
+                        <button
+                          className="btn-primary"
+                          style={{padding:'7px 22px',fontSize:15,borderRadius:8,boxShadow:'0 2px 8px #0099ff22'}}
+                          onClick={async () => {
+                            setRobloxLoading(true);
+                            setRobloxError("");
+                            try {
+                              const res = await fetch('/api/roblox/save', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  discordId: user?.id,
+                                  robloxUserId: robloxProfile.userId,
+                                  robloxUsername: robloxProfile.username,
+                                  robloxDisplayName: robloxProfile.displayName,
+                                  robloxAvatarUrl: robloxProfile.avatarUrl
+                                })
+                              });
+                              const data = await res.json();
+                              if (res.ok && data.success) {
+                                setRobloxVerified(true);
+                                setRobloxError("");
+                                setRobloxConfirming(false);
+                              } else {
+                                setRobloxError(data?.error || "Error guardando verificación.");
+                              }
+                            } catch (e) {
+                              setRobloxError("Error guardando verificación. Intenta de nuevo.");
+                            }
+                            setRobloxLoading(false);
+                          }}
+                          disabled={robloxLoading}
+                        >Confirmar y guardar</button>
+                        <button
+                          className="btn-secondary"
+                          style={{padding:'7px 22px',fontSize:15,borderRadius:8,background:'#eee',color:'#333'}}
+                          onClick={() => {
+                            setRobloxProfile(null);
+                            setRobloxConfirming(false);
+                          }}
+                          disabled={robloxLoading}
+                        >Cancelar</button>
+                      </div>
+                      {robloxError && <div style={{color:'#d32f2f',fontSize:13,marginTop:8}}>{robloxError}</div>}
+                    </div>
+                  )}
+                  {robloxError && !robloxProfile && <div style={{color:'#d32f2f',fontSize:13,marginTop:4}}>{robloxError}</div>}
+                </div>
+              ) : (
+                <span style={{color:'#0099ff',fontWeight:600,fontSize:15,display:'flex',alignItems:'center',gap:6,animation:'fadeInScale 0.6s cubic-bezier(.4,2,.6,1)'}}>
+                  <FaCheckCircle color="#0099ff" /> ¡Tu cuenta está verificada con Roblox!
+                  {robloxProfile && (
+                    <img src={robloxProfile.avatarUrl} alt="Roblox avatar" style={{width:32,height:32,borderRadius:'50%',marginLeft:8,boxShadow:'0 2px 8px #0099ff33'}} />
+                  )}
+                </span>
+              )}
+            </div>
             {user?.joinedAt && (
-              <p>Miembro desde: {new Date(user.joinedAt).toLocaleDateString()}</p>
-                )}
-              </div>
+              <p>Miembro desde: {(() => {
+                let joinedDate = null;
+                let raw = user.joinedAt;
+                if (typeof raw === 'string' && !isNaN(Date.parse(raw))) {
+                  joinedDate = new Date(raw);
+                  console.log('[Miembro desde] Formato ISO:', raw, joinedDate);
+                } else if (typeof raw === 'number') {
+                  joinedDate = new Date(raw < 1e12 ? raw * 1000 : raw);
+                  console.log('[Miembro desde] Formato timestamp:', raw, joinedDate);
+                } else if (typeof raw === 'string' && /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(raw)) {
+                  const [d, m, y] = raw.split('/').map(Number);
+                  joinedDate = new Date(y, m - 1, d);
+                  console.log('[Miembro desde] Formato dd/mm/yyyy:', raw, joinedDate);
+                } else if (typeof raw === 'string' && /de/.test(raw)) {
+                  try {
+                    const parts = raw.match(/(\d{1,2}) de ([a-zA-Z]+) de (\d{4})/);
+                    if (parts) {
+                      const day = Number(parts[1]);
+                      const month = {
+                        enero:0, febrero:1, marzo:2, abril:3, mayo:4, junio:5, julio:6, agosto:7, septiembre:8, octubre:9, noviembre:10, diciembre:11
+                      }[parts[2].toLowerCase()];
+                      const year = Number(parts[3]);
+                      if (month !== undefined) {
+                        joinedDate = new Date(year, month, day);
+                        console.log('[Miembro desde] Formato largo ES:', raw, joinedDate);
+                      }
+                    }
+                  } catch (e) {
+                    console.log('[Miembro desde] Error parseando fecha larga:', raw, e);
+                  }
+                }
+                return joinedDate ? joinedDate.toLocaleDateString() : String(raw);
+              })()}</p>
+            )}
+          </div>
         </div>
 
-        <div className="roles-section">
-          <h3>Roles ({roles.length})</h3>
+  <div className="roles-section">
+          <h3 style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+            <span>Roles ({roles.length})</span>
+            {roles.length > 3 && (
+              <button
+                className="btn-secondary"
+                style={{fontSize:13,padding:'2px 10px',borderRadius:6,marginLeft:10}}
+                onClick={() => setShowRoles(v => !v)}
+              >
+                {showRoles ? 'Ocultar' : 'Ver todos'}
+              </button>
+            )}
+          </h3>
           <div className="roles-grid">
-            {roles.length > 0 ? roles.map((role, i) => (
-              <span key={i} className={`role-badge ${isAdmin ? 'admin' : 'user'}`}>
-                {isAdmin ? <FaUserShield /> : <FaUser />}
-                {role.name}
-              </span>
-            )) : <span className="no-roles">No tienes roles especiales</span>}
+            {roles.length > 0 ? (
+              (showRoles ? roles : roles.slice(0,3)).map((role, i) => (
+                <span key={i} className={`role-badge ${isAdmin ? 'admin' : 'user'}`}> 
+                  {isAdmin ? <FaUserShield /> : <FaUser />}
+                  {role.name}
+                </span>
+              ))
+            ) : <span className="no-roles">No tienes roles especiales</span>}
           </div>
-                </div>
-                </div>
-            </div>
+        </div>
+      </div>
+    </div>
   );
 
   const renderAdminTools = () => (
@@ -446,6 +833,31 @@ const Panel = () => {
 
   return (
     <div className="panel-container">
+      {/* Modal de confirmación desvincular Roblox */}
+      {robloxUnlinkModal && (
+        <div className="modal-overlay" style={{zIndex:9999}}>
+          <div className="modal" style={{maxWidth:400,padding:'32px 24px',textAlign:'center'}}>
+            <h3>¿Desvincular perfil Roblox?</h3>
+            <p>¿Seguro que quieres desvincular tu cuenta de Roblox?<br/>Perderás la insignia y los datos asociados.</p>
+            <div style={{display:'flex',gap:18,justifyContent:'center',marginTop:18}}>
+              <button className="btn-primary" style={{padding:'8px 24px',fontSize:16}} onClick={handleUnlinkRoblox} disabled={robloxLoading}>
+                {robloxLoading ? <FaSpinner className="fa-spin" /> : 'Sí, desvincular'}
+              </button>
+              <button className="btn-secondary" style={{padding:'8px 24px',fontSize:16}} onClick={() => setRobloxUnlinkModal(false)} disabled={robloxLoading}>Cancelar</button>
+            </div>
+            {robloxError && <div style={{color:'#d32f2f',fontSize:14,marginTop:10}}>{robloxError}</div>}
+          </div>
+        </div>
+      )}
+      {/* Modal de éxito desvinculación Roblox */}
+      {robloxUnlinkSuccess && (
+        <div className="modal-overlay" style={{zIndex:9999}}>
+          <div className="modal" style={{maxWidth:400,padding:'32px 24px',textAlign:'center'}}>
+            <h3 style={{color:'#0099ff'}}><FaCheckCircle style={{marginRight:8}}/>Perfil Roblox desvinculado</h3>
+            <p>Tu cuenta de Roblox ha sido desvinculada correctamente.<br/>Puedes volver a vincularla cuando quieras.</p>
+          </div>
+        </div>
+      )}
       {/* Overlay para móviles */}
       {sidebarOpen && <div className="sidebar-overlay open" onClick={() => setSidebarOpen(false)}></div>}
       

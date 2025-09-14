@@ -77,72 +77,74 @@ const Cookies = () => {
 
   return (
     <div style={{
-      minHeight: '60vh',
-      background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #23272a 0%, #7289da 100%)',
       color: 'white',
-      padding: '2rem 1rem'
+      padding: '0',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      fontFamily: 'Inter,Segoe UI,sans-serif',
     }}>
-      <div style={{ maxWidth: 900, margin: '0 auto' }}>
-        <h1 style={{ marginBottom: '1rem' }}>Política de Cookies</h1>
-        <p style={{ opacity: 0.8, marginBottom: '2rem' }}>
-          En SpainRP utilizamos cookies y tecnologías similares para mejorar la experiencia de usuario,
-          analizar el uso del sitio y, en su caso, personalizar contenido. A continuación encontrarás
-          información detallada sobre qué son las cookies, qué tipos utilizamos y cómo puedes gestionarlas.
-        </p>
-
+      <div style={{ maxWidth: 900, margin: '0 auto', marginTop: 80, padding: '2.5rem 1.5rem', background: 'rgba(44,47,51,0.98)', borderRadius: 18, boxShadow: '0 8px 32px #23272a88', position: 'relative', zIndex: 1 }}>
+        <div style={{textAlign:'center',marginBottom:'2.2rem'}}>
+          <span style={{fontSize:'3.2rem',marginBottom:12,display:'block',textShadow:'0 2px 24px #7289da88'}}>🍪</span>
+          <h1 style={{ marginBottom: '1rem', fontWeight:900, fontSize:'2.3rem', letterSpacing:1, color:'#7289da' }}>Política de Cookies</h1>
+          <p style={{ opacity: 0.85, marginBottom: '2rem', fontSize:'1.18rem', fontWeight:500 }}>
+            En SpainRP usamos cookies y tecnologías similares para mejorar tu experiencia, analizar el uso y personalizar contenido. Aquí puedes consultar y gestionar tus preferencias.
+          </p>
+        </div>
         {savedMsg && (
           <div style={{
             background: 'rgba(114,137,218,0.2)',
             border: '1px solid rgba(114,137,218,0.35)',
             padding: '0.75rem 1rem',
             borderRadius: 10,
-            marginBottom: '1rem'
+            marginBottom: '1rem',
+            textAlign:'center',
+            fontWeight:700,
+            color:'#7289da',
+            fontSize:'1.08rem',
+            animation:'fadein 1.2s',
           }}>{savedMsg}</div>
         )}
-
         <div style={sectionStyle}>
-          <h2>¿Qué son las cookies?</h2>
-          <p style={{ opacity: 0.85 }}>
-            Las cookies son pequeños archivos de texto que se almacenan en tu dispositivo cuando visitas
-            un sitio web. Permiten que el sitio recuerde tus acciones y preferencias durante un período de tiempo.
+          <h2 style={{color:'#fff',fontWeight:800}}>¿Qué son las cookies?</h2>
+          <p style={{ opacity: 0.85, fontSize:'1.08rem' }}>
+            Las cookies son pequeños archivos de texto que se almacenan en tu dispositivo cuando visitas un sitio web. Permiten que el sitio recuerde tus acciones y preferencias durante un período de tiempo.
           </p>
         </div>
-
         <div style={sectionStyle}>
-          <h2>Tipos de cookies que utilizamos</h2>
-          <ul>
-            <li>
-              <strong>Cookies esenciales</strong>: necesarias para el funcionamiento básico del sitio y la
-              autenticación del usuario (por ejemplo, mantener tu sesión iniciada en el panel).
+          <h2 style={{color:'#fff',fontWeight:800}}>Tipos de cookies que utilizamos</h2>
+          <ul style={{fontSize:'1.08rem',marginLeft:0,paddingLeft:18}}>
+            <li style={{marginBottom:8}}>
+              <strong style={{color:'#7289da'}}>Cookies esenciales</strong>: necesarias para el funcionamiento básico del sitio y la autenticación del usuario (por ejemplo, mantener tu sesión iniciada en el panel).
             </li>
-            <li>
-              <strong>Cookies de rendimiento</strong>: nos ayudan a entender cómo se utiliza la web para
-              mejorar su funcionamiento (por ejemplo, datos agregados de navegación).
+            <li style={{marginBottom:8}}>
+              <strong style={{color:'#7289da'}}>Cookies de rendimiento</strong>: nos ayudan a entender cómo se utiliza la web para mejorar su funcionamiento (por ejemplo, datos agregados de navegación).
             </li>
-            <li>
-              <strong>Cookies de terceros</strong>: pueden establecerse por servicios de terceros integrados
-              (por ejemplo, contenido de Discord o analítica).
+            <li style={{marginBottom:8}}>
+              <strong style={{color:'#7289da'}}>Cookies de terceros</strong>: pueden establecerse por servicios de terceros integrados (por ejemplo, contenido de Discord o analítica).
             </li>
           </ul>
         </div>
-
         <div style={sectionStyle}>
-          <h2>Gestión de cookies</h2>
-          <p style={{ opacity: 0.85 }}>
-            Puedes permitir, bloquear o eliminar las cookies instaladas en tu equipo mediante la configuración
-            de las opciones del navegador. Ten en cuenta que deshabilitar ciertas cookies puede afectar al
-            funcionamiento del sitio, especialmente el acceso al panel privado.
+          <h2 style={{color:'#fff',fontWeight:800}}>Gestión de cookies</h2>
+          <p style={{ opacity: 0.85, fontSize:'1.08rem' }}>
+            Puedes permitir, bloquear o eliminar las cookies instaladas en tu equipo mediante la configuración de las opciones del navegador. Deshabilitar ciertas cookies puede afectar al funcionamiento del sitio, especialmente el acceso al panel privado.
           </p>
           <div style={{
             marginTop: '1rem',
             background: 'rgba(255,255,255,0.04)',
             border: '1px solid rgba(255,255,255,0.08)',
             borderRadius: 10,
-            padding: '1rem'
+            padding: '1rem',
+            boxShadow:'0 2px 12px #7289da22',
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <strong>Tu estado</strong>
-              <span style={{ opacity: 0.85 }}>{decisionLabel}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom:8 }}>
+              <strong style={{color:'#7289da'}}>Tu estado</strong>
+              <span style={{ opacity: 0.85, fontWeight:700 }}>{decisionLabel}</span>
             </div>
             <div style={{ display: 'grid', gap: '0.75rem', marginTop: '0.75rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.05)', borderRadius: 8, padding: '0.75rem' }}>
@@ -175,20 +177,22 @@ const Cookies = () => {
               </div>
             </div>
             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.75rem' }}>
-              <button onClick={handleRejectAll} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.25)', color: '#fff', padding: '0.5rem 0.9rem', borderRadius: 8, cursor: 'pointer' }}>Rechazar</button>
-              <button onClick={handleSave} style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.25)', color: '#fff', padding: '0.5rem 0.9rem', borderRadius: 8, cursor: 'pointer' }}>Guardar preferencias</button>
-              <button onClick={handleAcceptAll} style={{ background: '#7289da', border: 'none', color: '#fff', padding: '0.5rem 0.9rem', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}>Aceptar todas</button>
+              <button onClick={handleRejectAll} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.25)', color: '#fff', padding: '0.5rem 0.9rem', borderRadius: 8, cursor: 'pointer', fontWeight:600 }}>Rechazar</button>
+              <button onClick={handleSave} style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.25)', color: '#fff', padding: '0.5rem 0.9rem', borderRadius: 8, cursor: 'pointer', fontWeight:600 }}>Guardar preferencias</button>
+              <button onClick={handleAcceptAll} style={{ background: '#7289da', border: 'none', color: '#fff', padding: '0.5rem 0.9rem', borderRadius: 8, cursor: 'pointer', fontWeight: 700 }}>Aceptar todas</button>
             </div>
           </div>
         </div>
-
         <div style={sectionStyle} id="support">
-          <h2>Contacto</h2>
-          <p style={{ opacity: 0.85 }}>
+          <h2 style={{color:'#fff',fontWeight:800}}>Contacto</h2>
+          <p style={{ opacity: 0.85, fontSize:'1.08rem' }}>
             Si tienes dudas sobre nuestra política de cookies, contáctanos en el servidor de Discord de SpainRP.
           </p>
         </div>
       </div>
+      <style>{`
+        @keyframes fadein { from { opacity: 0; transform: translateY(30px);} to { opacity: 1; transform: none;} }
+      `}</style>
     </div>
   );
 };

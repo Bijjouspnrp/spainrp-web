@@ -1,7 +1,45 @@
 // backend/routes/roblox.js
 const express = require('express');
 const router = express.Router();
+router.use(express.json());
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+const sqlite3 = require('sqlite3').verbose();
+const path = require('path');
+const dbPath = path.join(__dirname, '../spainrp.db');
+const db = new sqlite3.Database(dbPath);
+
+// Guardar userId Roblox verificado en la base de datos
+router.post('/save', async (req, res) => {
+  const { discordId, robloxUserId, robloxUsername, robloxDisplayName, robloxAvatarUrl } = req.body;
+  if (!discordId || !robloxUserId) return res.status(400).json({ error: 'Faltan datos.' });
+  try {
+    // Crear tabla si no existe y luego guardar
+    db.run(`CREATE TABLE IF NOT EXISTS roblox_verifications (
+      discordId TEXT PRIMARY KEY,
+      robloxUserId TEXT,
+      robloxUsername TEXT,
+      robloxDisplayName TEXT,
+      robloxAvatarUrl TEXT,
+      verifiedAt TEXT
+    )`, function(tableErr) {
+      if (tableErr) return res.status(500).json({ error: 'DB error', details: tableErr.message });
+      db.run(`INSERT INTO roblox_verifications (discordId, robloxUserId, robloxUsername, robloxDisplayName, robloxAvatarUrl, verifiedAt)
+        VALUES (?, ?, ?, ?, ?, ?)
+        ON CONFLICT(discordId) DO UPDATE SET
+          robloxUserId=excluded.robloxUserId,
+          robloxUsername=excluded.robloxUsername,
+          robloxDisplayName=excluded.robloxDisplayName,
+          robloxAvatarUrl=excluded.robloxAvatarUrl,
+          verifiedAt=excluded.verifiedAt
+      `, [discordId, robloxUserId, robloxUsername, robloxDisplayName, robloxAvatarUrl, new Date().toISOString()], function(err) {
+        if (err) return res.status(500).json({ error: 'DB error', details: err.message });
+        res.json({ success: true });
+      });
+    });
+  } catch (e) {
+    res.status(500).json({ error: 'Error guardando verificación.' });
+  }
+});
 
 // Obtener avatar de Roblox por username
 router.get('/avatar/:username', async (req, res) => {
@@ -25,6 +63,61 @@ router.get('/avatar/:username', async (req, res) => {
     res.json({ userId, img });
   } catch (e) {
     res.status(500).json({ error: 'Roblox API error', details: String(e) });
+  }
+});
+
+// GET /api/roblox/profile/:discordId
+router.get('/profile/:discordId', async (req, res) => {
+  const { discordId } = req.params;
+  if (!discordId) return res.status(400).json({ error: 'Falta discordId' });
+  db.get('SELECT * FROM roblox_verifications WHERE discordId = ?', [discordId], (err, row) => {
+    if (err) return res.status(500).json({ error: 'DB error', details: err.message });
+    if (!row) return res.status(404).json({ error: 'No verificado' });
+    res.json(row);
+  });
+});
+// DELETE /api/roblox/unlink/:discordId
+router.delete('/unlink/:discordId', async (req, res) => {
+  const { discordId } = req.params;
+  if (!discordId) return res.status(400).json({ error: 'Falta discordId' });
+  db.run('DELETE FROM roblox_verifications WHERE discordId = ?', [discordId], function(err) {
+    if (err) return res.status(500).json({ error: 'DB error', details: err.message });
+    res.json({ success: true });
+  });
+});
+
+// POST /api/roblox/verify
+router.post('/verify', async (req, res) => {
+  const { username, discordId } = req.body;
+  if (!username || !discordId) return res.status(400).json({ error: 'Faltan datos.' });
+  try {
+    // Consulta a la API oficial de Roblox
+    const robloxRes = await fetch('https://users.roblox.com/v1/usernames/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ usernames: [username], excludeBannedUsers: true })
+    });
+    const robloxData = await robloxRes.json();
+    if (!robloxData?.data?.length || !robloxData.data[0]?.id) {
+      return res.status(404).json({ error: 'Usuario no encontrado en Roblox.' });
+    }
+    const userId = robloxData.data[0].id;
+    // Obtener más datos del perfil
+    const profileRes = await fetch(`https://users.roblox.com/v1/users/${userId}`);
+    const profile = await profileRes.json();
+    // Avatar
+    const avatarRes = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=true`);
+    const avatarData = await avatarRes.json();
+    const avatarUrl = avatarData?.data?.[0]?.imageUrl || null;
+    // No guardar aún, solo devolver datos para confirmación
+    res.json({
+      userId,
+      username: profile.name,
+      displayName: profile.displayName,
+      avatarUrl
+    });
+  } catch (e) {
+    res.status(500).json({ error: 'Error consultando Roblox.' });
   }
 });
 

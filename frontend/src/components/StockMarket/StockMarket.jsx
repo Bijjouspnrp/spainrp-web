@@ -165,10 +165,44 @@ const StockMarket = () => {
 
   if (!user) {
     return (
-      // ⚠️ Mantengo tu login screen original sin tocar nada
-      <div>
-        <DiscordUserBar />
-        {/* tu pantalla de login original */}
+      <div style={{
+        minHeight:'100vh',
+        display:'flex',
+        flexDirection:'column',
+        alignItems:'center',
+        justifyContent:'center',
+        background:'linear-gradient(120deg,#23272a 60%,#7289da 100%)',
+        color:'#fff',
+        fontFamily:'Inter,Segoe UI,sans-serif',
+        animation:'fadein 1.2s',
+        padding:'0'
+      }}>
+        <div style={{
+          background:'rgba(44,47,51,0.98)',
+          borderRadius:24,
+          boxShadow:'0 8px 32px #23272a88',
+          padding:'2.7rem 2.2rem',
+          minWidth:340,
+          maxWidth:420,
+          textAlign:'center',
+          display:'flex',
+          flexDirection:'column',
+          alignItems:'center',
+          justifyContent:'center',
+          animation:'fadein 1.2s',
+        }}>
+          <img src="https://imgur.com/098iBrX.png" alt="Discord Logo" style={{width:72,height:72,borderRadius:'50%',marginBottom:18,boxShadow:'0 2px 12px #7289da44',background:'#23272a'}} />
+          <h2 style={{color:'#7289da',fontWeight:900,fontSize:'2.1rem',marginBottom:10,letterSpacing:1}}>No has iniciado sesión en Discord</h2>
+          <p style={{fontSize:'1.18rem',marginBottom:18,color:'#fff',fontWeight:600,opacity:0.92}}>Para acceder a la Bolsa RP, inicia sesión con tu cuenta de Discord.<br/>Así podrás invertir y ver tu cartera.</p>
+          <a href="/auth/login" className="btn-primary" style={{fontSize:'1.13rem',padding:'0.7rem 2.2rem',borderRadius:10,background:'linear-gradient(90deg,#7289da,#23272a)',color:'#fff',fontWeight:800,textDecoration:'none',boxShadow:'0 2px 8px #7289da22',marginBottom:14,transition:'background 0.2s'}}>
+            <img src="https://imgur.com/098iBrX.png" alt="Discord" style={{width:22,height:22,verticalAlign:'middle',marginRight:8}} />
+            Iniciar sesión con Discord
+          </a>
+          <button onClick={()=>window.location.href='/'} style={{fontSize:'1.08rem',padding:'0.7rem 2.2rem',borderRadius:10,background:'#e74c3c',color:'#fff',fontWeight:800,boxShadow:'0 2px 8px #e74c3c44',border:'none',marginTop:6,cursor:'pointer',transition:'background 0.2s'}}>Volver al inicio</button>
+        </div>
+        <style>{`
+          @keyframes fadein { from { opacity: 0; transform: translateY(30px);} to { opacity: 1; transform: none;} }
+        `}</style>
       </div>
     );
   }

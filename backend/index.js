@@ -12,6 +12,7 @@ const discordRoutes = require('./routes/discord');
 const multiroleRoutes = require('./routes/multirole');
 const tinderRoutes = require('./routes/tinder');
 const robloxRoutes = require('./routes/roblox');
+const adminRecordsRoutes = require('./routes/adminRecords');
 const session = require('express-session');
 const passport = require('passport');
 // Solo una inicialización de app:
@@ -47,6 +48,7 @@ app.use(passport.session());
 // Registrar rutas protegidas DESPUÉS de session/passport
 app.use('/api/tinder', tinderRoutes);
 app.use('/api/roblox', robloxRoutes);
+app.use('/api/admin-records', adminRecordsRoutes);
 
 // --- SOCKET.IO para notificaciones en tiempo real ---
 const http = require('http');
@@ -273,7 +275,7 @@ const fetchRoblox = (...args) => import('node-fetch').then(({default: fetch}) =>
 
 
 // --- PROXY API BOLSA ---
-const BOLSA_API_URL = process.env.BOLSA_API_URL || 'http://localhost:3050';
+const BOLSA_API_URL = process.env.BOLSA_API_URL || 'http://37.27.21.91:5021';
 const fetchBolsa = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 // Consultar saldo del usuario
@@ -949,13 +951,13 @@ app.get('/api/proxy/discord/ismember/:userId', async (req, res) => {
 });
 // Proxy: ver inventario de cualquier usuario (solo administradores)
 async function proxyGetAdminInventory(userId) {
-  const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://localhost:3010'}/api/admin/inventory/${encodeURIComponent(userId)}`);
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/admin/inventory/${encodeURIComponent(userId)}`);
   return await response.json();
 }
 
 // Proxy: agregar items al inventario de un usuario (solo administradores)
 async function proxyAddAdminItem(userId, itemId, amount) {
-  const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://localhost:3010'}/api/admin/additem`, {
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/admin/additem`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId, itemId, amount })
@@ -965,7 +967,7 @@ async function proxyAddAdminItem(userId, itemId, amount) {
 
 // Proxy: retirar items del inventario de un usuario (solo administradores)
 async function proxyRemoveAdminItem(userId, itemId, amount) {
-  const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://localhost:3010'}/api/admin/removeitem`, {
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/admin/removeitem`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId, itemId, amount })
@@ -975,13 +977,13 @@ async function proxyRemoveAdminItem(userId, itemId, amount) {
 
 // Proxy: ver saldo de cualquier usuario (solo administradores)
 async function proxyGetAdminBalance(userId) {
-  const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://localhost:3010'}/api/admin/balance/${encodeURIComponent(userId)}`);
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/admin/balance/${encodeURIComponent(userId)}`);
   return await response.json();
 }
 
 // Proxy: modificar saldo de un usuario (solo administradores)
 async function proxySetAdminBalance(userId, cash, bank) {
-  const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://localhost:3010'}/api/admin/setbalance`, {
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/admin/setbalance`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId, cash, bank })
@@ -1075,7 +1077,7 @@ app.post('/api/proxy/blackmarket/purchase', async (req, res) => {
   try {
     const payload = req.body || {};
     console.log('[PROXY] POST /api/proxy/blackmarket/purchase -> forwarding', payload);
-    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://localhost:3010'}/api/blackmarket/purchase`, {
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/blackmarket/purchase`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -1083,10 +1085,10 @@ app.post('/api/proxy/blackmarket/purchase', async (req, res) => {
     const text = await response.text();
     let data;
     try { data = JSON.parse(text); } catch { data = { raw: text }; }
-    console.log('[PROXY] Response from 3010', { status: response.status, data });
+    console.log('[PROXY] Response from 5021', { status: response.status, data });
     res.status(response.status).json(data);
   } catch (e) {
-    console.error('[PROXY] Error forwarding to 3010:', e);
+    console.error('[PROXY] Error forwarding to 5021:', e);
     res.status(502).json({ error: 'Proxy error', details: String(e) });
   }
 });
@@ -1096,17 +1098,17 @@ app.post('/api/proxy/blackmarket/sell', async (req, res) => {
   try {
     const payload = req.body || {};
     console.log('[PROXY] POST /api/proxy/blackmarket/sell -> forwarding', payload);
-    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://localhost:3010'}/api/blackmarket/sell`, {
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/blackmarket/sell`, {
         method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
         const text = await response.text();
     let data; try { data = JSON.parse(text); } catch { data = { raw: text }; }
-    console.log('[PROXY] Sell response from 3010', { status: response.status, data });
+    console.log('[PROXY] Sell response from 5021', { status: response.status, data });
     res.status(response.status).json(data);
     } catch (e) {
-    console.error('[PROXY] Error forwarding sell to 3010:', e);
+    console.error('[PROXY] Error forwarding sell to 5021:', e);
     res.status(502).json({ error: 'Proxy error', details: String(e) });
   }
 });
@@ -1116,17 +1118,17 @@ app.post('/api/proxy/blackmarket/sellone', async (req, res) => {
   try {
     const payload = req.body || {};
     console.log('[PROXY] POST /api/proxy/blackmarket/sellone -> forwarding', payload);
-    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://localhost:3010'}/api/blackmarket/sellone`, {
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/blackmarket/sellone`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
     const text = await response.text();
     let data; try { data = JSON.parse(text); } catch { data = { raw: text }; }
-    console.log('[PROXY] SellOne response from 3010', { status: response.status, data });
+    console.log('[PROXY] SellOne response from 5021', { status: response.status, data });
     res.status(response.status).json(data);
   } catch (e) {
-    console.error('[PROXY] Error forwarding sellone to 3010:', e);
+    console.error('[PROXY] Error forwarding sellone to 5021:', e);
     res.status(502).json({ error: 'Proxy error', details: String(e) });
   }
 });
@@ -1135,10 +1137,10 @@ app.post('/api/proxy/blackmarket/sellone', async (req, res) => {
 app.get('/api/proxy/blackmarket/items', async (req, res) => {
   try {
     console.log('[PROXY] GET /api/proxy/blackmarket/items');
-    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://localhost:3010'}/api/blackmarket/items`);
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/blackmarket/items`);
     const text = await response.text();
     let data; try { data = JSON.parse(text); } catch { data = { raw: text }; }
-    console.log('[PROXY] Items from 3010', { status: response.status, count: Array.isArray(data) ? data.length : Object.keys(data||{}).length });
+    console.log('[PROXY] Items from 5021', { status: response.status, count: Array.isArray(data) ? data.length : Object.keys(data||{}).length });
     res.status(response.status).json(data);
   } catch (e) {
     console.error('[PROXY] Error fetching items:', e);
@@ -1151,13 +1153,29 @@ app.get('/api/proxy/blackmarket/inventario/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     console.log('[PROXY] GET /api/proxy/blackmarket/inventario', { userId });
-    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://localhost:3010'}/api/blackmarket/inventario/${encodeURIComponent(userId)}`);
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/blackmarket/inventario/${encodeURIComponent(userId)}`);
     const text = await response.text();
     let data; try { data = JSON.parse(text); } catch { data = { raw: text }; }
-    console.log('[PROXY] Inventario from 3010', { status: response.status });
+    console.log('[PROXY] Inventario from 5021', { status: response.status });
     res.status(response.status).json(data);
   } catch (e) {
     console.error('[PROXY] Error fetching inventario:', e);
+    res.status(502).json({ error: 'Proxy error', details: String(e) });
+  }
+});
+
+// Proxy: saldo del usuario en BlackMarket
+app.get('/api/proxy/blackmarket/saldo/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    console.log('[PROXY] GET /api/proxy/blackmarket/saldo', { userId });
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/blackmarket/saldo/${encodeURIComponent(userId)}`);
+    const text = await response.text();
+    let data; try { data = JSON.parse(text); } catch { data = { raw: text }; }
+    console.log('[PROXY] Saldo from 5021', { status: response.status });
+    res.status(response.status).json(data);
+  } catch (e) {
+    console.error('[PROXY] Error fetching saldo:', e);
     res.status(502).json({ error: 'Proxy error', details: String(e) });
   }
 });

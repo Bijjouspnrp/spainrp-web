@@ -3,24 +3,24 @@ services:
     name: spainrp-backend
     env: node
     plan: free
-    buildCommand: cd backend && npm install
-    startCommand: cd backend && npm start
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 3001
       - key: PUBLIC_BASE_URL
         fromService:
           type: web
           name: spainrp-frontend
           property: host
+      # Cambia las siguientes URLs por las públicas de Render si tienes los servicios desplegados
       - key: BOT_API_URL
-        value: http://localhost:3020
+        value: https://spainrp-bot.onrender.com
       - key: BOLSA_API_URL
-        value: http://localhost:3050
+        value: https://spainrp-bolsa.onrender.com
       - key: ECONOMIA_API_URL
-        value: http://localhost:3010
+        value: https://spainrp-economia.onrender.com
       - key: DISCORD_CLIENT_ID
         sync: false
       - key: DISCORD_CLIENT_SECRET
@@ -34,17 +34,18 @@ services:
       - key: SESSION_SECRET
         sync: false
 
-  - type: web
+  - type: static
     name: spainrp-frontend
-    env: static
-    buildCommand: cd frontend && npm install && npm run build
-    staticPublishPath: ./frontend/dist
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
         value: https://spainrp-backend.onrender.com
+      # Cambia las siguientes URLs por las públicas si tienes los servicios desplegados
       - key: VITE_BOT_URL
-        value: http://localhost:3020
+        value: https://spainrp-bot.onrender.com
       - key: VITE_SHOP_URL
-        value: http://localhost:4002
+        value: https://spainrp-shop.onrender.com
       - key: VITE_PPT_URL
-        value: http://localhost:4001
+        value: https://spainrp-ppt.onrender.com
