@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import DailyCalendar from './DailyCalendar.jsx';
 import AdminPanel from './AdminPanel.jsx';
 import './Panel.css';
+import { apiUrl } from '../utils/api';
 import { 
   FaBars, 
   FaUserShield, 
@@ -70,7 +71,7 @@ const Panel = () => {
     }
     
     // Obtener datos del usuario autenticado
-  fetch('/auth/me', { credentials: 'include' })
+  fetch(apiUrl('/auth/me'), { credentials: 'include' })
       .then(res => {
         if (res.status === 401) {
           setUser(null);
@@ -84,7 +85,7 @@ const Panel = () => {
           setUser(data.user);
           // Obtener roles del usuario en el servidor SpainRP (guildId necesario)
           const guildId = '1212556680911650866'; // ID del servidor SpainRP
-          fetch(`/api/member/${guildId}/${data.user.id}`, { credentials: 'include' })
+          fetch(apiUrl(`/api/member/${guildId}/${data.user.id}`), { credentials: 'include' })
             .then(res => {
               if (res.status === 401) {
                 setRoles([]);
@@ -133,7 +134,7 @@ const Panel = () => {
   // Consultar perfil Roblox verificado al cargar usuario
   useEffect(() => {
     if (user?.id) {
-      fetch(`/api/roblox/profile/${user.id}`)
+      fetch(apiUrl(`/api/roblox/profile/${user.id}`))
         .then(res => res.ok ? res.json() : null)
         .then(data => {
           if (data && data.robloxUserId) {
@@ -182,7 +183,7 @@ const Panel = () => {
   const [dniExists, setDniExists] = useState(null); // null: no comprobado, true: existe, false: no existe
   useEffect(() => {
     if (user?.id) {
-      const url = `/api/proxy/dni/${user.id}/exportar?${Date.now()}`;
+      const url = apiUrl(`/api/proxy/dni/${user.id}/exportar?${Date.now()}`);
       setDniImgUrl(url);
       setDniExists(null);
       // Comprobar si la imagen existe realmente
@@ -212,7 +213,7 @@ const Panel = () => {
   const [userRecords, setUserRecords] = useState({ antecedentes: 0, multasTotal: 0, multasPendientes: 0 });
 
   useEffect(() => {
-    fetch('/api/admin-records/stats/records')
+    fetch(apiUrl('/api/admin-records/stats/records'))
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data) setStatsTotals({
@@ -227,13 +228,13 @@ const Panel = () => {
   // Consultar antecedentes y multas del usuario autenticado
   useEffect(() => {
     if (user?.id) {
-      fetch(`/api/admin-records/antecedentes/${user.id}`)
+      fetch(apiUrl(`/api/admin-records/antecedentes/${user.id}`))
         .then(res => res.ok ? res.json() : null)
         .then(data => {
           setUserRecords(r => ({ ...r, antecedentes: data?.total || 0 }));
         })
         .catch(() => {});
-      fetch(`/api/admin-records/multas/${user.id}`)
+      fetch(apiUrl(`/api/admin-records/multas/${user.id}`))
         .then(res => res.ok ? res.json() : null)
         .then(data => {
           setUserRecords(r => ({
@@ -630,7 +631,7 @@ const Panel = () => {
                       setRobloxProfile(null);
                       try {
                         // Consultar perfil Roblox desde backend para evitar CORS
-                        const res = await fetch('/api/roblox/verify', {
+                        const res = await fetch(apiUrl('/api/roblox/verify'), {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({ username: robloxUsername, discordId: user?.id })
@@ -709,7 +710,7 @@ const Panel = () => {
                             setRobloxLoading(true);
                             setRobloxError("");
                             try {
-                              const res = await fetch('/api/roblox/save', {
+                              const res = await fetch(apiUrl('/api/roblox/save'), {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({

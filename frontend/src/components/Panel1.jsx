@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './Panel1.css';
+import { apiUrl } from '../utils/api';
 
 const Panel1 = () => {
   const [user, setUser] = useState(null);
@@ -41,7 +42,7 @@ const Panel1 = () => {
 
     const fetchDiscordStats = async () => {
       try {
-  const response = await fetch('/api/discord/widget', {
+  const response = await fetch(apiUrl('/api/discord/widget'), {
           credentials: 'include'
         });
         if (response.ok) {
@@ -59,7 +60,7 @@ const Panel1 = () => {
 
   const fetchAnnouncements = async () => {
     try {
-  const res = await fetch('/api/announcements', { credentials: 'include' });
+  const res = await fetch(apiUrl('/api/announcements'), { credentials: 'include' });
       const data = await res.json();
       setAnnouncements(data.announcements || []);
     } catch (_) { setAnnouncements([]); }
@@ -67,7 +68,7 @@ const Panel1 = () => {
 
   const fetchPolls = async () => {
     try {
-  const res = await fetch('/api/polls', { credentials: 'include' });
+  const res = await fetch(apiUrl('/api/polls'), { credentials: 'include' });
       const data = await res.json();
       setPolls(data.polls || []);
     } catch (_) { setPolls([]); }

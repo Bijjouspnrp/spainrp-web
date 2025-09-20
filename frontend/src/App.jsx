@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import './App.css';
+import { apiUrl } from './utils/api';
 import Navbar from './components/Navbar';
 import AdBlockDetect from './components/AdBlockDetect';
 import BlackMarket from './components/BlackMarket/BlackMarket';
@@ -240,7 +241,7 @@ function App() {
     let socket;
     const updateFromApi = async () => {
       try {
-        const res = await fetch('/api/maintenance');
+        const res = await fetch(apiUrl('/api/maintenance'));
         const data = await res.json();
         setMaintenance(!!data.maintenance);
         setMaintenanceStart(data.startedAt || null);
@@ -250,7 +251,7 @@ function App() {
       }
     };
     try {
-      socket = io('/', {
+      socket = io(import.meta.env.VITE_API_URL || 'https://spainrp-web.onrender.com', {
         path: '/socket.io',
         transports: ['websocket'],
         withCredentials: true
@@ -287,7 +288,7 @@ function App() {
   const fetchMemberCount = async () => {
     try {
       // Miembros activos (widget)
-      const response = await fetch('/api/widget', { credentials: 'include' });
+      const response = await fetch(apiUrl('/api/widget'), { credentials: 'include' });
       let data = {};
       if (response.status === 404) {
         setMemberCount(0);
@@ -300,7 +301,7 @@ function App() {
         }
       }
       // Miembros totales reales (bot)
-      const totalRes = await fetch('/api/membercount', { credentials: 'include' });
+      const totalRes = await fetch(apiUrl('/api/membercount'), { credentials: 'include' });
       let totalData = {};
       if (totalRes.status === 404) {
         setTotalMembers(0);
@@ -372,7 +373,7 @@ function App() {
             const fd = new FormData(e.currentTarget);
             const email = fd.get('email');
             try {
-              const resp = await fetch('/api/maintenance/subscribe', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email }) });
+              const resp = await fetch(apiUrl('/api/maintenance/subscribe'), { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email }) });
               if (resp.ok) alert('Te avisaremos cuando volvamos.'); else alert('No se pudo suscribir.');
             } catch { alert('No se pudo suscribir.'); }
           }} style={{display:'flex',gap:8,alignItems:'center',justifyContent:'center',flexWrap:'wrap',marginBottom:12}}>
