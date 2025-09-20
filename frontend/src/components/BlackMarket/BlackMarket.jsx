@@ -256,11 +256,11 @@ export default function BlackMarket() {
             setRoleChecking(true);
             // Verificar membresía directa contra el bot API (vía proxy)
             const REQUIRED_ROLE_ID = '1384340799013257307';
-            const memberRes = await fetch(`http://localhost:3001/api/proxy/discord/ismember/${encodeURIComponent(data.user.id)}`);
+            const memberRes = await fetch(`https://spainrp-web.onrender.com/api/proxy/discord/ismember/${encodeURIComponent(data.user.id)}`);
             const member = await memberRes.json();
             let ok = Boolean(member?.isMember);
             if (ok) {
-              const roleRes = await fetch(`http://localhost:3001/api/proxy/discord/hasrole/${encodeURIComponent(data.user.id)}/${REQUIRED_ROLE_ID}`);
+              const roleRes = await fetch(`https://spainrp-web.onrender.com/api/proxy/discord/hasrole/${encodeURIComponent(data.user.id)}/${REQUIRED_ROLE_ID}`);
               const role = await roleRes.json();
               ok = Boolean(role?.hasRole);
               if (ok) {
@@ -287,7 +287,7 @@ export default function BlackMarket() {
             if (ok) {
               try {
                 setAdminChecking(true);
-                const adminRes = await fetch(`http://localhost:3001/api/proxy/admin/isadmin/${encodeURIComponent(data.user.id)}`);
+                const adminRes = await fetch(`https://spainrp-web.onrender.com/api/proxy/admin/isadmin/${encodeURIComponent(data.user.id)}`);
                 const adminData = await adminRes.json();
                 setIsAdmin(Boolean(adminData?.isAdmin));
                 console.log('[BlackMarket] admin check:', adminData);
@@ -316,7 +316,7 @@ export default function BlackMarket() {
     (async () => {
       try {
         console.log('[BlackMarket] Fetch catálogo...');
-        const resp = await fetch('http://localhost:3001/api/proxy/blackmarket/items');
+        const resp = await fetch('https://spainrp-web.onrender.com/api/proxy/blackmarket/items');
         const data = await resp.json();
         if (resp.ok && data && typeof data === 'object') {
           setCatalog(data);
@@ -356,7 +356,7 @@ export default function BlackMarket() {
         }
       } catch (e) {
         console.log('[BlackMarket] API externa no disponible, usando backend local');
-        response = await fetch(`http://localhost:3001/api/proxy/admin/search/${encodeURIComponent(query)}?adminUserId=${user.id}`);
+        response = await fetch(`https://spainrp-web.onrender.com/api/proxy/admin/search/${encodeURIComponent(query)}?adminUserId=${user.id}`);
       }
       const data = await response.json();
       if (response.ok) {
@@ -418,7 +418,7 @@ export default function BlackMarket() {
         }
       } catch (e) {
         console.log('[BlackMarket] API externa no disponible para inventario, usando backend local');
-        inventoryRes = await fetch(`http://localhost:3001/api/proxy/admin/inventory/${user.id || user.userId}?adminUserId=${user.id || user.userId}`);
+        inventoryRes = await fetch(`https://spainrp-web.onrender.com/api/proxy/admin/inventory/${user.id || user.userId}?adminUserId=${user.id || user.userId}`);
       }
       const inventoryData = await inventoryRes.json();
       if (inventoryRes.ok) {
@@ -434,7 +434,7 @@ export default function BlackMarket() {
         }
       } catch (e) {
         console.log('[BlackMarket] API externa no disponible para saldo, usando backend local');
-        balanceRes = await fetch(`http://localhost:3001/api/proxy/admin/balance/${user.id || user.userId}?adminUserId=${user.id || user.userId}`);
+        balanceRes = await fetch(`https://spainrp-web.onrender.com/api/proxy/admin/balance/${user.id || user.userId}?adminUserId=${user.id || user.userId}`);
       }
       const balanceData = await balanceRes.json();
       if (balanceRes.ok) {
@@ -468,7 +468,7 @@ export default function BlackMarket() {
         }
       } catch (e) {
         console.log('[BlackMarket] API externa no disponible para additem, usando backend local');
-        response = await fetch('http://localhost:3001/api/proxy/admin/additem', {
+        response = await fetch('https://spainrp-web.onrender.com/api/proxy/admin/additem', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -515,7 +515,7 @@ export default function BlackMarket() {
         }
       } catch (e) {
         console.log('[BlackMarket] API externa no disponible para removeitem, usando backend local');
-        response = await fetch('http://localhost:3001/api/proxy/admin/removeitem', {
+        response = await fetch('https://spainrp-web.onrender.com/api/proxy/admin/removeitem', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -562,7 +562,7 @@ export default function BlackMarket() {
         }
       } catch (e) {
         console.log('[BlackMarket] API externa no disponible para setbalance, usando backend local');
-        response = await fetch('http://localhost:3001/api/proxy/admin/setbalance', {
+        response = await fetch('https://spainrp-web.onrender.com/api/proxy/admin/setbalance', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

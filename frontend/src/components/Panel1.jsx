@@ -343,7 +343,7 @@ const Panel1 = () => {
                       <div className="actions">
                         <form onSubmit={async (e)=>{e.preventDefault();
                           const reason = 'Ban por IP desde panel';
-                          await fetch('http://localhost:3001/admin/bans',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({ip:s.ip, userId:s.userId, reason})});
+                          await fetch('https://spainrp-web.onrender.com/admin/bans',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({ip:s.ip, userId:s.userId, reason})});
                           refreshSecurity();
                         }}>
                           <button type="submit" className="btn btn--danger">Banear</button>
@@ -365,7 +365,7 @@ const Panel1 = () => {
                       </div>
                       <div className="actions">
                         <form onSubmit={async (e)=>{e.preventDefault();
-                          await fetch(`http://localhost:3001/admin/bans/${b.id}`,{method:'DELETE',credentials:'include'});
+                          await fetch(`https://spainrp-web.onrender.com/admin/bans/${b.id}`,{method:'DELETE',credentials:'include'});
                           refreshSecurity();
                         }}>
                           <button type="submit" className="btn btn--ghost">Eliminar</button>
@@ -388,7 +388,7 @@ const Panel1 = () => {
                   <input placeholder="Título" value={newAnn.title} onChange={(e)=>setNewAnn(a=>({...a,title:e.target.value}))} style={{ background:'transparent', border:'1px solid rgba(255,255,255,.25)', borderRadius:8, color:'#fff', padding:'.5rem .6rem' }} />
                   <textarea placeholder="Contenido" value={newAnn.body} onChange={(e)=>setNewAnn(a=>({...a,body:e.target.value}))} style={{ background:'transparent', border:'1px solid rgba(255,255,255,.25)', borderRadius:8, color:'#fff', padding:'.5rem .6rem', minHeight:120 }} />
                   <div className="actions" style={{justifyContent:'flex-end'}}>
-                    <button className="btn btn--primary" onClick={async ()=>{ if(!newAnn.title||!newAnn.body) return; await fetch('http://localhost:3001/admin/announcements',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(newAnn)}); setNewAnn({title:'',body:''}); fetchAnnouncements(); }}>Publicar</button>
+                    <button className="btn btn--primary" onClick={async ()=>{ if(!newAnn.title||!newAnn.body) return; await fetch('https://spainrp-web.onrender.com/admin/announcements',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(newAnn)}); setNewAnn({title:'',body:''}); fetchAnnouncements(); }}>Publicar</button>
                   </div>
                 </div>
               </div>
@@ -405,7 +405,7 @@ const Panel1 = () => {
                       <div style={{marginTop:4}}>{a.body}</div>
                     </div>
                     {isAdmin && (
-                      <button className="btn btn--ghost" onClick={async ()=>{ await fetch(`http://localhost:3001/admin/announcements/${a.id}`,{method:'DELETE',credentials:'include'}); fetchAnnouncements(); }}>Eliminar</button>
+                      <button className="btn btn--ghost" onClick={async ()=>{ await fetch(`https://spainrp-web.onrender.com/admin/announcements/${a.id}`,{method:'DELETE',credentials:'include'}); fetchAnnouncements(); }}>Eliminar</button>
                     )}
                   </div>
                 ))}
@@ -426,7 +426,7 @@ const Panel1 = () => {
                   ))}
                   <div className="actions" style={{justifyContent:'space-between'}}>
                     <button className="btn btn--ghost" onClick={()=>setNewPoll(p=>({...p, options:[...p.options, '']}))}>Añadir opción</button>
-                    <button className="btn btn--primary" onClick={async ()=>{ if(!newPoll.question || newPoll.options.filter(Boolean).length<2) return; const body={question:newPoll.question, options:newPoll.options.filter(Boolean)}; await fetch('http://localhost:3001/admin/polls',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); setNewPoll({question:'',options:['','']}); fetchPolls(); }}>Crear encuesta</button>
+                    <button className="btn btn--primary" onClick={async ()=>{ if(!newPoll.question || newPoll.options.filter(Boolean).length<2) return; const body={question:newPoll.question, options:newPoll.options.filter(Boolean)}; await fetch('https://spainrp-web.onrender.com/admin/polls',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); setNewPoll({question:'',options:['','']}); fetchPolls(); }}>Crear encuesta</button>
                   </div>
                 </div>
               </div>
@@ -445,7 +445,7 @@ const Panel1 = () => {
                           const total = (p.counts||[]).reduce((a,b)=>a+b,0) || 1;
                           const pct = Math.round((p.counts?.[idx]||0)*100/total);
                           return (
-                            <button key={idx} className="btn btn--ghost" style={{ justifyContent:'space-between' }} onClick={async ()=>{ const res=await fetch(`http://localhost:3001/api/polls/${p.id}/vote`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({optionIndex:idx})}); const data=await res.json(); if(data.poll){ setPolls(prev=>prev.map(pp=>pp.id===p.id?data.poll:pp)); }}}>
+                            <button key={idx} className="btn btn--ghost" style={{ justifyContent:'space-between' }} onClick={async ()=>{ const res=await fetch(`https://spainrp-web.onrender.com/api/polls/${p.id}/vote`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({optionIndex:idx})}); const data=await res.json(); if(data.poll){ setPolls(prev=>prev.map(pp=>pp.id===p.id?data.poll:pp)); }}}>
                               <span>{opt}</span>
                               <span className="badge">{pct}%</span>
                             </button>

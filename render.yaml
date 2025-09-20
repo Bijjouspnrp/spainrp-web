@@ -26,7 +26,7 @@ services:
       - key: DISCORD_CLIENT_SECRET
         sync: false
       - key: DISCORD_REDIRECT_URI
-        value: https://spainrp-backend.onrender.com/auth/callback
+        value: https://spainrp-web.onrender.com/auth/callback
       - key: DISCORD_GUILD_ID
         sync: false
       - key: JWT_SECRET
@@ -41,7 +41,7 @@ services:
     staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
-        value: https://spainrp-backend.onrender.com
+        value: https://spainrp-web.onrender.com
       # Cambia las siguientes URLs por las públicas si tienes los servicios desplegados
       - key: VITE_BOT_URL
         value: https://spainrp-bot.onrender.com

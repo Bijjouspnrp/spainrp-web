@@ -13,32 +13,32 @@ export default defineConfig({
     proxy: {
       // Proxy para endpoints administrativos
       '/api/admin-records': {
-        target: process.env.VITE_API_URL || 'http://localhost:3001',
+        target: process.env.VITE_API_URL || 'https://spainrp-web.onrender.com',
         changeOrigin: true,
         secure: false
       },
       '/api/tinder': {
-        target: process.env.VITE_API_URL || 'http://localhost:3001',
+        target: process.env.VITE_API_URL || 'https://spainrp-web.onrender.com',
         changeOrigin: true,
         secure: false
       },
       '/api/roblox': {
-        target: process.env.VITE_API_URL || 'http://localhost:3001',
+        target: process.env.VITE_API_URL || 'https://spainrp-web.onrender.com',
         changeOrigin: true,
         secure: false
       },
       '/auth': {
-        target: process.env.VITE_API_URL || 'http://localhost:3001',
+        target: process.env.VITE_API_URL || 'https://spainrp-web.onrender.com',
         changeOrigin: true,
         secure: false
       },
       '/api/announcements': {
-        target: process.env.VITE_API_URL || 'http://localhost:3001',
+        target: process.env.VITE_API_URL || 'https://spainrp-web.onrender.com',
         changeOrigin: true,
         secure: false
       },
       '/uploads/news': {
-        target: process.env.VITE_API_URL || 'http://localhost:3001',
+        target: process.env.VITE_API_URL || 'https://spainrp-web.onrender.com',
         changeOrigin: true,
         secure: false
       },
@@ -57,18 +57,18 @@ export default defineConfig({
       },
             // --- PROXY API DNI (localhost:3001) ---
       '/api/proxy/dni': {
-        target: process.env.VITE_API_URL || 'http://localhost:3001',
+        target: process.env.VITE_API_URL || 'https://spainrp-web.onrender.com',
         changeOrigin: true,
         secure: false
       },
 
             '/api/proxy/bolsa/actualizar-precio': {
-        target: process.env.VITE_API_URL || 'http://localhost:3001',
+        target: process.env.VITE_API_URL || 'https://spainrp-web.onrender.com',
         changeOrigin: true,
         secure: false
       },
       '/api/proxy/bolsa/actualizar-precios': {
-        target: process.env.VITE_API_URL || 'http://localhost:3001',
+        target: process.env.VITE_API_URL || 'https://spainrp-web.onrender.com',
         changeOrigin: true,
         secure: false
       },
@@ -135,12 +135,12 @@ export default defineConfig({
       },
       // --- PROXY API DISCORD ---
       '/api/proxy/discord/ismember': {
-        target: process.env.VITE_API_URL || 'http://localhost:3001',
+        target: process.env.VITE_API_URL || 'https://spainrp-web.onrender.com',
         changeOrigin: true,
         secure: false
       },
       '/api/proxy/discord/hasrole': {
-        target: process.env.VITE_API_URL || 'http://localhost:3001',
+        target: process.env.VITE_API_URL || 'https://spainrp-web.onrender.com',
         changeOrigin: true,
         secure: false
       },
@@ -189,29 +189,29 @@ export default defineConfig({
       },
   // ...existing code...
       '/api/auth/me': {
-        target: process.env.VITE_API_URL || 'http://localhost:3001',
+        target: process.env.VITE_API_URL || 'https://spainrp-web.onrender.com',
         changeOrigin: true,
         secure: false
       },
       '/api/backend': {
-        target: process.env.VITE_API_URL || 'http://localhost:3001',
+        target: process.env.VITE_API_URL || 'https://spainrp-web.onrender.com',
         changeOrigin: true,
         secure: false
       },
             '/api/maintenance': {
-        target: process.env.VITE_API_URL || 'http://localhost:3001',
+        target: process.env.VITE_API_URL || 'https://spainrp-web.onrender.com',
         changeOrigin: true,
         secure: false
       },
 // ...existing code...
       '/api': {
-        target: process.env.VITE_BOT_URL || 'http://localhost:3020', // El bot escucha en 3020
+        target: process.env.VITE_BOT_URL || 'https://tu-bot.onrender.com', // El bot escucha en 3020
         changeOrigin: true,
         secure: false
       },
       // Proxy para Simulador de Tienda
       '/shop-simulator': {
-        target: process.env.VITE_SHOP_URL || 'http://localhost:4002',
+        target: process.env.VITE_SHOP_URL || 'https://tu-shop.onrender.com',
         changeOrigin: true,
         secure: false,
         ws: true

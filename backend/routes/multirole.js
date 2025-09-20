@@ -18,7 +18,7 @@ router.post('/multirole', ensureAuthenticated, async (req, res) => {
   }
   try {
     // Llama al bot local para aplicar los roles
-    const botRes = await fetch('http://localhost:3020/api/multirole', {
+    const botRes = await fetch('https://tu-bot.onrender.com/api/multirole', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId, roleIds, action })

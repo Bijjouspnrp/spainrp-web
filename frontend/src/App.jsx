@@ -450,7 +450,7 @@ function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading }) {
 function Logout() {
   const navigate = useNavigate();
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/auth/logout`, { credentials: 'include' })
+    fetch(`${import.meta.env.VITE_API_URL || 'https://spainrp-web.onrender.com'}/auth/logout`, { credentials: 'include' })
       .then(() => {
         navigate('/', { state: { loggedOut: true } });
       });

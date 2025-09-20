@@ -35,7 +35,7 @@ function getResultado(userPick, housePick) {
 
 import { io } from "socket.io-client";
 
-const PPT_ONLINE_URL = import.meta.env.VITE_PPT_URL || "http://localhost:4001";
+const PPT_ONLINE_URL = import.meta.env.VITE_PPT_URL || "https://tu-ppt.onrender.com";
 
 const PiedraPapelTijera = () => {
   // --- Timer sala ---

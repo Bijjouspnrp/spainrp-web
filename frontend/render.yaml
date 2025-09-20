@@ -6,7 +6,7 @@ services:
     staticPublishPath: ./dist
     envVars:
       - key: VITE_API_URL
-        value: https://spainrp-backend.onrender.com
+        value: https://spainrp-web.onrender.com
       - key: VITE_BOT_URL
         value: https://tu-bot.onrender.com
       - key: VITE_SHOP_URL

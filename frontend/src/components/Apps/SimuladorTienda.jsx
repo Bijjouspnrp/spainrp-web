@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 
-const SHOP_SIMULATOR_URL = import.meta.env.VITE_SHOP_URL || "http://localhost:4002";
+const SHOP_SIMULATOR_URL = import.meta.env.VITE_SHOP_URL || "https://tu-shop.onrender.com";
 
 const SimuladorTienda = () => {
   const [modo, setModo] = useState(null); // "local" | "online"

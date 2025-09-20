@@ -19,7 +19,7 @@ function ensureAuthenticated(req, res, next) {
 router.get('/widget', async (req, res) => {
   try {
     // Proxy al bot
-    const botRes = await fetch('http://localhost:3020/api/widget');
+    const botRes = await fetch('https://tu-bot.onrender.com/api/widget');
     const text = await botRes.text();
     let botData;
     try {
@@ -37,7 +37,7 @@ router.get('/widget', async (req, res) => {
 router.get('/membercount', async (req, res) => {
   try {
     // Proxy al bot
-    const botRes = await fetch('http://localhost:3020/api/membercount');
+    const botRes = await fetch('https://tu-bot.onrender.com/api/membercount');
     const text = await botRes.text();
     let botData;
     try {
@@ -62,7 +62,7 @@ router.get('/member/:guildId/:userId', ensureAuthenticated, async (req, res) => 
   try {
     console.log(`[DISCORD] Consulta miembro: guildId=${guildId}, userId=${userId}`);
     // Consultar al bot local en vez de la API REST de Discord
-    const botRes = await fetch(`http://localhost:3020/api/member/${guildId}/${userId}`);
+    const botRes = await fetch(`https://tu-bot.onrender.com/api/member/${guildId}/${userId}`);
     let botData;
     try {
       botData = await botRes.json();

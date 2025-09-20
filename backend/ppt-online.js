@@ -9,9 +9,9 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: [
-      'http://localhost:5173',
+      'https://spainrp-oficial.onrender.com',
       'http://127.0.0.1:5173',
-      process.env.FRONTEND_URL || 'http://localhost:5173'
+      process.env.FRONTEND_URL || 'https://spainrp-oficial.onrender.com'
     ].filter(Boolean),
     methods: ['GET', 'POST']
   }
