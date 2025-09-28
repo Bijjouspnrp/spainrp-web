@@ -322,8 +322,7 @@ app.post('/api/maintenance/subscribe', express.json(), (req, res) => {
 // Servir imágenes de noticias
 app.use('/uploads/news', express.static(path.join(__dirname, '../uploads/news')));
 
-// Servir archivos estáticos del frontend
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
+// El frontend se sirve desde spainrp-oficial.onrender.com
 
 // Utilidad para fetchRoblox (igual que fetchDiscord)
 const fetchRoblox = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
@@ -2521,10 +2520,7 @@ app.post('/api/admin/setbalance', express.json(), async (req, res) => {
   }
 });
 
-// Ruta catch-all para SPA (debe ir al final)
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
-});
+// El frontend se sirve desde spainrp-oficial.onrender.com
 
 // Iniciar el servidor y el bot
 server.listen(PORT, () => {
