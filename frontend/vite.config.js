@@ -215,7 +215,7 @@ export default defineConfig({
       },
       // Proxy para Simulador de Tienda
       '/shop-simulator': {
-        target: process.env.VITE_SHOP_URL || 'http://localhost:4002',
+        target: process.env.VITE_SHOP_URL || 'https://spainrp-oficial.onrender.com',
         changeOrigin: true,
         secure: false,
         ws: true
