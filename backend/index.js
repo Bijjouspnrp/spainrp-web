@@ -2511,7 +2511,6 @@ app.post('/api/admin/setbalance', express.json(), async (req, res) => {
 // El frontend se sirve desde spainrp-oficial.onrender.com
 
 // ===== MODO MANTENIMIENTO =====
-const path = require('path');
 const maintenanceFile = path.join(__dirname, 'maintenance.lock');
 
 // Función para verificar si está en mantenimiento
