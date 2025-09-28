@@ -1,6 +1,7 @@
 const express = require('express');
 const passport = require('passport');
 const DiscordStrategy = require('passport-discord').Strategy;
+const { generateToken } = require('./middleware/jwt');
 require('dotenv').config();
 
 const router = express.Router();
@@ -84,20 +85,65 @@ router.get('/discord/callback', passport.authenticate('discord', {
   failureRedirect: '/auth/forbidden'
 }), (req, res) => {
   // Extender explícitamente la sesión al éxito de login (renovado por rolling cookie)
-  req.session.cookie.maxAge = 7 * 24 * 60 * 60 * 1000;
-  const returnTo = req.session.returnTo;
+  // Generar JWT token
+  const token = generateToken(req.user);
+  const returnTo = req.session.returnTo || 'https://spainrp-oficial.onrender.com/';
+  
   // Limpiar returnTo para evitar redirecciones persistentes
   delete req.session.returnTo;
-  req.session.save(() => {
-    console.log('[AUTH callback] success', {
-      sessionID: req.sessionID,
-      userId: req.user?.id,
-      username: req.user?.username,
-      willRedirectTo: returnTo || 'https://spainrp-oficial.onrender.com/'
-    });
-    // Redirigir a la URL original si existe; si no, a la home
-    res.redirect(returnTo || 'https://spainrp-oficial.onrender.com/');
+  
+  console.log('[AUTH callback] success', {
+    sessionID: req.sessionID,
+    userId: req.user?.id,
+    username: req.user?.username,
+    tokenGenerated: !!token,
+    willRedirectTo: returnTo
   });
+  
+  // Redirigir con el token en la URL (temporal, el frontend lo guardará)
+  const redirectUrl = `${returnTo}?token=${encodeURIComponent(token)}`;
+  res.redirect(redirectUrl);
+});
+
+// Ruta JWT para verificar token
+router.get('/me', (req, res) => {
+  const authHeader = req.headers.authorization;
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ 
+      error: 'Token requerido',
+      code: 'NO_TOKEN'
+    });
+  }
+  
+  const token = authHeader.substring(7);
+  
+  try {
+    const jwt = require('jsonwebtoken');
+    const JWT_SECRET = process.env.JWT_SECRET || 'spainrp_jwt_secret_key_2024';
+    
+    const decoded = jwt.verify(token, JWT_SECRET, {
+      issuer: 'spainrp',
+      audience: 'spainrp-users'
+    });
+    
+    console.log('[AUTH /me] JWT success', {
+      userId: decoded.id,
+      username: decoded.username,
+      isAdmin: decoded.isAdmin
+    });
+    
+    res.json({ 
+      user: decoded,
+      authenticated: true 
+    });
+  } catch (error) {
+    console.log('[AUTH /me] JWT error:', error.message);
+    res.status(401).json({ 
+      error: 'Token inválido o expirado',
+      code: 'INVALID_TOKEN'
+    });
+  }
 });
 
 // Ruta para cerrar sesión

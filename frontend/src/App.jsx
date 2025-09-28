@@ -99,17 +99,34 @@ function PrivateRoute({ children }) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        // Verificar si hay token en localStorage
+        const token = localStorage.getItem('spainrp_token');
+        
+        if (!token) {
+          setUser(null);
+          setIsChecking(false);
+          return;
+        }
+        
+        // Verificar token con JWT
         const response = await fetch(apiUrl('/auth/me'), { 
-          credentials: 'include',
-          headers: { 'Accept': 'application/json' }
+          headers: { 
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
         });
+        
         if (response.status === 401) {
+          // Token inválido, limpiar localStorage
+          localStorage.removeItem('spainrp_token');
           setUser(null);
           return;
         }
+        
         if (response.ok) {
           const data = await response.json();
           let userData = data.user;
+          
           if (userData && userData.id) {
             try {
               const adminRes = await fetch(apiUrl(`/api/discord/isadmin/${userData.id}`));
@@ -128,6 +145,7 @@ function PrivateRoute({ children }) {
           setUser(null);
         }
       } catch (error) {
+        console.error('[Auth] Error checking JWT:', error);
         setUser(null);
       } finally {
         setIsChecking(false);
@@ -229,6 +247,24 @@ function App() {
   const [maintenance, setMaintenance] = useState(false);
   const vantaRef = useRef(null);
   const vantaElRef = useRef(null);
+  
+  // Capturar token de la URL después del login
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    
+    if (token) {
+      console.log('[App] Token recibido de Discord OAuth');
+      localStorage.setItem('spainrp_token', token);
+      
+      // Limpiar la URL
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+      
+      // Recargar para aplicar el token
+      window.location.reload();
+    }
+  }, []);
   
   // Debug logging for App component
   useEffect(() => {
