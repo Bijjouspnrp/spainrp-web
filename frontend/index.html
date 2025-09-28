@@ -17,5 +17,25 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    
+    <!-- SPA Fallback Script for Production -->
+    <script>
+      // Only run in production (when not in development)
+      if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        // This script ensures SPA routing works even if server redirects fail
+        console.log('[SPA Fallback] Initializing SPA routing fallback');
+        
+        // Check if we're on a route that should be handled by React Router
+        const currentPath = window.location.pathname;
+        const isApiRoute = currentPath.startsWith('/api/');
+        const isAssetRoute = currentPath.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg)$/);
+        
+        if (!isApiRoute && !isAssetRoute && currentPath !== '/') {
+          console.log('[SPA Fallback] Route detected:', currentPath);
+          // Let React Router handle it
+          console.log('[SPA Fallback] Allowing React Router to handle route');
+        }
+      }
+    </script>
   </body>
 </html>

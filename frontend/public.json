@@ -1,8 +1,15 @@
 {
   "rewrites": [
     {
-      "source": "/((?!api|assets).*)",
+      "source": "/((?!api|assets|_next|_static|favicon.ico).*)",
       "destination": "/index.html"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/((?!api|assets|_next|_static|favicon.ico).*)",
+      "destination": "/index.html",
+      "statusCode": 200
     }
   ]
 }
