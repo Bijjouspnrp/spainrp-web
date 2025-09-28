@@ -62,7 +62,7 @@ function LoginPage() {
     
     // Redirigir a Discord OAuth
     const apiUrl = import.meta.env.VITE_API_URL || 'https://spainrp-web.onrender.com';
-    const discordAuthUrl = `${apiUrl.replace(/\/$/, '')}/auth/discord?redirect=${encodeURIComponent(redirect)}`;
+    const discordAuthUrl = `${apiUrl.replace(/\/$/, '')}/auth/login?redirect=${encodeURIComponent(redirect)}`;
     console.log('[LoginPage] 🔗 Redirecting to Discord OAuth:', discordAuthUrl);
     window.location.href = discordAuthUrl;
   }, [location.search, navigate]);
