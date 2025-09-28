@@ -1,1 +1,5 @@
+# SPA fallback
 /*    /index.html   200
+
+# API routes should not be redirected
+/api/*    /api/:splat    200
