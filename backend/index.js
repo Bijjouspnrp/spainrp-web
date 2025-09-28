@@ -2510,49 +2510,49 @@ app.post('/api/admin/setbalance', express.json(), async (req, res) => {
 // El frontend se sirve desde spainrp-oficial.onrender.com
 
 // ===== MODO MANTENIMIENTO =====
-const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === 'true';
+const fs = require('fs');
+const path = require('path');
+const maintenanceFile = path.join(__dirname, 'maintenance.lock');
 
-if (MAINTENANCE_MODE) {
-  console.log('🔧 MODO MANTENIMIENTO ACTIVADO');
-  app.get('*', (req, res) => {
-    res.status(503).send(`
-      <!DOCTYPE html>
-      <html lang="es">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Mantenimiento - SpainRP</title>
-        <style>
-          body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            margin: 0; padding: 0; height: 100vh;
-            display: flex; align-items: center; justify-content: center;
-            color: white; text-align: center;
-          }
-          .container { 
-            background: rgba(255,255,255,0.1); 
-            padding: 3rem; border-radius: 20px; 
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-            max-width: 500px;
-          }
-          h1 { font-size: 3rem; margin: 0 0 1rem 0; }
-          p { font-size: 1.2rem; margin: 0; opacity: 0.9; }
-          .icon { font-size: 4rem; margin-bottom: 1rem; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="icon">🔧</div>
-          <h1>Mantenimiento</h1>
-          <p>El sitio está temporalmente en mantenimiento.<br>Vuelve pronto para disfrutar de SpainRP.</p>
-        </div>
-      </body>
-      </html>
-    `);
+// Función para verificar si está en mantenimiento
+const isMaintenanceMode = () => {
+  return fs.existsSync(maintenanceFile) || process.env.MAINTENANCE_MODE === 'true';
+};
+
+// Ruta API para verificar estado de mantenimiento
+app.get('/api/maintenance', (req, res) => {
+  const maintenance = isMaintenanceMode();
+  res.json({ 
+    maintenance,
+    startedAt: maintenance ? new Date().toISOString() : null,
+    message: maintenance ? 'El sitio está en mantenimiento' : 'Sitio funcionando normalmente'
   });
-}
+});
+
+// Ruta para suscripciones de mantenimiento
+app.post('/api/maintenance/subscribe', express.json(), (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: 'Email requerido' });
+  }
+  
+  // Aquí podrías guardar el email en una base de datos
+  console.log('📧 Nueva suscripción de mantenimiento:', email);
+  res.json({ success: true, message: 'Te avisaremos cuando volvamos' });
+});
+
+// Middleware de mantenimiento (después de la ruta API)
+app.use((req, res, next) => {
+  if (isMaintenanceMode()) {
+    console.log('🔧 MODO MANTENIMIENTO ACTIVADO - Bloqueando:', req.path);
+    return res.status(503).json({ 
+      maintenance: true, 
+      message: 'El sitio está en mantenimiento',
+      startedAt: new Date().toISOString()
+    });
+  }
+  next();
+});
 
 // Iniciar el servidor y el bot
 server.listen(PORT, () => {
