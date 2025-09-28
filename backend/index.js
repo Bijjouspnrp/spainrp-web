@@ -69,6 +69,21 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Cookie', 'Accept', 'Origin']
 }));
 
+// Middleware adicional para manejar preflight OPTIONS
+app.options('*', (req, res) => {
+  console.log('[CORS] Preflight OPTIONS request:', {
+    origin: req.headers.origin,
+    method: req.headers['access-control-request-method'],
+    headers: req.headers['access-control-request-headers'],
+    timestamp: new Date().toISOString()
+  });
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Cookie, Accept, Origin');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.status(200).end();
+});
+
 app.use(express.json());
 
 // Configuración mejorada de sesiones
