@@ -40,7 +40,7 @@
   --transition-slow: 0.3s ease;
   
   /* Z-index para capas */
-  --z-navbar: 100;
+  --z-navbar: 10;
   --z-dropdown: 1000;
   --z-overlay: 99;
   --z-menu-toggle: 101;

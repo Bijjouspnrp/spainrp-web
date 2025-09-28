@@ -132,7 +132,7 @@ const TinderRP = () => {
           <h2 style={{fontWeight:700,margin:'2rem 0'}}>Debes iniciar sesión con Discord para acceder a TinderRP.</h2>
           <a href="/auth/login" style={{background:'#e74c3c',color:'#fff',borderRadius:12,padding:'0.9rem 2.2rem',fontWeight:800,textDecoration:'none',fontSize:'1.3rem',boxShadow:'0 2px 12px #e74c3c33'}}>Iniciar sesión</a>
         </div>
-        <div style={{position:'fixed',bottom:24,width:'100%',textAlign:'center',color:'#e74c3c',fontWeight:600,letterSpacing:1}}>Acceso solo para usuarios logueados Discord. App de rol social.</div>
+        <div style={{position:'fixed',bottom:24,width:'100%',textAlign:'center',color:'#e74c3c',fontWeight:600,letterSpacing:1,zIndex:1000}}>Acceso solo para usuarios logueados Discord. App de rol social.</div>
       </div>
     );
   }

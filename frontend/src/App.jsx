@@ -512,6 +512,8 @@ function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading }) {
     state: currentLocation.state,
     hideNavbar,
     hideFooter,
+    noNavbarRoutes,
+    isAppRoute: currentLocation.pathname.startsWith('/apps'),
     timestamp: new Date().toISOString()
   });
   

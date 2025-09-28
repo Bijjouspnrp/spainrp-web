@@ -122,7 +122,7 @@ const AppsMenu = () => {
         .apps-login-block {
           text-align: center;
           color: #fff;
-          margin-top: 60px;
+          margin-top: 80px;
         }
         .apps-login-btn {
           display: inline-block;
