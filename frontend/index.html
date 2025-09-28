@@ -17,30 +17,5 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
-    <script>
-      // Simple SPA fallback - always serve index.html for non-API routes
-      console.log('[SPA] Page loaded:', window.location.href);
-      
-      // Check if this is an API route or static asset
-      const isApiRoute = window.location.pathname.startsWith('/api/');
-      const isStaticAsset = window.location.pathname.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|json)$/);
-      
-      console.log('[SPA] Route check:', {
-        pathname: window.location.pathname,
-        isApiRoute,
-        isStaticAsset,
-        shouldServeIndex: !isApiRoute && !isStaticAsset
-      });
-      
-      // If it's not an API route or static asset, this should be handled by React Router
-      if (!isApiRoute && !isStaticAsset) {
-        console.log('[SPA] ✅ This should be handled by React Router');
-      }
-      
-      // Monitor navigation
-      window.addEventListener('popstate', () => {
-        console.log('[SPA] Navigation to:', window.location.pathname);
-      });
-    </script>
   </body>
 </html>

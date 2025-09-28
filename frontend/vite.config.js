@@ -4,7 +4,9 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react({
+    jsxRuntime: 'automatic'
+  })],
   server: {
     allowedHosts: [
       '8hbmeo-ip-37-201-192-151.tunnelmole.net',
