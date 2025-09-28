@@ -1,3 +1,4 @@
+import { apiUrl } from './utils/api';
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import DiscordUserBar from "../DiscordUserBar";
@@ -58,7 +59,7 @@ const StockMarket = () => {
     const fetchAll = async () => {
       try {
         // 1. Usuario
-        const resUser = await fetch("/auth/me", { credentials: "include" });
+        const resUser = await fetch(apiUrl("/auth/me"), { credentials: "include" });
         const data = resUser.ok ? await resUser.json() : null;
         if (data && data.user) {
           setUser(data.user);

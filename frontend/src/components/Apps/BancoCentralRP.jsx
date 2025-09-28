@@ -1,3 +1,4 @@
+import { apiUrl } from './utils/api';
 import React, { useState, useEffect } from "react";
 import DiscordUserBar from '../DiscordUserBar';
 
@@ -9,7 +10,7 @@ const BancoCentralRP = () => {
   const [monto, setMonto] = useState("");
 
   useEffect(() => {
-    fetch('/auth/me', { credentials: 'include' })
+    fetch(apiUrl('/auth/me'), { credentials: 'include' })
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data && data.user) setUser(data.user);

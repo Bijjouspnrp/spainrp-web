@@ -21,7 +21,7 @@ const Panel1 = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-  const response = await fetch('/auth/user-info', { 
+  const response = await fetch(apiUrl('/auth/user-info'), { 
           credentials: 'include',
           headers: {
             'Accept': 'application/json'
@@ -81,8 +81,8 @@ const Panel1 = () => {
     setSecLoading(true);
     try {
       const [sRes, bRes] = await Promise.all([
-        fetch('/admin/sessions', { credentials: 'include' }),
-        fetch('/admin/bans', { credentials: 'include' })
+        fetch(apiUrl('/admin/sessions'), { credentials: 'include' }),
+        fetch(apiUrl('/admin/bans'), { credentials: 'include' })
       ]);
       const sData = sRes.ok ? await sRes.json() : { sessions: [] };
       const bData = bRes.ok ? await bRes.json() : { bans: [] };

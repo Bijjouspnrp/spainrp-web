@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import GlobalDMCollectorPanel from './GlobalDMCollectorPanel';
+import { apiUrl } from './utils/api';
 import './AdminPanel.css';
 import { 
   FaBan, 
@@ -59,13 +60,13 @@ function PermissionsPanel() {
   const [saving, setSaving] = React.useState(false);
   React.useEffect(() => {
     // Simulación: fetch canales y roles (sin IDs)
-    fetch('/api/discord/channels')
+    fetch(apiUrl('/api/discord/channels'))
       .then(res => res.json())
       .then(data => setChannels(data.channels || []));
-    fetch('/api/discord/roles')
+    fetch(apiUrl('/api/discord/roles'))
       .then(res => res.json())
       .then(data => setRoles(data.roles || []));
-    fetch('/api/discord/permissions')
+    fetch(apiUrl('/api/discord/permissions'))
       .then(res => res.json())
       .then(data => setPermissions(data.permissions || {}));
   }, []);
@@ -85,7 +86,7 @@ function PermissionsPanel() {
 
   const handleSave = async () => {
     setSaving(true);
-    await fetch('/api/discord/permissions', {
+    await fetch(apiUrl('/api/discord/permissions'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ permissions })
@@ -198,7 +199,7 @@ const AdminPanel = () => {
       const body = dmType === 'text'
         ? { userId: dmUserId.trim(), type: 'text', message: dmMessage.trim() }
         : { userId: dmUserId.trim(), type: 'embed', embed: { title: dmEmbedTitle.trim(), description: dmEmbedDesc.trim() } };
-      const res = await fetch('/api/discord/senddm', {
+      const res = await fetch(apiUrl('/api/discord/senddm'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
@@ -288,7 +289,7 @@ const AdminPanel = () => {
       return;
     }
     try {
-      const res = await fetch('/api/discord/mass', {
+      const res = await fetch(apiUrl('/api/discord/mass'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userIds: ids, action: massAction })
@@ -331,7 +332,7 @@ const AdminPanel = () => {
       return;
     }
     try {
-      const res = await fetch('/api/discord/note', {
+      const res = await fetch(apiUrl('/api/discord/note'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: noteUserId.trim(), note: noteText.trim() })
@@ -357,7 +358,7 @@ const AdminPanel = () => {
       return;
     }
     try {
-      const res = await fetch('/api/discord/multirole', {
+      const res = await fetch(apiUrl('/api/discord/multirole'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: multiRoleUserId.trim(), roleIds: multiRoles, action: multiRoleAction })
@@ -391,7 +392,7 @@ const AdminPanel = () => {
   // Logs de comandos
   const fetchCommandLogs = async () => {
     try {
-      const res = await fetch('/api/discord/commandlog');
+      const res = await fetch(apiUrl('/api/discord/commandlog'));
       const data = await res.json();
       setCommandLogs(data.logs || []);
     } catch (err) {
@@ -410,7 +411,7 @@ const AdminPanel = () => {
       return;
     }
     try {
-      const res = await fetch('/api/discord/blockchannel', {
+      const res = await fetch(apiUrl('/api/discord/blockchannel'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ channelId: blockChannelId.trim(), roleId: blockRoleId.trim(), action: blockAction })
@@ -435,7 +436,7 @@ const AdminPanel = () => {
       return;
     }
     try {
-      const res = await fetch('/api/discord/temprole', {
+      const res = await fetch(apiUrl('/api/discord/temprole'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: tempRoleUserId.trim(), roleId: tempRoleId.trim(), time: tempRoleTime })
@@ -596,7 +597,7 @@ const AdminPanel = () => {
   React.useEffect(() => {
     const fetchRoles = async () => {
       try {
-        const res = await fetch('/api/discord/roles');
+        const res = await fetch(apiUrl('/api/discord/roles'));
         const data = await res.json();
         // Orden descendente (de abajo a arriba)
         const sorted = (data.roles || []).slice().reverse();
@@ -715,9 +716,9 @@ function OverviewTab() {
   const fetchStats = async () => {
     try {
       const [memberRes, widgetRes, bannedRes] = await Promise.all([
-        fetch('/api/membercount'),
-        fetch('/api/widget'),
-        fetch('/api/discord/banned')
+        fetch(apiUrl('/api/membercount')),
+        fetch(apiUrl('/api/widget')),
+        fetch(apiUrl('/api/discord/banned'))
       ]);
       
       const memberData = await memberRes.json();
@@ -738,7 +739,7 @@ function OverviewTab() {
 
   const fetchLogs = async () => {
     try {
-      const res = await fetch('/api/discord/logs');
+      const res = await fetch(apiUrl('/api/discord/logs'));
       const data = await res.json();
       setLogs(data.logs || []);
     } catch (err) {
@@ -834,7 +835,7 @@ function ModerationTab() {
     setLoading(true);
     setResult('');
     try {
-      const res = await fetch('/api/discord/ban', {
+      const res = await fetch(apiUrl('/api/discord/ban'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, reason })
@@ -852,7 +853,7 @@ function ModerationTab() {
     setLoading(true);
     setResult('');
     try {
-      const res = await fetch('/api/discord/kick', {
+      const res = await fetch(apiUrl('/api/discord/kick'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId })
@@ -870,7 +871,7 @@ function ModerationTab() {
     setLoading(true);
     setResult('');
     try {
-      const res = await fetch('/api/discord/mute', {
+      const res = await fetch(apiUrl('/api/discord/mute'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, time: muteTime, reason })
@@ -888,7 +889,7 @@ function ModerationTab() {
     setLoading(true);
     setResult('');
     try {
-      const res = await fetch('/api/discord/unban', {
+      const res = await fetch(apiUrl('/api/discord/unban'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId })
@@ -907,7 +908,7 @@ function ModerationTab() {
     setResult('');
     const ids = massIds.split(',').map(id => id.trim()).filter(Boolean);
     try {
-      const res = await fetch('/api/discord/mass', {
+      const res = await fetch(apiUrl('/api/discord/mass'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userIds: ids, action: massAction })
@@ -1125,7 +1126,7 @@ function CommunicationTab() {
         ? { userId: dmUserId.trim(), type: 'text', message: dmMessage.trim(), imageUrl: dmImageUrl }
         : { userId: dmUserId.trim(), type: 'embed', embed: { title: dmEmbedTitle.trim(), description: dmEmbedDesc.trim() }, imageUrl: dmImageUrl };
       
-      const res = await fetch('/api/discord/senddm', {
+      const res = await fetch(apiUrl('/api/discord/senddm'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
@@ -1304,7 +1305,7 @@ function RolesTab() {
 
   const fetchRoles = async () => {
     try {
-      const res = await fetch('/api/discord/roles');
+      const res = await fetch(apiUrl('/api/discord/roles'));
       const data = await res.json();
       setRolesList(data.roles || []);
     } catch (err) {
@@ -1317,7 +1318,7 @@ function RolesTab() {
     setRoleLoading(true);
     setRoleResult('');
     try {
-      const res = await fetch('/api/discord/role', {
+      const res = await fetch(apiUrl('/api/discord/role'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: roleUserId, roleId, action: roleAction })
@@ -1335,7 +1336,7 @@ function RolesTab() {
     setTempRoleLoading(true);
     setTempRoleResult('');
     try {
-      const res = await fetch('/api/discord/temprole', {
+      const res = await fetch(apiUrl('/api/discord/temprole'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: tempRoleUserId, roleId: tempRoleId, time: tempRoleTime })
@@ -1353,7 +1354,7 @@ function RolesTab() {
     setMultiRoleLoading(true);
     setMultiRoleResult('');
     try {
-      const res = await fetch('/api/discord/multirole', {
+      const res = await fetch(apiUrl('/api/discord/multirole'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: multiRoleUserId, roleIds: multiRoles, action: multiRoleAction })
@@ -1531,7 +1532,7 @@ function LogsTab() {
   const fetchLogs = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/discord/logs');
+      const res = await fetch(apiUrl('/api/discord/logs'));
       const data = await res.json();
       setLogs(data.logs || []);
     } catch (err) {
@@ -1543,7 +1544,7 @@ function LogsTab() {
   const fetchCommandLogs = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/discord/commandlog');
+      const res = await fetch(apiUrl('/api/discord/commandlog'));
       const data = await res.json();
       setCommandLogs(data.logs || []);
     } catch (err) {
@@ -1555,7 +1556,7 @@ function LogsTab() {
   const fetchBannedList = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/discord/banned');
+      const res = await fetch(apiUrl('/api/discord/banned'));
       const data = await res.json();
       setBannedList(data.bans || []);
     } catch (err) {
@@ -1681,7 +1682,7 @@ function SettingsTab() {
     setBlockLoading(true);
     setBlockResult('');
     try {
-      const res = await fetch('/api/discord/blockchannel', {
+      const res = await fetch(apiUrl('/api/discord/blockchannel'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ channelId: blockChannelId, roleId: blockRoleId, action: blockAction })
@@ -1699,7 +1700,7 @@ function SettingsTab() {
     setNoteLoading(true);
     setNoteResult('');
     try {
-      const res = await fetch('/api/discord/note', {
+      const res = await fetch(apiUrl('/api/discord/note'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: noteUserId, note: noteText })

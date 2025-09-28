@@ -1,3 +1,4 @@
+import { apiUrl } from './utils/api';
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import './Navbar.css';
 import { 
@@ -72,7 +73,7 @@ const useAuth = () => {
     
     const fetchUser = async () => {
       try {
-        const response = await fetch('/auth/me', { credentials: 'include' });
+        const response = await fetch(apiUrl('/auth/me'), { credentials: 'include' });
         
         if (!mounted) return;
         

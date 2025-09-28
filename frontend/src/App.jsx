@@ -41,7 +41,7 @@ function PrivateRoute({ children }) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch('/auth/me', { 
+        const response = await fetch(apiUrl('/auth/me'), { 
           credentials: 'include',
           headers: { 'Accept': 'application/json' }
         });
@@ -464,7 +464,7 @@ function LogoutPage() {
   const navigate = useNavigate();
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetch('/auth/logout', { credentials: 'include' })
+      fetch(apiUrl('/auth/logout'), { credentials: 'include' })
         .catch(() => {})
         .finally(() => {
           navigate('/', { state: { loggedOut: true } });

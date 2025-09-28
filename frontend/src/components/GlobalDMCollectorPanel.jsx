@@ -1,3 +1,4 @@
+import { apiUrl } from './utils/api';
 import React, { useEffect, useState } from 'react';
 
 function GlobalDMCollectorPanel() {
@@ -8,7 +9,7 @@ function GlobalDMCollectorPanel() {
 
   useEffect(() => {
     setLoading(true);
-    fetch('/api/discord/dmcollector')
+    fetch(apiUrl('/api/discord/dmcollector'))
       .then(res => res.json())
       .then(data => {
         setDmMessages(data.messages || []);

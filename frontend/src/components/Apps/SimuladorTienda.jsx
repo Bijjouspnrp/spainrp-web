@@ -1,3 +1,4 @@
+import { apiUrl } from './utils/api';
 import React, { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 
@@ -33,7 +34,7 @@ const SimuladorTienda = () => {
   useEffect(() => {
     async function fetchUser() {
       try {
-        const res = await fetch("/api/auth/me", { credentials: "include" });
+        const res = await fetch(apiUrl("/api/auth/me"), { credentials: "include" });
         if (res.ok) {
           const user = await res.json();
           setDiscordUser(user);

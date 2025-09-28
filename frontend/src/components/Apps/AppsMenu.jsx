@@ -1,3 +1,4 @@
+import { apiUrl } from './utils/api';
 
 
 import React, { useEffect, useState } from "react";
@@ -33,7 +34,7 @@ const AppsMenu = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/auth/me', { credentials: 'include' })
+    fetch(apiUrl('/auth/me'), { credentials: 'include' })
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data && data.user) setUser(data.user);

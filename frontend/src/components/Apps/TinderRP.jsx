@@ -1,3 +1,4 @@
+import { apiUrl } from './utils/api';
 
 import React, { useState, useEffect } from "react";
 import DiscordUserBar from '../DiscordUserBar';
@@ -20,7 +21,7 @@ const TinderRP = () => {
 
   // Cargar usuario Discord
   useEffect(() => {
-    fetch('/api/auth/me', { credentials: 'include' })
+    fetch(apiUrl('/api/auth/me'), { credentials: 'include' })
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data && (data.user || data.id)) setUser(data.user || data);
@@ -31,7 +32,7 @@ const TinderRP = () => {
   // Cargar perfil propio
   useEffect(() => {
     if (!user) return;
-    fetch('/api/tinder/me', { credentials: 'include' })
+    fetch(apiUrl('/api/tinder/me'), { credentials: 'include' })
       .then(res => res.ok ? res.json() : null)
       .then(data => { if (data && data.profile) setProfile(data.profile); });
   }, [user]);
@@ -39,7 +40,7 @@ const TinderRP = () => {
   // Cargar perfiles de otros
   useEffect(() => {
     if (!user) return;
-    fetch('/api/tinder/all', { credentials: 'include' })
+    fetch(apiUrl('/api/tinder/all'), { credentials: 'include' })
       .then(res => res.ok ? res.json() : null)
       .then(data => { if (data && data.profiles) setProfiles(data.profiles); });
   }, [user, msg]);
@@ -47,7 +48,7 @@ const TinderRP = () => {
   // Cargar matches
   useEffect(() => {
     if (!user) return;
-    fetch('/api/tinder/matches', { credentials: 'include' })
+    fetch(apiUrl('/api/tinder/matches'), { credentials: 'include' })
       .then(res => res.ok ? res.json() : null)
       .then(data => { if (data && data.matches) setMatches(data.matches); });
   }, [user, msg]);
@@ -81,7 +82,7 @@ const TinderRP = () => {
       return;
     }
     setRegistering(true);
-    const res = await fetch('/api/tinder/me', {
+    const res = await fetch(apiUrl('/api/tinder/me'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -105,7 +106,7 @@ const TinderRP = () => {
   // Hacer match
   const handleMatch = async (other) => {
     if (!profile) { setMsg('Completa tu perfil primero'); setTimeout(() => setMsg(''),2000); return; }
-    const res = await fetch('/api/tinder/match', {
+    const res = await fetch(apiUrl('/api/tinder/match'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',

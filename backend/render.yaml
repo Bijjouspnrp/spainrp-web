@@ -4,34 +4,37 @@ services:
     env: node
     plan: free
     buildCommand: npm install
-    startCommand: npm start
+    startCommand: node index.js
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 3001
-      - key: PUBLIC_BASE_URL
-        fromService:
-          type: web
-          name: spainrp-frontend
-          property: host
-      - key: BOT_API_URL
-        value: https://tu-bot.onrender.com
-      - key: BOLSA_API_URL
-        value: https://tu-bolsa.onrender.com
-      - key: ECONOMIA_API_URL
-        value: https://tu-economia.onrender.com
-      - key: DISCORD_CLIENT_ID
+      - key: DISCORD_BOT_TOKEN
         sync: false
-      - key: DISCORD_CLIENT_SECRET
-        sync: false
-      - key: DISCORD_REDIRECT_URI
-        value: https://spainrp-web.onrender.com/auth/callback
       - key: DISCORD_GUILD_ID
+        value: "1212556680911650866"
+      - key: DISCORD_ADMIN_ROLE_ID
         sync: false
-      - key: DATABASE_URL
+      - key: REPORTERO_ROLE_ID
+        value: "1384340819590512700"
+      - key: DISCORD_MUTE_ROLE_ID
         sync: false
-      - key: JWT_SECRET
+      - key: BOT_API_URL
+        value: "https://spainrp-backend.onrender.com"
+      - key: ECONOMIA_API_URL
+        value: "http://37.27.21.91:5021"
+      - key: BOLSA_API_URL
+        value: "http://37.27.21.91:5021"
+      - key: PUBLIC_BASE_URL
+        value: "https://spainrp-oficial.onrender.com"
+      - key: SMTP_HOST
         sync: false
-      - key: SESSION_SECRET
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: MAIL_FROM
         sync: false

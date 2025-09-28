@@ -3,6 +3,7 @@ import { FaLock, FaSkull, FaPills, FaMoneyBillWave, FaUserSecret, FaLaptopCode, 
 import { GiPistolGun, GiChemicalDrop, GiAbbotMeeple, GiAbdominalArmor, GiKnifeFork, GiKnifeThrust, GiSentryGun } from 'react-icons/gi';
 import './BlackMarket.css';
 import DiscordUserBar from '../DiscordUserBar';
+import { apiUrl } from './utils/api';
 
 // Define ITEMS array above the component
 const ITEMS = [
@@ -246,7 +247,7 @@ export default function BlackMarket() {
 
   React.useEffect(() => {
     console.log('[BlackMarket] Fetch /auth/me...');
-    fetch('/auth/me', { credentials: 'include' })
+    fetch(apiUrl('/auth/me'), { credentials: 'include' })
       .then(res => res.ok ? res.json() : null)
       .then(async data => {
         console.log('[BlackMarket] /auth/me data:', data);

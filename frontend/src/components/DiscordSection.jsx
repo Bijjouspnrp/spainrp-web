@@ -1,3 +1,4 @@
+import { apiUrl } from './utils/api';
 import React, { useEffect, useState, useRef } from 'react';
 import './DiscordSection.css';
 import { FaDiscord, FaUsers, FaShieldAlt, FaGift, FaArrowRight, FaHashtag, FaVolumeUp, FaTrash, FaArrowUp, FaArrowDown, FaSave } from 'react-icons/fa';
@@ -12,7 +13,7 @@ const DiscordSection = () => {
   const [guardando, setGuardando] = useState(false);
 
   useEffect(() => {
-  fetch('/api/backend/discord/widget')
+  fetch(apiUrl('/api/backend/discord/widget'))
       .then(res => res.json())
       .then(data => {
         setDiscord(data);
@@ -154,7 +155,7 @@ const DiscordSection = () => {
   const guardarCambios = async () => {
     setGuardando(true);
     try {
-    const res = await fetch('/api/canales', {
+    const res = await fetch(apiUrl('/api/canales'), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(canales)

@@ -1,3 +1,4 @@
+import { apiUrl } from './utils/api';
 import React, { useState, useRef } from "react";
 import DiscordUserBar from '../DiscordUserBar';
 const EMOJIS = ['👍','❤️','😂','😮','😢','👎'];
@@ -100,7 +101,7 @@ const News = () => {
   const fileInputRef = useRef();
 
   React.useEffect(() => {
-    fetch('/auth/me', { credentials: 'include' })
+    fetch(apiUrl('/auth/me'), { credentials: 'include' })
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data && data.user) setUser(data.user);
@@ -112,7 +113,7 @@ const News = () => {
   // Cargar noticias en vivo del backend
   React.useEffect(() => {
     setNewsLoading(true);
-  fetch('/api/announcements')
+  fetch(apiUrl('/api/announcements'))
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data && Array.isArray(data.announcements)) {
@@ -230,7 +231,7 @@ const News = () => {
       }
     });
     try {
-      const resp = await fetch('/api/announcements', {
+      const resp = await fetch(apiUrl('/api/announcements'), {
         method: 'POST',
         body: formData
       });
@@ -245,7 +246,7 @@ const News = () => {
         if (fileInputRef.current) fileInputRef.current.value = "";
         // Recargar noticias
         setNewsLoading(true);
-        fetch('/api/announcements')
+        fetch(apiUrl('/api/announcements'))
           .then(res => res.ok ? res.json() : null)
           .then(data => {
             if (data && Array.isArray(data.announcements)) {

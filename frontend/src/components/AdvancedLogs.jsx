@@ -1,3 +1,4 @@
+import { apiUrl } from './utils/api';
 import React, { useEffect, useState } from 'react';
 
 const AdvancedLogs = () => {
@@ -11,7 +12,7 @@ const AdvancedLogs = () => {
       setLoading(true);
       setError('');
       try {
-        const res = await fetch('/logs', { credentials: 'include' });
+        const res = await fetch(apiUrl('/logs'), { credentials: 'include' });
         if (res.status === 401) {
           setError('No autenticado. Inicia sesión como admin.');
           setLoading(false);

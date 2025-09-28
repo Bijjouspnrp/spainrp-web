@@ -1,3 +1,4 @@
+import { apiUrl } from './utils/api';
 
 import React, { useState, useEffect } from 'react';
 import { FaGift, FaCheckCircle, FaLock, FaCalendarAlt, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
@@ -72,7 +73,7 @@ export default function DailyCalendar() {
     if (claimedDays.includes(day) ||
       year !== today.getFullYear() || month !== today.getMonth() || day !== today.getDate()) return;
     setLoading(true);
-    fetch('/api/calendar/claim', {
+    fetch(apiUrl('/api/calendar/claim'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ year, month: month+1, day })

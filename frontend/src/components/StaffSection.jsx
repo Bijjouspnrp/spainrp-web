@@ -1,3 +1,4 @@
+import { apiUrl } from './utils/api';
 import React from 'react';
 import './StaffSection.css';
 import { FaCrown, FaShieldAlt, FaUserTie, FaUsers } from 'react-icons/fa';
@@ -80,7 +81,7 @@ function useRobloxUserId(identifier) {
     // Si es nombre, consulta el backend
     const fetchId = async () => {
       try {
-        const res = await fetch('/api/backend/roblox/resolve', {
+        const res = await fetch(apiUrl('/api/backend/roblox/resolve'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username: identifier })
@@ -125,7 +126,7 @@ const StaffSection = () => {
             results[identifier] = identifier;
           } else {
             try {
-              const res = await fetch('/api/backend/roblox/resolve', {
+              const res = await fetch(apiUrl('/api/backend/roblox/resolve'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username: identifier })
