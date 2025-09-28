@@ -104,7 +104,16 @@ router.get('/discord/callback', (req, res, next) => {
   // Extender explícitamente la sesión al éxito de login (renovado por rolling cookie)
   // Generar JWT token
   const token = generateToken(req.user);
-  const returnTo = req.session.returnTo || 'https://spainrp-oficial.onrender.com/';
+  
+  // Debug: Verificar el estado de la sesión
+  console.log('[AUTH callback] 🔍 Session debug:', {
+    sessionID: req.sessionID,
+    sessionKeys: req.session ? Object.keys(req.session) : 'no session',
+    returnTo: req.session?.returnTo,
+    sessionData: req.session
+  });
+  
+  const returnTo = req.session?.returnTo || 'https://spainrp-oficial.onrender.com/';
   
   // Limpiar returnTo para evitar redirecciones persistentes
   delete req.session.returnTo;
@@ -124,6 +133,7 @@ router.get('/discord/callback', (req, res, next) => {
   
   // Redirigir con el token en la URL (temporal, el frontend lo guardará)
   const redirectUrl = `${returnTo}?token=${encodeURIComponent(token)}`;
+  console.log('[AUTH callback] 🔗 Final redirect URL:', redirectUrl);
   res.redirect(redirectUrl);
 });
 
