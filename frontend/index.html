@@ -18,79 +18,29 @@
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
     <script>
-      // Enhanced SPA fallback for Render static hosting with detailed logging
-      console.log('[SPA DEBUG] Page loaded, current URL:', window.location.href);
-      console.log('[SPA DEBUG] Pathname:', window.location.pathname);
-      console.log('[SPA DEBUG] Search params:', window.location.search);
-      console.log('[SPA DEBUG] Hash:', window.location.hash);
+      // Simple SPA fallback - always serve index.html for non-API routes
+      console.log('[SPA] Page loaded:', window.location.href);
       
-      // Check if this is a direct file access or SPA route
+      // Check if this is an API route or static asset
       const isApiRoute = window.location.pathname.startsWith('/api/');
-      const isAssetRoute = window.location.pathname.startsWith('/assets/') || 
-                          window.location.pathname.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$/);
-      const isRootRoute = window.location.pathname === '/';
+      const isStaticAsset = window.location.pathname.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|json)$/);
       
-      console.log('[SPA DEBUG] Route analysis:', {
+      console.log('[SPA] Route check:', {
+        pathname: window.location.pathname,
         isApiRoute,
-        isAssetRoute,
-        isRootRoute,
-        pathname: window.location.pathname
+        isStaticAsset,
+        shouldServeIndex: !isApiRoute && !isStaticAsset
       });
       
-      if (!isRootRoute && !isApiRoute && !isAssetRoute) {
-        // This could be a client-side route
-        const validRoutes = [
-          '/blackmarket', '/news', '/stockmarket', '/apps', '/apps/tinder', 
-          '/apps/banco', '/apps/minijuegos', '/apps/tienda', '/rules', 
-          '/panel', '/admin', '/auth/login', '/logout', '/logs', '/cookies', 
-          '/terms', '/support', '/404'
-        ];
-        
-        const isAppSubRoute = window.location.pathname.startsWith('/apps/');
-        const isValidRoute = validRoutes.includes(window.location.pathname) || isAppSubRoute;
-        
-        console.log('[SPA DEBUG] Route validation:', {
-          pathname: window.location.pathname,
-          isValidRoute,
-          isAppSubRoute,
-          validRoutes: validRoutes.filter(r => r.includes(window.location.pathname.split('/')[1])),
-          matchedRoutes: validRoutes.filter(r => window.location.pathname.includes(r))
-        });
-        
-        if (isValidRoute) {
-          // This is a valid SPA route, let React Router handle it
-          console.log('[SPA] ✅ Valid route detected, React Router will handle:', window.location.pathname);
-        } else {
-          // This might be a direct access to a non-existent file
-          console.log('[SPA] ❌ Route not found, redirecting to 404:', window.location.pathname);
-          console.log('[SPA] Available routes:', validRoutes);
-          window.location.href = '/404';
-        }
-      } else {
-        console.log('[SPA] ℹ️ Skipping SPA check for:', {
-          type: isApiRoute ? 'API route' : isAssetRoute ? 'Asset route' : 'Root route',
-          pathname: window.location.pathname
-        });
+      // If it's not an API route or static asset, this should be handled by React Router
+      if (!isApiRoute && !isStaticAsset) {
+        console.log('[SPA] ✅ This should be handled by React Router');
       }
       
-      // Additional debugging for React Router
+      // Monitor navigation
       window.addEventListener('popstate', () => {
-        console.log('[SPA] Browser navigation detected:', window.location.pathname);
+        console.log('[SPA] Navigation to:', window.location.pathname);
       });
-      
-      // Log when React Router takes over
-      const originalPushState = history.pushState;
-      const originalReplaceState = history.replaceState;
-      
-      history.pushState = function(...args) {
-        console.log('[SPA] React Router pushState:', args[2]);
-        return originalPushState.apply(history, args);
-      };
-      
-      history.replaceState = function(...args) {
-        console.log('[SPA] React Router replaceState:', args[2]);
-        return originalReplaceState.apply(history, args);
-      };
     </script>
   </body>
 </html>
