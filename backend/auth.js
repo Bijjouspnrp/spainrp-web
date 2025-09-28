@@ -8,7 +8,7 @@ const router = express.Router();
 // En producción, usar variables de entorno. Aquí se mantienen por simplicidad local
 const CLIENT_ID = process.env.DISCORD_CLIENT_ID || '1387150250334097624';
 const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET || 'i5vVTN3rl757mW5dMFkwV8nwAnkbVk1B';
-const CALLBACK_URL = process.env.DISCORD_CALLBACK_URL || 'https://spainrp-oficial.onrender.com/auth/discord/callback';
+const CALLBACK_URL = process.env.DISCORD_CALLBACK_URL || 'https://spainrp-web.onrender.com/auth/discord/callback';
 const GUILD_ID = process.env.DISCORD_GUILD_ID || '1351991000903004241';
 
 const scopes = ['identify', 'guilds'];
@@ -17,10 +17,13 @@ const ADMIN_USER_IDS = (process.env.ADMIN_USER_IDS || '710112055985963090')
   .map(s => s.trim())
   .filter(Boolean);
 
+console.log('=== DISCORD AUTH CONFIG ===');
 console.log('CLIENT_ID:', CLIENT_ID);
 console.log('CLIENT_SECRET:', CLIENT_SECRET ? 'OK' : 'FALTA');
 console.log('CALLBACK_URL:', CALLBACK_URL);
 console.log('GUILD_ID:', GUILD_ID);
+console.log('SCOPES:', scopes);
+console.log('========================');
 
 if (!CLIENT_ID || !CLIENT_SECRET || !CALLBACK_URL || !GUILD_ID) {
   throw new Error('Falta una variable de entorno crítica para la autenticación de Discord. Revisa tu .env');
