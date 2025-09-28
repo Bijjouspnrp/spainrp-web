@@ -114,7 +114,16 @@ router.get('/discord/callback', passport.authenticate('discord', {
 router.get('/me', (req, res) => {
   const authHeader = req.headers.authorization;
   
+  console.log('[AUTH /me] 🔍 Request received:', {
+    hasAuthHeader: !!authHeader,
+    authHeaderPreview: authHeader ? authHeader.substring(0, 30) + '...' : 'none',
+    userAgent: req.headers['user-agent']?.substring(0, 50) || 'unknown',
+    ip: req.ip,
+    timestamp: new Date().toISOString()
+  });
+  
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    console.log('[AUTH /me] ❌ No valid authorization header');
     return res.status(401).json({ 
       error: 'Token requerido',
       code: 'NO_TOKEN'

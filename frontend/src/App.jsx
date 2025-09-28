@@ -116,8 +116,15 @@ function PrivateRoute({ children }) {
         }
         
         // Verificar token con JWT
-        console.log('[Auth] 🌐 Sending JWT verification request to:', apiUrl('/auth/me'));
-        const response = await fetch(apiUrl('/auth/me'), { 
+        const authUrl = apiUrl('/auth/me');
+        console.log('[Auth] 🌐 Sending JWT verification request to:', authUrl);
+        console.log('[Auth] 🔑 Using token:', {
+          tokenLength: token.length,
+          tokenPreview: token.substring(0, 20) + '...',
+          authHeader: `Bearer ${token.substring(0, 20)}...`
+        });
+        
+        const response = await fetch(authUrl, { 
           headers: { 
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`
@@ -279,6 +286,13 @@ function App() {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
     
+    console.log('[App] 🔍 Checking for token in URL:', {
+      hasToken: !!token,
+      tokenPreview: token ? token.substring(0, 20) + '...' : 'none',
+      currentUrl: window.location.href,
+      searchParams: window.location.search
+    });
+    
     if (token) {
       console.log('[App] 🎫 Token recibido de Discord OAuth:', {
         tokenLength: token.length,
@@ -297,6 +311,13 @@ function App() {
       
       // Recargar para aplicar el token
       window.location.reload();
+    } else {
+      console.log('[App] ⚠️ No token found in URL, checking localStorage...');
+      const storedToken = localStorage.getItem('spainrp_token');
+      console.log('[App] 📦 Stored token:', {
+        hasStoredToken: !!storedToken,
+        storedTokenPreview: storedToken ? storedToken.substring(0, 20) + '...' : 'none'
+      });
     }
   }, []);
   
