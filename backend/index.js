@@ -1551,20 +1551,6 @@ app.delete('/admin/bans/:id', ensureAuthenticated, ensureAdmin, (req, res) => {
   });
 });
 
-// Rutas de avatar de Roblox
-app.get('/api/backend/roblox/avatar/:userId', async (req, res) => {
-  const { userId } = req.params;
-  try {
-    const fetchRoblox = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-    const response = await fetchRoblox(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=false`);
-    const data = await response.json();
-    res.json(data);
-  } catch (e) {
-    console.error('[ROBLOX AVATAR] Error:', e);
-    res.status(500).json({ error: 'Avatar fetch error', details: String(e) });
-  }
-});
-
 const PORT = process.env.PORT || 3001;
 // --- ENDPOINTS BACKEND PARA PROXY ---
 app.post('/api/backend/roblox/resolve', async (req, res) => {
@@ -2533,27 +2519,6 @@ const isMaintenanceMode = () => {
   return fs.existsSync(maintenanceFile) || process.env.MAINTENANCE_MODE === 'true';
 };
 
-// Ruta API para verificar estado de mantenimiento
-app.get('/api/maintenance', (req, res) => {
-  const maintenance = isMaintenanceMode();
-  res.json({ 
-    maintenance,
-    startedAt: maintenance ? new Date().toISOString() : null,
-    message: maintenance ? 'El sitio está en mantenimiento' : 'Sitio funcionando normalmente'
-  });
-});
-
-// Ruta para suscripciones de mantenimiento
-app.post('/api/maintenance/subscribe', express.json(), (req, res) => {
-  const { email } = req.body;
-  if (!email) {
-    return res.status(400).json({ error: 'Email requerido' });
-  }
-  
-  // Aquí podrías guardar el email en una base de datos
-  console.log('📧 Nueva suscripción de mantenimiento:', email);
-  res.json({ success: true, message: 'Te avisaremos cuando volvamos' });
-});
 
 // Middleware de mantenimiento (después de la ruta API)
 app.use((req, res, next) => {
