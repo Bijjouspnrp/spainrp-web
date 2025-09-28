@@ -74,15 +74,15 @@ app.use(express.json());
 // Configuración mejorada de sesiones
 app.use(session({
   secret: process.env.SESSION_SECRET || 'i5vVTN3rl757mW5dMFkwV8nwAnkbVk1B',
-  resave: false,
-  saveUninitialized: false,
+  resave: true, // Forzar guardado en cada request
+  saveUninitialized: true, // Guardar sesiones no inicializadas
   rolling: true, // renueva caducidad en cada interacción
   cookie: {
-    httpOnly: false, // Permitir acceso desde JavaScript para debugging
-    secure: false, // Deshabilitado para permitir HTTP en desarrollo
-    sameSite: 'none', // Permitir cookies cross-site
+    httpOnly: true, // Seguridad
+    secure: false, // Deshabilitado para permitir HTTP
+    sameSite: 'lax', // Cambiar a 'lax' para mejor compatibilidad
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
-    domain: '.onrender.com' // Dominio compartido para todos los subdominios
+    // Remover domain para evitar problemas cross-domain
   },
   name: 'spainrp.sid' // Nombre específico para evitar conflictos
 }));
@@ -94,7 +94,8 @@ app.use((req, res, next) => {
     sessionID: req.sessionID,
     cookies: req.headers.cookie,
     user: req.user ? req.user.id : 'none',
-    isAuthenticated: req.isAuthenticated ? req.isAuthenticated() : false
+    isAuthenticated: req.isAuthenticated ? req.isAuthenticated() : false,
+    sessionData: req.session ? Object.keys(req.session) : 'no session'
   });
   
   if (req.session && req.isAuthenticated && req.isAuthenticated()) {
@@ -106,6 +107,20 @@ app.use((req, res, next) => {
 
 app.use(passport.initialize());
 app.use(passport.session());
+
+// Middleware específico para debuggear cookies cross-domain
+app.use((req, res, next) => {
+  // Asegurar que las cookies se envíen correctamente
+  if (req.session) {
+    res.cookie('spainrp.sid', req.sessionID, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+  }
+  next();
+});
 
 // Registrar rutas protegidas DESPUÉS de session/passport
 app.use('/api/tinder', tinderRoutes);
@@ -1574,33 +1589,6 @@ app.post('/api/backend/roblox/resolve', async (req, res) => {
   }
 });
 
-app.all('/api/backend/roblox/resolve', async (req, res) => {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
-  if (!fetchRoblox) return res.status(500).json({ error: 'node-fetch not installed' });
-  const { username } = req.body;
-  if (!username) return res.status(400).json({ error: 'Username required' });
-  try {
-    const robloxRes = await fetchRoblox('https://users.roblox.com/v1/usernames/users', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ usernames: [username], excludeBannedUsers: true })
-    });
-    const contentType = robloxRes.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      const text = await robloxRes.text();
-      console.error('[ROBLOX API] Respuesta no JSON:', text);
-      return res.status(502).json({ error: 'Roblox API no responde JSON', details: text });
-    }
-    const data = await robloxRes.json();
-    if (data && data.data && data.data[0] && data.data[0].id) {
-      return res.json({ id: data.data[0].id });
-    }
-    return res.status(404).json({ error: 'User not found' });
-  } catch (e) {
-    console.error('[ROBLOX API] Error:', e);
-    return res.status(500).json({ error: 'Roblox API error', details: String(e) });
-  }
-});
 
 // ===== PROXY PARA ADMINISTRADORES TOTALES =====
 // --- LOGGING Y LOGS PAGE ---
