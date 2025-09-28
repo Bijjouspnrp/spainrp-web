@@ -1,19 +1,16 @@
 services:
   - type: web
-    name: spainrp-backend
+    name: spainrp-web
     env: node
     plan: free
-    rootDir: backend
-    buildCommand: npm install
-    startCommand: npm start
+    rootDir: .
+    buildCommand: cd frontend && npm install && npm run build && cd ../backend && npm install
+    startCommand: cd backend && npm start
     envVars:
       - key: NODE_ENV
         value: production
       - key: PUBLIC_BASE_URL
-        fromService:
-          type: web
-          name: spainrp-frontend
-          property: host
+        value: https://spainrp-web.onrender.com
       # Cambia las siguientes URLs por las públicas de Render si tienes los servicios desplegados
       - key: BOT_API_URL
         value: https://spainrp-bot.onrender.com
@@ -26,23 +23,15 @@ services:
       - key: DISCORD_CLIENT_SECRET
         sync: false
       - key: DISCORD_REDIRECT_URI
-        value: https://spainrp-backend.onrender.com/auth/callback
+        value: https://spainrp-web.onrender.com/auth/callback
       - key: DISCORD_GUILD_ID
         sync: false
       - key: JWT_SECRET
         sync: false
       - key: SESSION_SECRET
         sync: false
-
-  - type: static
-    name: spainrp-frontend
-    rootDir: frontend
-    buildCommand: npm install && npm run build
-    staticPublishPath: dist
-    envVars:
       - key: VITE_API_URL
-        value: https://spainrp-backend.onrender.com
-      # Cambia las siguientes URLs por las públicas si tienes los servicios desplegados
+        value: https://spainrp-web.onrender.com
       - key: VITE_BOT_URL
         value: https://spainrp-bot.onrender.com
       - key: VITE_SHOP_URL

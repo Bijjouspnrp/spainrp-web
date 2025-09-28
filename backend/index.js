@@ -55,7 +55,22 @@ let calendarData = {};
 // Solo una inicialización de app:
 
 const app = express();
-// ...existing code...
+
+// Configuración de CORS al principio
+app.use(cors({
+  origin: [
+    'https://spainrp-oficial.onrender.com', 
+    'https://spainrp-web.onrender.com',
+    'http://127.0.0.1:5173',
+    process.env.PUBLIC_BASE_URL || 'https://spainrp-oficial.onrender.com'
+  ].filter(Boolean),
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Cookie', 'Accept', 'Origin']
+}));
+
+app.use(express.json());
+
 // Configuración mejorada de sesiones
 app.use(session({
   secret: 'i5vVTN3rl757mW5dMFkwV8nwAnkbVk1B',
@@ -307,6 +322,9 @@ app.post('/api/maintenance/subscribe', express.json(), (req, res) => {
 // Servir imágenes de noticias
 app.use('/uploads/news', express.static(path.join(__dirname, '../uploads/news')));
 
+// Servir archivos estáticos del frontend
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
 // Utilidad para fetchRoblox (igual que fetchDiscord)
 const fetchRoblox = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
@@ -329,7 +347,7 @@ app.get('/api/proxy/bolsa/saldo/:userId', async (req, res) => {
 // Proxy: ban de Discord hacia el bot (localhost:3020)
 app.post('/api/proxy/discord/ban', express.json(), async (req, res) => {
   try {
-    const botRes = await fetchRoblox(`${process.env.BOT_API_URL || 'https://tu-bot.onrender.com'}/api/discord/ban`, {
+    const botRes = await fetchRoblox(`${process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/'}/api/discord/ban`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(req.body)
@@ -446,19 +464,6 @@ app.get('/api/proxy/bolsa/activos', async (req, res) => {
     res.status(502).json({ error: 'Proxy error', details: String(e) });
   }
 });
-// Configuración mejorada de CORS
-app.use(cors({
-  origin: [
-    'https://spainrp-oficial.onrender.com', 
-    'http://127.0.0.1:5173',
-    process.env.PUBLIC_BASE_URL || 'https://spainrp-oficial.onrender.com'
-  ].filter(Boolean),
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Cookie', 'Accept', 'Origin']
-}));
-
-app.use(express.json());
 
 // Logger simple de peticiones
 app.use((req, res, next) => {
@@ -472,6 +477,7 @@ app.use((req, res, next) => {
   });
   next();
 });
+
 
 
 // Endpoint Discord widget público
@@ -812,6 +818,18 @@ app.use('/api/discord', multiroleRoutes);
 
 // Endpoint para exponer el usuario autenticado de Discord
 app.get('/api/auth/me', (req, res) => {
+  if (req.isAuthenticated && req.isAuthenticated() && req.user) {
+    const { id, username, discriminator, avatar } = req.user;
+    console.log(`[AUTH/ME] Usuario autenticado: ${username}#${discriminator} (${id})`);
+    res.json({ id, username, discriminator, avatar });
+  } else {
+    console.warn('[AUTH/ME] Acceso no autenticado o sesión inválida');
+    res.status(401).json({ error: 'No autenticado' });
+  }
+});
+
+// Ruta adicional para compatibilidad con el frontend
+app.get('/auth/me', (req, res) => {
   if (req.isAuthenticated && req.isAuthenticated() && req.user) {
     const { id, username, discriminator, avatar } = req.user;
     console.log(`[AUTH/ME] Usuario autenticado: ${username}#${discriminator} (${id})`);
@@ -2511,6 +2529,11 @@ app.post('/api/admin/setbalance', express.json(), async (req, res) => {
     console.error('[ADMIN API][SETBALANCE] Error', err);
     res.status(500).json({ error: 'Error al modificar saldo', details: err.message });
   }
+});
+
+// Ruta catch-all para SPA (debe ir al final)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
 });
 
 // Iniciar el servidor y el bot
