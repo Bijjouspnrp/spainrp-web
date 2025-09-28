@@ -37,13 +37,32 @@ function LoginPage() {
   const location = useLocation();
   const navigate = useNavigate();
   
+  // Debug logging for LoginPage
+  useEffect(() => {
+    console.log('[LoginPage] 🔐 Component mounted');
+    console.log('[LoginPage] 📍 Current URL:', window.location.href);
+    console.log('[LoginPage] 📍 Pathname:', window.location.pathname);
+    console.log('[LoginPage] 📍 Search:', window.location.search);
+    console.log('[LoginPage] 📍 Hash:', window.location.hash);
+    console.log('[LoginPage] 📍 Referrer:', document.referrer);
+    console.log('[LoginPage] 📍 Timestamp:', new Date().toISOString());
+  }, []);
+  
   useEffect(() => {
     // Obtener redirect URL de los query params
     const urlParams = new URLSearchParams(location.search);
     const redirect = urlParams.get('redirect') || '/';
     
+    console.log('[LoginPage] 🔄 Redirect process:', {
+      originalUrl: window.location.href,
+      searchParams: location.search,
+      redirectUrl: redirect,
+      apiUrl: import.meta.env.VITE_API_URL || 'https://spainrp-web.onrender.com'
+    });
+    
     // Redirigir a Discord OAuth
     const discordAuthUrl = `${import.meta.env.VITE_API_URL || 'https://spainrp-web.onrender.com'}/auth/discord?redirect=${encodeURIComponent(redirect)}`;
+    console.log('[LoginPage] 🔗 Redirecting to Discord OAuth:', discordAuthUrl);
     window.location.href = discordAuthUrl;
   }, [location.search, navigate]);
 
@@ -168,8 +187,23 @@ function PrivateRoute({ children }) {
 function Home({ memberCount, totalMembers, loading }) {
   const location = useLocation();
   const [logoutMsg, setLogoutMsg] = useState(false);
+  
+  // Debug logging for Home component
+  useEffect(() => {
+    console.log('[Home] 🏠 Component mounted');
+    console.log('[Home] 📍 Current URL:', window.location.href);
+    console.log('[Home] 📍 Pathname:', window.location.pathname);
+    console.log('[Home] 📍 Search:', window.location.search);
+    console.log('[Home] 📍 Hash:', window.location.hash);
+    console.log('[Home] 📍 Referrer:', document.referrer);
+    console.log('[Home] 📍 State:', location.state);
+    console.log('[Home] 📍 Timestamp:', new Date().toISOString());
+    console.log('[Home] 📊 Props:', { memberCount, totalMembers, loading });
+  }, [memberCount, totalMembers, loading]);
+  
   useEffect(() => {
     if (location.state && location.state.loggedOut) {
+      console.log('[Home] 🚪 Logout message detected');
       setLogoutMsg(true);
       setTimeout(() => setLogoutMsg(false), 3000);
     }
@@ -194,6 +228,18 @@ function App() {
   const [maintenance, setMaintenance] = useState(false);
   const vantaRef = useRef(null);
   const vantaElRef = useRef(null);
+  
+  // Debug logging for App component
+  useEffect(() => {
+    console.log('[App] 🚀 App component mounted');
+    console.log('[App] 📍 Current URL:', window.location.href);
+    console.log('[App] 📍 Pathname:', window.location.pathname);
+    console.log('[App] 📍 Search:', window.location.search);
+    console.log('[App] 📍 Hash:', window.location.hash);
+    console.log('[App] 📍 Referrer:', document.referrer);
+    console.log('[App] 📍 Timestamp:', new Date().toISOString());
+    console.log('[App] 📊 Initial state:', { memberCount, totalMembers, loading, maintenance });
+  }, []);
   // Progreso mantenimiento (hooks siempre fuera de condicionales)
   const totalMinutes = 50;
   const [elapsed, setElapsed] = useState(0);
@@ -456,8 +502,28 @@ function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading }) {
   const hideNavbar = noNavbarRoutes.includes(currentLocation.pathname);
   const hideFooter = ['/apps/tienda'].includes(currentLocation.pathname);
   
-  // Debug: Log current location
-  console.log('[AppContent] Current location:', currentLocation.pathname);
+  // Enhanced debug logging
+  console.log('[AppContent] 🔍 Route Debug Info:', {
+    pathname: currentLocation.pathname,
+    search: currentLocation.search,
+    hash: currentLocation.hash,
+    state: currentLocation.state,
+    hideNavbar,
+    hideFooter,
+    timestamp: new Date().toISOString()
+  });
+  
+  // Log route changes
+  React.useEffect(() => {
+    console.log('[AppContent] 📍 Route changed to:', currentLocation.pathname);
+    console.log('[AppContent] 📊 Route analysis:', {
+      isNoNavbarRoute: hideNavbar,
+      isNoFooterRoute: hideFooter,
+      isApiRoute: currentLocation.pathname.startsWith('/api/'),
+      isAssetRoute: currentLocation.pathname.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg)$/),
+      isRootRoute: currentLocation.pathname === '/'
+    });
+  }, [currentLocation.pathname, hideNavbar, hideFooter]);
   
   return (
     <div className="App">

@@ -96,6 +96,17 @@ export default function BlackMarket() {
   const [userBalance, setUserBalanceState] = useState(null);
   const [user, setUser] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
+  
+  // Debug logging for BlackMarket component
+  React.useEffect(() => {
+    console.log('[BlackMarket] 🏪 Component mounted');
+    console.log('[BlackMarket] 📍 Current URL:', window.location.href);
+    console.log('[BlackMarket] 📍 Pathname:', window.location.pathname);
+    console.log('[BlackMarket] 📍 Search:', window.location.search);
+    console.log('[BlackMarket] 📍 Hash:', window.location.hash);
+    console.log('[BlackMarket] 📍 Referrer:', document.referrer);
+    console.log('[BlackMarket] 📍 Timestamp:', new Date().toISOString());
+  }, []);
   const [showModal, setShowModal] = React.useState(false);
   const [modalItem, setModalItem] = React.useState(null);
   const [showToast, setShowToast] = React.useState(false);

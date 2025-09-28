@@ -1,7 +1,31 @@
 import React from 'react';
 import spainLogo from '/assets/spainrplogo.png';
 
-const NotFound = ({ logs }) => (
+const NotFound = ({ logs }) => {
+  // Debug logging for 404 page
+  React.useEffect(() => {
+    console.log('[NotFound] 🚨 404 Page loaded');
+    console.log('[NotFound] 📍 Current URL:', window.location.href);
+    console.log('[NotFound] 📍 Pathname:', window.location.pathname);
+    console.log('[NotFound] 📍 Search:', window.location.search);
+    console.log('[NotFound] 📍 Hash:', window.location.hash);
+    console.log('[NotFound] 📍 Referrer:', document.referrer);
+    console.log('[NotFound] 📍 User Agent:', navigator.userAgent);
+    console.log('[NotFound] 📍 Timestamp:', new Date().toISOString());
+    
+    // Check if this is a direct file access
+    const isFileAccess = window.location.pathname.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$/);
+    const isApiRoute = window.location.pathname.startsWith('/api/');
+    
+    console.log('[NotFound] 🔍 Analysis:', {
+      isFileAccess,
+      isApiRoute,
+      pathname: window.location.pathname,
+      isDirectAccess: !document.referrer || document.referrer === window.location.href
+    });
+  }, []);
+
+  return (
   <div style={{
     minHeight: '100vh',
     display: 'flex',
