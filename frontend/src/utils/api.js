@@ -1,5 +1,5 @@
 // Helper para URLs de la API
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://spainrp-web.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 export const apiUrl = (path) => {
   // Si la ruta ya es una URL completa, la devolvemos tal como está

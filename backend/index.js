@@ -79,10 +79,10 @@ app.use(session({
   rolling: true, // renueva caducidad en cada interacción
   cookie: {
     httpOnly: true, // Seguridad
-    secure: true, // Habilitado para sameSite: 'none'
-    sameSite: 'none', // Para cross-domain
+    secure: true, // HTTPS en producción
+    sameSite: 'lax', // Simplificado para mismo dominio
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
-    domain: '.onrender.com' // Habilitado para compartir entre subdominios
+    // Sin domain - mismo dominio
   },
   name: 'spainrp.sid' // Nombre específico para evitar conflictos
 }));
@@ -114,10 +114,10 @@ app.use((req, res, next) => {
   if (req.session) {
     res.cookie('spainrp.sid', req.sessionID, {
       httpOnly: true,
-      secure: true, // Habilitado para sameSite: 'none'
-      sameSite: 'none', // Para cross-domain
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      domain: '.onrender.com' // Habilitado para compartir entre subdominios
+      secure: true, // HTTPS en producción
+      sameSite: 'lax', // Simplificado para mismo dominio
+      maxAge: 7 * 24 * 60 * 60 * 1000
+      // Sin domain - mismo dominio
     });
   }
   next();
@@ -2508,7 +2508,20 @@ app.post('/api/admin/setbalance', express.json(), async (req, res) => {
   }
 });
 
-// El frontend se sirve desde spainrp-oficial.onrender.com
+// ===== SERVIR FRONTEND DESDE BACKEND =====
+// Servir archivos estáticos del frontend
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
+// Catch-all handler: enviar index.html para todas las rutas no-API
+app.get('*', (req, res, next) => {
+  // Si es una ruta de API, continuar con el siguiente middleware
+  if (req.path.startsWith('/api/') || req.path.startsWith('/auth/')) {
+    return next();
+  }
+  
+  // Para todas las demás rutas, servir el index.html del frontend
+  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+});
 
 // ===== MODO MANTENIMIENTO =====
 const maintenanceFile = path.join(__dirname, 'maintenance.lock');
