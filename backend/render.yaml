@@ -3,7 +3,7 @@ services:
     name: spainrp-backend
     env: node
     plan: free
-    buildCommand: npm install && cd ../frontend && npm install && npm run build
+    buildCommand: npm install
     startCommand: node index.js
     envVars:
       - key: NODE_ENV
