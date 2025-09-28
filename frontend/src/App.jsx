@@ -61,7 +61,8 @@ function LoginPage() {
     });
     
     // Redirigir a Discord OAuth
-    const discordAuthUrl = `${import.meta.env.VITE_API_URL || 'https://spainrp-web.onrender.com'}/auth/discord?redirect=${encodeURIComponent(redirect)}`;
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://spainrp-web.onrender.com';
+    const discordAuthUrl = `${apiUrl.replace(/\/$/, '')}/auth/discord?redirect=${encodeURIComponent(redirect)}`;
     console.log('[LoginPage] 🔗 Redirecting to Discord OAuth:', discordAuthUrl);
     window.location.href = discordAuthUrl;
   }, [location.search, navigate]);
@@ -335,7 +336,8 @@ function App() {
       }
     };
     try {
-      socket = io(import.meta.env.VITE_API_URL || 'https://spainrp-web.onrender.com', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://spainrp-web.onrender.com';
+      socket = io(apiUrl.replace(/\/$/, ''), {
         path: '/socket.io',
         transports: ['websocket'],
         withCredentials: true
