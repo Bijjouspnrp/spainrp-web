@@ -1251,7 +1251,7 @@ app.put('/api/canales', express.json(), (req, res) => {
 });
 
 // Endpoints admin de seguridad
-app.get('/admin/sessions', ensureAuthenticated, ensureAdmin, (req, res) => {
+app.get('/admin/sessions', ensureAuthAndAdmin, (req, res) => {
   const ttlMs = 24 * 60 * 60 * 1000;
   const threshold = Date.now() - ttlMs;
   // Limpiar expiradas en BD
@@ -1462,7 +1462,7 @@ app.post('/api/announcements', uploadAnnouncements.fields([
   }
 });
 
-app.delete('/admin/announcements/:id', ensureAuthenticated, ensureAdmin, (req, res) => {
+app.delete('/admin/announcements/:id', ensureAuthAndAdmin, (req, res) => {
   db.run('DELETE FROM announcements WHERE id = ?', [req.params.id], function(err){
     if (err) return res.status(500).json({ error: 'No se pudo eliminar' });
     res.json({ success: true });
@@ -1492,7 +1492,7 @@ app.get('/api/polls', (req, res) => {
   });
 });
 
-app.post('/admin/polls', ensureAuthenticated, ensureAdmin, (req, res) => {
+app.post('/admin/polls', ensureAuthAndAdmin, (req, res) => {
   const { question, options } = req.body || {};
   if (!question || !Array.isArray(options) || options.length < 2) return res.status(400).json({ error: 'Pregunta u opciones inválidas' });
   const createdAt = new Date().toISOString();
@@ -1524,14 +1524,14 @@ app.post('/api/polls/:id/vote', ensureAuthenticated, (req, res) => {
   });
 });
 
-app.get('/admin/bans', ensureAuthenticated, ensureAdmin, (req, res) => {
+app.get('/admin/bans', ensureAuthAndAdmin, (req, res) => {
   db.all('SELECT * FROM bans ORDER BY id DESC', [], (err, rows) => {
     if (err) return res.status(500).json({ error: 'Error leyendo bans' });
     res.json({ bans: rows });
   });
 });
 
-app.post('/admin/bans', ensureAuthenticated, ensureAdmin, (req, res) => {
+app.post('/admin/bans', ensureAuthAndAdmin, (req, res) => {
   const { ip, userId, reason } = req.body || {};
   if (!ip && !userId) return res.status(400).json({ error: 'Debes proporcionar ip o userId' });
   const createdAt = new Date().toISOString();
@@ -1541,7 +1541,7 @@ app.post('/admin/bans', ensureAuthenticated, ensureAdmin, (req, res) => {
   });
 });
 
-app.delete('/admin/bans/:id', ensureAuthenticated, ensureAdmin, (req, res) => {
+app.delete('/admin/bans/:id', ensureAuthAndAdmin, (req, res) => {
   const id = req.params.id;
   db.run('DELETE FROM bans WHERE id = ?', [id], function(err) {
     if (err) return res.status(500).json({ error: 'No se pudo eliminar el ban' });
@@ -1616,7 +1616,7 @@ app.use((req, res, next) => {
 });
 
 // Ruta secreta de logs solo para admins (usa middlewares globales robustos)
-app.get('/logs', ensureAuthenticated, ensureAdmin, (req, res) => {
+app.get('/logs', ensureAuthAndAdmin, (req, res) => {
   try {
     const access = fs.existsSync(ACCESS_LOG) ? fs.readFileSync(ACCESS_LOG, 'utf8') : '';
     const error = fs.existsSync(ERROR_LOG) ? fs.readFileSync(ERROR_LOG, 'utf8') : '';
