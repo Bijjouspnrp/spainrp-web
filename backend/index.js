@@ -71,6 +71,9 @@ app.use(cors({
 
 app.use(express.json());
 
+// Servir archivos estáticos del frontend
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
 // Configuración mejorada de sesiones
 app.use(session({
   secret: process.env.SESSION_SECRET || 'i5vVTN3rl757mW5dMFkwV8nwAnkbVk1B',
@@ -2510,7 +2513,10 @@ app.post('/api/admin/setbalance', express.json(), async (req, res) => {
   }
 });
 
-// El frontend se sirve desde spainrp-oficial.onrender.com
+// Ruta catch-all para SPA (debe ir al final)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+});
 
 // Iniciar el servidor y el bot
 server.listen(PORT, () => {
