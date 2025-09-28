@@ -71,9 +71,6 @@ app.use(cors({
 
 app.use(express.json());
 
-// Servir archivos estáticos del frontend
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
-
 // Configuración mejorada de sesiones
 app.use(session({
   secret: process.env.SESSION_SECRET || 'i5vVTN3rl757mW5dMFkwV8nwAnkbVk1B',
@@ -81,16 +78,25 @@ app.use(session({
   saveUninitialized: false,
   rolling: true, // renueva caducidad en cada interacción
   cookie: {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', // HTTPS en producción
-    sameSite: 'lax',
-    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 días
+    httpOnly: false, // Permitir acceso desde JavaScript para debugging
+    secure: false, // Deshabilitado para permitir HTTP en desarrollo
+    sameSite: 'none', // Permitir cookies cross-site
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
+    domain: '.onrender.com' // Dominio compartido para todos los subdominios
   },
   name: 'spainrp.sid' // Nombre específico para evitar conflictos
 }));
 
 // Middleware para renovar maxAge en cada request autenticado
 app.use((req, res, next) => {
+  // Debug de cookies y sesión
+  console.log('[SESSION DEBUG]', {
+    sessionID: req.sessionID,
+    cookies: req.headers.cookie,
+    user: req.user ? req.user.id : 'none',
+    isAuthenticated: req.isAuthenticated ? req.isAuthenticated() : false
+  });
+  
   if (req.session && req.isAuthenticated && req.isAuthenticated()) {
     req.session.cookie.maxAge = 7 * 24 * 60 * 60 * 1000;
     req.session.touch && req.session.touch();
@@ -2513,10 +2519,7 @@ app.post('/api/admin/setbalance', express.json(), async (req, res) => {
   }
 });
 
-// Ruta catch-all para SPA (debe ir al final)
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
-});
+// El frontend se sirve desde spainrp-oficial.onrender.com
 
 // Iniciar el servidor y el bot
 server.listen(PORT, () => {
