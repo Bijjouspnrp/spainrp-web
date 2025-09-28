@@ -899,6 +899,17 @@ function ensureAdmin(req, res, next) {
   return next();
 }
 
+// Middleware combinado para autenticación y admin
+function ensureAuthAndAdmin(req, res, next) {
+  if (!req.isAuthenticated || !req.isAuthenticated() || !req.user) {
+    return res.status(401).json({ error: 'No autenticado' });
+  }
+  if (!hasAdminPermissions(req.user)) {
+    return res.status(403).json({ error: 'No autorizado' });
+  }
+  return next();
+}
+
 // Endpoint para obtener miembros de Discord usando el bot (protegido)
 app.get('/api/discord/members', ensureAuthenticated, async (req, res) => {
   try {
