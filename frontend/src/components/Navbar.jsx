@@ -223,11 +223,14 @@ const NavigationDropdown = ({ isOpen, onClose, links, dark }) => {
             <a
               key={index}
               href={link.to}
-              target="_blank"
-              rel="noopener noreferrer"
               className="nav-link"
               style={linkStyles}
-              onClick={onClose}
+              onClick={(e) => {
+                e.preventDefault();
+                onClose();
+                // Navegar usando React Router
+                window.location.href = link.to;
+              }}
             >
               {link.icon} {link.label}
             </a>
