@@ -2509,6 +2509,51 @@ app.post('/api/admin/setbalance', express.json(), async (req, res) => {
 
 // El frontend se sirve desde spainrp-oficial.onrender.com
 
+// ===== MODO MANTENIMIENTO =====
+const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === 'true';
+
+if (MAINTENANCE_MODE) {
+  console.log('🔧 MODO MANTENIMIENTO ACTIVADO');
+  app.get('*', (req, res) => {
+    res.status(503).send(`
+      <!DOCTYPE html>
+      <html lang="es">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Mantenimiento - SpainRP</title>
+        <style>
+          body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0; padding: 0; height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            color: white; text-align: center;
+          }
+          .container { 
+            background: rgba(255,255,255,0.1); 
+            padding: 3rem; border-radius: 20px; 
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            max-width: 500px;
+          }
+          h1 { font-size: 3rem; margin: 0 0 1rem 0; }
+          p { font-size: 1.2rem; margin: 0; opacity: 0.9; }
+          .icon { font-size: 4rem; margin-bottom: 1rem; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="icon">🔧</div>
+          <h1>Mantenimiento</h1>
+          <p>El sitio está temporalmente en mantenimiento.<br>Vuelve pronto para disfrutar de SpainRP.</p>
+        </div>
+      </body>
+      </html>
+    `);
+  });
+}
+
 // Iniciar el servidor y el bot
 server.listen(PORT, () => {
   console.log(`Backend SpainRP escuchando en puerto ${PORT}`);

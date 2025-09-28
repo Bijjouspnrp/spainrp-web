@@ -24,6 +24,8 @@ services:
         sync: false
       - key: SESSION_SECRET
         value: "i5vVTN3rl757mW5dMFkwV8nwAnkbVk1B"
+      - key: MAINTENANCE_MODE
+        value: "false"
       - key: BOT_API_URL
         value: "https://spainrp-oficial.onrender.com"
       - key: ECONOMIA_API_URL
