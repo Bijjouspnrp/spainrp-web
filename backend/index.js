@@ -1959,26 +1959,6 @@ app.get('/api/discord/ismember/:userId', async (req, res) => {
   }
 });
 
-// Endpoint: verificar si un usuario tiene un rol concreto
-app.get('/api/discord/hasrole/:userId/:roleId', async (req, res) => {
-  try {
-    const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
-    const { userId, roleId } = req.params;
-    console.log('[BOT API][HASROLE] Query', { guildId, userId, roleId });
-    const guild = discordClient.guilds.cache.get(guildId);
-    if (!guild) return res.status(404).json({ error: 'Servidor no encontrado' });
-    await guild.members.fetch();
-    const member = guild.members.cache.get(userId);
-    if (!member) return res.json({ hasRole: false, isMember: false });
-    const hasRole = member.roles.cache.has(roleId);
-    const payload = { hasRole, isMember: true };
-    console.log('[BOT API][HASROLE] Result', payload);
-    res.json(payload);
-  } catch (err) {
-    console.error('[BOT API][HASROLE] Error', err);
-    res.status(500).json({ error: 'Error al verificar rol', details: err.message });
-  }
-});
 
 // Endpoint para obtener el número total de miembros de la guild
 app.get('/api/membercount', async (req, res) => {
