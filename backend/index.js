@@ -454,16 +454,6 @@ app.get('/api/proxy/bolsa/inversiones/:userId', async (req, res) => {
   }
 });
 
-// Consultar catálogo de activos
-app.get('/api/proxy/bolsa/activos', async (req, res) => {
-  try {
-    const response = await fetchBolsa(`${BOLSA_API_URL}/api/bolsa/activos`);
-    const data = await response.json();
-    res.status(response.status).json(data);
-  } catch (e) {
-    res.status(502).json({ error: 'Proxy error', details: String(e) });
-  }
-});
 
 // Logger simple de peticiones
 app.use((req, res, next) => {

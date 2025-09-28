@@ -4,8 +4,8 @@ services:
     env: node
     plan: free
     rootDir: .
-    buildCommand: cd frontend && npm install && npx vite build && cd ../backend && npm install
-    startCommand: cd backend && npm start
+    buildCommand: cd frontend && npm install && npx vite build
+    startCommand: cd backend && npm install && npm start
     envVars:
       - key: NODE_ENV
         value: production
