@@ -15,6 +15,7 @@ const robloxRoutes = require('./routes/roblox');
 const adminRecordsRoutes = require('./routes/adminRecords');
 const session = require('express-session');
 const passport = require('passport');
+const multer = require('multer');
 
 // --- DISCORD BOT INTEGRATION ---
 const { Client, GatewayIntentBits, ChannelType, PermissionsBitField } = require('discord.js');
@@ -1249,7 +1250,6 @@ app.get('/admin/sessions', ensureAuthenticated, ensureAdmin, (req, res) => {
 
 
 // --- Anuncios con imágenes ---
-const multer = require('multer');
 const uploadNews = multer({ dest: path.join(__dirname, '../uploads/news') });
 
 // GET: noticias en vivo
@@ -1323,7 +1323,6 @@ app.put('/api/announcements/:id', express.json(), async (req, res) => {
 // POST: crear noticia (con imágenes)
 app.post('/api/announcements', (req, res, next) => {
   // Adaptar Multer para aceptar ambos campos
-  const multer = require('multer');
   const uploadAnnouncements = multer({ dest: require('path').join(__dirname, '../uploads/news') });
   uploadAnnouncements.fields([
     { name: 'images', maxCount: 5 }
@@ -2186,7 +2185,6 @@ app.get('/api/member/:guildId/:userId', async (req, res) => {
 });
 
 // Endpoint para enviar MD privado por el bot
-const multer = require('multer');
 const uploadDM = multer();
 app.post('/api/discord/senddm', uploadDM.single('file'), async (req, res) => {
   try {
