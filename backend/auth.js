@@ -277,16 +277,6 @@ router.get('/user-info', (req, res) => {
   res.json({ user: userInfo });
 });
 
-// Ruta para comprobar si el usuario está autenticado y en el servidor
-router.get('/me', (req, res) => {
-  if (!req.isAuthenticated() || !req.user) {
-    return res.status(401).json({ error: 'No autenticado' });
-  }
-  // No forzamos pertenencia al servidor aquí para no romper la UX del sitio;
-  // la autorización específica se valida en endpoints admin.
-  res.json({ user: req.user });
-});
-
 // Ruta para acceso denegado
 router.get('/forbidden', (req, res) => {
   res.status(403).send(`
