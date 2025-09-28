@@ -9,6 +9,12 @@ const router = express.Router();
 const CLIENT_ID = process.env.DISCORD_CLIENT_ID || '1387150250334097624';
 const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET || 'i5vVTN3rl757mW5dMFkwV8nwAnkbVk1B';
 const CALLBACK_URL = process.env.DISCORD_CALLBACK_URL || 'https://spainrp-web.onrender.com/auth/discord/callback';
+
+// Debug: Verificar si está usando la variable de entorno
+console.log('=== CALLBACK URL DEBUG ===');
+console.log('DISCORD_CALLBACK_URL env var:', process.env.DISCORD_CALLBACK_URL);
+console.log('Final CALLBACK_URL:', CALLBACK_URL);
+console.log('========================');
 const GUILD_ID = process.env.DISCORD_GUILD_ID || '1351991000903004241';
 
 const scopes = ['identify', 'guilds'];
