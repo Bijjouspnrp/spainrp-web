@@ -102,13 +102,21 @@ function PrivateRoute({ children }) {
         // Verificar si hay token en localStorage
         const token = localStorage.getItem('spainrp_token');
         
+        console.log('[Auth] 🔍 Checking authentication:', {
+          hasToken: !!token,
+          tokenPreview: token ? token.substring(0, 20) + '...' : 'none',
+          timestamp: new Date().toISOString()
+        });
+        
         if (!token) {
+          console.log('[Auth] ❌ No token found in localStorage');
           setUser(null);
           setIsChecking(false);
           return;
         }
         
         // Verificar token con JWT
+        console.log('[Auth] 🌐 Sending JWT verification request to:', apiUrl('/auth/me'));
         const response = await fetch(apiUrl('/auth/me'), { 
           headers: { 
             'Accept': 'application/json',
@@ -116,8 +124,15 @@ function PrivateRoute({ children }) {
           }
         });
         
+        console.log('[Auth] 📡 JWT verification response:', {
+          status: response.status,
+          statusText: response.statusText,
+          ok: response.ok
+        });
+        
         if (response.status === 401) {
           // Token inválido, limpiar localStorage
+          console.log('[Auth] ❌ Token inválido, limpiando localStorage');
           localStorage.removeItem('spainrp_token');
           setUser(null);
           return;
@@ -125,27 +140,38 @@ function PrivateRoute({ children }) {
         
         if (response.ok) {
           const data = await response.json();
+          console.log('[Auth] ✅ JWT verification successful:', {
+            userId: data.user?.id,
+            username: data.user?.username,
+            isAdmin: data.user?.isAdmin
+          });
+          
           let userData = data.user;
           
           if (userData && userData.id) {
             try {
+              console.log('[Auth] 🔍 Checking admin status for user:', userData.id);
               const adminRes = await fetch(apiUrl(`/api/discord/isadmin/${userData.id}`));
               if (adminRes.ok) {
                 const adminData = await adminRes.json();
                 userData.isAdmin = !!adminData.isAdmin;
+                console.log('[Auth] 👑 Admin status:', userData.isAdmin);
               } else {
                 userData.isAdmin = false;
+                console.log('[Auth] ⚠️ Could not verify admin status');
               }
-            } catch {
+            } catch (error) {
+              console.log('[Auth] ❌ Error checking admin status:', error);
               userData.isAdmin = false;
             }
           }
           setUser(userData);
         } else {
+          console.log('[Auth] ❌ JWT verification failed with status:', response.status);
           setUser(null);
         }
       } catch (error) {
-        console.error('[Auth] Error checking JWT:', error);
+        console.error('[Auth] ❌ Error checking JWT:', error);
         setUser(null);
       } finally {
         setIsChecking(false);
@@ -254,12 +280,20 @@ function App() {
     const token = urlParams.get('token');
     
     if (token) {
-      console.log('[App] Token recibido de Discord OAuth');
+      console.log('[App] 🎫 Token recibido de Discord OAuth:', {
+        tokenLength: token.length,
+        tokenPreview: token.substring(0, 20) + '...',
+        currentUrl: window.location.href,
+        timestamp: new Date().toISOString()
+      });
+      
       localStorage.setItem('spainrp_token', token);
+      console.log('[App] 💾 Token guardado en localStorage');
       
       // Limpiar la URL
       const newUrl = window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
+      console.log('[App] 🧹 URL limpiada, recargando página...');
       
       // Recargar para aplicar el token
       window.location.reload();

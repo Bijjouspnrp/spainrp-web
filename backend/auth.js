@@ -96,8 +96,13 @@ router.get('/discord/callback', passport.authenticate('discord', {
     sessionID: req.sessionID,
     userId: req.user?.id,
     username: req.user?.username,
+    discriminator: req.user?.discriminator,
+    avatar: req.user?.avatar,
     tokenGenerated: !!token,
-    willRedirectTo: returnTo
+    tokenLength: token ? token.length : 0,
+    tokenPreview: token ? token.substring(0, 20) + '...' : 'none',
+    willRedirectTo: returnTo,
+    timestamp: new Date().toISOString()
   });
   
   // Redirigir con el token en la URL (temporal, el frontend lo guardará)
@@ -130,7 +135,13 @@ router.get('/me', (req, res) => {
     console.log('[AUTH /me] JWT success', {
       userId: decoded.id,
       username: decoded.username,
-      isAdmin: decoded.isAdmin
+      discriminator: decoded.discriminator,
+      avatar: decoded.avatar,
+      isAdmin: decoded.isAdmin,
+      exp: new Date(decoded.exp * 1000).toISOString(),
+      iat: new Date(decoded.iat * 1000).toISOString(),
+      tokenPreview: token.substring(0, 20) + '...',
+      timestamp: new Date().toISOString()
     });
     
     res.json({ 
