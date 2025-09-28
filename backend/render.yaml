@@ -15,7 +15,7 @@ services:
       - key: DISCORD_GUILD_ID
         value: "1212556680911650866"
       - key: DISCORD_CALLBACK_URL
-        value: "https://spainrp-oficial.onrender.com/auth/discord/callback"
+        value: "https://spainrp-web.onrender.com/auth/discord/callback"
       - key: DISCORD_ADMIN_ROLE_ID
         sync: false
       - key: REPORTERO_ROLE_ID
