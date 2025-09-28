@@ -50,6 +50,15 @@ passport.use(new DiscordStrategy({
   callbackURL: CALLBACK_URL,
   scope: scopes
 }, (accessToken, refreshToken, profile, done) => {
+  console.log('[DISCORD STRATEGY] 🔐 User authenticated:', {
+    userId: profile.id,
+    username: profile.username,
+    discriminator: profile.discriminator,
+    hasAccessToken: !!accessToken,
+    profileKeys: Object.keys(profile),
+    timestamp: new Date().toISOString()
+  });
+  
   process.nextTick(() => done(null, { ...profile, accessToken }));
 }));
 
@@ -81,9 +90,17 @@ router.get('/login', (req, res, next) => {
 });
 
 // Callback de Discord
-router.get('/discord/callback', passport.authenticate('discord', {
-  failureRedirect: '/auth/forbidden'
-}), (req, res) => {
+router.get('/discord/callback', (req, res, next) => {
+  console.log('[AUTH callback] 🔍 Discord callback initiated:', {
+    query: req.query,
+    sessionID: req.sessionID,
+    timestamp: new Date().toISOString()
+  });
+  
+  passport.authenticate('discord', {
+    failureRedirect: '/auth/forbidden'
+  })(req, res, next);
+}, (req, res) => {
   // Extender explícitamente la sesión al éxito de login (renovado por rolling cookie)
   // Generar JWT token
   const token = generateToken(req.user);
@@ -108,6 +125,22 @@ router.get('/discord/callback', passport.authenticate('discord', {
   // Redirigir con el token en la URL (temporal, el frontend lo guardará)
   const redirectUrl = `${returnTo}?token=${encodeURIComponent(token)}`;
   res.redirect(redirectUrl);
+});
+
+// Ruta para fallos de Discord OAuth
+router.get('/forbidden', (req, res) => {
+  console.log('[AUTH forbidden] 🚫 Discord OAuth failed:', {
+    sessionID: req.sessionID,
+    query: req.query,
+    referer: req.get('referer'),
+    timestamp: new Date().toISOString()
+  });
+  
+  res.status(403).json({
+    error: 'Discord OAuth failed',
+    message: 'No se pudo autenticar con Discord',
+    code: 'DISCORD_AUTH_FAILED'
+  });
 });
 
 // Ruta JWT para verificar token
