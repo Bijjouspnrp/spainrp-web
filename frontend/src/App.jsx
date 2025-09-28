@@ -278,10 +278,11 @@ function App() {
   const [totalMembers, setTotalMembers] = useState(0);
   const [loading, setLoading] = useState(true);
   const [maintenance, setMaintenance] = useState(false);
+  const [isProcessingToken, setIsProcessingToken] = useState(false);
   const vantaRef = useRef(null);
   const vantaElRef = useRef(null);
   
-  // Capturar token de la URL después del login
+  // Capturar token de la URL después del login - EJECUTAR INMEDIATAMENTE
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
@@ -301,6 +302,7 @@ function App() {
         timestamp: new Date().toISOString()
       });
       
+      setIsProcessingToken(true);
       localStorage.setItem('spainrp_token', token);
       console.log('[App] 💾 Token guardado en localStorage');
       
@@ -576,6 +578,38 @@ function App() {
           @keyframes bounce { 0%{transform:translateY(0);} 100%{transform:translateY(-18px) scale(1.08);} }
           @keyframes spin { 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
         `}</style>
+      </div>
+    );
+  }
+
+  // Mostrar loading mientras se procesa el token
+  if (isProcessingToken) {
+    return (
+      <div className="App" style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        color: 'white',
+        fontSize: '18px',
+        fontWeight: '600'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ 
+            width: '50px', 
+            height: '50px', 
+            border: '3px solid rgba(255,255,255,0.3)',
+            borderTop: '3px solid white',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 20px'
+          }}></div>
+          <div>Procesando login...</div>
+          <style>{`
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+          `}</style>
+        </div>
       </div>
     );
   }
