@@ -22,6 +22,8 @@ services:
         value: "1384340819590512700"
       - key: DISCORD_MUTE_ROLE_ID
         sync: false
+      - key: SESSION_SECRET
+        value: "i5vVTN3rl757mW5dMFkwV8nwAnkbVk1B"
       - key: BOT_API_URL
         value: "https://spainrp-oficial.onrender.com"
       - key: ECONOMIA_API_URL

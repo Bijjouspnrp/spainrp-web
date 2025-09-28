@@ -73,16 +73,17 @@ app.use(express.json());
 
 // Configuración mejorada de sesiones
 app.use(session({
-  secret: 'i5vVTN3rl757mW5dMFkwV8nwAnkbVk1B',
+  secret: process.env.SESSION_SECRET || 'i5vVTN3rl757mW5dMFkwV8nwAnkbVk1B',
   resave: false,
   saveUninitialized: false,
   rolling: true, // renueva caducidad en cada interacción
   cookie: {
     httpOnly: true,
-    secure: false,
+    secure: process.env.NODE_ENV === 'production', // HTTPS en producción
     sameSite: 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 días
-  }
+  },
+  name: 'spainrp.sid' // Nombre específico para evitar conflictos
 }));
 
 // Middleware para renovar maxAge en cada request autenticado
@@ -487,31 +488,6 @@ app.get('/api/backend/discord/widget', async (req, res) => {
     res.json({ presence_count: 0, members: [] });
   }
 });
-// Configuración mejorada de sesiones
-app.use(session({
-  secret: 'i5vVTN3rl757mW5dMFkwV8nwAnkbVk1B',
-  resave: false,
-  saveUninitialized: false,
-  rolling: true, // renueva caducidad en cada interacción
-  cookie: {
-    httpOnly: true,
-    secure: false,
-    sameSite: 'lax',
-    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 días
-  }
-}));
-
-// Middleware para renovar maxAge en cada request autenticado
-app.use((req, res, next) => {
-  if (req.session && req.isAuthenticated && req.isAuthenticated()) {
-    req.session.cookie.maxAge = 7 * 24 * 60 * 60 * 1000;
-    req.session.touch && req.session.touch();
-  }
-  next();
-});
-
-app.use(passport.initialize());
-app.use(passport.session());
 
 // Seguimiento de sesiones activas y utilidades
 const activeSessions = new Map(); // memoria (fallback)
