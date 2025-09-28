@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import './App.css';
-import { apiUrl } from 'utils/api';
+import { apiUrl } from './utils/api';
 import Navbar from './components/Navbar';
 import AdBlockDetect from './components/AdBlockDetect';
 import BlackMarket from './components/BlackMarket/BlackMarket';
