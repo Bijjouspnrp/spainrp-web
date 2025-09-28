@@ -27,7 +27,7 @@ import CookieConsentBanner from './components/CookieConsentBanner';
 import Terms from './components/Terms';
 import Support from './components/Support';
 import NotFound from './components/NotFound';
-import spainLogo from './assets/spainrplogo.png';
+import spainLogo from '/assets/spainrplogo.png';
 import SimuladorTienda from './components/Apps/SimuladorTienda';
 import GlobalSearch from './components/GlobalSearch';
 import ToastProvider from './components/ToastProvider';

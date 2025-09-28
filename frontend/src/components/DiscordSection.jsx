@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import './DiscordSection.css';
 import { FaDiscord, FaUsers, FaShieldAlt, FaGift, FaArrowRight, FaHashtag, FaVolumeUp, FaTrash, FaArrowUp, FaArrowDown, FaSave } from 'react-icons/fa';
 import canalesData from '../assets/canales.json';
-import spainrpLogo from '../assets/spainrplogo.png';
+import spainrpLogo from '/assets/spainrplogo.png';
 
 const DiscordSection = () => {
   const [discord, setDiscord] = useState(null);

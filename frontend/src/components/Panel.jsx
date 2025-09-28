@@ -260,7 +260,7 @@ const Panel = () => {
       <div className="welcome-card">
         <div className="welcome-header">
           <img 
-            src={user?.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : import.meta.env.BASE_URL + 'src/assets/spainrplogo.png'} 
+            src={user?.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : '/assets/spainrplogo.png'} 
             alt="Avatar" 
             className="user-avatar"
           />
@@ -360,7 +360,7 @@ const Panel = () => {
                 boxShadow: '0 2px 12px #23272a11',
                 margin: '12px 0'
               }}>
-                <img src={import.meta.env.BASE_URL + 'src/assets/spainrplogo.png'} alt="SpainRP" style={{width: 64, opacity: 0.7, marginBottom: 12, filter: 'grayscale(1)'}} />
+                <img src={'/assets/spainrplogo.png'} alt="SpainRP" style={{width: 64, opacity: 0.7, marginBottom: 12, filter: 'grayscale(1)'}} />
                 <div style={{fontSize: 17, fontWeight: 500, marginBottom: 6, color: '#555'}}>No tienes DNI generado</div>
                 <div style={{fontSize: 14, marginBottom: 10}}>
                   Para obtener tu DNI digital, usa el comando <b>/dni_crear</b> en el servidor de Discord.<br/>
@@ -426,7 +426,7 @@ const Panel = () => {
       <div className="profile-card">
         <div className="profile-header">
           <img 
-            src={user?.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : import.meta.env.BASE_URL + 'src/assets/spainrplogo.png'} 
+            src={user?.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : '/assets/spainrplogo.png'} 
             alt="Avatar" 
             className="profile-avatar"
           />
@@ -865,7 +865,7 @@ const Panel = () => {
       {/* Sidebar */}
       <div className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
-          <img src={import.meta.env.BASE_URL + 'src/assets/spainrplogo.png'} alt="SpainRP" className="sidebar-logo" />
+          <img src={'/assets/spainrplogo.png'} alt="SpainRP" className="sidebar-logo" />
           <h2>SpainRP</h2>
         </div>
         
@@ -924,7 +924,7 @@ const Panel = () => {
             <>
               {user.notInGuild ? (
                 <div className="not-in-guild">
-                  <img src={import.meta.env.BASE_URL + 'src/assets/spainrplogo.png'} alt="SpainRP" />
+                  <img src={'/assets/spainrplogo.png'} alt="SpainRP" />
                   <h2>No estás en SpainRP</h2>
                   <p>Para acceder a todas las funciones, únete al servidor Discord</p>
                   <a href={user.invite || 'https://discord.gg/sMzFgFQHXA'} target="_blank" rel="noopener" className="btn-primary">

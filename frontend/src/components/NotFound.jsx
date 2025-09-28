@@ -1,5 +1,5 @@
 import React from 'react';
-import spainLogo from '../assets/spainrplogo.png';
+import spainLogo from '/assets/spainrplogo.png';
 
 const NotFound = ({ logs }) => (
   <div style={{

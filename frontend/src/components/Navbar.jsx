@@ -547,7 +547,7 @@ const Navbar = () => {
         {/* Logo y marca */}
         <div className="navbar-brand" style={brandStyles}>
           <img
-            src={`${import.meta.env.BASE_URL}src/assets/spainrplogo.png`}
+            src="/assets/spainrplogo.png"
             alt="SpainRP Logo"
             style={logoStyles}
           />
