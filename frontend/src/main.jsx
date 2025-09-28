@@ -21,41 +21,16 @@ const smoothScrollWithOffset = (el, offset = 80) => {
 
 function handleHashNavigation() {
   const h = window.location.hash;
-  // Caso cookies → ruta dedicada
-  if (h === '#cookies') {
-    window.history.replaceState(null, '', '/cookies');
-    window.dispatchEvent(new PopStateEvent('popstate'));
-    return;
-  }
-  if (h === '#support') {
-    window.history.replaceState(null, '', '/support');
-    window.dispatchEvent(new PopStateEvent('popstate'));
-    return;
-  }
-  // Caso terms → ruta dedicada
-  if (h === '#terms') {
-    window.history.replaceState(null, '', '/terms');
-    window.dispatchEvent(new PopStateEvent('popstate'));
-    return;
-  }
-  // Caso rules → ruta dedicada
-  if (h === '#rules') {
-    window.history.replaceState(null, '', '/rules');
-    window.dispatchEvent(new PopStateEvent('popstate'));
-    return;
-  }
-  // Caso secciones → scroll
+  
+  // TEMPORARILY DISABLED - This was interfering with React Router
+  // TODO: Implement proper hash navigation that works with React Router
+  
+  // Caso secciones → scroll (only for home page)
   const id = hashToIdMap[h];
-  if (id) {
-    if (window.location.pathname !== '/') {
-      try { sessionStorage.setItem('scrollTarget', id); } catch (_) {}
-      window.history.replaceState(null, '', '/');
-      window.dispatchEvent(new PopStateEvent('popstate'));
-    } else {
-      const el = document.getElementById(id);
-      if (el) smoothScrollWithOffset(el);
-      else try { sessionStorage.setItem('scrollTarget', id); } catch (_) {}
-    }
+  if (id && window.location.pathname === '/') {
+    const el = document.getElementById(id);
+    if (el) smoothScrollWithOffset(el);
+    else try { sessionStorage.setItem('scrollTarget', id); } catch (_) {}
   }
 }
 
