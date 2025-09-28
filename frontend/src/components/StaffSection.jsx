@@ -1,4 +1,4 @@
-import { apiUrl } from './utils/api';
+import { apiUrl } from '../utils/api';
 import React from 'react';
 import './StaffSection.css';
 import { FaCrown, FaShieldAlt, FaUserTie, FaUsers } from 'react-icons/fa';

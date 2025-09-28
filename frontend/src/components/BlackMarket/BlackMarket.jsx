@@ -3,7 +3,7 @@ import { FaLock, FaSkull, FaPills, FaMoneyBillWave, FaUserSecret, FaLaptopCode, 
 import { GiPistolGun, GiChemicalDrop, GiAbbotMeeple, GiAbdominalArmor, GiKnifeFork, GiKnifeThrust, GiSentryGun } from 'react-icons/gi';
 import './BlackMarket.css';
 import DiscordUserBar from '../DiscordUserBar';
-import { apiUrl } from './utils/api';
+import { apiUrl } from '../../utils/api';
 
 // Define ITEMS array above the component
 const ITEMS = [

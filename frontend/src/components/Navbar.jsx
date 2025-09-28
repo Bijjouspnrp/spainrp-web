@@ -1,4 +1,4 @@
-import { apiUrl } from './utils/api';
+import { apiUrl } from '../utils/api';
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import './Navbar.css';
 import { 

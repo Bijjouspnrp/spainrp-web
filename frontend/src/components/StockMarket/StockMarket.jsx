@@ -1,4 +1,4 @@
-import { apiUrl } from './utils/api';
+import { apiUrl } from '../../utils/api';
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import DiscordUserBar from "../DiscordUserBar";

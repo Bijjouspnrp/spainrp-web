@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import DiscordUserBar from "../DiscordUserBar";
-import { apiUrl } from './utils/api';
+import { apiUrl } from '../../utils/api';
 import SimuladorTienda from "./SimuladorTienda";
 
 const minijuegos = [

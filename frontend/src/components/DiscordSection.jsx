@@ -1,4 +1,4 @@
-import { apiUrl } from './utils/api';
+import { apiUrl } from '../utils/api';
 import React, { useEffect, useState, useRef } from 'react';
 import './DiscordSection.css';
 import { FaDiscord, FaUsers, FaShieldAlt, FaGift, FaArrowRight, FaHashtag, FaVolumeUp, FaTrash, FaArrowUp, FaArrowDown, FaSave } from 'react-icons/fa';

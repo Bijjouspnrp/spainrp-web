@@ -1,4 +1,4 @@
-import { apiUrl } from './utils/api';
+import { apiUrl } from '../utils/api';
 import React, { useEffect, useState } from 'react';
 
 const AdvancedLogs = () => {

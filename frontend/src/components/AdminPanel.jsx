@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import GlobalDMCollectorPanel from './GlobalDMCollectorPanel';
-import { apiUrl } from './utils/api';
+import { apiUrl } from '../utils/api';
 import './AdminPanel.css';
 import { 
   FaBan, 
