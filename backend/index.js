@@ -1344,13 +1344,11 @@ app.put('/api/announcements/:id', express.json(), async (req, res) => {
 });
 
 // POST: crear noticia (con imágenes)
-app.post('/api/announcements', (req, res, next) => {
-  // Adaptar Multer para aceptar ambos campos
-  const uploadAnnouncements = multer({ dest: require('path').join(__dirname, '../uploads/news') });
-  uploadAnnouncements.fields([
-    { name: 'images', maxCount: 5 }
-  ])(req, res, next);
-}, async (req, res) => {
+const uploadAnnouncements = multer({ dest: require('path').join(__dirname, '../uploads/news') });
+
+app.post('/api/announcements', uploadAnnouncements.fields([
+  { name: 'images', maxCount: 5 }
+]), async (req, res) => {
   // Verificación de rol Discord vía bot API
   try {
     const userId = req.body.userId || req.body.authorId || req.body.author || req.body.authorName;
@@ -2182,6 +2180,7 @@ app.get('/api/member/:guildId/:userId', async (req, res) => {
 
 // Endpoint para enviar MD privado por el bot
 const uploadDM = multer();
+
 app.post('/api/discord/senddm', uploadDM.single('file'), async (req, res) => {
   try {
     console.log('[SENDDM] Content-Type:', req.headers['content-type']);
