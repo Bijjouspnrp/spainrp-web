@@ -17,6 +17,11 @@ const session = require('express-session');
 const passport = require('passport');
 const multer = require('multer');
 
+// Declaraciones de multer para uploads
+const uploadNews = multer({ dest: path.join(__dirname, '../uploads/news') });
+const uploadAnnouncements = multer({ dest: path.join(__dirname, '../uploads/news') });
+const uploadDM = multer();
+
 // --- DISCORD BOT INTEGRATION ---
 const { Client, GatewayIntentBits, ChannelType, PermissionsBitField } = require('discord.js');
 const { Partials } = require('discord.js');
@@ -1273,7 +1278,7 @@ app.get('/admin/sessions', ensureAuthAndAdmin, (req, res) => {
 
 
 // --- Anuncios con imágenes ---
-const uploadNews = multer({ dest: path.join(__dirname, '../uploads/news') });
+// Declaraciones de multer movidas al inicio del archivo
 
 // GET: noticias en vivo
 app.get('/api/announcements', (req, res) => {
@@ -1344,8 +1349,6 @@ app.put('/api/announcements/:id', express.json(), async (req, res) => {
 });
 
 // POST: crear noticia (con imágenes)
-const uploadAnnouncements = multer({ dest: require('path').join(__dirname, '../uploads/news') });
-
 app.post('/api/announcements', uploadAnnouncements.fields([
   { name: 'images', maxCount: 5 }
 ]), async (req, res) => {
@@ -2159,8 +2162,6 @@ app.get('/api/member/:guildId/:userId', async (req, res) => {
 });
 
 // Endpoint para enviar MD privado por el bot
-const uploadDM = multer();
-
 app.post('/api/discord/senddm', uploadDM.single('file'), async (req, res) => {
   try {
     console.log('[SENDDM] Content-Type:', req.headers['content-type']);
