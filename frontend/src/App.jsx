@@ -32,6 +32,44 @@ import SimuladorTienda from './components/Apps/SimuladorTienda';
 import GlobalSearch from './components/GlobalSearch';
 import ToastProvider from './components/ToastProvider';
 
+// Componente de Login
+function LoginPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    // Obtener redirect URL de los query params
+    const urlParams = new URLSearchParams(location.search);
+    const redirect = urlParams.get('redirect') || '/';
+    
+    // Redirigir a Discord OAuth
+    const discordAuthUrl = `${import.meta.env.VITE_API_URL || 'https://spainrp-web.onrender.com'}/auth/discord?redirect=${encodeURIComponent(redirect)}`;
+    window.location.href = discordAuthUrl;
+  }, [location.search, navigate]);
+
+  return (
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'linear-gradient(135deg,#23272a 0%,#7289da 100%)',
+      color: '#fff',
+      fontFamily: 'inherit',
+      textAlign: 'center',
+      padding: '2rem'
+    }}>
+      <img src={spainLogo} alt="SpainRP Logo" style={{width:80,height:80,borderRadius:'50%',boxShadow:'0 2px 12px #FFD70033',marginBottom:24,animation:'spinLogo 1.5s linear infinite'}} />
+      <h2 style={{color:'#FFD700',fontWeight:800,fontSize:'2rem',marginBottom:'1rem'}}>Iniciando sesión...</h2>
+      <div style={{color:'#fff',fontSize:'1.1rem',marginBottom:'1.5rem'}}>Redirigiendo a Discord para autenticación...</div>
+      <style>{`
+        @keyframes spinLogo { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }
+      `}</style>
+    </div>
+  );
+}
+
 function PrivateRoute({ children }) {
   const [user, setUser] = useState(undefined);
   const [isChecking, setIsChecking] = useState(true);
@@ -54,7 +92,7 @@ function PrivateRoute({ children }) {
           let userData = data.user;
           if (userData && userData.id) {
             try {
-              const adminRes = await fetch(`/api/discord/isadmin/${userData.id}`);
+              const adminRes = await fetch(apiUrl(`/api/discord/isadmin/${userData.id}`));
               if (adminRes.ok) {
                 const adminData = await adminRes.json();
                 userData.isAdmin = !!adminData.isAdmin;
@@ -417,6 +455,10 @@ function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading }) {
   const currentLocation = useLocation();
   const hideNavbar = noNavbarRoutes.includes(currentLocation.pathname);
   const hideFooter = ['/apps/tienda'].includes(currentLocation.pathname);
+  
+  // Debug: Log current location
+  console.log('[AppContent] Current location:', currentLocation.pathname);
+  
   return (
     <div className="App">
       <AdBlockDetect />
@@ -437,6 +479,7 @@ function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading }) {
         <Route path="/apps/tienda" element={<SimuladorTienda />} />
         <Route path="/panel" element={<Panel />} />
         <Route path="/admin" element={<PrivateRoute><AdminPanel /></PrivateRoute>} />
+        <Route path="/auth/login" element={<LoginPage />} />
         <Route path="/logout" element={<LogoutPage />} />
         <Route path="/logs" element={<PrivateRoute><AdvancedLogs /></PrivateRoute>} />
         <Route path="/404" element={<NotFound />} />
@@ -448,16 +491,6 @@ function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading }) {
   );
 }
 
-function Logout() {
-  const navigate = useNavigate();
-  useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL || 'https://spainrp-web.onrender.com'}/auth/logout`, { credentials: 'include' })
-      .then(() => {
-        navigate('/', { state: { loggedOut: true } });
-      });
-  }, [navigate]);
-  return <div style={{textAlign:'center',marginTop:'2rem'}}>Cerrando sesión...</div>;
-}
 
 // Componente para mejorar el flujo de logout
 function LogoutPage() {
