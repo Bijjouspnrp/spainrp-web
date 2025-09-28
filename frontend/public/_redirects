@@ -1,2 +1,13 @@
-# SPA fallback - all routes go to index.html
+# SPA Fallback - Redirect all non-API routes to index.html
 /*    /index.html   200
+
+# API routes should not be redirected
+/api/*  /api/:splat  200
+
+# Static assets should not be redirected
+/assets/*  /assets/:splat  200
+
+# Specific files should not be redirected
+/favicon.ico  /favicon.ico  200
+/robots.txt   /robots.txt   200
+/manifest.json /manifest.json 200
