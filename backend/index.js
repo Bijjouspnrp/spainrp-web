@@ -79,8 +79,8 @@ app.use(session({
   rolling: true, // renueva caducidad en cada interacción
   cookie: {
     httpOnly: true, // Seguridad
-    secure: false, // Deshabilitado para permitir HTTP
-    sameSite: 'none', // Cambiado a 'none' para cross-domain
+    secure: true, // Habilitado para sameSite: 'none'
+    sameSite: 'none', // Para cross-domain
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
     domain: '.onrender.com' // Habilitado para compartir entre subdominios
   },
@@ -114,8 +114,8 @@ app.use((req, res, next) => {
   if (req.session) {
     res.cookie('spainrp.sid', req.sessionID, {
       httpOnly: true,
-      secure: false,
-      sameSite: 'none', // Cambiado a 'none' para cross-domain
+      secure: true, // Habilitado para sameSite: 'none'
+      sameSite: 'none', // Para cross-domain
       maxAge: 7 * 24 * 60 * 60 * 1000,
       domain: '.onrender.com' // Habilitado para compartir entre subdominios
     });
