@@ -4,16 +4,12 @@ services:
     env: static
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
     envVars:
       - key: VITE_API_URL
         value: https://spainrp-web.onrender.com
       - key: VITE_BOT_URL
-        value: https://tu-bot.onrender.com
+        value: https://spainrp-web.onrender.com
       - key: VITE_SHOP_URL
-        value: https://tu-shop.onrender.com
+        value: https://spainrp-web.onrender.com
       - key: VITE_PPT_URL
-        value: https://tu-ppt.onrender.com
+        value: https://spainrp-web.onrender.com

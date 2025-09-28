@@ -17,5 +17,26 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      // SPA fallback for Render static hosting
+      if (window.location.pathname !== '/' && !window.location.pathname.startsWith('/api/') && !window.location.pathname.startsWith('/assets/')) {
+        // Check if this is a client-side route
+        const validRoutes = [
+          '/blackmarket', '/news', '/stockmarket', '/apps', '/apps/tinder', 
+          '/apps/banco', '/apps/minijuegos', '/apps/tienda', '/rules', 
+          '/panel', '/admin', '/auth/login', '/logout', '/logs', '/cookies', 
+          '/terms', '/support', '/404'
+        ];
+        
+        if (validRoutes.includes(window.location.pathname) || window.location.pathname.startsWith('/apps/')) {
+          // This is a valid SPA route, let React Router handle it
+          console.log('[SPA] Valid route detected:', window.location.pathname);
+        } else {
+          // This might be a direct access to a non-existent file
+          console.log('[SPA] Route not found, redirecting to 404:', window.location.pathname);
+          window.location.href = '/404';
+        }
+      }
+    </script>
   </body>
 </html>
