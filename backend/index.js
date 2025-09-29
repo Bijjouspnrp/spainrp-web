@@ -643,39 +643,52 @@ app.get('/api/announcements/:id/comments', (req, res) => {
     res.json({ comments: rows || [] });
   });
 });
-// Proxy: exportar DNI como imagen PNG desde el bot externo
-app.get('/api/proxy/dni/:discordId/exportar', async (req, res) => {
+// Proxy: exportar DNI como imagen PNG desde el bot externo (GET y HEAD)
+const handleDNIExport = async (req, res) => {
   const { discordId } = req.params;
   const DNI_BOT_URL = process.env.DNI_BOT_URL || 'http://37.27.21.91:5021';
+  const isHeadRequest = req.method === 'HEAD';
   
-  console.log(`[DNI PROXY] Solicitud de exportación para DiscordID: ${discordId}`);
+  console.log(`[DNI PROXY] ${req.method} request para DiscordID: ${discordId}`);
   console.log(`[DNI PROXY] URL del bot: ${DNI_BOT_URL}/dni/${discordId}/exportar`);
   
   try {
     const fetchDNI = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-    const response = await fetchDNI(`${DNI_BOT_URL}/dni/${encodeURIComponent(discordId)}/exportar`);
+    const response = await fetchDNI(`${DNI_BOT_URL}/dni/${encodeURIComponent(discordId)}/exportar`, {
+      method: req.method
+    });
+    
+    console.log(`[DNI PROXY] Respuesta del bot: ${response.status} ${response.statusText}`);
     
     if (!response.ok) {
-      console.error(`[DNI PROXY] Error al exportar DNI para ${discordId}:`, response.status, response.statusText);
+      console.error(`[DNI PROXY] Bot respondió con error: ${response.status}`);
       return res.status(response.status).json({ error: 'No existe ese DNI o error en el bot externo' });
     }
     
-    // Obtener el buffer de la imagen
+    // Para HEAD, solo enviar headers
+    if (isHeadRequest) {
+      res.set('Content-Type', response.headers.get('content-type') || 'image/png');
+      return res.status(200).end();
+    }
+    
+    // Para GET, enviar la imagen completa
     const buffer = await response.buffer();
     const contentType = response.headers.get('content-type') || 'image/png';
     
     console.log(`[DNI PROXY] Imagen recibida (${buffer.length} bytes) para ${discordId}`);
     
-    // Enviar imagen al cliente
     res.set('Content-Type', contentType);
     res.send(buffer);
     
     console.log(`[DNI PROXY] Exportación exitosa para ${discordId}`);
   } catch (e) {
-    console.error(`[DNI PROXY] Error de conexión al exportar DNI para ${discordId}:`, e.message);
+    console.error(`[DNI PROXY] Error de conexión:`, e.message);
     res.status(502).json({ error: 'Error conectando con el bot de DNI', details: e.message });
   }
-});
+};
+
+app.get('/api/proxy/dni/:discordId/exportar', handleDNIExport);
+app.head('/api/proxy/dni/:discordId/exportar', handleDNIExport);
 // POST: agregar comentario a una noticia
 app.post('/api/announcements/:id/comments', express.json(), (req, res) => {
   const newsId = req.params.id;
