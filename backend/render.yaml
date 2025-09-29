@@ -29,7 +29,7 @@ services:
       - key: MAINTENANCE_MODE
         value: "false"
       - key: BOT_API_URL
-        value: "https://spainrp-web.onrender.com"
+        value: "https://spainrp-oficial.onrender.com"
       - key: ECONOMIA_API_URL
         value: "http://37.27.21.91:5021"
       - key: BOLSA_API_URL

@@ -689,6 +689,203 @@ const handleDNIExport = async (req, res) => {
 
 app.get('/api/proxy/dni/:discordId/exportar', handleDNIExport);
 app.head('/api/proxy/dni/:discordId/exportar', handleDNIExport);
+
+// ===== PROXY BLACKMARKET =====
+const BLACKMARKET_BOT_URL = process.env.BLACKMARKET_BOT_URL || 'http://37.27.21.91:5021';
+
+// Proxy: obtener catálogo de items del BlackMarket
+app.get('/api/proxy/blackmarket/items', async (req, res) => {
+  try {
+    console.log('[BLACKMARKET PROXY] GET /api/proxy/blackmarket/items');
+    const fetchBM = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+    const response = await fetchBM(`${BLACKMARKET_BOT_URL}/api/blackmarket/items`);
+    const data = await response.json();
+    
+    if (!response.ok) {
+      console.error(`[BLACKMARKET PROXY] Bot respondió con error: ${response.status}`);
+      return res.status(response.status).json({ error: 'Error obteniendo catálogo del BlackMarket', details: data });
+    }
+    
+    console.log(`[BLACKMARKET PROXY] Catálogo obtenido: ${Object.keys(data).length} items`);
+    res.json(data);
+  } catch (e) {
+    console.error(`[BLACKMARKET PROXY] Error de conexión:`, e.message);
+    res.status(502).json({ error: 'Error conectando con el bot de BlackMarket', details: e.message });
+  }
+});
+
+// Proxy: obtener saldo del usuario en BlackMarket
+app.get('/api/proxy/blackmarket/saldo/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    console.log(`[BLACKMARKET PROXY] GET /api/proxy/blackmarket/saldo/${userId}`);
+    
+    const fetchBM = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+    const response = await fetchBM(`${BLACKMARKET_BOT_URL}/api/blackmarket/saldo/${encodeURIComponent(userId)}`);
+    const data = await response.json();
+    
+    if (!response.ok) {
+      console.error(`[BLACKMARKET PROXY] Bot respondió con error: ${response.status}`);
+      return res.status(response.status).json({ error: 'Error obteniendo saldo del BlackMarket', details: data });
+    }
+    
+    console.log(`[BLACKMARKET PROXY] Saldo obtenido para ${userId}:`, data);
+    res.json(data);
+  } catch (e) {
+    console.error(`[BLACKMARKET PROXY] Error de conexión:`, e.message);
+    res.status(502).json({ error: 'Error conectando con el bot de BlackMarket', details: e.message });
+  }
+});
+
+// Proxy: comprar item en BlackMarket
+app.post('/api/proxy/blackmarket/purchase', async (req, res) => {
+  try {
+    const { userId, itemId } = req.body;
+    console.log(`[BLACKMARKET PROXY] POST /api/proxy/blackmarket/purchase - userId: ${userId}, itemId: ${itemId}`);
+    
+    const fetchBM = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+    const response = await fetchBM(`${BLACKMARKET_BOT_URL}/api/blackmarket/purchase`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, itemId })
+    });
+    const data = await response.json();
+    
+    if (!response.ok) {
+      console.error(`[BLACKMARKET PROXY] Bot respondió con error: ${response.status}`);
+      return res.status(response.status).json({ error: 'Error realizando compra en BlackMarket', details: data });
+    }
+    
+    console.log(`[BLACKMARKET PROXY] Compra exitosa para ${userId}:`, data);
+    res.json(data);
+  } catch (e) {
+    console.error(`[BLACKMARKET PROXY] Error de conexión:`, e.message);
+    res.status(502).json({ error: 'Error conectando con el bot de BlackMarket', details: e.message });
+  }
+});
+
+// Proxy: obtener inventario del usuario en BlackMarket
+app.get('/api/proxy/blackmarket/inventario/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    console.log(`[BLACKMARKET PROXY] GET /api/proxy/blackmarket/inventario/${userId}`);
+    
+    const fetchBM = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+    const response = await fetchBM(`${BLACKMARKET_BOT_URL}/api/blackmarket/inventario/${encodeURIComponent(userId)}`);
+    const data = await response.json();
+    
+    if (!response.ok) {
+      console.error(`[BLACKMARKET PROXY] Bot respondió con error: ${response.status}`);
+      return res.status(response.status).json({ error: 'Error obteniendo inventario del BlackMarket', details: data });
+    }
+    
+    console.log(`[BLACKMARKET PROXY] Inventario obtenido para ${userId}:`, data);
+    res.json(data);
+  } catch (e) {
+    console.error(`[BLACKMARKET PROXY] Error de conexión:`, e.message);
+    res.status(502).json({ error: 'Error conectando con el bot de BlackMarket', details: e.message });
+  }
+});
+
+// Proxy: vender un item del inventario
+app.post('/api/proxy/blackmarket/sellone', async (req, res) => {
+  try {
+    const { userId, itemId, amount } = req.body;
+    console.log(`[BLACKMARKET PROXY] POST /api/proxy/blackmarket/sellone - userId: ${userId}, itemId: ${itemId}, amount: ${amount}`);
+    
+    const fetchBM = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+    const response = await fetchBM(`${BLACKMARKET_BOT_URL}/api/blackmarket/sellone`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, itemId, amount })
+    });
+    const data = await response.json();
+    
+    if (!response.ok) {
+      console.error(`[BLACKMARKET PROXY] Bot respondió con error: ${response.status}`);
+      return res.status(response.status).json({ error: 'Error vendiendo item en BlackMarket', details: data });
+    }
+    
+    console.log(`[BLACKMARKET PROXY] Venta exitosa para ${userId}:`, data);
+    res.json(data);
+  } catch (e) {
+    console.error(`[BLACKMARKET PROXY] Error de conexión:`, e.message);
+    res.status(502).json({ error: 'Error conectando con el bot de BlackMarket', details: e.message });
+  }
+});
+
+// Proxy: vender todos los items del inventario
+app.post('/api/proxy/blackmarket/sell', async (req, res) => {
+  try {
+    const { userId, items } = req.body;
+    console.log(`[BLACKMARKET PROXY] POST /api/proxy/blackmarket/sell - userId: ${userId}, items: ${items.length}`);
+    
+    const fetchBM = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+    const response = await fetchBM(`${BLACKMARKET_BOT_URL}/api/blackmarket/sell`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, items })
+    });
+    const data = await response.json();
+    
+    if (!response.ok) {
+      console.error(`[BLACKMARKET PROXY] Bot respondió con error: ${response.status}`);
+      return res.status(response.status).json({ error: 'Error vendiendo inventario en BlackMarket', details: data });
+    }
+    
+    console.log(`[BLACKMARKET PROXY] Venta masiva exitosa para ${userId}:`, data);
+    res.json(data);
+  } catch (e) {
+    console.error(`[BLACKMARKET PROXY] Error de conexión:`, e.message);
+    res.status(502).json({ error: 'Error conectando con el bot de BlackMarket', details: e.message });
+  }
+});
+
+// Proxy: verificar si usuario tiene rol específico
+app.get('/api/proxy/discord/hasrole/:userId/:roleId', async (req, res) => {
+  try {
+    const { userId, roleId } = req.params;
+    console.log(`[DISCORD PROXY] GET /api/proxy/discord/hasrole/${userId}/${roleId}`);
+    
+    const fetchDiscord = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+    const response = await fetchDiscord(`${process.env.BOT_API_URL || 'https://tu-bot.onrender.com'}/api/discord/hasrole/${encodeURIComponent(userId)}/${encodeURIComponent(roleId)}`);
+    const data = await response.json();
+    
+    if (!response.ok) {
+      console.error(`[DISCORD PROXY] Bot respondió con error: ${response.status}`);
+      return res.status(response.status).json({ error: 'Error verificando rol de Discord', details: data });
+    }
+    
+    console.log(`[DISCORD PROXY] Rol verificado para ${userId}:`, data);
+    res.json(data);
+  } catch (e) {
+    console.error(`[DISCORD PROXY] Error de conexión:`, e.message);
+    res.status(502).json({ error: 'Error conectando con el bot de Discord', details: e.message });
+  }
+});
+
+// Proxy: verificar si usuario es administrador
+app.get('/api/proxy/admin/isadmin/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    console.log(`[ADMIN PROXY] GET /api/proxy/admin/isadmin/${userId}`);
+    
+    const fetchAdmin = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+    const response = await fetchAdmin(`${process.env.BOT_API_URL || 'https://tu-bot.onrender.com'}/api/admin/isadmin/${encodeURIComponent(userId)}`);
+    const data = await response.json();
+    
+    if (!response.ok) {
+      console.error(`[ADMIN PROXY] Bot respondió con error: ${response.status}`);
+      return res.status(response.status).json({ error: 'Error verificando permisos de administrador', details: data });
+    }
+    
+    console.log(`[ADMIN PROXY] Permisos verificados para ${userId}:`, data);
+    res.json(data);
+  } catch (e) {
+    console.error(`[ADMIN PROXY] Error de conexión:`, e.message);
+    res.status(502).json({ error: 'Error conectando con el bot de administración', details: e.message });
+  }
+});
 // POST: agregar comentario a una noticia
 app.post('/api/announcements/:id/comments', express.json(), (req, res) => {
   const newsId = req.params.id;
@@ -1787,28 +1984,6 @@ app.post('/api/proxy/admin/removeitem', express.json(), async (req, res) => {
   }
 });
 
-
-// Proxy: establecer saldo de usuario (solo administradores)
-app.post('/api/proxy/admin/setbalance', express.json(), async (req, res) => {
-  try {
-    const { userId, cash } = req.body;
-    if (!userId || cash === undefined) {
-      return res.status(400).json({ error: 'userId y cash requeridos' });
-    }
-    
-    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/admin/setbalance`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, cash: parseInt(cash) })
-    });
-    
-    const data = await response.json();
-    res.status(response.status).json(data);
-  } catch (e) {
-    console.error('[PROXY] Error setting balance:', e);
-    res.status(502).json({ error: 'Proxy error', details: String(e) });
-  }
-});
 
 // Utilidad para validar admin en tiempo real vía bot
 async function isAdminUser(userId) {
