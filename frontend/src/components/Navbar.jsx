@@ -508,19 +508,44 @@ const Navbar = () => {
               {user.username}
             </span>
           </a>
-          <a
-            href={apiUrl('/auth/logout')}
+          <button
+            onClick={async () => {
+              try {
+                // Limpiar token del cliente
+                localStorage.removeItem('spainrp_token');
+                console.log('[Logout] Token JWT eliminado del cliente');
+                
+                // Disparar evento para refrescar UI
+                window.dispatchEvent(new Event('token-updated'));
+                
+                // Llamar al backend para destruir sesión
+                await fetch(apiUrl('/auth/logout'), { 
+                  method: 'POST',
+                  credentials: 'include'
+                }).catch(() => {}); // Ignorar errores del backend
+                
+                // Redirigir al inicio
+                window.location.href = '/';
+              } catch (e) {
+                console.error('[Logout] Error:', e);
+                // Redirigir de todas formas
+                window.location.href = '/';
+              }
+            }}
             title="Cerrar sesión"
             style={{
               marginLeft: 8,
               color: '#e74c3c',
               fontWeight: 700,
               fontSize: 15,
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
               textDecoration: 'none'
             }}
           >
             Salir
-          </a>
+          </button>
         </>
       );
     }
