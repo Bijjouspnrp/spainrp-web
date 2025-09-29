@@ -1240,6 +1240,134 @@ app.get('/api/proxy/blackmarket/saldo/:userId', async (req, res) => {
   }
 });
 
+// Proxy: admin - buscar usuarios
+app.get('/api/proxy/blackmarket/admin/search', async (req, res) => {
+  try {
+    const { query } = req.query;
+    console.log('[PROXY] GET /api/proxy/blackmarket/admin/search', { query });
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/admin/search?query=${encodeURIComponent(query)}`);
+    const text = await response.text();
+    let data; try { data = JSON.parse(text); } catch { data = { raw: text }; }
+    console.log('[PROXY] Admin search from 5021', { status: response.status });
+    res.status(response.status).json(data);
+  } catch (e) {
+    console.error('[PROXY] Error fetching admin search:', e);
+    res.status(502).json({ error: 'Proxy error', details: String(e) });
+  }
+});
+
+// Proxy: admin - inventario de usuario
+app.get('/api/proxy/blackmarket/admin/inventory/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    console.log('[PROXY] GET /api/proxy/blackmarket/admin/inventory', { userId });
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/admin/inventory/${encodeURIComponent(userId)}`);
+    const text = await response.text();
+    let data; try { data = JSON.parse(text); } catch { data = { raw: text }; }
+    console.log('[PROXY] Admin inventory from 5021', { status: response.status });
+    res.status(response.status).json(data);
+  } catch (e) {
+    console.error('[PROXY] Error fetching admin inventory:', e);
+    res.status(502).json({ error: 'Proxy error', details: String(e) });
+  }
+});
+
+// Proxy: admin - saldo de usuario
+app.get('/api/proxy/blackmarket/admin/balance/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    console.log('[PROXY] GET /api/proxy/blackmarket/admin/balance', { userId });
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/admin/balance/${encodeURIComponent(userId)}`);
+    const text = await response.text();
+    let data; try { data = JSON.parse(text); } catch { data = { raw: text }; }
+    console.log('[PROXY] Admin balance from 5021', { status: response.status });
+    res.status(response.status).json(data);
+  } catch (e) {
+    console.error('[PROXY] Error fetching admin balance:', e);
+    res.status(502).json({ error: 'Proxy error', details: String(e) });
+  }
+});
+
+// Proxy: admin - agregar item
+app.post('/api/proxy/blackmarket/admin/additem', async (req, res) => {
+  try {
+    const payload = req.body || {};
+    console.log('[PROXY] POST /api/proxy/blackmarket/admin/additem -> forwarding', payload);
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/admin/additem`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const text = await response.text();
+    let data; try { data = JSON.parse(text); } catch { data = { raw: text }; }
+    console.log('[PROXY] Admin additem from 5021', { status: response.status });
+    res.status(response.status).json(data);
+  } catch (e) {
+    console.error('[PROXY] Error forwarding admin additem:', e);
+    res.status(502).json({ error: 'Proxy error', details: String(e) });
+  }
+});
+
+// Proxy: admin - remover item
+app.post('/api/proxy/blackmarket/admin/removeitem', async (req, res) => {
+  try {
+    const payload = req.body || {};
+    console.log('[PROXY] POST /api/proxy/blackmarket/admin/removeitem -> forwarding', payload);
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/admin/removeitem`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const text = await response.text();
+    let data; try { data = JSON.parse(text); } catch { data = { raw: text }; }
+    console.log('[PROXY] Admin removeitem from 5021', { status: response.status });
+    res.status(response.status).json(data);
+  } catch (e) {
+    console.error('[PROXY] Error forwarding admin removeitem:', e);
+    res.status(502).json({ error: 'Proxy error', details: String(e) });
+  }
+});
+
+// Proxy: admin - establecer saldo
+app.post('/api/proxy/blackmarket/admin/setbalance', async (req, res) => {
+  try {
+    const payload = req.body || {};
+    console.log('[PROXY] POST /api/proxy/blackmarket/admin/setbalance -> forwarding', payload);
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/admin/setbalance`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const text = await response.text();
+    let data; try { data = JSON.parse(text); } catch { data = { raw: text }; }
+    console.log('[PROXY] Admin setbalance from 5021', { status: response.status });
+    res.status(response.status).json(data);
+  } catch (e) {
+    console.error('[PROXY] Error forwarding admin setbalance:', e);
+    res.status(502).json({ error: 'Proxy error', details: String(e) });
+  }
+});
+
+// Proxy: admin - establecer saldo (ruta alternativa)
+app.post('/api/proxy/blackmarket/setbalance', async (req, res) => {
+  try {
+    const payload = req.body || {};
+    console.log('[PROXY] POST /api/proxy/blackmarket/setbalance -> forwarding', payload);
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/admin/setbalance`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const text = await response.text();
+    let data; try { data = JSON.parse(text); } catch { data = { raw: text }; }
+    console.log('[PROXY] Setbalance from 5021', { status: response.status });
+    res.status(response.status).json(data);
+  } catch (e) {
+    console.error('[PROXY] Error forwarding setbalance:', e);
+    res.status(502).json({ error: 'Proxy error', details: String(e) });
+  }
+});
+
 // Endpoint para eliminar un canal por ID
 app.delete('/api/canales/:id', (req, res) => {
   const canalId = req.params.id;
