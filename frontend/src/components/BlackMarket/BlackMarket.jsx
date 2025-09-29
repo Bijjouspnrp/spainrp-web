@@ -200,7 +200,7 @@ export default function BlackMarket() {
     setQuickLoading(true);
     setQuickResult('');
     try {
-      const resp = await fetch(apiUrl('/api/proxy/blackmarket/setbalance'), {
+      const resp = await fetch(apiUrl('/api/proxy/admin/setbalance'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -362,7 +362,7 @@ export default function BlackMarket() {
       let response;
       let users = [];
       try {
-        response = await fetch(apiUrl(`/api/proxy/blackmarket/admin/search?query=${encodeURIComponent(query)}`));
+        response = await fetch(apiUrl(`/api/proxy/admin/search?query=${encodeURIComponent(query)}`));
         if (!response.ok || response.headers.get('content-type')?.includes('text/html')) {
           throw new Error('API externa no disponible');
         }
@@ -424,7 +424,7 @@ export default function BlackMarket() {
       // Cargar inventario del usuario
       let inventoryRes;
       try {
-        inventoryRes = await fetch(apiUrl(`/api/proxy/blackmarket/admin/inventory/${user.id || user.userId}`));
+        inventoryRes = await fetch(apiUrl(`/api/proxy/admin/inventory/${user.id || user.userId}`));
         if (!inventoryRes.ok || inventoryRes.headers.get('content-type')?.includes('text/html')) {
           throw new Error('API externa no disponible');
         }
@@ -440,7 +440,7 @@ export default function BlackMarket() {
       // Cargar saldo del usuario
       let balanceRes;
       try {
-        balanceRes = await fetch(apiUrl(`/api/proxy/blackmarket/admin/balance/${user.id || user.userId}`));
+        balanceRes = await fetch(apiUrl(`/api/proxy/admin/balance/${user.id || user.userId}`));
         if (!balanceRes.ok || balanceRes.headers.get('content-type')?.includes('text/html')) {
           throw new Error('API externa no disponible');
         }
@@ -466,7 +466,7 @@ export default function BlackMarket() {
     try {
       let response;
       try {
-        response = await fetch(apiUrl('/api/proxy/blackmarket/admin/additem'), {
+        response = await fetch(apiUrl('/api/proxy/admin/additem'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -513,7 +513,7 @@ export default function BlackMarket() {
     try {
       let response;
       try {
-        response = await fetch(apiUrl('/api/proxy/blackmarket/admin/removeitem'), {
+        response = await fetch(apiUrl('/api/proxy/admin/removeitem'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -560,7 +560,7 @@ export default function BlackMarket() {
     try {
       let response;
       try {
-        response = await fetch(apiUrl('/api/proxy/blackmarket/admin/setbalance'), {
+        response = await fetch(apiUrl('/api/proxy/admin/setbalance'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1085,7 +1085,7 @@ if (!user) {
                                           // refrescar inventario
                                           try {
                                             setInventoryLoading(true);
-                                            const r2 = await fetch(`http://37.27.21.91:5021/api/blackmarket/inventario/${encodeURIComponent(user.id)}`);
+                                            const r2 = await fetch(apiUrl(`/api/proxy/blackmarket/inventario/${encodeURIComponent(user.id)}`));
                                             const d2 = await r2.json();
                                             const arr = Array.isArray(d2?.inventario) ? d2.inventario : [];
                                             const normalized = arr.map((row) => {
@@ -1142,7 +1142,7 @@ if (!user) {
                           // refrescar inventario
                           try {
                             setInventoryLoading(true);
-                            const r2 = await fetch(`http://37.27.21.91:5021/api/blackmarket/inventario/${encodeURIComponent(user.id)}`);
+                            const r2 = await fetch(apiUrl(`/api/proxy/blackmarket/inventario/${encodeURIComponent(user.id)}`));
                             const d2 = await r2.json();
                             const arr = Array.isArray(d2?.inventario) ? d2.inventario : [];
                             const normalized = arr.map((it) => {
