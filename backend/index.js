@@ -849,18 +849,41 @@ app.get('/api/proxy/discord/hasrole/:userId/:roleId', async (req, res) => {
     
     const fetchDiscord = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
     const response = await fetchDiscord(`${process.env.BOT_API_URL || 'https://tu-bot.onrender.com'}/api/discord/hasrole/${encodeURIComponent(userId)}/${encodeURIComponent(roleId)}`);
+    
+    console.log(`[DISCORD PROXY] Response status: ${response.status}`);
+    console.log(`[DISCORD PROXY] Content-Type: ${response.headers.get('content-type')}`);
+    
+    // Verificar si la respuesta es JSON
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      console.error(`[DISCORD PROXY] Invalid content type: ${contentType}`);
+      return res.status(502).json({ 
+        error: 'Bot externo no disponible', 
+        details: 'El bot externo no está respondiendo con JSON válido',
+        hasRole: false 
+      });
+    }
+    
     const data = await response.json();
     
     if (!response.ok) {
       console.error(`[DISCORD PROXY] Bot respondió con error: ${response.status}`);
-      return res.status(response.status).json({ error: 'Error verificando rol de Discord', details: data });
+      return res.status(response.status).json({ 
+        error: 'Error del bot externo', 
+        details: data,
+        hasRole: false 
+      });
     }
     
     console.log(`[DISCORD PROXY] Rol verificado para ${userId}:`, data);
     res.json(data);
   } catch (e) {
     console.error(`[DISCORD PROXY] Error de conexión:`, e.message);
-    res.status(502).json({ error: 'Error conectando con el bot de Discord', details: e.message });
+    res.status(502).json({ 
+      error: 'Error conectando con el bot de Discord', 
+      details: e.message,
+      hasRole: false 
+    });
   }
 });
 
@@ -872,18 +895,41 @@ app.get('/api/proxy/admin/isadmin/:userId', async (req, res) => {
     
     const fetchAdmin = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
     const response = await fetchAdmin(`${process.env.BOT_API_URL || 'https://tu-bot.onrender.com'}/api/admin/isadmin/${encodeURIComponent(userId)}`);
+    
+    console.log(`[ADMIN PROXY] Response status: ${response.status}`);
+    console.log(`[ADMIN PROXY] Content-Type: ${response.headers.get('content-type')}`);
+    
+    // Verificar si la respuesta es JSON
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      console.error(`[ADMIN PROXY] Invalid content type: ${contentType}`);
+      return res.status(502).json({ 
+        error: 'Bot externo no disponible', 
+        details: 'El bot externo no está respondiendo con JSON válido',
+        isAdmin: false 
+      });
+    }
+    
     const data = await response.json();
     
     if (!response.ok) {
       console.error(`[ADMIN PROXY] Bot respondió con error: ${response.status}`);
-      return res.status(response.status).json({ error: 'Error verificando permisos de administrador', details: data });
+      return res.status(response.status).json({ 
+        error: 'Error del bot externo', 
+        details: data,
+        isAdmin: false 
+      });
     }
     
     console.log(`[ADMIN PROXY] Permisos verificados para ${userId}:`, data);
     res.json(data);
   } catch (e) {
     console.error(`[ADMIN PROXY] Error de conexión:`, e.message);
-    res.status(502).json({ error: 'Error conectando con el bot de administración', details: e.message });
+    res.status(502).json({ 
+      error: 'Error conectando con el bot de administración', 
+      details: e.message,
+      isAdmin: false 
+    });
   }
 });
 // POST: agregar comentario a una noticia
@@ -1199,11 +1245,45 @@ app.get('/api/discord/membercount', async (req, res) => {
 app.get('/api/proxy/discord/ismember/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    const response = await fetch(`${process.env.BOT_API_URL || 'https://tu-bot.onrender.com'}/api/discord/ismember/${encodeURIComponent(userId)}`);
+    console.log(`[DISCORD PROXY] GET /api/proxy/discord/ismember/${userId}`);
+    
+    const fetchDiscord = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+    const response = await fetchDiscord(`${process.env.BOT_API_URL || 'https://tu-bot.onrender.com'}/api/discord/ismember/${encodeURIComponent(userId)}`);
+    
+    console.log(`[DISCORD PROXY] Response status: ${response.status}`);
+    console.log(`[DISCORD PROXY] Content-Type: ${response.headers.get('content-type')}`);
+    
+    // Verificar si la respuesta es JSON
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      console.error(`[DISCORD PROXY] Invalid content type: ${contentType}`);
+      return res.status(502).json({ 
+        error: 'Bot externo no disponible', 
+        details: 'El bot externo no está respondiendo con JSON válido',
+        isMember: false 
+      });
+    }
+    
     const data = await response.json();
-    res.status(response.status).json(data);
+    
+    if (!response.ok) {
+      console.error(`[DISCORD PROXY] Bot respondió con error: ${response.status}`);
+      return res.status(response.status).json({ 
+        error: 'Error del bot externo', 
+        details: data,
+        isMember: false 
+      });
+    }
+    
+    console.log(`[DISCORD PROXY] Success for ${userId}:`, data);
+    res.json(data);
   } catch (e) {
-    res.status(502).json({ error: 'Proxy error', details: String(e) });
+    console.error(`[DISCORD PROXY] Error de conexión:`, e.message);
+    res.status(502).json({ 
+      error: 'Error conectando con el bot de Discord', 
+      details: e.message,
+      isMember: false 
+    });
   }
 });
 // Proxy: ver inventario de cualquier usuario (solo administradores)
