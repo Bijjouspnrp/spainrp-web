@@ -73,11 +73,30 @@ const useAuth = () => {
     
     const fetchUser = async () => {
       try {
-        const response = await fetch(apiUrl('/auth/me'), { credentials: 'include' });
+        // Obtener token de localStorage
+        const token = localStorage.getItem('spainrp_token');
+        
+        if (!token) {
+          if (mounted) {
+            setUser(null);
+            setLoading(false);
+          }
+          return;
+        }
+        
+        // Enviar token en header Authorization
+        const response = await fetch(apiUrl('/auth/me'), { 
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
         
         if (!mounted) return;
         
         if (response.status === 401) {
+          // Token inválido, limpiar
+          localStorage.removeItem('spainrp_token');
           setUser(null);
           return;
         }
@@ -100,10 +119,12 @@ const useAuth = () => {
 
     const handleAuthEvent = () => fetchUser();
     window.addEventListener('cookie-consent', handleAuthEvent);
+    window.addEventListener('token-updated', handleAuthEvent); // Escuchar cambios de token
     
     return () => {
       mounted = false;
       window.removeEventListener('cookie-consent', handleAuthEvent);
+      window.removeEventListener('token-updated', handleAuthEvent);
     };
   }, []);
 

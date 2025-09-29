@@ -110,15 +110,6 @@ app.use(session({
 
 // Middleware para renovar maxAge en cada request autenticado
 app.use((req, res, next) => {
-  // Debug de cookies y sesión
-  console.log('[SESSION DEBUG]', {
-    sessionID: req.sessionID,
-    cookies: req.headers.cookie,
-    user: req.user ? req.user.id : 'none',
-    isAuthenticated: req.isAuthenticated ? req.isAuthenticated() : false,
-    sessionData: req.session ? Object.keys(req.session) : 'no session'
-  });
-  
   if (req.session && req.isAuthenticated && req.isAuthenticated()) {
     req.session.cookie.maxAge = 7 * 24 * 60 * 60 * 1000;
     req.session.touch && req.session.touch();
@@ -128,21 +119,6 @@ app.use((req, res, next) => {
 
 app.use(passport.initialize());
 app.use(passport.session());
-
-// Middleware específico para debuggear cookies cross-domain
-app.use((req, res, next) => {
-  // Asegurar que las cookies se envíen correctamente
-  if (req.session) {
-    res.cookie('spainrp.sid', req.sessionID, {
-      httpOnly: true,
-      secure: true, // Habilitado para sameSite: 'none'
-      sameSite: 'none', // Para cross-domain
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      domain: '.onrender.com' // Habilitado para compartir entre subdominios
-    });
-  }
-  next();
-});
 
 // Registrar rutas protegidas DESPUÉS de session/passport
 app.use('/api/tinder', tinderRoutes);
@@ -501,15 +477,15 @@ app.get('/api/proxy/bolsa/inversiones/:userId', async (req, res) => {
 });
 
 
-// Logger simple de peticiones
+// Logger simple de peticiones (solo errores y rutas importantes)
 app.use((req, res, next) => {
   const start = Date.now();
-  const { method, url } = req;
-  const ip = req.headers['x-forwarded-for'] || req.ip;
-  console.log(`[REQ] ${method} ${url} from ${ip} sid=${req.sessionID || '-'} user=${req.user?.id || '-'} ua="${req.headers['user-agent'] || ''}"`);
   res.on('finish', () => {
-    const ms = Date.now() - start;
-    console.log(`[RES] ${method} ${url} -> ${res.statusCode} ${ms}ms sid=${req.sessionID || '-'} user=${req.user?.id || '-'}`);
+    // Solo loguear errores 4xx/5xx o rutas auth
+    if (res.statusCode >= 400 || req.url.includes('/auth/')) {
+      const ms = Date.now() - start;
+      console.log(`[${res.statusCode >= 400 ? 'ERROR' : 'AUTH'}] ${req.method} ${req.url} -> ${res.statusCode} ${ms}ms`);
+    }
   });
   next();
 });

@@ -306,6 +306,9 @@ function App() {
       localStorage.setItem('spainrp_token', token);
       console.log('[App] 💾 Token guardado en localStorage');
       
+      // Disparar evento para que otros componentes se actualicen
+      window.dispatchEvent(new Event('token-updated'));
+      
       // Limpiar la URL
       const newUrl = window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
