@@ -6,17 +6,12 @@ require('dotenv').config();
 
 const router = express.Router();
 
-// En producción, usar variables de entorno. Aquí se mantienen por simplicidad local
+// En producción, usar variables de entorno
 const CLIENT_ID = process.env.DISCORD_CLIENT_ID || '1387150250334097624';
 const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET || 'i5vVTN3rl757mW5dMFkwV8nwAnkbVk1B';
 const CALLBACK_URL = process.env.DISCORD_CALLBACK_URL || 'https://spainrp-web.onrender.com/auth/discord/callback';
-
-// Debug: Verificar si está usando la variable de entorno
-console.log('=== CALLBACK URL DEBUG ===');
-console.log('DISCORD_CALLBACK_URL env var:', process.env.DISCORD_CALLBACK_URL);
-console.log('Final CALLBACK_URL:', CALLBACK_URL);
-console.log('========================');
 const GUILD_ID = process.env.DISCORD_GUILD_ID || '1351991000903004241';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://spainrp-oficial.onrender.com';
 
 const scopes = ['identify', 'guilds'];
 const ADMIN_USER_IDS = (process.env.ADMIN_USER_IDS || '710112055985963090')
@@ -29,7 +24,7 @@ console.log('CLIENT_ID:', CLIENT_ID);
 console.log('CLIENT_SECRET:', CLIENT_SECRET ? 'OK' : 'FALTA');
 console.log('CALLBACK_URL:', CALLBACK_URL);
 console.log('GUILD_ID:', GUILD_ID);
-console.log('SCOPES:', scopes);
+console.log('FRONTEND_URL:', FRONTEND_URL);
 console.log('========================');
 
 if (!CLIENT_ID || !CLIENT_SECRET || !CALLBACK_URL || !GUILD_ID) {
@@ -50,12 +45,11 @@ passport.use(new DiscordStrategy({
   callbackURL: CALLBACK_URL,
   scope: scopes
 }, (accessToken, refreshToken, profile, done) => {
-  console.log('[DISCORD STRATEGY] 🔐 User authenticated:', {
+  console.log('[DISCORD STRATEGY] User authenticated:', {
     userId: profile.id,
     username: profile.username,
     discriminator: profile.discriminator,
     hasAccessToken: !!accessToken,
-    profileKeys: Object.keys(profile),
     timestamp: new Date().toISOString()
   });
   
@@ -64,22 +58,21 @@ passport.use(new DiscordStrategy({
 
 // Ruta para iniciar sesión
 router.get('/login', (req, res, next) => {
-  // Guardar la URL de redirección si se proporciona o inferir desde el referer
   const provided = req.query.redirect;
   const referer = req.get('referer') || '';
+  
   console.log('[AUTH /login] start', {
     sessionID: req.sessionID,
     providedRedirect: provided,
     referer
   });
+  
   if (provided) {
     req.session.returnTo = provided;
-    console.log('[AUTH /login] set returnTo from provided', { returnTo: req.session.returnTo });
   } else if (referer && /\/blackmarket(\b|\/|\?|#)/.test(referer)) {
     req.session.returnTo = referer;
-    console.log('[AUTH /login] set returnTo from referer', { returnTo: req.session.returnTo });
   }
-  // Asegurar que la sesión se guarde antes de redirigir a Discord
+  
   req.session.save(() => {
     console.log('[AUTH /login] session saved; redirecting to Discord auth', {
       sessionID: req.sessionID,
@@ -90,56 +83,40 @@ router.get('/login', (req, res, next) => {
 });
 
 // Callback de Discord
-router.get('/discord/callback', (req, res, next) => {
-  console.log('[AUTH callback] 🔍 Discord callback initiated:', {
-    query: req.query,
-    sessionID: req.sessionID,
-    timestamp: new Date().toISOString()
-  });
-  
+router.get('/discord/callback', 
   passport.authenticate('discord', {
-    failureRedirect: '/auth/forbidden'
-  })(req, res, next);
-}, (req, res) => {
-  // Extender explícitamente la sesión al éxito de login (renovado por rolling cookie)
-  // Generar JWT token
-  const token = generateToken(req.user);
-  
-  // Debug: Verificar el estado de la sesión
-  console.log('[AUTH callback] 🔍 Session debug:', {
-    sessionID: req.sessionID,
-    sessionKeys: req.session ? Object.keys(req.session) : 'no session',
-    returnTo: req.session?.returnTo,
-    sessionData: req.session
-  });
-  
-  const returnTo = req.session?.returnTo || 'https://spainrp-oficial.onrender.com/';
-  
-  // Limpiar returnTo para evitar redirecciones persistentes
-  delete req.session.returnTo;
-  
-  console.log('[AUTH callback] success', {
-    sessionID: req.sessionID,
-    userId: req.user?.id,
-    username: req.user?.username,
-    discriminator: req.user?.discriminator,
-    avatar: req.user?.avatar,
-    tokenGenerated: !!token,
-    tokenLength: token ? token.length : 0,
-    tokenPreview: token ? token.substring(0, 20) + '...' : 'none',
-    willRedirectTo: returnTo,
-    timestamp: new Date().toISOString()
-  });
-  
-  // Redirigir con el token en la URL (temporal, el frontend lo guardará)
-  const redirectUrl = `${returnTo}?token=${encodeURIComponent(token)}`;
-  console.log('[AUTH callback] 🔗 Final redirect URL:', redirectUrl);
-  res.redirect(redirectUrl);
-});
+    failureRedirect: '/auth/failure'
+  }),
+  (req, res) => {
+    const token = generateToken(req.user);
+    
+    console.log('[AUTH callback] Session debug:', {
+      sessionID: req.sessionID,
+      returnTo: req.session?.returnTo,
+      userId: req.user?.id
+    });
+    
+    const returnTo = req.session?.returnTo || FRONTEND_URL;
+    delete req.session.returnTo;
+    
+    console.log('[AUTH callback] success', {
+      sessionID: req.sessionID,
+      userId: req.user?.id,
+      username: req.user?.username,
+      tokenGenerated: !!token,
+      willRedirectTo: returnTo,
+      timestamp: new Date().toISOString()
+    });
+    
+    const redirectUrl = `${returnTo}?token=${encodeURIComponent(token)}`;
+    console.log('[AUTH callback] Final redirect URL:', redirectUrl);
+    res.redirect(redirectUrl);
+  }
+);
 
 // Ruta para fallos de Discord OAuth
-router.get('/forbidden', (req, res) => {
-  console.log('[AUTH forbidden] 🚫 Discord OAuth failed:', {
+router.get('/failure', (req, res) => {
+  console.log('[AUTH failure] Discord OAuth failed:', {
     sessionID: req.sessionID,
     query: req.query,
     referer: req.get('referer'),
@@ -157,16 +134,13 @@ router.get('/forbidden', (req, res) => {
 router.get('/me', (req, res) => {
   const authHeader = req.headers.authorization;
   
-  console.log('[AUTH /me] 🔍 Request received:', {
+  console.log('[AUTH /me] Request received:', {
     hasAuthHeader: !!authHeader,
-    authHeaderPreview: authHeader ? authHeader.substring(0, 30) + '...' : 'none',
-    userAgent: req.headers['user-agent']?.substring(0, 50) || 'unknown',
-    ip: req.ip,
     timestamp: new Date().toISOString()
   });
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    console.log('[AUTH /me] ❌ No valid authorization header');
+    console.log('[AUTH /me] No valid authorization header');
     return res.status(401).json({ 
       error: 'Token requerido',
       code: 'NO_TOKEN'
@@ -187,12 +161,6 @@ router.get('/me', (req, res) => {
     console.log('[AUTH /me] JWT success', {
       userId: decoded.id,
       username: decoded.username,
-      discriminator: decoded.discriminator,
-      avatar: decoded.avatar,
-      isAdmin: decoded.isAdmin,
-      exp: new Date(decoded.exp * 1000).toISOString(),
-      iat: new Date(decoded.iat * 1000).toISOString(),
-      tokenPreview: token.substring(0, 20) + '...',
       timestamp: new Date().toISOString()
     });
     
@@ -211,7 +179,11 @@ router.get('/me', (req, res) => {
 
 // Ruta para cerrar sesión
 router.get('/logout', (req, res) => {
-  console.log('[AUTH /logout] start', { sessionID: req.sessionID, userId: req.user?.id });
+  console.log('[AUTH /logout] start', { 
+    sessionID: req.sessionID, 
+    userId: req.user?.id 
+  });
+  
   req.logout((err) => {
     if (err) {
       console.error('Error durante logout:', err);
@@ -221,7 +193,7 @@ router.get('/logout', (req, res) => {
         console.error('Error destruyendo sesión:', err);
       }
       console.log('[AUTH /logout] finished, redirecting to frontpage');
-      res.redirect('https://spainrp-oficial.onrender.com/');
+      res.redirect(FRONTEND_URL);
     });
   });
 });
@@ -232,7 +204,6 @@ router.get('/user-info', (req, res) => {
     return res.status(401).json({ error: 'No autenticado' });
   }
   
-  // Obtener información del usuario con roles
   const userInfo = {
     id: req.user.id,
     username: req.user.username,
@@ -240,26 +211,23 @@ router.get('/user-info', (req, res) => {
     discriminator: req.user.discriminator,
     email: req.user.email,
     guilds: req.user.guilds || [],
-    roles: [], // Se llenará con los roles del servidor
+    roles: [],
     permissions: []
   };
 
-  // Buscar el servidor SpainRP en los guilds del usuario
   const spainrpGuild = userInfo.guilds.find(g => g.id === GUILD_ID);
   
   if (spainrpGuild) {
-    // Aquí podrías hacer una llamada a la API de Discord para obtener roles específicos
-    // Por ahora, simulamos algunos roles basados en permisos
     if (spainrpGuild.owner) {
       userInfo.roles.push('Owner');
       userInfo.permissions.push('ADMINISTRATOR');
-    } else if (spainrpGuild.permissions & 0x8) { // Administrator permission
+    } else if (spainrpGuild.permissions & 0x8) {
       userInfo.roles.push('Administrator');
       userInfo.permissions.push('ADMINISTRATOR');
-    } else if (spainrpGuild.permissions & 0x4) { // Manage Server permission
+    } else if (spainrpGuild.permissions & 0x4) {
       userInfo.roles.push('Manager');
       userInfo.permissions.push('MANAGE_SERVER');
-    } else if (spainrpGuild.permissions & 0x2) { // Manage Channels permission
+    } else if (spainrpGuild.permissions & 0x2) {
       userInfo.roles.push('Moderator');
       userInfo.permissions.push('MANAGE_CHANNELS');
     } else {
@@ -268,120 +236,16 @@ router.get('/user-info', (req, res) => {
     }
   }
 
-  // Whitelist de administradores por ID
   if (ADMIN_USER_IDS.includes(userInfo.id)) {
-    if (!userInfo.roles.includes('WhitelistedAdmin')) userInfo.roles.push('WhitelistedAdmin');
-    if (!userInfo.permissions.includes('ADMINISTRATOR')) userInfo.permissions.push('ADMINISTRATOR');
+    if (!userInfo.roles.includes('WhitelistedAdmin')) {
+      userInfo.roles.push('WhitelistedAdmin');
+    }
+    if (!userInfo.permissions.includes('ADMINISTRATOR')) {
+      userInfo.permissions.push('ADMINISTRATOR');
+    }
   }
 
   res.json({ user: userInfo });
 });
 
-// Ruta para acceso denegado
-router.get('/forbidden', (req, res) => {
-  res.status(403).send(`
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Acceso Denegado | SpainRP</title>
-      <link rel="preconnect" href="https://fonts.googleapis.com">
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-      <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;400&display=swap" rel="stylesheet">
-      <style>
-        body {
-          background: linear-gradient(135deg,#23272a 0,#181818 100%);
-          color: #fff;
-          font-family: 'Montserrat', Arial, sans-serif;
-          min-height: 100vh;
-          margin: 0;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-        }
-        .forbidden-card {
-          background: #181818;
-          border: 2.5px solid #7289da;
-          border-radius: 18px;
-          box-shadow: 0 4px 24px #7289da33;
-          padding: 2.2rem 2.2rem 1.5rem 2.2rem;
-          max-width: 380px;
-          width: 95vw;
-          text-align: center;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          animation: popIn 0.7s cubic-bezier(.2,.9,.2,1);
-        }
-        @keyframes popIn {
-          0% { opacity: 0; transform: scale(0.95) translateY(20px); }
-          100% { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        .forbidden-emoji {
-          font-size: 3.2rem;
-          margin-bottom: 0.7rem;
-          animation: bounce 1.2s infinite alternate cubic-bezier(.2,.9,.2,1);
-        }
-        @keyframes bounce {
-          0% { transform: translateY(0); }
-          100% { transform: translateY(-8px) scale(1.08); }
-        }
-        .forbidden-title {
-          font-size: 1.5rem;
-          font-weight: 800;
-          color: #7289da;
-          margin-bottom: 0.7rem;
-        }
-        .forbidden-msg {
-          font-size: 1.08rem;
-          margin-bottom: 1.2rem;
-          color: #FFD700;
-        }
-        .forbidden-btn {
-          background: #7289da;
-          color: #fff;
-          border: none;
-          border-radius: 8px;
-          padding: 0.7rem 1.5rem;
-          font-size: 1.1rem;
-          font-weight: 700;
-          cursor: pointer;
-          box-shadow: 0 2px 8px #7289da33;
-          transition: background 0.2s, color 0.2s, transform 0.15s;
-          margin-bottom: 0.5rem;
-        }
-        .forbidden-btn:hover {
-          background: #00ff99;
-          color: #181818;
-          transform: scale(1.04);
-        }
-        .forbidden-footer {
-          margin-top: 1.5rem;
-          font-size: 1.01rem;
-          color: #7289da;
-          opacity: 0.8;
-        }
-        @media (max-width: 600px) {
-          .forbidden-card { padding: 1.2rem 0.7rem; max-width: 99vw; }
-          .forbidden-title { font-size: 1.1rem; }
-        }
-      </style>
-    </head>
-    <body>
-      <div class="forbidden-card">
-        <div class="forbidden-emoji">🚫</div>
-        <div class="forbidden-title">Acceso Denegado</div>
-        <div class="forbidden-msg">Debes estar en el servidor de Discord para acceder a esta función.</div>
-        <a href="https://discord.gg/spainrp" target="_blank" rel="noopener noreferrer">
-          <button class="forbidden-btn">Unirme al Discord</button>
-        </a>
-        <div class="forbidden-footer">SpainRP | Sistema de Autenticación</div>
-      </div>
-    </body>
-    </html>
-  `);
-});
-
-module.exports = router; 
+module.exports = router;

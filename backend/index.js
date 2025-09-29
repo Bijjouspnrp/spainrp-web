@@ -7,6 +7,7 @@ const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+
 const authRoutes = require('./auth');
 const discordRoutes = require('./routes/discord');
 const multiroleRoutes = require('./routes/multirole');
