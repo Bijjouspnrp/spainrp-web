@@ -258,69 +258,71 @@ export default function BlackMarket() {
 
   React.useEffect(() => {
     console.log('[BlackMarket] Fetch /auth/me...');
-    fetch(apiUrl('/auth/me'), { credentials: 'include' })
-      .then(res => res.ok ? res.json() : null)
-      .then(async data => {
-        console.log('[BlackMarket] /auth/me data:', data);
-        if (data && data.user) {
-          setUser(data.user);
-          try {
-            setRoleChecking(true);
-            // Verificar membresía directa contra el bot API (vía proxy)
-            const REQUIRED_ROLE_ID = '1384340799013257307';
-            const memberRes = await fetch(`https://spainrp-web.onrender.com/api/proxy/discord/ismember/${encodeURIComponent(data.user.id)}`);
-            const member = await memberRes.json();
-            let ok = Boolean(member?.isMember);
-            if (ok) {
-              const roleRes = await fetch(`https://spainrp-web.onrender.com/api/proxy/discord/hasrole/${encodeURIComponent(data.user.id)}/${REQUIRED_ROLE_ID}`);
-              const role = await roleRes.json();
-              ok = Boolean(role?.hasRole);
-              if (ok) {
-                setRoleToast('Rol criminal detectado ✅ Acceso concedido.');
-                setTimeout(() => setRoleToast(''), 2500);
-              }
-            }
-            setAuthorized(ok);
-            console.log('[BlackMarket] membership/role check:', { isMember: member?.isMember, hasRole: ok });
-            
-            // Cargar saldo del usuario
+    import('../utils/api').then(({ authFetch }) => {
+      authFetch('/auth/me')
+        .then(res => res.ok ? res.json() : null)
+        .then(async data => {
+          console.log('[BlackMarket] /auth/me data:', data);
+          if (data && data.user) {
+            setUser(data.user);
             try {
-              const saldoRes = await fetch(`http://37.27.21.91:5021/api/blackmarket/saldo/${encodeURIComponent(data.user.id)}`);
-              const saldoData = await saldoRes.json();
-              if (saldoRes.ok && saldoData) {
-                setUserBalanceState(saldoData.saldo || 0);
-                console.log('[BlackMarket] saldo cargado:', saldoData);
+              setRoleChecking(true);
+              // Verificar membresía directa contra el bot API (vía proxy)
+              const REQUIRED_ROLE_ID = '1384340799013257307';
+              const memberRes = await fetch(`https://spainrp-web.onrender.com/api/proxy/discord/ismember/${encodeURIComponent(data.user.id)}`);
+              const member = await memberRes.json();
+              let ok = Boolean(member?.isMember);
+              if (ok) {
+                const roleRes = await fetch(`https://spainrp-web.onrender.com/api/proxy/discord/hasrole/${encodeURIComponent(data.user.id)}/${REQUIRED_ROLE_ID}`);
+                const role = await roleRes.json();
+                ok = Boolean(role?.hasRole);
+                if (ok) {
+                  setRoleToast('Rol criminal detectado ✅ Acceso concedido.');
+                  setTimeout(() => setRoleToast(''), 2500);
+                }
               }
-            } catch (e) {
-              console.warn('[BlackMarket] error cargando saldo:', e);
-            }
-
-            // Verificar si es administrador total
-            if (ok) {
+              setAuthorized(ok);
+              console.log('[BlackMarket] membership/role check:', { isMember: member?.isMember, hasRole: ok });
+              
+              // Cargar saldo del usuario
               try {
-                setAdminChecking(true);
-                const adminRes = await fetch(`https://spainrp-web.onrender.com/api/proxy/admin/isadmin/${encodeURIComponent(data.user.id)}`);
-                const adminData = await adminRes.json();
-                setIsAdmin(Boolean(adminData?.isAdmin));
-                console.log('[BlackMarket] admin check:', adminData);
+                const saldoRes = await fetch(`http://37.27.21.91:5021/api/blackmarket/saldo/${encodeURIComponent(data.user.id)}`);
+                const saldoData = await saldoRes.json();
+                if (saldoRes.ok && saldoData) {
+                  setUserBalanceState(saldoData.saldo || 0);
+                  console.log('[BlackMarket] saldo cargado:', saldoData);
+                }
               } catch (e) {
-                console.warn('[BlackMarket] admin check error:', e);
-                setIsAdmin(false);
-              } finally {
-                setAdminChecking(false);
+                console.warn('[BlackMarket] error cargando saldo:', e);
               }
+
+              // Verificar si es administrador total
+              if (ok) {
+                try {
+                  setAdminChecking(true);
+                  const adminRes = await fetch(`https://spainrp-web.onrender.com/api/proxy/admin/isadmin/${encodeURIComponent(data.user.id)}`);
+                  const adminData = await adminRes.json();
+                  setIsAdmin(Boolean(adminData?.isAdmin));
+                  console.log('[BlackMarket] admin check:', adminData);
+                } catch (e) {
+                  console.warn('[BlackMarket] admin check error:', e);
+                  setIsAdmin(false);
+                } finally {
+                  setAdminChecking(false);
+                }
+              }
+              
+              setRoleChecking(false);
+            } catch (e) {
+              console.warn('[BlackMarket] user-info error', e);
+              setAuthorized(false);
+              setRoleChecking(false);
             }
-            
-            setRoleChecking(false);
-          } catch (e) {
-            console.warn('[BlackMarket] user-info error', e);
-            setAuthorized(false);
-            setRoleChecking(false);
           }
-        }
-        setLoading(false);
-      })
-      .catch((e) => { console.error('[BlackMarket] /auth/me error:', e); setLoading(false); });
+          setLoading(false);
+        })
+        .catch((e) => { console.error('[BlackMarket] /auth/me error:', e); setLoading(false); });
+    });
   }, []);
 
   // Cargar catálogo desde API externa (vía proxy backend)

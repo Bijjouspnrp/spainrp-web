@@ -71,7 +71,9 @@ const Panel = () => {
     }
     
     // Obtener datos del usuario autenticado
-  fetch(apiUrl('/auth/me'), { credentials: 'include' })
+    const token = localStorage.getItem('spainrp_token');
+    const headers = token ? { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } : { 'Accept': 'application/json' };
+  fetch(apiUrl('/auth/me'), { headers })
       .then(res => {
         if (res.status === 401) {
           setUser(null);

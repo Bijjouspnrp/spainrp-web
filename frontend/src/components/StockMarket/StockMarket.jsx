@@ -59,7 +59,9 @@ const StockMarket = () => {
     const fetchAll = async () => {
       try {
         // 1. Usuario
-        const resUser = await fetch(apiUrl("/auth/me"), { credentials: "include" });
+        const token = localStorage.getItem('spainrp_token');
+        const headers = token ? { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } : { 'Accept': 'application/json' };
+        const resUser = await fetch(apiUrl("/auth/me"), { headers });
         const data = resUser.ok ? await resUser.json() : null;
         if (data && data.user) {
           setUser(data.user);

@@ -7,7 +7,9 @@ export default function DiscordUserBar() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(apiUrl('/auth/me'), { credentials: 'include' })
+    const token = localStorage.getItem('spainrp_token');
+    const headers = token ? { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } : { 'Accept': 'application/json' };
+    fetch(apiUrl('/auth/me'), { headers })
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data && data.user) setUser(data.user);

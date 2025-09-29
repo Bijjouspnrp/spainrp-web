@@ -16,4 +16,24 @@ export const apiUrl = (path) => {
   return `${baseUrl}${normalizedPath}`;
 };
 
+// Helper para hacer fetch autenticado con JWT
+export const authFetch = async (path, options = {}) => {
+  const token = localStorage.getItem('spainrp_token');
+  
+  const headers = {
+    'Accept': 'application/json',
+    ...options.headers
+  };
+  
+  // Agregar token si existe
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  return fetch(apiUrl(path), {
+    ...options,
+    headers
+  });
+};
+
 export default apiUrl;
