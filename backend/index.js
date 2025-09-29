@@ -882,46 +882,49 @@ app.post('/api/proxy/blackmarket/sell', async (req, res) => {
   }
 });
 
-// Proxy: verificar si usuario tiene rol específico
+// Proxy: verificar si usuario tiene rol específico - Usar endpoint local
 app.get('/api/proxy/discord/hasrole/:userId/:roleId', async (req, res) => {
   try {
     const { userId, roleId } = req.params;
+    console.log('[DISCORD PROXY] ===== INICIO HASROLE (LOCAL) =====');
     console.log(`[DISCORD PROXY] GET /api/proxy/discord/hasrole/${userId}/${roleId}`);
     
-    const fetchDiscord = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-    const response = await fetchDiscord(`${process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/'}/api/discord/hasrole/${encodeURIComponent(userId)}/${encodeURIComponent(roleId)}`);
-    
-    console.log(`[DISCORD PROXY] Response status: ${response.status}`);
-    console.log(`[DISCORD PROXY] Content-Type: ${response.headers.get('content-type')}`);
-    
-    // Verificar si la respuesta es JSON
-    const contentType = response.headers.get('content-type') || '';
-    if (!contentType.includes('application/json')) {
-      console.error(`[DISCORD PROXY] Invalid content type: ${contentType}`);
-      return res.status(502).json({ 
-        error: 'Bot externo no disponible', 
-        details: 'El bot externo no está respondiendo con JSON válido',
-        hasRole: false 
-      });
+    // Verificar si el bot de Discord está disponible
+    if (!discordClient.readyAt) {
+      console.warn('[DISCORD PROXY] ⚠️ Bot de Discord no disponible, devolviendo hasRole: false');
+      return res.json({ hasRole: false, botUnavailable: true });
     }
     
-    const data = await response.json();
+    // Usar el endpoint local directamente
+    const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
+    console.log(`[DISCORD PROXY] Guild ID: ${guildId}, User ID: ${userId}, Role ID: ${roleId}`);
     
-    if (!response.ok) {
-      console.error(`[DISCORD PROXY] Bot respondió con error: ${response.status}`);
-      return res.status(response.status).json({ 
-        error: 'Error del bot externo', 
-        details: data,
-        hasRole: false 
-      });
+    const guild = discordClient.guilds.cache.get(guildId);
+    if (!guild) {
+      console.error(`[DISCORD PROXY] ❌ Servidor no encontrado: ${guildId}`);
+      return res.status(404).json({ error: 'Servidor no encontrado', hasRole: false });
     }
     
-    console.log(`[DISCORD PROXY] Rol verificado para ${userId}:`, data);
-    res.json(data);
+    await guild.members.fetch();
+    const member = guild.members.cache.get(userId);
+    if (!member) {
+      console.log(`[DISCORD PROXY] ❌ Usuario no encontrado: ${userId}`);
+      return res.json({ hasRole: false, isMember: false });
+    }
+    
+    const hasRole = member.roles.cache.has(roleId);
+    const payload = { hasRole, isMember: true };
+    
+    console.log(`[DISCORD PROXY] ✅ Result for ${userId}/${roleId}:`, payload);
+    console.log('[DISCORD PROXY] ===== FIN HASROLE (LOCAL) =====');
+    res.json(payload);
   } catch (e) {
-    console.error(`[DISCORD PROXY] Error de conexión:`, e.message);
-    res.status(502).json({ 
-      error: 'Error conectando con el bot de Discord', 
+    console.error('[DISCORD PROXY] ===== ERROR HASROLE (LOCAL) =====');
+    console.error(`[DISCORD PROXY] Error:`, e.message);
+    console.error(`[DISCORD PROXY] Stack trace:`, e.stack);
+    console.log('[DISCORD PROXY] ===== FIN ERROR =====');
+    res.status(500).json({ 
+      error: 'Error verificando rol', 
       details: e.message,
       hasRole: false 
     });
@@ -1365,17 +1368,6 @@ async function proxySetAdminBalance(userId, cash, bank) {
   });
   return await response.json();
 }
-// Proxy: has role
-app.get('/api/proxy/discord/hasrole/:userId/:roleId', async (req, res) => {
-  try {
-    const { userId, roleId } = req.params;
-    const response = await fetch(`${process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/'}/api/discord/hasrole/${encodeURIComponent(userId)}/${encodeURIComponent(roleId)}`);
-    const data = await response.json();
-    res.status(response.status).json(data);
-  } catch (e) {
-    res.status(502).json({ error: 'Proxy error', details: String(e) });
-  }
-});
 
 // Widget Discord (público)
 app.get('/api/discord/widget', async (req, res) => {
@@ -2289,6 +2281,27 @@ app.get('/api/discord/ismember/:userId', async (req, res) => {
   } catch (err) {
     console.error('[BOT API][ISMEMBER] Error', err);
     res.status(500).json({ error: 'Error al verificar membresía', details: err.message });
+  }
+});
+
+// Endpoint: verificar si un usuario tiene un rol específico
+app.get('/api/discord/hasrole/:userId/:roleId', async (req, res) => {
+  try {
+    const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
+    const { userId, roleId } = req.params;
+    console.log('[BOT API][HASROLE] Query', { guildId, userId, roleId });
+    const guild = discordClient.guilds.cache.get(guildId);
+    if (!guild) return res.status(404).json({ error: 'Servidor no encontrado' });
+    await guild.members.fetch();
+    const member = guild.members.cache.get(userId);
+    if (!member) return res.json({ hasRole: false, isMember: false });
+    const hasRole = member.roles.cache.has(roleId);
+    const payload = { hasRole, isMember: true };
+    console.log('[BOT API][HASROLE] Result', payload);
+    res.json(payload);
+  } catch (err) {
+    console.error('[BOT API][HASROLE] Error', err);
+    res.status(500).json({ error: 'Error al verificar rol', details: err.message });
   }
 });
 
