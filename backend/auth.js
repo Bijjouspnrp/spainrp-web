@@ -192,8 +192,72 @@ router.get('/logout', (req, res) => {
       if (err) {
         console.error('Error destruyendo sesión:', err);
       }
-      console.log('[AUTH /logout] finished, redirecting to frontpage');
-      res.redirect(FRONTEND_URL);
+      console.log('[AUTH /logout] finished, cleaning token and redirecting');
+      
+      // Enviar página HTML que limpia localStorage y redirige
+      res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Cerrando sesión...</title>
+          <style>
+            body {
+              background: linear-gradient(135deg, #23272a 0%, #181818 100%);
+              color: #fff;
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              min-height: 100vh;
+              margin: 0;
+            }
+            .logout-card {
+              background: #181818;
+              border: 2px solid #FFD700;
+              border-radius: 12px;
+              padding: 2rem;
+              text-align: center;
+              box-shadow: 0 4px 20px rgba(255, 215, 0, 0.2);
+            }
+            .spinner {
+              width: 50px;
+              height: 50px;
+              border: 4px solid rgba(255, 215, 0, 0.3);
+              border-top: 4px solid #FFD700;
+              border-radius: 50%;
+              animation: spin 1s linear infinite;
+              margin: 0 auto 1rem;
+            }
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+            h2 { color: #FFD700; margin: 0 0 0.5rem; }
+            p { color: #ccc; margin: 0; }
+          </style>
+        </head>
+        <body>
+          <div class="logout-card">
+            <div class="spinner"></div>
+            <h2>Cerrando sesión...</h2>
+            <p>Redirigiendo al inicio</p>
+          </div>
+          <script>
+            // Limpiar token JWT de localStorage
+            localStorage.removeItem('spainrp_token');
+            console.log('[Logout] Token JWT eliminado');
+            
+            // Disparar evento para que otros componentes se actualicen
+            window.dispatchEvent(new Event('token-updated'));
+            
+            // Redirigir después de un breve delay
+            setTimeout(() => {
+              window.location.href = '${FRONTEND_URL}';
+            }, 1000);
+          </script>
+        </body>
+        </html>
+      `);
     });
   });
 });

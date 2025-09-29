@@ -509,7 +509,7 @@ const Navbar = () => {
             </span>
           </a>
           <a
-            href="/logout"
+            href={apiUrl('/auth/logout')}
             title="Cerrar sesión"
             style={{
               marginLeft: 8,
