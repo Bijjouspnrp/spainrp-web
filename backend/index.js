@@ -848,7 +848,7 @@ app.get('/api/proxy/discord/hasrole/:userId/:roleId', async (req, res) => {
     console.log(`[DISCORD PROXY] GET /api/proxy/discord/hasrole/${userId}/${roleId}`);
     
     const fetchDiscord = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-    const response = await fetchDiscord(`${process.env.BOT_API_URL || 'https://tu-bot.onrender.com'}/api/discord/hasrole/${encodeURIComponent(userId)}/${encodeURIComponent(roleId)}`);
+    const response = await fetchDiscord(`${process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/'}/api/discord/hasrole/${encodeURIComponent(userId)}/${encodeURIComponent(roleId)}`);
     
     console.log(`[DISCORD PROXY] Response status: ${response.status}`);
     console.log(`[DISCORD PROXY] Content-Type: ${response.headers.get('content-type')}`);
@@ -894,7 +894,7 @@ app.get('/api/proxy/admin/isadmin/:userId', async (req, res) => {
     console.log(`[ADMIN PROXY] GET /api/proxy/admin/isadmin/${userId}`);
     
     const fetchAdmin = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-    const response = await fetchAdmin(`${process.env.BOT_API_URL || 'https://tu-bot.onrender.com'}/api/admin/isadmin/${encodeURIComponent(userId)}`);
+    const response = await fetchAdmin(`${process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/'}/api/admin/isadmin/${encodeURIComponent(userId)}`);
     
     console.log(`[ADMIN PROXY] Response status: ${response.status}`);
     console.log(`[ADMIN PROXY] Content-Type: ${response.headers.get('content-type')}`);
@@ -1226,7 +1226,7 @@ app.get('/api/discord/members-with-roles', ensureAuthenticated, async (req, res)
 app.get('/api/discord/membercount', async (req, res) => {
   try {
     const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-    const botApiUrl = `${process.env.BOT_API_URL || 'https://tu-bot.onrender.com'}/api/membercount`;
+    const botApiUrl = `${process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/'}/api/membercount`;
     const response = await fetch(botApiUrl);
     if (!response.ok) {
       const errText = await response.text();
@@ -1248,7 +1248,7 @@ app.get('/api/proxy/discord/ismember/:userId', async (req, res) => {
     console.log(`[DISCORD PROXY] GET /api/proxy/discord/ismember/${userId}`);
     
     const fetchDiscord = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-    const response = await fetchDiscord(`${process.env.BOT_API_URL || 'https://tu-bot.onrender.com'}/api/discord/ismember/${encodeURIComponent(userId)}`);
+    const response = await fetchDiscord(`${process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/'}/api/discord/ismember/${encodeURIComponent(userId)}`);
     
     console.log(`[DISCORD PROXY] Response status: ${response.status}`);
     console.log(`[DISCORD PROXY] Content-Type: ${response.headers.get('content-type')}`);
@@ -1331,7 +1331,7 @@ async function proxySetAdminBalance(userId, cash, bank) {
 app.get('/api/proxy/discord/hasrole/:userId/:roleId', async (req, res) => {
   try {
     const { userId, roleId } = req.params;
-    const response = await fetch(`${process.env.BOT_API_URL || 'https://tu-bot.onrender.com'}/api/discord/hasrole/${encodeURIComponent(userId)}/${encodeURIComponent(roleId)}`);
+    const response = await fetch(`${process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/'}/api/discord/hasrole/${encodeURIComponent(userId)}/${encodeURIComponent(roleId)}`);
     const data = await response.json();
     res.status(response.status).json(data);
   } catch (e) {
@@ -1360,7 +1360,7 @@ app.get('/api/discord/widget', async (req, res) => {
   }
 });
 // Proxy para obtener datos de miembro desde el bot
-const BOT_API_URL = process.env.BOT_API_URL || 'https://tu-bot.onrender.com';
+const BOT_API_URL = process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/';
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 app.get('/api/backend/member/:guildId/:userId', async (req, res) => {
@@ -1592,7 +1592,7 @@ app.delete('/api/announcements/:id', async (req, res) => {
   const newsId = req.params.id;
   if (!userId || !newsId) return res.status(400).json({ error: 'Faltan datos' });
   try {
-    const BOT_API_URL = process.env.BOT_API_URL || 'https://tu-bot.onrender.com';
+    const BOT_API_URL = process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/';
     const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
     const resp = await fetch(`${BOT_API_URL}/api/discord/candeletenews/${encodeURIComponent(userId)}`);
     const data = await resp.json();
@@ -1613,7 +1613,7 @@ app.put('/api/announcements/:id', express.json(), async (req, res) => {
   const { title, body, images, company, tags } = req.body;
   if (!userId || !newsId) return res.status(400).json({ error: 'Faltan datos' });
   try {
-    const BOT_API_URL = process.env.BOT_API_URL || 'https://tu-bot.onrender.com';
+    const BOT_API_URL = process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/';
     const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
     const news = await new Promise((resolve, reject) => {
       db.get('SELECT * FROM announcements WHERE id = ?', [newsId], (err, row) => {
@@ -1648,7 +1648,7 @@ app.post('/api/announcements', uploadAnnouncements.fields([
   try {
     const userId = req.body.userId || req.body.authorId || req.body.author || req.body.authorName;
     if (!userId) return res.status(400).json({ error: 'Falta userId para verificación de rol' });
-    const BOT_API_URL = process.env.BOT_API_URL || 'https://tu-bot.onrender.com';
+    const BOT_API_URL = process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/';
     const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
     const resp = await fetch(`${BOT_API_URL}/api/discord/canpostnews/${encodeURIComponent(userId)}`);
     const data = await resp.json();
@@ -1940,7 +1940,7 @@ app.get('/api/proxy/admin/isadmin/:userId', async (req, res) => {
     const { userId } = req.params;
     console.log(`[PROXY] Checking admin status for user ${userId}`);
     
-    const response = await fetch(`${process.env.BOT_API_URL || 'https://tu-bot.onrender.com'}/api/admin/isadmin/${userId}`);
+    const response = await fetch(`${process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/'}/api/admin/isadmin/${userId}`);
     const data = await response.json();
     
     console.log(`[PROXY] Admin check result:`, data);
@@ -1958,7 +1958,7 @@ app.get('/api/proxy/admin/search/:query', async (req, res) => {
     const { adminUserId } = req.query;
     console.log(`[PROXY] Searching users with query: ${query}, admin: ${adminUserId}`);
     
-    const response = await fetch(`${process.env.BOT_API_URL || 'https://tu-bot.onrender.com'}/api/admin/search/${query}?adminUserId=${adminUserId}`);
+    const response = await fetch(`${process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/'}/api/admin/search/${query}?adminUserId=${adminUserId}`);
     const data = await response.json();
     
     console.log(`[PROXY] Search result:`, data);
@@ -1976,7 +1976,7 @@ app.get('/api/proxy/admin/inventory/:targetUserId', async (req, res) => {
     const { adminUserId } = req.query;
     console.log(`[PROXY] Getting inventory for user ${targetUserId}, admin: ${adminUserId}`);
     
-    const response = await fetch(`${process.env.BOT_API_URL || 'https://tu-bot.onrender.com'}/api/admin/inventory/${targetUserId}?adminUserId=${adminUserId}`);
+    const response = await fetch(`${process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/'}/api/admin/inventory/${targetUserId}?adminUserId=${adminUserId}`);
     const data = await response.json();
     
     console.log(`[PROXY] Inventory result:`, data);
@@ -1993,7 +1993,7 @@ app.get('/api/proxy/admin/balance/:targetUserId', async (req, res) => {
     const { targetUserId } = req.params;
     const { adminUserId } = req.query;
     console.log(`[PROXY] Getting balance for user ${targetUserId}, admin: ${adminUserId}`);
-    const response = await fetch(`${process.env.BOT_API_URL || 'https://tu-bot.onrender.com'}/api/admin/balance/${targetUserId}?adminUserId=${adminUserId}`);
+    const response = await fetch(`${process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/'}/api/admin/balance/${targetUserId}?adminUserId=${adminUserId}`);
     const data = await response.json();
     console.log(`[PROXY] Balance result:`, data);
     res.json(data);
@@ -2011,7 +2011,7 @@ app.post('/api/proxy/admin/additem', express.json(), async (req, res) => {
     // El API externo espera 'userId', no 'targetUserId'
     const payload = { userId: targetUserId, itemId, amount, adminUserId };
     console.log(`[PROXY] [additem] Forwarding payload:`, payload);
-    const response = await fetch(`${process.env.BOT_API_URL || 'https://tu-bot.onrender.com'}/api/admin/additem`, {
+    const response = await fetch(`${process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/'}/api/admin/additem`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -2041,7 +2041,7 @@ app.post('/api/proxy/admin/removeitem', express.json(), async (req, res) => {
     console.log(`[PROXY] [removeitem] Request body:`, req.body);
     const payload = { userId: targetUserId, itemId, amount, adminUserId };
     console.log(`[PROXY] [removeitem] Forwarding payload:`, payload);
-    const response = await fetch(`${process.env.BOT_API_URL || 'https://tu-bot.onrender.com'}/api/admin/removeitem`, {
+    const response = await fetch(`${process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/'}/api/admin/removeitem`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
