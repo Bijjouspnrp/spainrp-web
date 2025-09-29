@@ -931,46 +931,52 @@ app.get('/api/proxy/discord/hasrole/:userId/:roleId', async (req, res) => {
   }
 });
 
-// Proxy: verificar si usuario es administrador
+// Proxy: verificar si usuario es administrador - Usar endpoint local
 app.get('/api/proxy/admin/isadmin/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
+    console.log('[ADMIN PROXY] ===== INICIO ISADMIN (LOCAL) =====');
     console.log(`[ADMIN PROXY] GET /api/proxy/admin/isadmin/${userId}`);
     
-    const fetchAdmin = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-    const response = await fetchAdmin(`${process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/'}/api/admin/isadmin/${encodeURIComponent(userId)}`);
-    
-    console.log(`[ADMIN PROXY] Response status: ${response.status}`);
-    console.log(`[ADMIN PROXY] Content-Type: ${response.headers.get('content-type')}`);
-    
-    // Verificar si la respuesta es JSON
-    const contentType = response.headers.get('content-type') || '';
-    if (!contentType.includes('application/json')) {
-      console.error(`[ADMIN PROXY] Invalid content type: ${contentType}`);
-      return res.status(502).json({ 
-        error: 'Bot externo no disponible', 
-        details: 'El bot externo no está respondiendo con JSON válido',
-        isAdmin: false 
-      });
+    // Verificar si el bot de Discord está disponible
+    if (!discordClient.readyAt) {
+      console.warn('[ADMIN PROXY] ⚠️ Bot de Discord no disponible, devolviendo isAdmin: false');
+      return res.json({ isAdmin: false, botUnavailable: true });
     }
     
-    const data = await response.json();
+    // Usar el endpoint local directamente
+    const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
+    const adminRoleId = '1384340649205301359';
+    console.log(`[ADMIN PROXY] Guild ID: ${guildId}, User ID: ${userId}, Admin Role ID: ${adminRoleId}`);
     
-    if (!response.ok) {
-      console.error(`[ADMIN PROXY] Bot respondió con error: ${response.status}`);
-      return res.status(response.status).json({ 
-        error: 'Error del bot externo', 
-        details: data,
-        isAdmin: false 
-      });
+    const guild = discordClient.guilds.cache.get(guildId);
+    if (!guild) {
+      console.error(`[ADMIN PROXY] ❌ Servidor no encontrado: ${guildId}`);
+      return res.status(404).json({ error: 'Servidor no encontrado', isAdmin: false });
     }
     
-    console.log(`[ADMIN PROXY] Permisos verificados para ${userId}:`, data);
-    res.json(data);
+    await guild.members.fetch();
+    const member = guild.members.cache.get(userId);
+    if (!member) {
+      console.log(`[ADMIN PROXY] ❌ Usuario no encontrado: ${userId}`);
+      return res.json({ isAdmin: false, isMember: false });
+    }
+    
+    const hasAdminRole = member.roles.cache.has(adminRoleId);
+    const hasAdminPerms = member.permissions.has(PermissionsBitField.Flags.Administrator);
+    const isAdmin = hasAdminRole || hasAdminPerms;
+    const payload = { isAdmin, isMember: true, hasAdminRole, hasAdminPerms };
+    
+    console.log(`[ADMIN PROXY] ✅ Result for ${userId}:`, payload);
+    console.log('[ADMIN PROXY] ===== FIN ISADMIN (LOCAL) =====');
+    res.json(payload);
   } catch (e) {
-    console.error(`[ADMIN PROXY] Error de conexión:`, e.message);
-    res.status(502).json({ 
-      error: 'Error conectando con el bot de administración', 
+    console.error('[ADMIN PROXY] ===== ERROR ISADMIN (LOCAL) =====');
+    console.error(`[ADMIN PROXY] Error:`, e.message);
+    console.error(`[ADMIN PROXY] Stack trace:`, e.stack);
+    console.log('[ADMIN PROXY] ===== FIN ERROR =====');
+    res.status(500).json({ 
+      error: 'Error verificando administrador', 
       details: e.message,
       isAdmin: false 
     });
@@ -1964,22 +1970,6 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
-// Verificar si usuario es administrador total
-app.get('/api/proxy/admin/isadmin/:userId', async (req, res) => {
-  try {
-    const { userId } = req.params;
-    console.log(`[PROXY] Checking admin status for user ${userId}`);
-    
-    const response = await fetch(`${process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/'}/api/admin/isadmin/${userId}`);
-    const data = await response.json();
-    
-    console.log(`[PROXY] Admin check result:`, data);
-    res.json(data);
-  } catch (error) {
-    console.error('[PROXY] Error checking admin status:', error);
-    res.status(500).json({ error: 'Error al verificar administrador' });
-  }
-});
 
 // Buscar usuarios por nombre (solo administradores)
 app.get('/api/proxy/admin/search/:query', async (req, res) => {
@@ -2862,9 +2852,9 @@ server.listen(PORT, () => {
   
   // Iniciar el bot de Discord solo si hay token
   if (TOKEN) {
-    discordClient.login(TOKEN).catch(err => {
-      console.error('Error iniciando el bot de Discord:', err);
-    });
+  discordClient.login(TOKEN).catch(err => {
+    console.error('Error iniciando el bot de Discord:', err);
+  });
   } else {
     console.warn('⚠️ DISCORD_BOT_TOKEN no configurado. Funcionalidades de Discord deshabilitadas.');
   }
