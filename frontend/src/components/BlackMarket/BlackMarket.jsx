@@ -3,7 +3,7 @@ import { FaLock, FaSkull, FaPills, FaMoneyBillWave, FaUserSecret, FaLaptopCode, 
 import { GiPistolGun, GiChemicalDrop, GiAbbotMeeple, GiAbdominalArmor, GiKnifeFork, GiKnifeThrust, GiSentryGun } from 'react-icons/gi';
 import './BlackMarket.css';
 import DiscordUserBar from '../DiscordUserBar';
-import { apiUrl } from '../../utils/api';
+import { apiUrl, authFetch } from '../../utils/api';
 
 // Define ITEMS array above the component
 const ITEMS = [
@@ -258,10 +258,9 @@ export default function BlackMarket() {
 
   React.useEffect(() => {
     console.log('[BlackMarket] Fetch /auth/me...');
-    import('../utils/api').then(({ authFetch }) => {
-      authFetch('/auth/me')
-        .then(res => res.ok ? res.json() : null)
-        .then(async data => {
+    authFetch('/auth/me')
+      .then(res => res.ok ? res.json() : null)
+      .then(async data => {
           console.log('[BlackMarket] /auth/me data:', data);
           if (data && data.user) {
             setUser(data.user);
@@ -319,10 +318,9 @@ export default function BlackMarket() {
               setRoleChecking(false);
             }
           }
-          setLoading(false);
-        })
-        .catch((e) => { console.error('[BlackMarket] /auth/me error:', e); setLoading(false); });
-    });
+        setLoading(false);
+      })
+      .catch((e) => { console.error('[BlackMarket] /auth/me error:', e); setLoading(false); });
   }, []);
 
   // Cargar catálogo desde API externa (vía proxy backend)
