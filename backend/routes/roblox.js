@@ -8,36 +8,42 @@ const path = require('path');
 const dbPath = path.join(__dirname, '../spainrp.db');
 const db = new sqlite3.Database(dbPath);
 
+// Crear tabla al inicializar el módulo
+db.run(`CREATE TABLE IF NOT EXISTS roblox_verifications (
+  discordId TEXT PRIMARY KEY,
+  robloxUserId TEXT,
+  robloxUsername TEXT,
+  robloxDisplayName TEXT,
+  robloxAvatarUrl TEXT,
+  verifiedAt TEXT
+)`, (err) => {
+  if (err) {
+    console.error('[ROBLOX] Error creando tabla roblox_verifications:', err);
+  } else {
+    console.log('[ROBLOX] Tabla roblox_verifications lista');
+  }
+});
+
 // Guardar userId Roblox verificado en la base de datos
 router.post('/save', async (req, res) => {
   const { discordId, robloxUserId, robloxUsername, robloxDisplayName, robloxAvatarUrl } = req.body;
   if (!discordId || !robloxUserId) return res.status(400).json({ error: 'Faltan datos.' });
+  
   try {
-    // Crear tabla si no existe y luego guardar
-    db.run(`CREATE TABLE IF NOT EXISTS roblox_verifications (
-      discordId TEXT PRIMARY KEY,
-      robloxUserId TEXT,
-      robloxUsername TEXT,
-      robloxDisplayName TEXT,
-      robloxAvatarUrl TEXT,
-      verifiedAt TEXT
-    )`, function(tableErr) {
-      if (tableErr) return res.status(500).json({ error: 'DB error', details: tableErr.message });
-      db.run(`INSERT INTO roblox_verifications (discordId, robloxUserId, robloxUsername, robloxDisplayName, robloxAvatarUrl, verifiedAt)
-        VALUES (?, ?, ?, ?, ?, ?)
-        ON CONFLICT(discordId) DO UPDATE SET
-          robloxUserId=excluded.robloxUserId,
-          robloxUsername=excluded.robloxUsername,
-          robloxDisplayName=excluded.robloxDisplayName,
-          robloxAvatarUrl=excluded.robloxAvatarUrl,
-          verifiedAt=excluded.verifiedAt
-      `, [discordId, robloxUserId, robloxUsername, robloxDisplayName, robloxAvatarUrl, new Date().toISOString()], function(err) {
-        if (err) return res.status(500).json({ error: 'DB error', details: err.message });
-        res.json({ success: true });
-      });
+    db.run(`INSERT INTO roblox_verifications (discordId, robloxUserId, robloxUsername, robloxDisplayName, robloxAvatarUrl, verifiedAt)
+      VALUES (?, ?, ?, ?, ?, ?)
+      ON CONFLICT(discordId) DO UPDATE SET
+        robloxUserId=excluded.robloxUserId,
+        robloxUsername=excluded.robloxUsername,
+        robloxDisplayName=excluded.robloxDisplayName,
+        robloxAvatarUrl=excluded.robloxAvatarUrl,
+        verifiedAt=excluded.verifiedAt
+    `, [discordId, robloxUserId, robloxUsername, robloxDisplayName, robloxAvatarUrl, new Date().toISOString()], function(err) {
+      if (err) return res.status(500).json({ error: 'DB error', details: err.message });
+      res.json({ success: true });
     });
   } catch (e) {
-    res.status(500).json({ error: 'Error guardando verificación.' });
+    res.status(500).json({ error: 'Error guardando verificación.', details: e.message });
   }
 });
 
