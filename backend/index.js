@@ -27,7 +27,7 @@ const uploadDM = multer();
 const { Client, GatewayIntentBits, ChannelType, PermissionsBitField } = require('discord.js');
 const { Partials } = require('discord.js');
 
-const TOKEN = process.env.DISCORD_BOT_TOKEN || 'MTM4NzE1MDI1MDMzNDA5NzYyNA.GembfZ.AEm24X2ojV3whxVwOKO_4xsMtySTFA1bbbercU';
+const TOKEN = process.env.DISCORD_BOT_TOKEN;
 
 const discordClient = new Client({
   intents: [
@@ -483,7 +483,7 @@ app.use((req, res, next) => {
   res.on('finish', () => {
     // Solo loguear errores 4xx/5xx o rutas auth
     if (res.statusCode >= 400 || req.url.includes('/auth/')) {
-      const ms = Date.now() - start;
+    const ms = Date.now() - start;
       console.log(`[${res.statusCode >= 400 ? 'ERROR' : 'AUTH'}] ${req.method} ${req.url} -> ${res.statusCode} ${ms}ms`);
     }
   });
@@ -667,7 +667,7 @@ const handleDNIExport = async (req, res) => {
     
     // Para HEAD, solo enviar headers
     if (isHeadRequest) {
-      res.set('Content-Type', response.headers.get('content-type') || 'image/png');
+    res.set('Content-Type', response.headers.get('content-type') || 'image/png');
       return res.status(200).end();
     }
     
@@ -696,20 +696,34 @@ const BLACKMARKET_BOT_URL = process.env.BLACKMARKET_BOT_URL || 'http://37.27.21.
 // Proxy: obtener catálogo de items del BlackMarket
 app.get('/api/proxy/blackmarket/items', async (req, res) => {
   try {
+    console.log('[BLACKMARKET PROXY] ===== INICIO CATÁLOGO =====');
     console.log('[BLACKMARKET PROXY] GET /api/proxy/blackmarket/items');
+    console.log('[BLACKMARKET PROXY] URL del bot:', `${BLACKMARKET_BOT_URL}/api/blackmarket/items`);
+    
     const fetchBM = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
     const response = await fetchBM(`${BLACKMARKET_BOT_URL}/api/blackmarket/items`);
+    
+    console.log('[BLACKMARKET PROXY] Response status:', response.status);
+    console.log('[BLACKMARKET PROXY] Response headers:', Object.fromEntries(response.headers.entries()));
+    
     const data = await response.json();
+    console.log('[BLACKMARKET PROXY] Response data keys:', Object.keys(data));
+    console.log('[BLACKMARKET PROXY] Response data length:', Object.keys(data).length);
     
     if (!response.ok) {
       console.error(`[BLACKMARKET PROXY] Bot respondió con error: ${response.status}`);
+      console.error('[BLACKMARKET PROXY] Error details:', data);
       return res.status(response.status).json({ error: 'Error obteniendo catálogo del BlackMarket', details: data });
     }
     
-    console.log(`[BLACKMARKET PROXY] Catálogo obtenido: ${Object.keys(data).length} items`);
+    console.log(`[BLACKMARKET PROXY] ✅ Catálogo obtenido exitosamente: ${Object.keys(data).length} items`);
+    console.log('[BLACKMARKET PROXY] ===== FIN CATÁLOGO =====');
     res.json(data);
   } catch (e) {
+    console.error('[BLACKMARKET PROXY] ===== ERROR CATÁLOGO =====');
     console.error(`[BLACKMARKET PROXY] Error de conexión:`, e.message);
+    console.error('[BLACKMARKET PROXY] Stack trace:', e.stack);
+    console.error('[BLACKMARKET PROXY] ===== FIN ERROR =====');
     res.status(502).json({ error: 'Error conectando con el bot de BlackMarket', details: e.message });
   }
 });
@@ -718,21 +732,34 @@ app.get('/api/proxy/blackmarket/items', async (req, res) => {
 app.get('/api/proxy/blackmarket/saldo/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
+    console.log('[BLACKMARKET PROXY] ===== INICIO SALDO =====');
     console.log(`[BLACKMARKET PROXY] GET /api/proxy/blackmarket/saldo/${userId}`);
+    console.log('[BLACKMARKET PROXY] URL del bot:', `${BLACKMARKET_BOT_URL}/api/blackmarket/saldo/${encodeURIComponent(userId)}`);
     
     const fetchBM = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
     const response = await fetchBM(`${BLACKMARKET_BOT_URL}/api/blackmarket/saldo/${encodeURIComponent(userId)}`);
+    
+    console.log('[BLACKMARKET PROXY] Response status:', response.status);
+    console.log('[BLACKMARKET PROXY] Response headers:', Object.fromEntries(response.headers.entries()));
+    
     const data = await response.json();
+    console.log('[BLACKMARKET PROXY] Response data:', data);
     
     if (!response.ok) {
       console.error(`[BLACKMARKET PROXY] Bot respondió con error: ${response.status}`);
+      console.error('[BLACKMARKET PROXY] Error details:', data);
+      console.log('[BLACKMARKET PROXY] ===== FIN SALDO (ERROR) =====');
       return res.status(response.status).json({ error: 'Error obteniendo saldo del BlackMarket', details: data });
     }
     
-    console.log(`[BLACKMARKET PROXY] Saldo obtenido para ${userId}:`, data);
+    console.log(`[BLACKMARKET PROXY] ✅ Saldo obtenido exitosamente para ${userId}:`, data);
+    console.log('[BLACKMARKET PROXY] ===== FIN SALDO =====');
     res.json(data);
   } catch (e) {
+    console.error('[BLACKMARKET PROXY] ===== ERROR SALDO =====');
     console.error(`[BLACKMARKET PROXY] Error de conexión:`, e.message);
+    console.error('[BLACKMARKET PROXY] Stack trace:', e.stack);
+    console.error('[BLACKMARKET PROXY] ===== FIN ERROR =====');
     res.status(502).json({ error: 'Error conectando con el bot de BlackMarket', details: e.message });
   }
 });
@@ -741,7 +768,10 @@ app.get('/api/proxy/blackmarket/saldo/:userId', async (req, res) => {
 app.post('/api/proxy/blackmarket/purchase', async (req, res) => {
   try {
     const { userId, itemId } = req.body;
-    console.log(`[BLACKMARKET PROXY] POST /api/proxy/blackmarket/purchase - userId: ${userId}, itemId: ${itemId}`);
+    console.log('[BLACKMARKET PROXY] ===== INICIO COMPRA =====');
+    console.log(`[BLACKMARKET PROXY] POST /api/proxy/blackmarket/purchase`);
+    console.log('[BLACKMARKET PROXY] Request body:', { userId, itemId });
+    console.log('[BLACKMARKET PROXY] URL del bot:', `${BLACKMARKET_BOT_URL}/api/blackmarket/purchase`);
     
     const fetchBM = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
     const response = await fetchBM(`${BLACKMARKET_BOT_URL}/api/blackmarket/purchase`, {
@@ -749,17 +779,28 @@ app.post('/api/proxy/blackmarket/purchase', async (req, res) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId, itemId })
     });
+    
+    console.log('[BLACKMARKET PROXY] Response status:', response.status);
+    console.log('[BLACKMARKET PROXY] Response headers:', Object.fromEntries(response.headers.entries()));
+    
     const data = await response.json();
+    console.log('[BLACKMARKET PROXY] Response data:', data);
     
     if (!response.ok) {
       console.error(`[BLACKMARKET PROXY] Bot respondió con error: ${response.status}`);
+      console.error('[BLACKMARKET PROXY] Error details:', data);
+      console.log('[BLACKMARKET PROXY] ===== FIN COMPRA (ERROR) =====');
       return res.status(response.status).json({ error: 'Error realizando compra en BlackMarket', details: data });
     }
     
-    console.log(`[BLACKMARKET PROXY] Compra exitosa para ${userId}:`, data);
+    console.log(`[BLACKMARKET PROXY] ✅ Compra exitosa para ${userId}:`, data);
+    console.log('[BLACKMARKET PROXY] ===== FIN COMPRA =====');
     res.json(data);
   } catch (e) {
+    console.error('[BLACKMARKET PROXY] ===== ERROR COMPRA =====');
     console.error(`[BLACKMARKET PROXY] Error de conexión:`, e.message);
+    console.error('[BLACKMARKET PROXY] Stack trace:', e.stack);
+    console.error('[BLACKMARKET PROXY] ===== FIN ERROR =====');
     res.status(502).json({ error: 'Error conectando con el bot de BlackMarket', details: e.message });
   }
 });
@@ -1241,46 +1282,43 @@ app.get('/api/discord/membercount', async (req, res) => {
   }
 });
 
-// Proxy: is member
+// Proxy: is member - Usar endpoint local en lugar de HTTP externo
 app.get('/api/proxy/discord/ismember/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
+    console.log('[DISCORD PROXY] ===== INICIO ISMEMBER (LOCAL) =====');
     console.log(`[DISCORD PROXY] GET /api/proxy/discord/ismember/${userId}`);
     
-    const fetchDiscord = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-    const response = await fetchDiscord(`${process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/'}/api/discord/ismember/${encodeURIComponent(userId)}`);
-    
-    console.log(`[DISCORD PROXY] Response status: ${response.status}`);
-    console.log(`[DISCORD PROXY] Content-Type: ${response.headers.get('content-type')}`);
-    
-    // Verificar si la respuesta es JSON
-    const contentType = response.headers.get('content-type') || '';
-    if (!contentType.includes('application/json')) {
-      console.error(`[DISCORD PROXY] Invalid content type: ${contentType}`);
-      return res.status(502).json({ 
-        error: 'Bot externo no disponible', 
-        details: 'El bot externo no está respondiendo con JSON válido',
-        isMember: false 
-      });
+    // Verificar si el bot de Discord está disponible
+    if (!discordClient.readyAt) {
+      console.warn('[DISCORD PROXY] ⚠️ Bot de Discord no disponible, devolviendo isMember: false');
+      return res.json({ isMember: false, botUnavailable: true });
     }
     
-    const data = await response.json();
+    // Usar el endpoint local directamente en lugar de hacer HTTP request
+    const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
+    console.log(`[DISCORD PROXY] Guild ID: ${guildId}, User ID: ${userId}`);
     
-    if (!response.ok) {
-      console.error(`[DISCORD PROXY] Bot respondió con error: ${response.status}`);
-      return res.status(response.status).json({ 
-        error: 'Error del bot externo', 
-        details: data,
-        isMember: false 
-      });
+    const guild = discordClient.guilds.cache.get(guildId);
+    if (!guild) {
+      console.error(`[DISCORD PROXY] ❌ Servidor no encontrado: ${guildId}`);
+      return res.status(404).json({ error: 'Servidor no encontrado', isMember: false });
     }
     
-    console.log(`[DISCORD PROXY] Success for ${userId}:`, data);
-    res.json(data);
+    await guild.members.fetch();
+    const member = guild.members.cache.get(userId);
+    const payload = { isMember: Boolean(member) };
+    
+    console.log(`[DISCORD PROXY] ✅ Result for ${userId}:`, payload);
+    console.log('[DISCORD PROXY] ===== FIN ISMEMBER (LOCAL) =====');
+    res.json(payload);
   } catch (e) {
-    console.error(`[DISCORD PROXY] Error de conexión:`, e.message);
-    res.status(502).json({ 
-      error: 'Error conectando con el bot de Discord', 
+    console.error('[DISCORD PROXY] ===== ERROR ISMEMBER (LOCAL) =====');
+    console.error(`[DISCORD PROXY] Error:`, e.message);
+    console.error(`[DISCORD PROXY] Stack trace:`, e.stack);
+    console.log('[DISCORD PROXY] ===== FIN ERROR =====');
+    res.status(500).json({ 
+      error: 'Error verificando membresía', 
       details: e.message,
       isMember: false 
     });
@@ -2809,8 +2847,12 @@ app.use((req, res, next) => {
 server.listen(PORT, () => {
   console.log(`Backend SpainRP escuchando en puerto ${PORT}`);
   
-  // Iniciar el bot de Discord
-  discordClient.login(TOKEN).catch(err => {
-    console.error('Error iniciando el bot de Discord:', err);
-  });
+  // Iniciar el bot de Discord solo si hay token
+  if (TOKEN) {
+    discordClient.login(TOKEN).catch(err => {
+      console.error('Error iniciando el bot de Discord:', err);
+    });
+  } else {
+    console.warn('⚠️ DISCORD_BOT_TOKEN no configurado. Funcionalidades de Discord deshabilitadas.');
+  }
 });
