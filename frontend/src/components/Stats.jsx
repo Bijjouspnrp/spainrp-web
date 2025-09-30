@@ -53,11 +53,11 @@ function formatNumber(value) {
 
 const Stats = ({ memberCount, totalMembers }) => {
   const data = useMemo(() => ([
-    { icon: <FaUsers />, value: Number(memberCount) || 0, label: 'Miembros Activos', color: '#4a90e2' },
-    { icon: <FaUsers />, value: Number(totalMembers) || 0, label: 'Miembros Totales', color: '#6366f1' },
-    { icon: <FaClock />, value: null, label: 'Servidor Online', text: '24/7', color: '#4ade80' },
-    { icon: <FaStar />, value: null, label: 'Roles Únicos', text: '100+', color: '#fbbf24' },
-    { icon: <FaTrophy />, value: null, label: 'Eventos Mensuales', text: '50+', color: '#f87171' }
+    { icon: <FaUsers />, value: Number(memberCount) || 0, label: 'Miembros Activos', color: '#7289da' },
+    { icon: <FaUsers />, value: Number(totalMembers) || 0, label: 'Miembros Totales', color: '#5865f2' },
+    { icon: <FaClock />, value: null, label: 'Servidor Online', text: '24/7', color: '#57f287' },
+    { icon: <FaStar />, value: null, label: 'Roles Únicos', text: '100+', color: '#faa61a' },
+    { icon: <FaTrophy />, value: null, label: 'Eventos Mensuales', text: '50+', color: '#ed4245' }
   ]), [memberCount, totalMembers]);
 
   return (
