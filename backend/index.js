@@ -716,7 +716,7 @@ const handleDNIExport = async (req, res) => {
     // Para HEAD, solo enviar headers
     if (isHeadRequest) {
       console.log(`[DNI PROXY] Enviando headers para HEAD request`);
-      res.set('Content-Type', response.headers.get('content-type') || 'image/png');
+    res.set('Content-Type', response.headers.get('content-type') || 'image/png');
       res.set('Content-Length', response.headers.get('content-length') || '0');
       return res.status(200).end();
     }
@@ -795,43 +795,105 @@ app.get('/api/proxy/dni/test/:discordId', async (req, res) => {
   }
 });
 
-// Endpoint para verificar si un DNI existe (más simple)
-app.get('/api/proxy/dni/check/:discordId', async (req, res) => {
+// Endpoint para crear un DNI de prueba (solo para desarrollo)
+app.get('/api/proxy/dni/demo/:discordId', async (req, res) => {
   const { discordId } = req.params;
-  const DNI_BOT_URL = process.env.DNI_BOT_URL || 'http://37.27.21.91:5021';
   
-  console.log(`[DNI CHECK] Verificando existencia de DNI para DiscordID: ${discordId}`);
+  console.log(`[DNI DEMO] Generando DNI de demostración para DiscordID: ${discordId}`);
   
   try {
-    const fetchDNI = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+    // Crear un DNI de demostración simple
+    const canvas = require('canvas');
+    const { createCanvas } = canvas;
     
-    const response = await fetchDNI(`${DNI_BOT_URL}/dni/${encodeURIComponent(discordId)}/exportar`, {
-      method: 'HEAD',
-      timeout: 5000,
-      headers: {
-        'User-Agent': 'SpainRP-Web/1.0',
-        'Accept': 'image/png,image/*,*/*'
-      }
+    const canvasWidth = 700;
+    const canvasHeight = 420;
+    const canvasElement = createCanvas(canvasWidth, canvasHeight);
+    const ctx = canvasElement.getContext('2d');
+    
+    // Fondo
+    ctx.fillStyle = '#cbe6f7';
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+    
+    // Marco blanco
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(20, 20, canvasWidth - 40, canvasHeight - 40);
+    
+    // Borde
+    ctx.strokeStyle = '#bdbdbd';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(40, 60, canvasWidth - 80, canvasHeight - 120);
+    
+    // Fondo interior
+    ctx.fillStyle = '#fbe3c2';
+    ctx.fillRect(41, 61, canvasWidth - 82, canvasHeight - 122);
+    
+    // Título
+    ctx.font = 'bold 26px Arial';
+    ctx.fillStyle = '#3a3a3a';
+    ctx.textAlign = 'center';
+    ctx.fillText('DOCUMENTO NACIONAL DE IDENTIDAD', canvasWidth / 2, 50);
+    
+    // Texto de demostración
+    ctx.font = 'bold 18px Arial';
+    ctx.fillStyle = '#1a237e';
+    ctx.textAlign = 'left';
+    ctx.fillText('REINO DE ESPAÑA', 105, 90);
+    
+    // Campos de demostración
+    ctx.font = 'bold 14px Arial';
+    ctx.fillStyle = '#222';
+    ctx.textAlign = 'left';
+    
+    const campos = [
+      { label: 'DNI:', value: '12345678A', x: 170, y: 130 },
+      { label: 'APELLIDOS:', value: 'GARCIA LOPEZ', x: 170, y: 155 },
+      { label: 'NOMBRE:', value: 'JUAN CARLOS', x: 170, y: 180 },
+      { label: 'SEXO:', value: 'H', x: 170, y: 205 },
+      { label: 'NACIONALIDAD:', value: 'ESPAÑOLA', x: 170, y: 230 },
+      { label: 'NACIMIENTO:', value: '01/01/1990', x: 170, y: 255 },
+      { label: 'ALTURA:', value: '175 cm', x: 170, y: 280 },
+      { label: 'TRABAJO:', value: 'DESARROLLADOR', x: 400, y: 130 },
+      { label: 'COLOR PELO:', value: 'CASTANO', x: 400, y: 155 },
+      { label: 'DIRECCIÓN:', value: 'C/ MAYOR 123, MADRID', x: 400, y: 180 },
+      { label: 'ROBLOX:', value: 'UsuarioRoblox', x: 400, y: 205 },
+      { label: 'EMISIÓN:', value: new Date().toLocaleDateString(), x: 400, y: 230 },
+      { label: 'CADUCIDAD:', value: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toLocaleDateString(), x: 400, y: 255 }
+    ];
+    
+    campos.forEach(campo => {
+      ctx.font = 'bold 14px Arial';
+      ctx.fillText(campo.label, campo.x, campo.y);
+      ctx.font = '14px Arial';
+      ctx.fillText(campo.value, campo.x + 100, campo.y);
     });
     
-    const exists = response.ok;
-    console.log(`[DNI CHECK] DNI ${exists ? 'EXISTE' : 'NO EXISTE'} para DiscordID: ${discordId}`);
+    // Firma digital
+    ctx.font = 'italic 15px Arial';
+    ctx.fillStyle = '#222';
+    ctx.fillText('Firma: JUAN CARLOS GARCIA LOPEZ', 400, 310);
     
-    res.json({
-      exists: exists,
-      discordId: discordId,
-      status: response.status,
-      message: exists ? 'DNI encontrado' : 'DNI no encontrado',
-      timestamp: new Date().toISOString()
-    });
+    // Pie de página
+    ctx.font = '12px Arial';
+    ctx.fillStyle = '#888';
+    ctx.textAlign = 'center';
+    ctx.fillText('DOCUMENTO NACIONAL DE IDENTIDAD - DEMOSTRACIÓN', canvasWidth / 2, 410);
+    
+    // Convertir a buffer
+    const buffer = canvasElement.toBuffer('image/png');
+    
+    console.log(`[DNI DEMO] DNI de demostración generado (${buffer.length} bytes) para ${discordId}`);
+    
+    res.set('Content-Type', 'image/png');
+    res.set('Content-Length', buffer.length);
+    res.send(buffer);
+    
   } catch (e) {
-    console.error(`[DNI CHECK] Error:`, e.message);
-    res.json({
-      exists: false,
-      discordId: discordId,
-      error: e.message,
-      message: 'Error verificando DNI',
-      timestamp: new Date().toISOString()
+    console.error(`[DNI DEMO] Error generando DNI de demostración:`, e.message);
+    res.status(500).json({
+      error: 'Error generando DNI de demostración',
+      details: e.message,
+      discordId: discordId
     });
   }
 });
