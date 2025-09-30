@@ -89,10 +89,10 @@ const StockMarket = () => {
             console.log('[StockMarket] Activos recibidos:', activosData);
             if (activosData && typeof activosData === 'object') {
               const activosArr = Object.values(activosData).map(asset => ({
-                ...asset,
-                icon: assetIcons[asset.code] || null
-              }));
-              setStocks(activosArr);
+              ...asset,
+              icon: assetIcons[asset.code] || null
+            }));
+            setStocks(activosArr);
               console.log('[StockMarket] Activos procesados:', activosArr.length);
             }
           } else {
@@ -128,13 +128,13 @@ const StockMarket = () => {
       setTimeout(() => {
         if (mounted) {
           clearInterval(progressInterval);
-          setLoading(false);
+      setLoading(false);
         }
       }, 5000);
     };
     
     fetchAll();
-    intervalId = setInterval(fetchAll, 5000); // 5 segundos
+  intervalId = setInterval(fetchAll, 5000); // 5 segundos
     return () => { 
       mounted = false; 
       clearInterval(intervalId); 
@@ -166,19 +166,19 @@ const StockMarket = () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            userId: user.id,
-            assetId: stock.code,
-            cantidad: qty
+          userId: user.id,
+          assetId: stock.code,
+          cantidad: qty
           })
         });
         if (res.ok) {
           const data = await res.json();
           setSaldo(data.saldo);
           setCartera(data.inversiones);
-          setHistorial([{ action: "Compraste", qty, code: stock.code, price: stock.price }, ...historial]);
-          setMsgType('success');
-          setMsg(`✅ Has invertido en ${stock.name} (${qty} acciones)`);
-        } else {
+        setHistorial([{ action: "Compraste", qty, code: stock.code, price: stock.price }, ...historial]);
+        setMsgType('success');
+        setMsg(`✅ Has invertido en ${stock.name} (${qty} acciones)`);
+      } else {
           const errorData = await res.json();
           throw new Error(errorData.error || 'Error al comprar');
         }
@@ -187,18 +187,18 @@ const StockMarket = () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            userId: user.id,
-            assetId: stock.code,
-            cantidad: qty
+          userId: user.id,
+          assetId: stock.code,
+          cantidad: qty
           })
         });
         if (res.ok) {
           const data = await res.json();
           setSaldo(data.saldo);
           setCartera(data.inversiones);
-          setHistorial([{ action: "Vendiste", qty, code: stock.code, price: stock.price }, ...historial]);
-          setMsgType('success');
-          setMsg(`✅ Has vendido ${qty} acción${qty>1?'es':''} de ${stock.name}`);
+        setHistorial([{ action: "Vendiste", qty, code: stock.code, price: stock.price }, ...historial]);
+        setMsgType('success');
+        setMsg(`✅ Has vendido ${qty} acción${qty>1?'es':''} de ${stock.name}`);
         } else {
           const errorData = await res.json();
           throw new Error(errorData.error || 'Error al vender');
@@ -441,7 +441,7 @@ const StockMarket = () => {
                 {icon}
               </div>
             ))}
-          </div>
+        </div>
         </div>
         
         {/* Estilos CSS */}
