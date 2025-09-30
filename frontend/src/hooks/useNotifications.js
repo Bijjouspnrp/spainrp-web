@@ -76,7 +76,7 @@ const useNotifications = () => {
       const token = localStorage.getItem('spainrp_token');
       if (!token) return;
 
-      const response = await fetch(apiUrl(`/api/notifications/mark-read/${notificationId}`), {
+      const response = await fetch(apiUrl(`/api/notifications/${notificationId}/read`), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -102,7 +102,7 @@ const useNotifications = () => {
       const token = localStorage.getItem('spainrp_token');
       if (!token) return;
 
-      const response = await fetch(apiUrl('/api/notifications/mark-all-read'), {
+      const response = await fetch(apiUrl('/api/notifications/read-all'), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -148,7 +148,7 @@ const useNotifications = () => {
       const token = localStorage.getItem('spainrp_token');
       if (!token) return;
 
-      const response = await fetch(apiUrl('/api/notifications/clear-all'), {
+      const response = await fetch(apiUrl('/api/notifications/clear'), {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

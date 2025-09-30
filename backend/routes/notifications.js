@@ -42,6 +42,7 @@ db.run(`CREATE TABLE IF NOT EXISTS notifications (
 // Obtener notificaciones del usuario
 router.get('/', async (req, res) => {
   try {
+    console.log('[NOTIFICATIONS] GET / - Usuario:', req.user?.id);
     const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({ error: 'No autorizado' });
@@ -85,6 +86,7 @@ router.post('/:id/read', async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user?.id;
+    console.log(`[NOTIFICATIONS] POST /${id}/read - Usuario: ${userId}`);
     
     if (!userId) {
       return res.status(401).json({ error: 'No autorizado' });
@@ -112,6 +114,7 @@ router.post('/:id/read', async (req, res) => {
 router.post('/read-all', async (req, res) => {
   try {
     const userId = req.user?.id;
+    console.log(`[NOTIFICATIONS] POST /read-all - Usuario: ${userId}`);
     
     if (!userId) {
       return res.status(401).json({ error: 'No autorizado' });
@@ -139,6 +142,7 @@ router.post('/read-all', async (req, res) => {
 router.delete('/clear', async (req, res) => {
   try {
     const userId = req.user?.id;
+    console.log(`[NOTIFICATIONS] DELETE /clear - Usuario: ${userId}`);
     
     if (!userId) {
       return res.status(401).json({ error: 'No autorizado' });
