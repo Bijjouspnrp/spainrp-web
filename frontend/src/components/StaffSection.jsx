@@ -43,17 +43,24 @@ const staffMembers = [
     icon: <FaUsers />
   },
   {
-    name: "Vacio",
-    role: "Vacio",
-    robloxUserId: "Vacio",
+    name: "Asistente de Fundación",
+    role: "XxBoy931xX",
+    robloxUserId: "XxBoy931xX",
     color: "#96ceb4",
     icon: <FaUsers />
   },
   {
-    name: "Vacio",
-    role: "Vacio",
-    robloxUserId: "Vacio",
+    name: "Asistente de Fundación",
+    role: "JoSEyALEx3000",
+    robloxUserId: "JoSEyALEx3000",
     color: "#feca57",
+    icon: <FaUsers />
+  },
+  {
+    name: "Coordinador",
+    role: "EricPGarrido",
+    robloxUserId: "EricPGarrido",
+    color: "#9b59b6",
     icon: <FaUsers />
   }
 ];
@@ -205,6 +212,10 @@ const StaffSection = () => {
       'BijjouPro08': '#ffd700',
       'Mimi_YTgamer100': '#17ccc0ff',
       'Sergiojpni': '#17ccc0ff',
+      'gamessss5025': '#030968ff',
+      'XxBoy931xX': '#96ceb4',
+      'JoSEyALEx3000': '#feca57',
+      'EricPGarrido': '#9b59b6',
       'Soporte': '#45b7d1',
       'Eventos': '#96ceb4',
       'Constructor': '#feca57'
