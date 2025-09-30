@@ -2101,7 +2101,7 @@ app.get('/api/proxy/admin/inventory/:targetUserId', async (req, res) => {
     
     // Verificar permisos de admin usando discordClient local
     const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
-    console.log(`[ADMIN PROXY] Guild ID: ${guildId}, Target User ID: ${targetUserId}, Admin User ID: ${adminUserId}`);
+    console.log(`[ADMIN PROXY] Guild ID: ${guildId}, Target User ID: ${actualTargetUserId}, Admin User ID: ${adminUserId}`);
     
     const guild = discordClient.guilds.cache.get(guildId);
     if (!guild) {
@@ -2126,7 +2126,7 @@ app.get('/api/proxy/admin/inventory/:targetUserId', async (req, res) => {
     console.log(`[ADMIN PROXY] ✅ Permisos verificados para admin: ${adminUserId}`);
     
     // Llamar directamente a la API externa del bot
-    const botUrl = `${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/blackmarket/admin/inventory/${targetUserId}`;
+    const botUrl = `http://37.27.21.91:5021/api/blackmarket/admin/inventory/${targetUserId}`;
     console.log(`[ADMIN PROXY] URL del bot: ${botUrl}`);
     
     const response = await fetch(botUrl);
@@ -2159,7 +2159,7 @@ app.get('/api/proxy/admin/balance/:targetUserId', async (req, res) => {
     
     // Verificar permisos de admin usando discordClient local
     const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
-    console.log(`[ADMIN PROXY] Guild ID: ${guildId}, Target User ID: ${targetUserId}, Admin User ID: ${adminUserId}`);
+    console.log(`[ADMIN PROXY] Guild ID: ${guildId}, Target User ID: ${actualTargetUserId}, Admin User ID: ${adminUserId}`);
     
     const guild = discordClient.guilds.cache.get(guildId);
     if (!guild) {
@@ -2184,7 +2184,7 @@ app.get('/api/proxy/admin/balance/:targetUserId', async (req, res) => {
     console.log(`[ADMIN PROXY] ✅ Permisos verificados para admin: ${adminUserId}`);
     
     // Llamar directamente a la API externa del bot
-    const botUrl = `${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/blackmarket/admin/balance/${targetUserId}`;
+    const botUrl = `http://37.27.21.91:5021/api/blackmarket/admin/balance/${targetUserId}`;
     console.log(`[ADMIN PROXY] URL del bot: ${botUrl}`);
     
     const response = await fetch(botUrl);
@@ -2207,7 +2207,7 @@ app.post('/api/proxy/admin/additem', express.json(), async (req, res) => {
     const { targetUserId, itemId, amount, adminUserId } = req.body;
     console.log(`[PROXY] [additem] Request body:`, req.body);
     // El API externo espera 'userId', no 'targetUserId'
-    const payload = { userId: targetUserId, itemId, amount, adminUserId };
+    const payload = { userId: actualTargetUserId, itemId, amount, adminUserId };
     console.log(`[PROXY] [additem] Forwarding payload:`, payload);
     const response = await fetch(`${process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/'}/api/admin/additem`, {
       method: 'POST',
@@ -2237,7 +2237,7 @@ app.post('/api/proxy/admin/removeitem', express.json(), async (req, res) => {
   try {
     const { targetUserId, itemId, amount, adminUserId } = req.body;
     console.log(`[PROXY] [removeitem] Request body:`, req.body);
-    const payload = { userId: targetUserId, itemId, amount, adminUserId };
+    const payload = { userId: actualTargetUserId, itemId, amount, adminUserId };
     console.log(`[PROXY] [removeitem] Forwarding payload:`, payload);
     const response = await fetch(`${process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/'}/api/admin/removeitem`, {
       method: 'POST',
@@ -2916,7 +2916,7 @@ app.post('/api/admin/additem', express.json(), async (req, res) => {
     const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/admin/additem`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: targetUserId, itemId, amount })
+      body: JSON.stringify({ userId: actualTargetUserId, itemId, amount })
     });
     const data = await response.json();
     res.status(response.status).json(data);
@@ -2947,7 +2947,7 @@ app.post('/api/admin/removeitem', express.json(), async (req, res) => {
     const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/admin/removeitem`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: targetUserId, itemId, amount })
+      body: JSON.stringify({ userId: actualTargetUserId, itemId, amount })
     });
     const data = await response.json();
     res.status(response.status).json(data);
@@ -2988,9 +2988,10 @@ app.get('/api/admin/balance/:targetUserId', async (req, res) => {
 // Modificar saldo de un usuario (solo administradores) - PROXY
 app.post('/api/proxy/admin/setbalance', express.json(), async (req, res) => {
   try {
-    const { targetUserId, cash, bank, adminUserId } = req.body;
+    const { targetUserId, userId, cash, bank, adminUserId } = req.body;
+    const actualTargetUserId = targetUserId || userId;
     console.log(`[ADMIN PROXY] ===== INICIO SETBALANCE =====`);
-    console.log(`[ADMIN PROXY] POST /api/proxy/admin/setbalance`, { targetUserId, cash, bank, adminUserId });
+    console.log(`[ADMIN PROXY] POST /api/proxy/admin/setbalance`, { targetUserId, userId, actualTargetUserId, cash, bank, adminUserId });
     
     // Verificar si el bot de Discord está disponible
     if (!discordClient.readyAt) {
@@ -3000,7 +3001,7 @@ app.post('/api/proxy/admin/setbalance', express.json(), async (req, res) => {
     
     // Verificar permisos de admin usando discordClient local
     const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
-    console.log(`[ADMIN PROXY] Guild ID: ${guildId}, Target User ID: ${targetUserId}, Admin User ID: ${adminUserId}`);
+    console.log(`[ADMIN PROXY] Guild ID: ${guildId}, Target User ID: ${actualTargetUserId}, Admin User ID: ${adminUserId}`);
     
     const guild = discordClient.guilds.cache.get(guildId);
     if (!guild) {
@@ -3025,13 +3026,13 @@ app.post('/api/proxy/admin/setbalance', express.json(), async (req, res) => {
     console.log(`[ADMIN PROXY] ✅ Permisos verificados para admin: ${adminUserId}`);
     
     // Llamar directamente a la API externa del bot
-    const botUrl = `${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/blackmarket/admin/setbalance`;
+    const botUrl = `http://37.27.21.91:5021/api/blackmarket/admin/setbalance`;
     console.log(`[ADMIN PROXY] URL del bot: ${botUrl}`);
     
     const response = await fetch(botUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: targetUserId, cash, bank })
+      body: JSON.stringify({ userId: actualTargetUserId, cash, bank })
     });
     
     const data = await response.json();
@@ -3068,7 +3069,7 @@ app.post('/api/admin/setbalance', express.json(), async (req, res) => {
     const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/admin/setbalance`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: targetUserId, cash, bank })
+      body: JSON.stringify({ userId: actualTargetUserId, cash, bank })
     });
     const data = await response.json();
     res.status(response.status).json(data);
