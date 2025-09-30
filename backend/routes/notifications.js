@@ -1,7 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db/db');
+const sqlite3 = require('sqlite3').verbose();
+const path = require('path');
 const jwt = require('jsonwebtoken');
+
+// Crear conexión directa a la base de datos
+const dbPath = path.join(__dirname, '..', 'spainrp.db');
+const db = new sqlite3.Database(dbPath);
 
 // Middleware para autenticación JWT
 const authenticateJWT = (req, res, next) => {
