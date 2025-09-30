@@ -191,76 +191,89 @@ const NavigationDropdown = ({ isOpen, onClose, links, dark, isMobile }) => {
   const dropdownRef = useRef(null);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        onClose();
-      }
-    };
-
     if (isOpen) {
+      const handleClickOutside = (event) => {
+        if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+          onClose();
+        }
+      };
+
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [isOpen, onClose]);
 
-  // Estilos dinámicos basados en si es móvil o no
-  const dropdownStyles = {
-    position: isMobile ? 'static' : 'absolute',
-    top: isMobile ? 'auto' : '100%',
-    left: isMobile ? 'auto' : 0,
-    minWidth: isMobile ? '100%' : 200,
-    background: dark ? 'rgba(35, 39, 42, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-    backdropFilter: 'blur(20px)',
-    WebkitBackdropFilter: 'blur(20px)',
-    boxShadow: isMobile ? 'none' : '0 8px 32px rgba(114, 137, 218, 0.3), 0 0 0 1px rgba(114, 137, 218, 0.1)',
-    borderRadius: 12,
-    padding: '12px 0',
-    zIndex: 1002,
-    border: isMobile ? '1px solid rgba(114, 137, 218, 0.1)' : '1px solid rgba(114, 137, 218, 0.2)',
-    marginTop: isMobile ? 0 : 8,
-    width: isMobile ? '100%' : 'auto',
-  };
-
-  const linkStyles = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-    padding: isMobile ? '10px 16px' : '12px 20px',
-    borderRadius: 8,
-    fontWeight: 600,
-    color: dark ? '#fff' : '#23272a',
-    background: 'none',
-    border: 'none',
-    fontSize: 15,
-    textDecoration: 'none',
-    transition: 'all 0.2s ease',
-    margin: isMobile ? '2px 0' : '2px 8px',
-    width: isMobile ? '100%' : 'calc(100% - 16px)',
-    position: 'relative',
-  };
+  if (!isOpen) return null;
 
   return (
-    <div ref={dropdownRef} style={{ position: 'relative', width: isMobile ? '100%' : 'auto' }}>
-      {isOpen && (
-        <div style={dropdownStyles}>
-          {links.map((link, index) => (
-            <a
-              key={index}
-              href={link.to}
-              className="nav-link"
-              style={linkStyles}
-              onClick={(e) => {
-                e.preventDefault();
-                onClose();
-                // Navegar usando React Router
-                window.location.href = link.to;
-              }}
-            >
-              {link.icon} {link.label}
-            </a>
-          ))}
-        </div>
-      )}
+    <div 
+      ref={dropdownRef}
+      style={{
+        position: 'absolute',
+        top: '100%',
+        left: 0,
+        minWidth: '300px',
+        background: dark ? 'rgba(35, 39, 42, 0.98)' : 'rgba(255, 255, 255, 0.98)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        boxShadow: '0 12px 40px rgba(114, 137, 218, 0.4), 0 0 0 1px rgba(114, 137, 218, 0.15)',
+        borderRadius: '16px',
+        padding: '16px 0',
+        zIndex: 1003,
+        border: '1px solid rgba(114, 137, 218, 0.25)',
+        marginTop: '8px',
+        display: 'block',
+        opacity: 1,
+        visibility: 'visible',
+        transform: 'translateY(0)',
+        animation: 'dropdownSlideIn 0.3s ease-out'
+      }}
+    >
+      {links.map((link, index) => (
+        <a
+          key={index}
+          href={link.to}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '14px 20px',
+            borderRadius: '10px',
+            fontWeight: 600,
+            color: dark ? '#fff' : '#23272a',
+            background: 'none',
+            border: 'none',
+            fontSize: '15px',
+            textDecoration: 'none',
+            transition: 'all 0.2s ease',
+            margin: '4px 12px',
+            width: 'calc(100% - 24px)',
+            position: 'relative',
+            minHeight: '44px',
+            cursor: 'pointer'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.background = 'rgba(114, 137, 218, 0.15)';
+            e.target.style.color = '#7289da';
+            e.target.style.transform = 'translateX(6px)';
+            e.target.style.boxShadow = '0 4px 12px rgba(114, 137, 218, 0.25)';
+            e.target.style.borderLeft = '3px solid #7289da';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.background = 'none';
+            e.target.style.color = dark ? '#fff' : '#23272a';
+            e.target.style.transform = 'translateX(0)';
+            e.target.style.boxShadow = 'none';
+            e.target.style.borderLeft = 'none';
+          }}
+          onClick={() => {
+            onClose();
+          }}
+        >
+          {link.icon}
+          {link.label}
+        </a>
+      ))}
     </div>
   );
 };
@@ -645,25 +658,27 @@ const Navbar = () => {
           {NAVIGATION_CONFIG.mainLinks.map(renderNavigationLink)}
           
           {/* Dropdown de apps y servicios */}
-          <div className="nav-dropdown" style={{ position: 'relative', zIndex: 1002 }}>
+          <div style={{ position: 'relative', zIndex: 1002 }}>
             <button
               onClick={toggleDropdown}
-              className="nav-link"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: 6,
-                padding: '6px 12px',
+                gap: 8,
+                padding: '8px 16px',
                 borderRadius: 8,
                 fontWeight: 600,
                 color: dark ? '#fff' : '#23272a',
                 background: showDropdown ? 'rgba(114, 137, 218, 0.15)' : 'none',
                 border: 'none',
-                fontSize: 14,
+                fontSize: 15,
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
                 flexShrink: 0,
-                transition: 'all 0.2s ease'
+                transition: 'all 0.2s ease',
+                textDecoration: 'none',
+                minHeight: '40px',
+                justifyContent: 'center'
               }}
               aria-expanded={showDropdown}
               aria-haspopup="true"
