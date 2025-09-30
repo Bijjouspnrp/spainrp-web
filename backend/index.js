@@ -713,7 +713,21 @@ app.get('/api/proxy/blackmarket/items', async (req, res) => {
     if (!response.ok) {
       console.error(`[BLACKMARKET PROXY] Bot respondió con error: ${response.status}`);
       console.error('[BLACKMARKET PROXY] Error details:', data);
-      return res.status(response.status).json({ error: 'Error obteniendo catálogo del BlackMarket', details: data });
+      
+      // Mejorar mensajes de error para el frontend
+      let errorMessage = 'Error obteniendo catálogo del BlackMarket';
+      if (response.status === 503) {
+        errorMessage = 'El BlackMarket está temporalmente fuera de servicio';
+      } else if (response.status === 500) {
+        errorMessage = 'Error interno del servidor de economía';
+      }
+      
+      return res.status(response.status).json({ 
+        error: errorMessage, 
+        details: data,
+        statusCode: response.status,
+        userMessage: errorMessage
+      });
     }
     
     console.log(`[BLACKMARKET PROXY] ✅ Catálogo obtenido exitosamente: ${Object.keys(data).length} items`);
@@ -749,7 +763,21 @@ app.get('/api/proxy/blackmarket/saldo/:userId', async (req, res) => {
       console.error(`[BLACKMARKET PROXY] Bot respondió con error: ${response.status}`);
       console.error('[BLACKMARKET PROXY] Error details:', data);
       console.log('[BLACKMARKET PROXY] ===== FIN SALDO (ERROR) =====');
-      return res.status(response.status).json({ error: 'Error obteniendo saldo del BlackMarket', details: data });
+      
+      // Mejorar mensajes de error para el frontend
+      let errorMessage = 'Error obteniendo saldo del BlackMarket';
+      if (response.status === 404) {
+        errorMessage = 'Usuario no encontrado en el sistema de economía';
+      } else if (response.status === 403) {
+        errorMessage = 'No tienes permisos para consultar este saldo';
+      }
+      
+      return res.status(response.status).json({ 
+        error: errorMessage, 
+        details: data,
+        statusCode: response.status,
+        userMessage: errorMessage
+      });
     }
     
     console.log(`[BLACKMARKET PROXY] ✅ Saldo obtenido exitosamente para ${userId}:`, data);
@@ -790,7 +818,23 @@ app.post('/api/proxy/blackmarket/purchase', async (req, res) => {
       console.error(`[BLACKMARKET PROXY] Bot respondió con error: ${response.status}`);
       console.error('[BLACKMARKET PROXY] Error details:', data);
       console.log('[BLACKMARKET PROXY] ===== FIN COMPRA (ERROR) =====');
-      return res.status(response.status).json({ error: 'Error realizando compra en BlackMarket', details: data });
+      
+      // Mejorar mensajes de error para el frontend
+      let errorMessage = 'Error realizando compra en BlackMarket';
+      if (response.status === 403) {
+        errorMessage = data.error || 'Saldo insuficiente para realizar la compra';
+      } else if (response.status === 404) {
+        errorMessage = 'Item no encontrado en el catálogo';
+      } else if (response.status === 400) {
+        errorMessage = data.error || 'Datos de compra inválidos';
+      }
+      
+      return res.status(response.status).json({ 
+        error: errorMessage, 
+        details: data,
+        statusCode: response.status,
+        userMessage: errorMessage
+      });
     }
     
     console.log(`[BLACKMARKET PROXY] ✅ Compra exitosa para ${userId}:`, data);
@@ -2085,14 +2129,30 @@ app.post('/api/proxy/admin/removeitem', express.json(), async (req, res) => {
 });
 
 
-// Utilidad para validar admin en tiempo real vía bot
+// Utilidad para validar admin en tiempo real usando discordClient local
 async function isAdminUser(userId) {
   try {
-    const resp = await fetch(`${BOT_API_URL}/api/admin/isadmin/${userId}`);
-    if (!resp.ok) return false;
-    const data = await resp.json();
-    return !!data.isAdmin;
+    // Verificar si el bot de Discord está disponible
+    if (!discordClient.readyAt) {
+      console.warn('[ISADMIN USER] Bot de Discord no disponible');
+      return false;
+    }
+    
+    const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
+    const adminRoleId = '1384340649205301359';
+    
+    const guild = discordClient.guilds.cache.get(guildId);
+    if (!guild) return false;
+    
+    await guild.members.fetch();
+    const member = guild.members.cache.get(userId);
+    if (!member) return false;
+    
+    const hasAdminRole = member.roles.cache.has(adminRoleId);
+    const hasAdminPerms = member.permissions.has(PermissionsBitField.Flags.Administrator);
+    return hasAdminRole || hasAdminPerms;
   } catch (e) {
+    console.error('[ISADMIN USER] Error:', e.message);
     return false;
   }
 }
