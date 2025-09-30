@@ -1,6 +1,5 @@
 import { apiUrl } from '../../utils/api';
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import DiscordUserBar from "../DiscordUserBar";
 import { Line } from "react-chartjs-2";
 import {
@@ -65,22 +64,50 @@ const StockMarket = () => {
         const data = resUser.ok ? await resUser.json() : null;
         if (data && data.user) {
           setUser(data.user);
+          console.log('[StockMarket] Usuario cargado:', data.user.id);
+          
           // 2. Catálogo de activos
-          const resActivos = await axios.get(`/api/proxy/bolsa/activos`);
-          if (mounted && resActivos.data && typeof resActivos.data === 'object') {
-            const activosArr = Object.values(resActivos.data).map(asset => ({
-              ...asset,
-              icon: assetIcons[asset.code] || null
-            }));
-            setStocks(activosArr);
+          console.log('[StockMarket] Cargando catálogo de activos...');
+          const resActivos = await fetch(apiUrl('/api/proxy/bolsa/activos'));
+          if (mounted && resActivos.ok) {
+            const activosData = await resActivos.json();
+            console.log('[StockMarket] Activos recibidos:', activosData);
+            if (activosData && typeof activosData === 'object') {
+              const activosArr = Object.values(activosData).map(asset => ({
+                ...asset,
+                icon: assetIcons[asset.code] || null
+              }));
+              setStocks(activosArr);
+              console.log('[StockMarket] Activos procesados:', activosArr.length);
+            }
+          } else {
+            console.warn('[StockMarket] Error cargando activos:', resActivos.status);
           }
+          
           // 3. Saldo y cartera
-          const resSaldo = await axios.get(`/api/proxy/bolsa/saldo/${data.user.id}`);
-          setSaldo(resSaldo.data.saldo);
-          const resInv = await axios.get(`/api/proxy/bolsa/inversiones/${data.user.id}`);
-          setCartera(resInv.data.inversiones || {});
+          console.log('[StockMarket] Cargando saldo...');
+          const resSaldo = await fetch(apiUrl(`/api/proxy/bolsa/saldo/${data.user.id}`));
+          if (resSaldo.ok) {
+            const saldoData = await resSaldo.json();
+            console.log('[StockMarket] Saldo recibido:', saldoData);
+            setSaldo(saldoData.saldo);
+          } else {
+            console.warn('[StockMarket] Error cargando saldo:', resSaldo.status);
+          }
+          
+          console.log('[StockMarket] Cargando inversiones...');
+          const resInv = await fetch(apiUrl(`/api/proxy/bolsa/inversiones/${data.user.id}`));
+          if (resInv.ok) {
+            const invData = await resInv.json();
+            console.log('[StockMarket] Inversiones recibidas:', invData);
+            setCartera(invData.inversiones || {});
+          } else {
+            console.warn('[StockMarket] Error cargando inversiones:', resInv.status);
+          }
         }
-      } catch (e) {}
+      } catch (e) {
+        console.error('[StockMarket] Error en fetchAll:', e);
+      }
       setLoading(false);
     };
     fetchAll();
@@ -108,31 +135,51 @@ const StockMarket = () => {
     try {
       let res;
       if (type === 'buy') {
-        res = await axios.post("/api/proxy/bolsa/comprar", {
-          userId: user.id,
-          assetId: stock.code,
-          cantidad: qty
+        res = await fetch(apiUrl("/api/proxy/bolsa/comprar"), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: user.id,
+            assetId: stock.code,
+            cantidad: qty
+          })
         });
-        setSaldo(res.data.saldo);
-        setCartera(res.data.inversiones);
-        setHistorial([{ action: "Compraste", qty, code: stock.code, price: stock.price }, ...historial]);
-        setMsgType('success');
-        setMsg(`✅ Has invertido en ${stock.name} (${qty} acciones)`);
+        if (res.ok) {
+          const data = await res.json();
+          setSaldo(data.saldo);
+          setCartera(data.inversiones);
+          setHistorial([{ action: "Compraste", qty, code: stock.code, price: stock.price }, ...historial]);
+          setMsgType('success');
+          setMsg(`✅ Has invertido en ${stock.name} (${qty} acciones)`);
+        } else {
+          const errorData = await res.json();
+          throw new Error(errorData.error || 'Error al comprar');
+        }
       } else {
-        res = await axios.post("/api/proxy/bolsa/vender", {
-          userId: user.id,
-          assetId: stock.code,
-          cantidad: qty
+        res = await fetch(apiUrl("/api/proxy/bolsa/vender"), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: user.id,
+            assetId: stock.code,
+            cantidad: qty
+          })
         });
-        setSaldo(res.data.saldo);
-        setCartera(res.data.inversiones);
-        setHistorial([{ action: "Vendiste", qty, code: stock.code, price: stock.price }, ...historial]);
-        setMsgType('success');
-        setMsg(`✅ Has vendido ${qty} acción${qty>1?'es':''} de ${stock.name}`);
+        if (res.ok) {
+          const data = await res.json();
+          setSaldo(data.saldo);
+          setCartera(data.inversiones);
+          setHistorial([{ action: "Vendiste", qty, code: stock.code, price: stock.price }, ...historial]);
+          setMsgType('success');
+          setMsg(`✅ Has vendido ${qty} acción${qty>1?'es':''} de ${stock.name}`);
+        } else {
+          const errorData = await res.json();
+          throw new Error(errorData.error || 'Error al vender');
+        }
       }
     } catch (e) {
       setMsgType('error');
-      setMsg(e.response?.data?.error || (pendingAction.type === 'buy' ? 'Error al invertir' : 'Error al vender'));
+      setMsg(e.message || (pendingAction.type === 'buy' ? 'Error al invertir' : 'Error al vender'));
     }
     setPendingAction(null);
     setTimeout(() => setMsg(""), 2200);
