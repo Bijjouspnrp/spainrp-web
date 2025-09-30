@@ -396,15 +396,16 @@ app.get('/api/proxy/bolsa/saldo/:userId', async (req, res) => {
   }
 });
 // Proxy: ban de Discord hacia el bot (localhost:3020)
+// Proxy para banear usuario (redirige al endpoint local)
 app.post('/api/proxy/discord/ban', express.json(), async (req, res) => {
   try {
-    const botRes = await fetchRoblox(`${process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/'}/api/discord/ban`, {
+    const response = await fetch(`${process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/'}/api/discord/ban`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(req.body)
     });
-    const data = await botRes.json();
-    res.status(botRes.status).json(data);
+    const data = await response.json();
+    res.status(response.status).json(data);
   } catch (e) {
     res.status(502).json({ error: 'Proxy error', details: String(e) });
   }
@@ -2940,17 +2941,55 @@ app.post('/api/discord/ban', express.json(), async (req, res) => {
   try {
     const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
     const { userId, reason } = req.body;
-    if (!userId) return res.status(400).json({ error: 'Falta userId' });
+    
+    console.log(`[DISCORD BAN] Intentando banear usuario: ${userId}, motivo: ${reason}`);
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'Falta userId' });
+    }
+    
+    if (!discordClient || !discordClient.readyAt) {
+      return res.status(503).json({ error: 'Bot de Discord no disponible' });
+    }
+    
     const guild = discordClient.guilds.cache.get(guildId);
-    if (!guild) return res.status(404).json({ error: 'Servidor no encontrado' });
+    if (!guild) {
+      console.error(`[DISCORD BAN] Servidor no encontrado: ${guildId}`);
+      return res.status(404).json({ error: 'Servidor no encontrado' });
+    }
+    
+    // Buscar el usuario en el servidor
     await guild.members.fetch();
     const member = guild.members.cache.get(userId);
-    if (!member) return res.status(404).json({ error: 'Usuario no encontrado en el servidor' });
-    await member.ban({ reason: reason || 'Baneado desde panel admin' });
-    res.json({ success: true, message: `Usuario ${userId} baneado.` });
+    
+    if (!member) {
+      console.error(`[DISCORD BAN] Usuario no encontrado en el servidor: ${userId}`);
+      return res.status(404).json({ error: 'Usuario no encontrado en el servidor' });
+    }
+    
+    // Banear el usuario
+    await member.ban({ 
+      reason: reason || 'Baneado desde panel admin',
+      deleteMessageDays: 7 // Eliminar mensajes de los últimos 7 días
+    });
+    
+    console.log(`[DISCORD BAN] Usuario baneado exitosamente: ${userId}`);
+    res.json({ 
+      success: true, 
+      message: `Usuario ${member.user.username} (${userId}) baneado exitosamente.`,
+      user: {
+        id: member.user.id,
+        username: member.user.username,
+        discriminator: member.user.discriminator
+      }
+    });
   } catch (err) {
-    console.error('[BOT API] Error en ban:', err);
-    res.status(500).json({ error: 'Error al banear usuario', details: err.message });
+    console.error('[DISCORD BAN] Error:', err);
+    res.status(500).json({ 
+      error: 'Error al banear usuario', 
+      details: err.message,
+      userId: req.body.userId
+    });
   }
 });
 
@@ -2959,15 +2998,52 @@ app.post('/api/discord/unban', express.json(), async (req, res) => {
   try {
     const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
     const { userId } = req.body;
-    if (!userId) return res.status(400).json({ error: 'Falta userId' });
+    
+    console.log(`[DISCORD UNBAN] Intentando desbanear usuario: ${userId}`);
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'Falta userId' });
+    }
+    
+    if (!discordClient || !discordClient.readyAt) {
+      return res.status(503).json({ error: 'Bot de Discord no disponible' });
+    }
+    
     const guild = discordClient.guilds.cache.get(guildId);
-    if (!guild) return res.status(404).json({ error: 'Servidor no encontrado' });
+    if (!guild) {
+      console.error(`[DISCORD UNBAN] Servidor no encontrado: ${guildId}`);
+      return res.status(404).json({ error: 'Servidor no encontrado' });
+    }
+    
+    // Obtener lista de baneados
     await guild.bans.fetch();
-    await guild.members.unban(userId);
-    res.json({ success: true, message: `Usuario ${userId} desbaneado.` });
+    const ban = guild.bans.cache.get(userId);
+    
+    if (!ban) {
+      console.error(`[DISCORD UNBAN] Usuario no está baneado: ${userId}`);
+      return res.status(404).json({ error: 'Usuario no está baneado' });
+    }
+    
+    // Desbanear el usuario
+    await guild.members.unban(userId, 'Desbaneado desde panel admin');
+    
+    console.log(`[DISCORD UNBAN] Usuario desbaneado exitosamente: ${userId}`);
+    res.json({ 
+      success: true, 
+      message: `Usuario ${ban.user.username} (${userId}) desbaneado exitosamente.`,
+      user: {
+        id: ban.user.id,
+        username: ban.user.username,
+        discriminator: ban.user.discriminator
+      }
+    });
   } catch (err) {
-    console.error('[BOT API] Error en unban:', err);
-    res.status(500).json({ error: 'Error al desbanear usuario', details: err.message });
+    console.error('[DISCORD UNBAN] Error:', err);
+    res.status(500).json({ 
+      error: 'Error al desbanear usuario', 
+      details: err.message,
+      userId: req.body.userId
+    });
   }
 });
 
@@ -2975,18 +3051,53 @@ app.post('/api/discord/unban', express.json(), async (req, res) => {
 app.post('/api/discord/kick', express.json(), async (req, res) => {
   try {
     const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
-    const { userId } = req.body;
-    if (!userId) return res.status(400).json({ error: 'Falta userId' });
+    const { userId, reason } = req.body;
+    
+    console.log(`[DISCORD KICK] Intentando kickear usuario: ${userId}, motivo: ${reason}`);
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'Falta userId' });
+    }
+    
+    if (!discordClient || !discordClient.readyAt) {
+      return res.status(503).json({ error: 'Bot de Discord no disponible' });
+    }
+    
     const guild = discordClient.guilds.cache.get(guildId);
-    if (!guild) return res.status(404).json({ error: 'Servidor no encontrado' });
+    if (!guild) {
+      console.error(`[DISCORD KICK] Servidor no encontrado: ${guildId}`);
+      return res.status(404).json({ error: 'Servidor no encontrado' });
+    }
+    
+    // Buscar el usuario en el servidor
     await guild.members.fetch();
     const member = guild.members.cache.get(userId);
-    if (!member) return res.status(404).json({ error: 'Usuario no encontrado en el servidor' });
-    await member.kick('Kickeado desde panel admin');
-    res.json({ success: true, message: `Usuario ${userId} kickeado.` });
+    
+    if (!member) {
+      console.error(`[DISCORD KICK] Usuario no encontrado en el servidor: ${userId}`);
+      return res.status(404).json({ error: 'Usuario no encontrado en el servidor' });
+    }
+    
+    // Kickear el usuario
+    await member.kick(reason || 'Kickeado desde panel admin');
+    
+    console.log(`[DISCORD KICK] Usuario kickeado exitosamente: ${userId}`);
+    res.json({ 
+      success: true, 
+      message: `Usuario ${member.user.username} (${userId}) kickeado exitosamente.`,
+      user: {
+        id: member.user.id,
+        username: member.user.username,
+        discriminator: member.user.discriminator
+      }
+    });
   } catch (err) {
-    console.error('[BOT API] Error en kick:', err);
-    res.status(500).json({ error: 'Error al kickear usuario', details: err.message });
+    console.error('[DISCORD KICK] Error:', err);
+    res.status(500).json({ 
+      error: 'Error al kickear usuario', 
+      details: err.message,
+      userId: req.body.userId
+    });
   }
 });
 
@@ -2994,20 +3105,44 @@ app.post('/api/discord/kick', express.json(), async (req, res) => {
 app.post('/api/discord/mute', express.json(), async (req, res) => {
   try {
     const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
-    const { userId, time } = req.body;
-    if (!userId || !time) return res.status(400).json({ error: 'Faltan datos' });
+    const { userId, time, reason } = req.body;
+    
+    console.log(`[DISCORD MUTE] Intentando mutear usuario: ${userId}, tiempo: ${time} minutos, motivo: ${reason}`);
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'Falta userId' });
+    }
+    
+    if (!discordClient || !discordClient.readyAt) {
+      return res.status(503).json({ error: 'Bot de Discord no disponible' });
+    }
+    
     const guild = discordClient.guilds.cache.get(guildId);
-    if (!guild) return res.status(404).json({ error: 'Servidor no encontrado' });
+    if (!guild) {
+      console.error(`[DISCORD MUTE] Servidor no encontrado: ${guildId}`);
+      return res.status(404).json({ error: 'Servidor no encontrado' });
+    }
+    
+    // Buscar el usuario en el servidor
     await guild.members.fetch();
     const member = guild.members.cache.get(userId);
-    if (!member) return res.status(404).json({ error: 'Usuario no encontrado en el servidor' });
+    
+    if (!member) {
+      console.error(`[DISCORD MUTE] Usuario no encontrado en el servidor: ${userId}`);
+      return res.status(404).json({ error: 'Usuario no encontrado en el servidor' });
+    }
 
     // Buscar rol mute por nombre o ID
     let muteRoleId = process.env.DISCORD_MUTE_ROLE_ID;
-    let muteRole = muteRoleId ? guild.roles.cache.get(muteRoleId) : guild.roles.cache.find(r => r.name.toLowerCase() === 'muted');
+    let muteRole = muteRoleId ? guild.roles.cache.get(muteRoleId) : guild.roles.cache.find(r => 
+      r.name.toLowerCase().includes('mute') || 
+      r.name.toLowerCase().includes('silenciado') ||
+      r.name.toLowerCase() === 'muted'
+    );
 
     // Si no existe, créalo
     if (!muteRole) {
+      console.log(`[DISCORD MUTE] Creando rol de mute...`);
       muteRole = await guild.roles.create({
         name: 'Muted',
         color: '#888',
@@ -3015,29 +3150,67 @@ app.post('/api/discord/mute', express.json(), async (req, res) => {
         permissions: []
       });
       muteRoleId = muteRole.id;
-      // Opcional: poner permisos en todos los canales
+      
+      // Configurar permisos en todos los canales
       for (const channel of guild.channels.cache.values()) {
         if (channel.type === 0 || channel.type === 2) { // 0: GUILD_TEXT, 2: GUILD_VOICE
-          await channel.permissionOverwrites.edit(muteRole, {
-            SendMessages: false,
-            Speak: false,
-            Connect: false,
-            AddReactions: false
-          });
+          try {
+            await channel.permissionOverwrites.edit(muteRole, {
+              SendMessages: false,
+              Speak: false,
+              Connect: false,
+              AddReactions: false
+            });
+          } catch (e) {
+            console.warn(`[DISCORD MUTE] No se pudo configurar permisos en canal ${channel.name}:`, e.message);
+          }
         }
       }
     } else {
       muteRoleId = muteRole.id;
     }
 
-    await member.roles.add(muteRoleId);
-    setTimeout(async () => {
-      try { await member.roles.remove(muteRoleId); } catch {}
-    }, parseInt(time) * 60000);
-    res.json({ success: true, message: `Usuario ${userId} muteado por ${time} minutos.` });
+    // Verificar si ya está muteado
+    if (member.roles.cache.has(muteRoleId)) {
+      return res.status(400).json({ error: 'El usuario ya está muteado' });
+    }
+
+    // Aplicar mute
+    await member.roles.add(muteRoleId, reason || 'Muteado desde panel admin');
+    
+    console.log(`[DISCORD MUTE] Usuario muteado exitosamente: ${userId}`);
+    
+    // Programar desmute si hay tiempo especificado
+    let timeoutId = null;
+    if (time && parseInt(time) > 0) {
+      timeoutId = setTimeout(async () => {
+        try {
+          await member.roles.remove(muteRoleId, 'Desmute automático');
+          console.log(`[DISCORD MUTE] Desmute automático para ${userId}`);
+        } catch (e) {
+          console.error('[DISCORD MUTE] Error en desmute automático:', e);
+        }
+      }, parseInt(time) * 60000);
+    }
+
+    res.json({ 
+      success: true, 
+      message: `Usuario ${member.user.username} (${userId}) muteado por ${time || 'indefinido'} minutos.`,
+      user: {
+        id: member.user.id,
+        username: member.user.username,
+        discriminator: member.user.discriminator
+      },
+      muteTime: time || 'indefinido',
+      timeoutId: timeoutId ? 'programado' : null
+    });
   } catch (err) {
-    console.error('[BOT API] Error en mute:', err);
-    res.status(500).json({ error: 'Error al mutear usuario', details: err.message });
+    console.error('[DISCORD MUTE] Error:', err);
+    res.status(500).json({ 
+      error: 'Error al mutear usuario', 
+      details: err.message,
+      userId: req.body.userId
+    });
   }
 });
 
@@ -3080,13 +3253,148 @@ app.get('/api/discord/roles', async (req, res) => {
 app.get('/api/discord/banned', async (req, res) => {
   try {
     const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
+    
+    console.log(`[DISCORD BANNED] Obteniendo lista de baneados del servidor: ${guildId}`);
+    
+    if (!discordClient || !discordClient.readyAt) {
+      return res.status(503).json({ error: 'Bot de Discord no disponible' });
+    }
+    
     const guild = discordClient.guilds.cache.get(guildId);
-    if (!guild) return res.status(404).json({ error: 'Servidor no encontrado' });
+    if (!guild) {
+      console.error(`[DISCORD BANNED] Servidor no encontrado: ${guildId}`);
+      return res.status(404).json({ error: 'Servidor no encontrado' });
+    }
+    
     const bans = await guild.bans.fetch();
-    res.json({ bans: Array.from(bans.values()) });
+    const bannedUsers = Array.from(bans.values()).map(ban => ({
+      id: ban.user.id,
+      username: ban.user.username,
+      discriminator: ban.user.discriminator,
+      avatar: ban.user.displayAvatarURL(),
+      reason: ban.reason || 'Sin motivo especificado',
+      bannedAt: ban.createdAt || new Date()
+    }));
+    
+    console.log(`[DISCORD BANNED] Encontrados ${bannedUsers.length} usuarios baneados`);
+    
+    res.json({ 
+      success: true,
+      count: bannedUsers.length,
+      bans: bannedUsers,
+      timestamp: new Date().toISOString()
+    });
   } catch (err) {
-    console.error('[BOT API] Error en banned:', err);
-    res.status(500).json({ error: 'Error al obtener baneados', details: err.message });
+    console.error('[DISCORD BANNED] Error:', err);
+    res.status(500).json({ 
+      error: 'Error al obtener baneados', 
+      details: err.message 
+    });
+  }
+});
+
+// Endpoint para acciones masivas
+app.post('/api/discord/mass-action', express.json(), async (req, res) => {
+  try {
+    const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
+    const { userIds, action, reason } = req.body;
+    
+    console.log(`[DISCORD MASS] Acción masiva: ${action} para ${userIds.length} usuarios`);
+    
+    if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+      return res.status(400).json({ error: 'Falta lista de userIds' });
+    }
+    
+    if (!action || !['kick', 'ban', 'mute'].includes(action)) {
+      return res.status(400).json({ error: 'Acción no válida. Usa: kick, ban, mute' });
+    }
+    
+    if (!discordClient || !discordClient.readyAt) {
+      return res.status(503).json({ error: 'Bot de Discord no disponible' });
+    }
+    
+    const guild = discordClient.guilds.cache.get(guildId);
+    if (!guild) {
+      return res.status(404).json({ error: 'Servidor no encontrado' });
+    }
+    
+    await guild.members.fetch();
+    
+    const results = [];
+    const errors = [];
+    
+    for (const userId of userIds) {
+      try {
+        const member = guild.members.cache.get(userId);
+        
+        if (!member) {
+          errors.push({ userId, error: 'Usuario no encontrado en el servidor' });
+          continue;
+        }
+        
+        switch (action) {
+          case 'kick':
+            await member.kick(reason || 'Acción masiva desde panel admin');
+            results.push({ userId, username: member.user.username, action: 'kicked' });
+            break;
+            
+          case 'ban':
+            await member.ban({ 
+              reason: reason || 'Acción masiva desde panel admin',
+              deleteMessageDays: 7
+            });
+            results.push({ userId, username: member.user.username, action: 'banned' });
+            break;
+            
+          case 'mute':
+            // Buscar rol de mute
+            let muteRole = guild.roles.cache.find(r => 
+              r.name.toLowerCase().includes('mute') || 
+              r.name.toLowerCase().includes('silenciado') ||
+              r.name.toLowerCase() === 'muted'
+            );
+            
+            if (!muteRole) {
+              muteRole = await guild.roles.create({
+                name: 'Muted',
+                color: '#888',
+                reason: 'Rol para silenciar usuarios',
+                permissions: []
+              });
+            }
+            
+            if (!member.roles.cache.has(muteRole.id)) {
+              await member.roles.add(muteRole.id, reason || 'Acción masiva desde panel admin');
+              results.push({ userId, username: member.user.username, action: 'muted' });
+            } else {
+              errors.push({ userId, error: 'Usuario ya está muteado' });
+            }
+            break;
+        }
+      } catch (err) {
+        console.error(`[DISCORD MASS] Error con usuario ${userId}:`, err);
+        errors.push({ userId, error: err.message });
+      }
+    }
+    
+    console.log(`[DISCORD MASS] Completado: ${results.length} exitosos, ${errors.length} errores`);
+    
+    res.json({
+      success: true,
+      action,
+      total: userIds.length,
+      successful: results.length,
+      failed: errors.length,
+      results,
+      errors,
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error('[DISCORD MASS] Error:', err);
+    res.status(500).json({ 
+      error: 'Error en acción masiva', 
+      details: err.message 
+    });
   }
 });
 
