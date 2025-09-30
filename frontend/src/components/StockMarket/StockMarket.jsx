@@ -40,6 +40,7 @@ const assetIcons = {
 const StockMarket = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadingProgress, setLoadingProgress] = useState(0);
   const [stocks, setStocks] = useState([]);
   const [msg, setMsg] = useState("");
   const [msgType, setMsgType] = useState("info"); // 'info', 'success', 'error'
@@ -55,8 +56,22 @@ const StockMarket = () => {
   useEffect(() => {
     let mounted = true;
     let intervalId;
+    let progressInterval;
+    
     const fetchAll = async () => {
       try {
+        // Iniciar barra de progreso de 5 segundos
+        setLoadingProgress(0);
+        progressInterval = setInterval(() => {
+          setLoadingProgress(prev => {
+            if (prev >= 100) {
+              clearInterval(progressInterval);
+              return 100;
+            }
+            return prev + 2; // Incremento de 2% cada 100ms = 5 segundos total
+          });
+        }, 100);
+        
         // 1. Usuario
         const token = localStorage.getItem('spainrp_token');
         const headers = token ? { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } : { 'Accept': 'application/json' };
@@ -108,11 +123,23 @@ const StockMarket = () => {
       } catch (e) {
         console.error('[StockMarket] Error en fetchAll:', e);
       }
-      setLoading(false);
+      
+      // Esperar exactamente 5 segundos antes de ocultar el loading
+      setTimeout(() => {
+        if (mounted) {
+          clearInterval(progressInterval);
+          setLoading(false);
+        }
+      }, 5000);
     };
+    
     fetchAll();
-  intervalId = setInterval(fetchAll, 5000); // 5 segundos
-    return () => { mounted = false; clearInterval(intervalId); };
+    intervalId = setInterval(fetchAll, 5000); // 5 segundos
+    return () => { 
+      mounted = false; 
+      clearInterval(intervalId); 
+      if (progressInterval) clearInterval(progressInterval);
+    };
   }, []);
 
 
@@ -380,8 +407,8 @@ const StockMarket = () => {
               height: '100%',
               background: 'linear-gradient(90deg, #ffd700, #ffed4e, #ffd700)',
               borderRadius: '3px',
-              width: '0%',
-              animation: 'progressBar 5s ease-in-out forwards',
+              width: `${loadingProgress}%`,
+              transition: 'width 0.1s ease-out',
               boxShadow: '0 0 10px rgba(255, 215, 0, 0.6)'
             }} />
           </div>
@@ -394,7 +421,7 @@ const StockMarket = () => {
             marginBottom: '2rem',
             animation: 'textPulse 2s ease-in-out infinite'
           }}>
-            Conectando con servidores de trading...
+            Conectando con servidores de trading... {loadingProgress}%
           </div>
           
           {/* Indicadores de estado */}
@@ -457,14 +484,6 @@ const StockMarket = () => {
             50% { transform: scale(1.2); opacity: 0.8; }
           }
           
-          @keyframes progressBar {
-            0% { width: 0%; }
-            20% { width: 25%; }
-            40% { width: 50%; }
-            60% { width: 75%; }
-            80% { width: 90%; }
-            100% { width: 100%; }
-          }
           
           @keyframes textPulse {
             0%, 100% { opacity: 1; }
