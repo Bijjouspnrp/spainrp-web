@@ -35,7 +35,13 @@ const MaintenanceControl = ({ showToast }) => {
   const fetchSubscribers = async () => {
     setSubscribersLoading(true);
     try {
-      const response = await fetch(apiUrl('/api/maintenance/subscribers'));
+      const token = localStorage.getItem('spainrp_token');
+      const response = await fetch(apiUrl('/api/maintenance/subscribers'), {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
       const data = await response.json();
       setSubscribers(data.subscribers || []);
     } catch (error) {
@@ -48,10 +54,13 @@ const MaintenanceControl = ({ showToast }) => {
   const toggleMaintenance = async (action) => {
     setLoading(true);
     try {
+      const token = localStorage.getItem('spainrp_token');
       const response = await fetch(apiUrl('/api/maintenance/toggle'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
         },
         body: JSON.stringify({
           action,
