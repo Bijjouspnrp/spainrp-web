@@ -40,7 +40,11 @@ const NotFound = ({ logs }) => {
     }}>
       <img 
         src={spainLogo} 
-        alt="SpainRP Logo" 
+        alt="SpainRP Logo"
+        onError={(e) => {
+          console.warn('[NotFound] Error cargando logo, usando fallback');
+          e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMzIiIGZpbGw9IiM3Mjg5ZGEiLz4KPHRleHQgeD0iMzIiIHk9IjM4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE2IiBmb250LXdlaWdodD0iYm9sZCI+U1A8L3RleHQ+Cjwvc3ZnPgo=';
+        }} 
         style={{
           width: 96,
           height: 96,

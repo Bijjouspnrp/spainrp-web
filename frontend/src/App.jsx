@@ -80,7 +80,15 @@ function LoginPage() {
       textAlign: 'center',
       padding: '2rem'
     }}>
-      <img src={spainLogo} alt="SpainRP Logo" style={{width:80,height:80,borderRadius:'50%',boxShadow:'0 2px 12px #FFD70033',marginBottom:24,animation:'spinLogo 1.5s linear infinite'}} />
+      <img 
+        src={spainLogo} 
+        alt="SpainRP Logo" 
+        style={{width:80,height:80,borderRadius:'50%',boxShadow:'0 2px 12px #FFD70033',marginBottom:24,animation:'spinLogo 1.5s linear infinite'}}
+        onError={(e) => {
+          console.warn('[App] Error cargando logo, usando fallback');
+          e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNDAiIGN5PSI0MCIgcj0iNDAiIGZpbGw9IiM3Mjg5ZGEiLz4KPHRleHQgeD0iNDAiIHk9IjQ1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCI+U1A8L3RleHQ+Cjwvc3ZnPgo=';
+        }}
+      />
       <h2 style={{color:'#FFD700',fontWeight:800,fontSize:'2rem',marginBottom:'1rem'}}>Iniciando sesión...</h2>
       <div style={{color:'#fff',fontSize:'1.1rem',marginBottom:'1.5rem'}}>Redirigiendo a Discord para autenticación...</div>
       <style>{`
@@ -716,7 +724,15 @@ function LogoutPage() {
       textAlign: 'center',
       padding: '2rem'
     }}>
-      <img src={spainLogo} alt="SpainRP Logo" style={{width:80,height:80,borderRadius:'50%',boxShadow:'0 2px 12px #FFD70033',marginBottom:24,animation:'spinLogo 1.5s linear infinite'}} />
+      <img 
+        src={spainLogo} 
+        alt="SpainRP Logo" 
+        style={{width:80,height:80,borderRadius:'50%',boxShadow:'0 2px 12px #FFD70033',marginBottom:24,animation:'spinLogo 1.5s linear infinite'}}
+        onError={(e) => {
+          console.warn('[App] Error cargando logo, usando fallback');
+          e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNDAiIGN5PSI0MCIgcj0iNDAiIGZpbGw9IiM3Mjg5ZGEiLz4KPHRleHQgeD0iNDAiIHk9IjQ1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCI+U1A8L3RleHQ+Cjwvc3ZnPgo=';
+        }}
+      />
       <h2 style={{color:'#FFD700',fontWeight:800,fontSize:'2rem',marginBottom:'1rem'}}>Cerrando sesión...</h2>
       <div style={{color:'#fff',fontSize:'1.1rem',marginBottom:'1.5rem'}}>Gracias por usar SpainRP. Espera un momento...</div>
       <style>{`

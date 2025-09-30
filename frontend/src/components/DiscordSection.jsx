@@ -235,6 +235,10 @@ const DiscordSection = () => {
                   <img 
                     src={spainrpLogo}
                     alt="SpainRP Logo"
+                    onError={(e) => {
+                      console.warn('[DiscordSection] Error cargando logo, usando fallback');
+                      e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiM3Mjg5ZGEiLz4KPHRleHQgeD0iMjAiIHk9IjI1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCI+U1A8L3RleHQ+Cjwvc3ZnPgo=';
+                    }}
                     className="discord-server-icon"
                   />
                   <div>
