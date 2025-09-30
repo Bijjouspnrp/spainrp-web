@@ -1471,6 +1471,29 @@ function ensureAuthAndAdmin(req, res, next) {
   return next();
 }
 
+// Middleware JWT para administradores
+const { verifyToken } = require('./middleware/jwt');
+function ensureJWTAdmin(req, res, next) {
+  // Verificar token JWT
+  verifyToken(req, res, (err) => {
+    if (err) return; // verifyToken ya envió la respuesta de error
+    
+    // Verificar si es administrador
+    const userId = req.user?.id;
+    const adminUserIds = [
+      '710112055985963090', // bijjoupro08
+      // Añade más IDs de administradores aquí
+    ];
+    
+    if (!adminUserIds.includes(userId)) {
+      console.log(`[JWT ADMIN] Usuario ${userId} no está en la lista de administradores`);
+      return res.status(403).json({ error: 'No tienes permisos de administrador' });
+    }
+    
+    next();
+  });
+}
+
 // Endpoint para obtener miembros de Discord usando el bot (protegido)
 app.get('/api/discord/members', ensureAuthenticated, async (req, res) => {
   try {
@@ -2831,7 +2854,7 @@ app.get('/api/maintenance/status', (req, res) => {
 });
 
 // Endpoint para activar/desactivar mantenimiento (solo para administradores)
-app.post('/api/maintenance/toggle', ensureAuthAndAdmin, (req, res) => {
+app.post('/api/maintenance/toggle', ensureJWTAdmin, (req, res) => {
   try {
     const { action, message } = req.body;
     const userId = req.user?.id;
@@ -2894,7 +2917,7 @@ app.post('/api/maintenance/toggle', ensureAuthAndAdmin, (req, res) => {
 });
 
 // Endpoint para obtener suscriptores de mantenimiento
-app.get('/api/maintenance/subscribers', ensureAuthAndAdmin, (req, res) => {
+app.get('/api/maintenance/subscribers', ensureJWTAdmin, (req, res) => {
   try {
     const subscribers = readMaintSubs();
     res.json({ subscribers });
@@ -2910,17 +2933,35 @@ app.get('/api/roblox/profile/:userId', async (req, res) => {
     const { userId } = req.params;
     console.log(`[ROBLOX PROFILE] Obteniendo perfil para: ${userId}`);
     
-    // Por ahora devolver datos de ejemplo
-    res.json({
-      success: true,
-      profile: {
-        userId: userId,
-        username: 'UsuarioEjemplo',
-        displayName: 'Usuario Ejemplo',
-        avatar: 'https://cdn.discordapp.com/embed/avatars/0.png',
-        verified: false
-      }
+    // Buscar en la base de datos si el usuario está verificado
+    const robloxData = await new Promise((resolve, reject) => {
+      db.get('SELECT * FROM roblox_verifications WHERE discordId = ?', [userId], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
     });
+    
+    if (robloxData) {
+      // Usuario verificado, devolver datos reales
+      res.json({
+        success: true,
+        profile: {
+          userId: robloxData.robloxId,
+          username: robloxData.username,
+          displayName: robloxData.displayName,
+          avatar: robloxData.avatarUrl,
+          verified: true,
+          verifiedAt: robloxData.verifiedAt
+        }
+      });
+    } else {
+      // Usuario no verificado
+      res.status(404).json({ 
+        success: false,
+        error: 'Usuario no verificado en Roblox',
+        profile: null
+      });
+    }
   } catch (error) {
     console.error('[ROBLOX PROFILE] Error:', error);
     res.status(500).json({ error: 'Error obteniendo perfil de Roblox' });
