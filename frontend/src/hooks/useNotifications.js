@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiUrl } from '../utils/api';
 
+// NOTIFICATIONS HOOK V2.0 - WebSocket deshabilitado, usando polling estable
+
 const useNotifications = () => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -34,8 +36,9 @@ const useNotifications = () => {
   }, []);
 
   // Polling cada 30 segundos para obtener notificaciones (WebSocket deshabilitado temporalmente)
+  // VERSION: 2.0 - WebSocket deshabilitado, usando polling estable
   useEffect(() => {
-    console.log('[NOTIFICATIONS] Usando polling cada 30 segundos');
+    console.log('[NOTIFICATIONS] Usando polling cada 30 segundos - V2.0');
     setIsConnected(false);
     
     const pollInterval = setInterval(() => {
