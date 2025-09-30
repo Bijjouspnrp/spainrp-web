@@ -20,7 +20,7 @@ const NAVIGATION_CONFIG = {
     { to: '/#home', label: 'Inicio', icon: <FaHome />, section: 'home' },
     { to: '/#features', label: 'Características', icon: <FaStar />, section: 'features' },
     { to: '/#staff', label: 'Staff', icon: <FaUsers />, section: 'staff' },
-    { to: '/#discord', label: 'Discord', icon: <FaDiscord />, section: 'discord' },
+    { to: '/#discord', label: 'Discord', icon: <FaDiscord size={14} />, section: 'discord' },
     { to: '/#about', label: 'Sobre Nosotros', icon: <FaUsers />, section: 'home' },
   ],
   externalLinks: [
@@ -187,7 +187,7 @@ const useIsMobile = () => {
 };
 
 // Componente para el dropdown
-const NavigationDropdown = ({ isOpen, onClose, links, dark }) => {
+const NavigationDropdown = ({ isOpen, onClose, links, dark, isMobile }) => {
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -203,26 +203,29 @@ const NavigationDropdown = ({ isOpen, onClose, links, dark }) => {
     }
   }, [isOpen, onClose]);
 
+  // Estilos dinámicos basados en si es móvil o no
   const dropdownStyles = {
-    position: 'absolute',
-    top: '110%',
-    left: 0,
-    minWidth: 200,
+    position: isMobile ? 'static' : 'absolute',
+    top: isMobile ? 'auto' : '100%',
+    left: isMobile ? 'auto' : 0,
+    minWidth: isMobile ? '100%' : 200,
     background: dark ? 'rgba(35, 39, 42, 0.95)' : 'rgba(255, 255, 255, 0.95)',
     backdropFilter: 'blur(20px)',
     WebkitBackdropFilter: 'blur(20px)',
-    boxShadow: '0 8px 32px rgba(114, 137, 218, 0.3), 0 0 0 1px rgba(114, 137, 218, 0.1)',
+    boxShadow: isMobile ? 'none' : '0 8px 32px rgba(114, 137, 218, 0.3), 0 0 0 1px rgba(114, 137, 218, 0.1)',
     borderRadius: 12,
     padding: '12px 0',
-    zIndex: 1001,
-    border: '1px solid rgba(114, 137, 218, 0.2)',
+    zIndex: 1002,
+    border: isMobile ? '1px solid rgba(114, 137, 218, 0.1)' : '1px solid rgba(114, 137, 218, 0.2)',
+    marginTop: isMobile ? 0 : 8,
+    width: isMobile ? '100%' : 'auto',
   };
 
   const linkStyles = {
     display: 'flex',
     alignItems: 'center',
     gap: 10,
-    padding: '12px 20px',
+    padding: isMobile ? '10px 16px' : '12px 20px',
     borderRadius: 8,
     fontWeight: 600,
     color: dark ? '#fff' : '#23272a',
@@ -231,13 +234,13 @@ const NavigationDropdown = ({ isOpen, onClose, links, dark }) => {
     fontSize: 15,
     textDecoration: 'none',
     transition: 'all 0.2s ease',
-    margin: '2px 8px',
-    width: 'calc(100% - 16px)',
+    margin: isMobile ? '2px 0' : '2px 8px',
+    width: isMobile ? '100%' : 'calc(100% - 16px)',
     position: 'relative',
   };
 
   return (
-    <div ref={dropdownRef} style={{ position: 'relative' }}>
+    <div ref={dropdownRef} style={{ position: 'relative', width: isMobile ? '100%' : 'auto' }}>
       {isOpen && (
         <div style={dropdownStyles}>
           {links.map((link, index) => (
@@ -454,16 +457,23 @@ const Navbar = () => {
     if (loading) {
       return (
         <div style={{
-          width: 120,
-          height: 40,
+          width: isMobile ? 60 : 100,
+          height: 36,
           background: dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
           borderRadius: 8,
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center'
+          justifyContent: 'center',
+          flexShrink: 0
         }}>
-          <span style={{ color: dark ? '#fff' : '#23272a', fontSize: 14 }}>
-            Cargando...
+          <span style={{ 
+            color: dark ? '#fff' : '#23272a', 
+            fontSize: isMobile ? 10 : 12,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          }}>
+            {isMobile ? '...' : 'Cargando...'}
           </span>
         </div>
       );
@@ -471,82 +481,101 @@ const Navbar = () => {
 
     if (user) {
       return (
-        <>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: isMobile ? 2 : 6,
+          flexShrink: 0,
+          minWidth: 0,
+          maxWidth: isMobile ? 120 : 200
+        }}>
           <a
             href="/panel"
             title="Panel"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: 8,
+              gap: isMobile ? 2 : 6,
               textDecoration: 'none',
               background: 'rgba(114, 137, 218, 0.15)',
               border: '1px solid #7289da',
-              padding: '6px 12px',
-              borderRadius: 8,
-              boxShadow: '0 2px 8px rgba(114, 137, 218, 0.22)'
+              padding: isMobile ? '3px 6px' : '4px 8px',
+              borderRadius: 6,
+              boxShadow: '0 2px 8px rgba(114, 137, 218, 0.22)',
+              minWidth: 0,
+              flexShrink: 1,
+              maxWidth: isMobile ? 80 : 150
             }}
           >
             <img
               src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`}
               alt="Avatar de usuario"
               style={{
-                width: 28,
-                height: 28,
+                width: isMobile ? 16 : 20,
+                height: isMobile ? 16 : 20,
                 borderRadius: '50%',
-                border: '2px solid #7289da',
+                border: '1px solid #7289da',
                 objectFit: 'cover',
                 boxShadow: '0 2px 8px rgba(114, 137, 218, 0.33)',
-                animation: 'borderPulse 1.2s infinite alternate'
+                flexShrink: 0
               }}
             />
             <span style={{
-              fontWeight: 700,
+              fontWeight: 600,
               color: '#7289da',
-              fontSize: 15
+              fontSize: isMobile ? 10 : 12,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              maxWidth: isMobile ? 40 : 80
             }}>
-              {user.username}
+              {isMobile ? user.username.substring(0, 6) + '...' : user.username}
             </span>
           </a>
-          <button
-            onClick={async () => {
-              try {
-                // Limpiar token del cliente
-                localStorage.removeItem('spainrp_token');
-                console.log('[Logout] Token JWT eliminado del cliente');
-                
-                // Disparar evento para refrescar UI
-                window.dispatchEvent(new Event('token-updated'));
-                
-                // Llamar al backend para destruir sesión
-                await fetch(apiUrl('/auth/logout'), { 
-                  method: 'POST',
-                  credentials: 'include'
-                }).catch(() => {}); // Ignorar errores del backend
-                
-                // Redirigir al inicio
-                window.location.href = '/';
-              } catch (e) {
-                console.error('[Logout] Error:', e);
-                // Redirigir de todas formas
-                window.location.href = '/';
-              }
-            }}
-            title="Cerrar sesión"
-            style={{
-              marginLeft: 8,
-              color: '#e74c3c',
-              fontWeight: 700,
-              fontSize: 15,
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              textDecoration: 'none'
-            }}
-          >
-            Salir
-          </button>
-        </>
+          {!isMobile && (
+            <button
+              onClick={async () => {
+                try {
+                  // Limpiar token del cliente
+                  localStorage.removeItem('spainrp_token');
+                  console.log('[Logout] Token JWT eliminado del cliente');
+                  
+                  // Disparar evento para refrescar UI
+                  window.dispatchEvent(new Event('token-updated'));
+                  
+                  // Llamar al backend para destruir sesión
+                  await fetch(apiUrl('/auth/logout'), { 
+                    method: 'POST',
+                    credentials: 'include'
+                  }).catch(() => {}); // Ignorar errores del backend
+                  
+                  // Redirigir al inicio
+                  window.location.href = '/';
+                } catch (e) {
+                  console.error('[Logout] Error:', e);
+                  // Redirigir de todas formas
+                  window.location.href = '/';
+                }
+              }}
+              title="Cerrar sesión"
+              style={{
+                marginLeft: 4,
+                color: '#e74c3c',
+                fontWeight: 600,
+                fontSize: 12,
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                textDecoration: 'none',
+                padding: '2px 6px',
+                borderRadius: 4,
+                flexShrink: 0
+              }}
+            >
+              Salir
+            </button>
+          )}
+        </div>
       );
     }
 
@@ -557,23 +586,24 @@ const Navbar = () => {
         style={{
           display: 'inline-flex',
           alignItems: 'center',
-          gap: 8,
+          gap: isMobile ? 2 : 6,
           textDecoration: 'none',
           background: 'rgba(114, 137, 218, 0.15)',
           border: '1px solid #7289da',
-          padding: '6px 12px',
-          borderRadius: 8,
+          padding: isMobile ? '3px 6px' : '4px 8px',
+          borderRadius: 6,
           boxShadow: '0 2px 8px rgba(114, 137, 218, 0.22)',
-          fontWeight: 700,
+          fontWeight: 600,
           color: '#7289da',
-          fontSize: 15
+          fontSize: isMobile ? 10 : 12,
+          flexShrink: 0
         }}
       >
-        <FaUserCircle size={22} color="#7289da" />
-        <span>Iniciar sesión</span>
+        <FaUserCircle size={isMobile ? 14 : 18} color="#7289da" />
+        <span>{isMobile ? 'Login' : 'Iniciar sesión'}</span>
       </a>
     );
-  }, [user, loading, dark]);
+  }, [user, loading, dark, isMobile]);
 
   return (
     <nav 
@@ -615,7 +645,7 @@ const Navbar = () => {
           {NAVIGATION_CONFIG.mainLinks.map(renderNavigationLink)}
           
           {/* Dropdown de apps y servicios */}
-          <div className="nav-dropdown" style={{ position: 'relative' }}>
+          <div className="nav-dropdown" style={{ position: 'relative', zIndex: 1002 }}>
             <button
               onClick={toggleDropdown}
               className="nav-link"
@@ -625,17 +655,20 @@ const Navbar = () => {
                 gap: 6,
                 padding: '6px 12px',
                 borderRadius: 8,
-                fontWeight: 500,
+                fontWeight: 600,
                 color: dark ? '#fff' : '#23272a',
-                background: 'none',
+                background: showDropdown ? 'rgba(114, 137, 218, 0.15)' : 'none',
                 border: 'none',
-                fontSize: 15,
-                cursor: 'pointer'
+                fontSize: 14,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+                transition: 'all 0.2s ease'
               }}
               aria-expanded={showDropdown}
               aria-haspopup="true"
             >
-              <FaAppStore /> Apps & Servicios ▾
+              <FaAppStore size={16} /> Apps & Servicios ▾
             </button>
             
             <NavigationDropdown
@@ -643,6 +676,7 @@ const Navbar = () => {
               onClose={closeDropdown}
               links={NAVIGATION_CONFIG.externalLinks}
               dark={dark}
+              isMobile={isMobile}
             />
           </div>
 
@@ -668,8 +702,58 @@ const Navbar = () => {
                 textDecoration: 'none'
               }}
             >
-              <FaDiscord /> Unirse
+              <FaDiscord size={14} /> Unirse
             </a>
+          )}
+
+          {/* Botón de logout en móvil si el usuario está logueado */}
+          {isMenuOpen && user && (
+            <button
+              onClick={async () => {
+                try {
+                  // Limpiar token del cliente
+                  localStorage.removeItem('spainrp_token');
+                  console.log('[Logout] Token JWT eliminado del cliente');
+                  
+                  // Disparar evento para refrescar UI
+                  window.dispatchEvent(new Event('token-updated'));
+                  
+                  // Llamar al backend para destruir sesión
+                  await fetch(apiUrl('/auth/logout'), { 
+                    method: 'POST',
+                    credentials: 'include'
+                  }).catch(() => {}); // Ignorar errores del backend
+                  
+                  // Cerrar menú móvil
+                  closeMenu();
+                  
+                  // Redirigir al inicio
+                  window.location.href = '/';
+                } catch (e) {
+                  console.error('[Logout] Error:', e);
+                  // Redirigir de todas formas
+                  window.location.href = '/';
+                }
+              }}
+              style={{
+                marginTop: 8,
+                marginBottom: 8,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '8px 16px',
+                background: '#e74c3c',
+                color: '#fff',
+                borderRadius: 8,
+                fontWeight: 700,
+                fontSize: 15,
+                border: 'none',
+                cursor: 'pointer',
+                textDecoration: 'none'
+              }}
+            >
+              <FaTimes /> Cerrar Sesión
+            </button>
           )}
         </div>
 
@@ -693,20 +777,22 @@ const Navbar = () => {
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: 8,
-                padding: '8px 16px',
+                gap: 6,
+                padding: '6px 12px',
                 background: '#7289da',
                 color: '#fff',
-                borderRadius: 8,
-                fontWeight: 700,
-                fontSize: 15,
+                borderRadius: 6,
+                fontWeight: 600,
+                fontSize: 13,
                 boxShadow: '0 2px 8px rgba(114, 137, 218, 0.33)',
                 textDecoration: 'none',
                 transition: 'background 0.2s ease',
-                marginLeft: 8
+                marginLeft: 4,
+                flexShrink: 0,
+                whiteSpace: 'nowrap'
               }}
             >
-              <FaDiscord /> Unirse
+              <FaDiscord size={14} /> Unirse
             </a>
           )}
 
