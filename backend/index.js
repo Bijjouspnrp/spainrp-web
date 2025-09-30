@@ -1649,6 +1649,121 @@ app.get('/admin/sessions', ensureAuthAndAdmin, (req, res) => {
 });
 
 
+// --- PROXY BOLSA (StockMarket) ---
+// Proxy para catálogo de activos
+app.get('/api/proxy/bolsa/activos', async (req, res) => {
+  try {
+    console.log('[BOLSA PROXY] GET /api/proxy/bolsa/activos - Consultando catálogo de activos');
+    const botUrl = 'http://37.27.21.91:5021/api/bolsa/activos';
+    console.log(`[BOLSA PROXY] URL del bot: ${botUrl}`);
+    
+    const response = await fetch(botUrl);
+    const data = await response.json();
+    
+    console.log(`[BOLSA PROXY] Response status: ${response.status}`);
+    console.log(`[BOLSA PROXY] Response data:`, data);
+    
+    res.status(response.status).json(data);
+  } catch (error) {
+    console.error('[BOLSA PROXY] ❌ Error getting activos:', error);
+    res.status(500).json({ error: 'Error al obtener catálogo de activos', details: error.message });
+  }
+});
+
+// Proxy para saldo del usuario
+app.get('/api/proxy/bolsa/saldo/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    console.log('[BOLSA PROXY] GET /api/proxy/bolsa/saldo/' + userId);
+    const botUrl = `http://37.27.21.91:5021/api/bolsa/saldo/${userId}`;
+    console.log(`[BOLSA PROXY] URL del bot: ${botUrl}`);
+    
+    const response = await fetch(botUrl);
+    const data = await response.json();
+    
+    console.log(`[BOLSA PROXY] Response status: ${response.status}`);
+    console.log(`[BOLSA PROXY] Response data:`, data);
+    
+    res.status(response.status).json(data);
+  } catch (error) {
+    console.error('[BOLSA PROXY] ❌ Error getting saldo:', error);
+    res.status(500).json({ error: 'Error al obtener saldo', details: error.message });
+  }
+});
+
+// Proxy para inversiones del usuario
+app.get('/api/proxy/bolsa/inversiones/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    console.log('[BOLSA PROXY] GET /api/proxy/bolsa/inversiones/' + userId);
+    const botUrl = `http://37.27.21.91:5021/api/bolsa/inversiones/${userId}`;
+    console.log(`[BOLSA PROXY] URL del bot: ${botUrl}`);
+    
+    const response = await fetch(botUrl);
+    const data = await response.json();
+    
+    console.log(`[BOLSA PROXY] Response status: ${response.status}`);
+    console.log(`[BOLSA PROXY] Response data:`, data);
+    
+    res.status(response.status).json(data);
+  } catch (error) {
+    console.error('[BOLSA PROXY] ❌ Error getting inversiones:', error);
+    res.status(500).json({ error: 'Error al obtener inversiones', details: error.message });
+  }
+});
+
+// Proxy para comprar activos
+app.post('/api/proxy/bolsa/comprar', express.json(), async (req, res) => {
+  try {
+    const { userId, assetId, cantidad } = req.body;
+    console.log('[BOLSA PROXY] POST /api/proxy/bolsa/comprar', { userId, assetId, cantidad });
+    const botUrl = 'http://37.27.21.91:5021/api/bolsa/comprar';
+    console.log(`[BOLSA PROXY] URL del bot: ${botUrl}`);
+    
+    const response = await fetch(botUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, assetId, cantidad })
+    });
+    
+    const data = await response.json();
+    
+    console.log(`[BOLSA PROXY] Response status: ${response.status}`);
+    console.log(`[BOLSA PROXY] Response data:`, data);
+    
+    res.status(response.status).json(data);
+  } catch (error) {
+    console.error('[BOLSA PROXY] ❌ Error comprando:', error);
+    res.status(500).json({ error: 'Error al comprar activo', details: error.message });
+  }
+});
+
+// Proxy para vender activos
+app.post('/api/proxy/bolsa/vender', express.json(), async (req, res) => {
+  try {
+    const { userId, assetId, cantidad } = req.body;
+    console.log('[BOLSA PROXY] POST /api/proxy/bolsa/vender', { userId, assetId, cantidad });
+    const botUrl = 'http://37.27.21.91:5021/api/bolsa/vender';
+    console.log(`[BOLSA PROXY] URL del bot: ${botUrl}`);
+    
+    const response = await fetch(botUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, assetId, cantidad })
+    });
+    
+    const data = await response.json();
+    
+    console.log(`[BOLSA PROXY] Response status: ${response.status}`);
+    console.log(`[BOLSA PROXY] Response data:`, data);
+    
+    res.status(response.status).json(data);
+  } catch (error) {
+    console.error('[BOLSA PROXY] ❌ Error vendiendo:', error);
+    res.status(500).json({ error: 'Error al vender activo', details: error.message });
+  }
+});
+
 // --- Anuncios con imágenes ---
 // Declaraciones de multer movidas al inicio del archivo
 
