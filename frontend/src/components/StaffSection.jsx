@@ -163,6 +163,8 @@ function StaffMemberCard({ member, resolvedId, getRoleColor }) {
     return () => { mounted = false; };
   }, [resolvedId, member.name]);
 
+  console.log(`[StaffSection] Renderizando ${member.name} con medallas:`, member.medals);
+  
   return (
     <div
       className="staff-card"
@@ -206,12 +208,39 @@ function StaffMemberCard({ member, resolvedId, getRoleColor }) {
         <span className="staff-role">{member.role}</span>
         
         {/* Medallas */}
-        <div className="staff-medals">
-          {member.medals && member.medals.map((medal, index) => (
-            <span key={index} className="staff-medal">
-              {medal}
-            </span>
-          ))}
+        <div className="staff-medals" style={{ 
+          display: 'flex', 
+          flexWrap: 'wrap', 
+          gap: '0.4rem', 
+          justifyContent: 'center', 
+          marginBottom: '0.5rem' 
+        }}>
+          {member.medals && member.medals.map((medal, index) => {
+            console.log(`[StaffSection] Renderizando medalla ${index} para ${member.name}:`, medal);
+            return (
+              <span 
+                key={index} 
+                className="staff-medal"
+                style={{
+                  background: 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)',
+                  color: '#1a1a1a',
+                  fontSize: '0.75rem',
+                  fontWeight: '600',
+                  padding: '0.3rem 0.6rem',
+                  borderRadius: '20px',
+                  border: '1px solid rgba(255, 215, 0, 0.3)',
+                  boxShadow: '0 2px 8px rgba(255, 215, 0, 0.2)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.25rem',
+                  transition: 'all 0.3s ease',
+                  textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
+                }}
+              >
+                {medal}
+              </span>
+            );
+          })}
         </div>
         
         {resolvedId && (
