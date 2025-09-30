@@ -209,21 +209,33 @@ router.post('/send', async (req, res) => {
       targetUser: targetUserId
     });
 
-    // Si es para todos los usuarios, crear notificaciones para usuarios online
+    // Crear notificación en la base de datos
+    const notification = {
+      id: notificationId,
+      title,
+      message,
+      type: type || 'info',
+      priority: priority || 'normal',
+      timestamp: new Date().toISOString()
+    };
+
+    // Si es para todos los usuarios, crear notificación global y enviar por WebSocket
     if (target === 'all' || target === 'online') {
-      // Aquí podrías implementar lógica para obtener usuarios online
-      // Por ahora, creamos una notificación global (user_id = NULL)
-      if (target === 'all') {
-        await new Promise((resolve, reject) => {
-          db.run(
-            'INSERT INTO notifications (user_id, title, message, type, priority) VALUES (NULL, ?, ?, ?, ?)',
-            [title, message, type || 'info', priority || 'normal'],
-            function(err) {
-              if (err) reject(err);
-              else resolve();
-            }
-          );
-        });
+      // Crear notificación global (user_id = NULL)
+      await new Promise((resolve, reject) => {
+        db.run(
+          'INSERT INTO notifications (user_id, title, message, type, priority) VALUES (NULL, ?, ?, ?, ?)',
+          [title, message, type || 'info', priority || 'normal'],
+          function(err) {
+            if (err) reject(err);
+            else resolve();
+          }
+        );
+      });
+
+      // Enviar por WebSocket a todos los usuarios conectados
+      if (global.broadcastNotification) {
+        global.broadcastNotification(notification);
       }
     }
 

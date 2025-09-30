@@ -131,16 +131,44 @@ app.use('/api/notifications', notificationRoutes);
 const http = require('http');
 const server = http.createServer(app);
 const { Server } = require('socket.io');
+
+// Configurar Socket.IO
 const io = new Server(server, {
   cors: {
     origin: [
       'https://spainrp-oficial.onrender.com', 
+      'https://spainrp-web.onrender.com',
       'http://127.0.0.1:5173',
       process.env.PUBLIC_BASE_URL || 'https://spainrp-oficial.onrender.com'
     ].filter(Boolean),
     credentials: true
-  }
+  },
+  path: "/ws/notifications"
 });
+
+// Manejar conexiones WebSocket
+io.on('connection', (socket) => {
+  console.log('[WEBSOCKET] Usuario conectado:', socket.id);
+  
+  // Unirse a la sala de notificaciones
+  socket.join('notifications');
+  
+  socket.on('disconnect', () => {
+    console.log('[WEBSOCKET] Usuario desconectado:', socket.id);
+  });
+});
+
+// Función para enviar notificaciones a todos los usuarios conectados
+const broadcastNotification = (notification) => {
+  io.to('notifications').emit('notification', {
+    type: 'notification',
+    notification: notification
+  });
+  console.log('[WEBSOCKET] Notificación enviada a todos los usuarios:', notification.title);
+};
+
+// Exportar la función para usar en las rutas
+global.broadcastNotification = broadcastNotification;
 const nodemailer = require('nodemailer');
 
 // --- Subscriptores de mantenimiento (almacenados en JSON) ---

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { io } from 'socket.io-client';
 import { apiUrl } from '../utils/api';
 
 const useNotifications = () => {
@@ -6,65 +7,72 @@ const useNotifications = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
 
-  // WebSocket connection
+  // Socket.IO connection
   useEffect(() => {
-    let ws = null;
+    let socket = null;
     let reconnectInterval = null;
 
-    const connectWebSocket = () => {
+    const connectSocket = () => {
       try {
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${protocol}//${window.location.host}/ws/notifications`;
+        // Usar la URL correcta del backend
+        const socketUrl = 'https://spainrp-web.onrender.com';
         
-        ws = new WebSocket(wsUrl);
+        socket = io(socketUrl, {
+          path: '/ws/notifications',
+          transports: ['websocket', 'polling'],
+          timeout: 20000,
+          reconnection: true,
+          reconnectionDelay: 1000,
+          reconnectionAttempts: 5
+        });
         
-        ws.onopen = () => {
-          console.log('[NOTIFICATIONS] WebSocket conectado');
+        socket.on('connect', () => {
+          console.log('[NOTIFICATIONS] Socket.IO conectado:', socket.id);
           setIsConnected(true);
           if (reconnectInterval) {
             clearInterval(reconnectInterval);
             reconnectInterval = null;
           }
-        };
+        });
 
-        ws.onmessage = (event) => {
-          try {
-            const data = JSON.parse(event.data);
-            console.log('[NOTIFICATIONS] Mensaje recibido:', data);
-            
-            if (data.type === 'notification') {
-              addNotification(data.notification);
-            }
-          } catch (error) {
-            console.error('[NOTIFICATIONS] Error parseando mensaje:', error);
+        socket.on('notification', (data) => {
+          console.log('[NOTIFICATIONS] Notificación recibida:', data);
+          if (data.type === 'notification') {
+            addNotification(data.notification);
           }
-        };
+        });
 
-        ws.onclose = () => {
-          console.log('[NOTIFICATIONS] WebSocket desconectado');
+        socket.on('disconnect', () => {
+          console.log('[NOTIFICATIONS] Socket.IO desconectado');
           setIsConnected(false);
-          
-          // Reconectar después de 5 segundos
-          if (!reconnectInterval) {
-            reconnectInterval = setInterval(connectWebSocket, 5000);
-          }
-        };
+        });
 
-        ws.onerror = (error) => {
-          console.error('[NOTIFICATIONS] Error WebSocket:', error);
+        socket.on('connect_error', (error) => {
+          console.error('[NOTIFICATIONS] Error conectando Socket.IO:', error);
           setIsConnected(false);
-        };
+        });
+
+        socket.on('reconnect', () => {
+          console.log('[NOTIFICATIONS] Socket.IO reconectado');
+          setIsConnected(true);
+        });
+
+        socket.on('reconnect_error', (error) => {
+          console.error('[NOTIFICATIONS] Error reconectando Socket.IO:', error);
+          setIsConnected(false);
+        });
+
       } catch (error) {
-        console.error('[NOTIFICATIONS] Error conectando WebSocket:', error);
+        console.error('[NOTIFICATIONS] Error inicializando Socket.IO:', error);
         setIsConnected(false);
       }
     };
 
-    connectWebSocket();
+    connectSocket();
 
     return () => {
-      if (ws) {
-        ws.close();
+      if (socket) {
+        socket.disconnect();
       }
       if (reconnectInterval) {
         clearInterval(reconnectInterval);
