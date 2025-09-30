@@ -2103,19 +2103,61 @@ app.get('/api/proxy/admin/inventory/:targetUserId', async (req, res) => {
   }
 });
 
-// Ver saldo de cualquier usuario (solo administradores)
+// Ver saldo de cualquier usuario (solo administradores) - PROXY CORREGIDO
 app.get('/api/proxy/admin/balance/:targetUserId', async (req, res) => {
   try {
     const { targetUserId } = req.params;
     const { adminUserId } = req.query;
-    console.log(`[PROXY] Getting balance for user ${targetUserId}, admin: ${adminUserId}`);
-    const response = await fetch(`${process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/'}/api/admin/balance/${targetUserId}?adminUserId=${adminUserId}`);
+    console.log(`[ADMIN PROXY] ===== INICIO BALANCE =====`);
+    console.log(`[ADMIN PROXY] GET /api/proxy/admin/balance/${targetUserId}?adminUserId=${adminUserId}`);
+    
+    // Verificar si el bot de Discord está disponible
+    if (!discordClient.readyAt) {
+      console.warn('[ADMIN PROXY] ⚠️ Bot de Discord no disponible');
+      return res.status(503).json({ error: 'Bot de Discord no disponible' });
+    }
+    
+    // Verificar permisos de admin usando discordClient local
+    const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
+    console.log(`[ADMIN PROXY] Guild ID: ${guildId}, Target User ID: ${targetUserId}, Admin User ID: ${adminUserId}`);
+    
+    const guild = discordClient.guilds.cache.get(guildId);
+    if (!guild) {
+      console.error(`[ADMIN PROXY] ❌ Servidor no encontrado: ${guildId}`);
+      return res.status(404).json({ error: 'Servidor no encontrado' });
+    }
+    
+    await guild.members.fetch();
+    const adminMember = guild.members.cache.get(adminUserId);
+    if (!adminMember) {
+      console.error(`[ADMIN PROXY] ❌ Admin no encontrado: ${adminUserId}`);
+      return res.status(404).json({ error: 'Admin no encontrado' });
+    }
+    
+    const hasAdminRole = adminMember.roles.cache.has('1384340649205301359');
+    const hasAdminPerms = adminMember.permissions.has(PermissionsBitField.Flags.Administrator);
+    if (!hasAdminRole && !hasAdminPerms) {
+      console.error(`[ADMIN PROXY] ❌ Sin permisos de admin: ${adminUserId}`);
+      return res.status(403).json({ error: 'No tienes permisos de administrador' });
+    }
+    
+    console.log(`[ADMIN PROXY] ✅ Permisos verificados para admin: ${adminUserId}`);
+    
+    // Llamar directamente a la API externa del bot
+    const botUrl = `${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/admin/balance/${targetUserId}`;
+    console.log(`[ADMIN PROXY] URL del bot: ${botUrl}`);
+    
+    const response = await fetch(botUrl);
     const data = await response.json();
-    console.log(`[PROXY] Balance result:`, data);
-    res.json(data);
+    
+    console.log(`[ADMIN PROXY] Response status: ${response.status}`);
+    console.log(`[ADMIN PROXY] Response data:`, data);
+    console.log(`[ADMIN PROXY] ===== FIN BALANCE =====`);
+    
+    res.status(response.status).json(data);
   } catch (error) {
-    console.error('[PROXY] Error getting balance:', error);
-    res.status(500).json({ error: 'Error al obtener balance' });
+    console.error('[ADMIN PROXY] ❌ Error getting balance:', error);
+    res.status(500).json({ error: 'Error al obtener balance', details: error.message });
   }
 });
 
