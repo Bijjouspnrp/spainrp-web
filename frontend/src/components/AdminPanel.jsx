@@ -36,6 +36,7 @@ import {
   FaChevronLeft,
   FaBars
 } from 'react-icons/fa';
+import MaintenanceControl from './MaintenanceControl';
 // Toast feedback mejorado
 function Toast({ message, type, onClose }) {
   if (!message) return null;
@@ -154,6 +155,34 @@ function PermissionsPanel() {
 const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  
+  // Toast feedback global
+  const [toast, setToast] = useState({ message: '', type: 'success' });
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast({ message: '', type }), 3000);
+  };
+
+  // Hook para detectar tamaño de pantalla
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
+  // Hacer showToast accesible globalmente para MaintenanceControl
+  useEffect(() => {
+    window.showAdminToast = showToast;
+    return () => {
+      delete window.showAdminToast;
+    };
+  }, [showToast]);
   
   // Panel de MDs privados
   const [dmUserId, setDmUserId] = useState('');
@@ -219,12 +248,7 @@ const AdminPanel = () => {
   const [unbanError, setUnbanError] = useState('');
   const [kickError, setKickError] = useState('');
   const [muteError, setMuteError] = useState('');
-  // Toast feedback
-  const [toast, setToast] = useState({ message: '', type: 'success' });
-  const showToast = (message, type = 'success') => {
-    setToast({ message, type });
-    setTimeout(() => setToast({ message: '', type }), 3000);
-  };
+  // Toast feedback ya definido globalmente
   const [userId, setUserId] = useState('');
   const [banReason, setBanReason] = useState('');
   const [banResult, setBanResult] = useState(null);
@@ -634,9 +658,18 @@ const AdminPanel = () => {
     { id: 'moderation', label: 'Moderación', icon: FaGavel },
     { id: 'communication', label: 'Comunicación', icon: FaEnvelope },
     { id: 'roles', label: 'Roles', icon: FaUserShield },
+    { id: 'maintenance', label: 'Mantenimiento', icon: FaTools },
     { id: 'logs', label: 'Logs', icon: FaHistory },
     { id: 'settings', label: 'Configuración', icon: FaCog }
   ];
+
+  // Función para cambiar de pestaña y cerrar sidebar en móvil
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  };
 
   return (
     <div className="admin-panel-container">
@@ -648,15 +681,16 @@ const AdminPanel = () => {
           <div className="admin-title">
             <FaCrown className="admin-icon" />
             <h1>Panel de Administración</h1>
-        </div>
-          <button 
+          </div>
+          <button
             className="sidebar-toggle"
             onClick={() => setSidebarOpen(!sidebarOpen)}
+            aria-label="Toggle sidebar"
           >
             <FaBars />
           </button>
         </div>
-          </div>
+      </div>
 
       <div className="admin-layout">
         {/* Sidebar */}
@@ -688,6 +722,7 @@ const AdminPanel = () => {
             {activeTab === 'moderation' && <ModerationTab />}
             {activeTab === 'communication' && <CommunicationTab />}
             {activeTab === 'roles' && <RolesTab />}
+            {activeTab === 'maintenance' && <MaintenanceTab />}
             {activeTab === 'logs' && <LogsTab />}
             {activeTab === 'settings' && <SettingsTab />}
           </div>
@@ -1782,6 +1817,25 @@ function LogsTab() {
   );
 }
 
+// Componente de pestaña de Mantenimiento
+function MaintenanceTab() {
+  return (
+    <div className="tab-content">
+      <div className="tab-header">
+        <h2><FaTools /> Control de Mantenimiento</h2>
+        <p>Gestiona el modo mantenimiento del servidor</p>
+      </div>
+      
+      <MaintenanceControl showToast={(message, type) => {
+        // Usar el showToast global del AdminPanel
+        if (window.showAdminToast) {
+          window.showAdminToast(message, type);
+        }
+      }} />
+    </div>
+  );
+}
+
 // Componente de pestaña de Configuración
 function SettingsTab() {
   const [blockChannelId, setBlockChannelId] = useState('');
@@ -1918,6 +1972,21 @@ function SettingsTab() {
           )}
         </div>
       </div>
+      
+      {/* Toast Notification */}
+      {toast.message && (
+        <div className={`toast ${toast.type === 'error' ? 'toast-error' : 'toast-success'}`}>
+          <div className="toast-content">
+            <span>{toast.message}</span>
+          </div>
+          <button 
+            className="toast-close" 
+            onClick={() => setToast({ message: '', type: 'success' })}
+          >
+            ×
+          </button>
+        </div>
+      )}
     </div>
   );
 }

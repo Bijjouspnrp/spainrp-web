@@ -430,7 +430,7 @@ function App() {
     let socket;
     const updateFromApi = async () => {
       try {
-        const res = await fetch(apiUrl('/api/maintenance'));
+        const res = await fetch(apiUrl('/api/maintenance/status'));
         const data = await res.json();
         setMaintenance(!!data.maintenance);
         setMaintenanceStart(data.startedAt || null);
@@ -447,7 +447,9 @@ function App() {
         withCredentials: true
       });
       socket.on('maintenance', (data) => {
-        updateFromApi();
+        console.log('[MAINTENANCE] Evento recibido:', data);
+        setMaintenance(!!data.maintenance);
+        setMaintenanceStart(data.data?.activatedAt || null);
       });
     } catch {}
     // Fallback: polling cada 10s

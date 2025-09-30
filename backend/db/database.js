@@ -23,6 +23,9 @@ const getDatabase = () => {
         db.run("PRAGMA foreign_keys=ON");
         
         console.log('[DATABASE] Optimizaciones SQLite aplicadas');
+        
+        // Inicializar tablas necesarias
+        initializeTables(db);
       }
     });
   }
@@ -85,6 +88,182 @@ const allQuery = (sql, params = []) => {
         resolve(rows);
       }
     });
+  });
+};
+
+// Función para inicializar todas las tablas necesarias
+const initializeTables = (database) => {
+  console.log('[DATABASE] Inicializando tablas...');
+  
+  const tables = [
+    {
+      name: 'sessions',
+      sql: `CREATE TABLE IF NOT EXISTS sessions (
+        sessionId TEXT PRIMARY KEY,
+        userId TEXT,
+        username TEXT,
+        avatar TEXT,
+        ip TEXT,
+        userAgent TEXT,
+        lastSeen INTEGER
+      )`
+    },
+    {
+      name: 'announcements',
+      sql: `CREATE TABLE IF NOT EXISTS announcements (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT,
+        body TEXT,
+        authorId TEXT,
+        authorName TEXT,
+        createdAt TEXT,
+        images TEXT,
+        company TEXT,
+        tags TEXT
+      )`
+    },
+    {
+      name: 'polls',
+      sql: `CREATE TABLE IF NOT EXISTS polls (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        question TEXT,
+        options TEXT,
+        author TEXT,
+        createdAt TEXT,
+        expiresAt TEXT,
+        active INTEGER DEFAULT 1
+      )`
+    },
+    {
+      name: 'poll_votes',
+      sql: `CREATE TABLE IF NOT EXISTS poll_votes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        pollId INTEGER,
+        userId TEXT,
+        optionIndex INTEGER,
+        createdAt TEXT,
+        FOREIGN KEY (pollId) REFERENCES polls (id)
+      )`
+    },
+    {
+      name: 'notifications',
+      sql: `CREATE TABLE IF NOT EXISTS notifications (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userId TEXT,
+        title TEXT,
+        message TEXT,
+        type TEXT DEFAULT 'info',
+        read INTEGER DEFAULT 0,
+        createdAt TEXT
+      )`
+    },
+    {
+      name: 'access_logs',
+      sql: `CREATE TABLE IF NOT EXISTS access_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        method TEXT,
+        url TEXT,
+        userId TEXT,
+        ip TEXT,
+        userAgent TEXT,
+        timestamp TEXT
+      )`
+    },
+    {
+      name: 'error_logs',
+      sql: `CREATE TABLE IF NOT EXISTS error_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        error TEXT,
+        stack TEXT,
+        method TEXT,
+        url TEXT,
+        userId TEXT,
+        ip TEXT,
+        userAgent TEXT,
+        timestamp TEXT
+      )`
+    },
+    {
+      name: 'maintenance_subscribers',
+      sql: `CREATE TABLE IF NOT EXISTS maintenance_subscribers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT UNIQUE,
+        subscribedAt TEXT
+      )`
+    },
+    {
+      name: 'news_comments',
+      sql: `CREATE TABLE IF NOT EXISTS news_comments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        newsId INTEGER,
+        userId TEXT,
+        username TEXT,
+        text TEXT,
+        createdAt TEXT
+      )`
+    },
+    {
+      name: 'news_reactions',
+      sql: `CREATE TABLE IF NOT EXISTS news_reactions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        newsId INTEGER,
+        userId TEXT,
+        emoji TEXT,
+        createdAt TEXT,
+        UNIQUE(newsId, userId, emoji)
+      )`
+    }
+  ];
+
+  let completed = 0;
+  const total = tables.length;
+
+  tables.forEach(table => {
+    database.run(table.sql, (err) => {
+      if (err) {
+        console.error(`[DATABASE] Error creando tabla ${table.name}:`, err);
+      } else {
+        console.log(`[DATABASE] Tabla ${table.name} creada/verificada correctamente`);
+      }
+      
+      completed++;
+      if (completed === total) {
+        console.log('[DATABASE] Todas las tablas inicializadas correctamente');
+        
+        // Insertar datos de muestra si es necesario
+        insertSampleData(database);
+      }
+    });
+  });
+};
+
+// Función para insertar datos de muestra
+const insertSampleData = (database) => {
+  // Verificar si ya hay datos en sessions
+  database.get('SELECT COUNT(*) as count FROM sessions', (err, row) => {
+    if (err) {
+      console.error('[DATABASE] Error verificando datos existentes:', err);
+      return;
+    }
+
+    if (row.count === 0) {
+      console.log('[DATABASE] Insertando datos de muestra...');
+      
+      const now = Date.now();
+      database.run(
+        'INSERT INTO sessions (sessionId, userId, username, avatar, ip, userAgent, lastSeen) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        ['sample-session', '710112055985963090', 'DemoAdmin', null, '127.0.0.1', 'Demo UA', now],
+        (err) => {
+          if (err) {
+            console.error('[DATABASE] Error insertando sesión de muestra:', err);
+          } else {
+            console.log('[DATABASE] Sesión de muestra insertada correctamente');
+          }
+        }
+      );
+    } else {
+      console.log('[DATABASE] Base de datos ya contiene datos, omitiendo inserción de muestra');
+    }
   });
 };
 

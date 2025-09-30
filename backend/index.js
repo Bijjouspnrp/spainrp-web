@@ -592,73 +592,31 @@ app.use((req, res, next) => {
 const { getDatabase } = require('./db/database');
 const db = getDatabase();
 
-// Tabla de bans
-db.serialize(() => {
-  // Migración: agregar columna 'images' si no existe
-  db.get("PRAGMA table_info(announcements)", (err, columns) => {
-    if (!err && Array.isArray(columns) && !columns.some(col => col.name === 'images')) {
-      db.run("ALTER TABLE announcements ADD COLUMN images TEXT", (err2) => {
-        if (err2) console.error('[DB MIGRATION] Error añadiendo columna images:', err2.message);
-        else console.log('[DB MIGRATION] Columna images añadida a announcements');
-      });
-    }
-  });
-  db.run(`CREATE TABLE IF NOT EXISTS bans (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    ip TEXT,
-    userId TEXT,
-    reason TEXT,
-    createdAt TEXT
-  )`);
-  db.run(`CREATE TABLE IF NOT EXISTS sessions (
-    sessionId TEXT PRIMARY KEY,
-    userId TEXT,
-    username TEXT,
-    avatar TEXT,
-    ip TEXT,
-    userAgent TEXT,
-    lastSeen INTEGER
-  )`);
-  // Semilla: insertar una sesión de prueba si la tabla está vacía
-  db.get('SELECT COUNT(*) as n FROM sessions', [], (err, row) => {
-    if (!err && row && row.n === 0) {
-      const now = Date.now();
-      db.run(
-        'INSERT INTO sessions (sessionId, userId, username, avatar, ip, userAgent, lastSeen) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        ['sample-session', '710112055985963090', 'DemoAdmin', null, '127.0.0.1', 'Demo UA', now]
-      );
-    }
-  });
-  // Anuncios y encuestas
-  db.run(`CREATE TABLE IF NOT EXISTS announcements (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT,
-    body TEXT,
-    authorId TEXT,
-    authorName TEXT,
-    createdAt TEXT,
-    images TEXT,
-    company TEXT,
-    tags TEXT
-  )`);
-  // Comentarios persistentes por noticia
-  db.run(`CREATE TABLE IF NOT EXISTS news_comments (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    newsId INTEGER,
-    userId TEXT,
-    username TEXT,
-    text TEXT,
-    createdAt TEXT
-  )`);
-  // Reacciones persistentes por noticia y usuario
-  db.run(`CREATE TABLE IF NOT EXISTS news_reactions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    newsId INTEGER,
-    userId TEXT,
-    emoji TEXT,
-    createdAt TEXT,
-    UNIQUE(newsId, userId, emoji)
-  )`);
+// Migración: agregar columna 'images' si no existe
+db.get("PRAGMA table_info(announcements)", (err, columns) => {
+  if (!err && Array.isArray(columns) && !columns.some(col => col.name === 'images')) {
+    db.run("ALTER TABLE announcements ADD COLUMN images TEXT", (err2) => {
+      if (err2) console.error('[DB MIGRATION] Error añadiendo columna images:', err2.message);
+      else console.log('[DB MIGRATION] Columna images añadida a announcements');
+    });
+  }
+});
+
+// Tabla de bans (específica para este módulo)
+db.run(`CREATE TABLE IF NOT EXISTS bans (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  ip TEXT,
+  userId TEXT,
+  reason TEXT,
+  createdAt TEXT
+)`, (err) => {
+  if (err) {
+    console.error('[DB] Error creando tabla bans:', err);
+  } else {
+    console.log('[DB] Tabla bans creada/verificada correctamente');
+  }
+});
+// Las tablas principales se inicializan automáticamente en database.js
 // --- ENDPOINTS COMENTARIOS Y REACCIONES DE NOTICIAS ---
 // GET: comentarios de una noticia
 app.get('/api/announcements/:id/comments', (req, res) => {
@@ -734,7 +692,7 @@ const handleDNIExport = async (req, res) => {
     // Para HEAD, solo enviar headers
     if (isHeadRequest) {
       console.log(`[DNI PROXY] Enviando headers para HEAD request`);
-      res.set('Content-Type', response.headers.get('content-type') || 'image/png');
+    res.set('Content-Type', response.headers.get('content-type') || 'image/png');
       res.set('Content-Length', response.headers.get('content-length') || '0');
       res.set('Cache-Control', 'public, max-age=3600');
       res.set('X-Cache', 'MISS');
@@ -1423,7 +1381,6 @@ app.post('/api/backend/calendar/claim', (req, res) => {
       res.json({ claimedDays, streak: streakCount });
     });
   });
-});
 });
 
 app.use('/auth', authRoutes);
@@ -2848,6 +2805,191 @@ app.get('/api/discord/candeletenews/:userId', async (req, res) => {
   }
 });
 
+// =============================================================================
+// SISTEMA DE MODO MANTENIMIENTO
+// =============================================================================
+
+// Endpoint para obtener estado del mantenimiento
+app.get('/api/maintenance/status', (req, res) => {
+  try {
+    const isMaintenance = fs.existsSync(MAINTENANCE_FILE);
+    const maintenanceData = isMaintenance ? {
+      maintenance: true,
+      startedAt: fs.statSync(MAINTENANCE_FILE).mtime,
+      message: 'El servidor está en mantenimiento. Volveremos pronto.'
+    } : {
+      maintenance: false,
+      startedAt: null,
+      message: 'El servidor está funcionando normalmente.'
+    };
+    
+    res.json(maintenanceData);
+  } catch (error) {
+    console.error('[MAINTENANCE STATUS] Error:', error);
+    res.status(500).json({ error: 'Error obteniendo estado de mantenimiento' });
+  }
+});
+
+// Endpoint para activar/desactivar mantenimiento (solo para administradores)
+app.post('/api/maintenance/toggle', ensureAuthAndAdmin, (req, res) => {
+  try {
+    const { action, message } = req.body;
+    const userId = req.user?.id;
+    
+    console.log(`[MAINTENANCE TOGGLE] Usuario ${userId} intentando ${action} mantenimiento`);
+    
+    if (action === 'on') {
+      // Activar mantenimiento
+      const maintenanceData = {
+        activatedBy: userId,
+        activatedAt: new Date().toISOString(),
+        message: message || 'El servidor está en mantenimiento. Volveremos pronto.',
+        estimatedDuration: '30 minutos'
+      };
+      
+      fs.writeFileSync(MAINTENANCE_FILE, JSON.stringify(maintenanceData, null, 2));
+      console.log('[MAINTENANCE] Modo mantenimiento ACTIVADO por:', userId);
+      
+      // Emitir evento a todos los clientes conectados
+      if (io) {
+        io.emit('maintenance', { maintenance: true, data: maintenanceData });
+      }
+      
+      res.json({ 
+        success: true, 
+        message: 'Modo mantenimiento activado correctamente',
+        data: maintenanceData
+      });
+      
+    } else if (action === 'off') {
+      // Desactivar mantenimiento
+      if (fs.existsSync(MAINTENANCE_FILE)) {
+        const maintenanceData = JSON.parse(fs.readFileSync(MAINTENANCE_FILE, 'utf8'));
+        fs.unlinkSync(MAINTENANCE_FILE);
+        console.log('[MAINTENANCE] Modo mantenimiento DESACTIVADO por:', userId);
+        
+        // Emitir evento a todos los clientes conectados
+        if (io) {
+          io.emit('maintenance', { maintenance: false, data: null });
+        }
+        
+        res.json({ 
+          success: true, 
+          message: 'Modo mantenimiento desactivado correctamente',
+          data: maintenanceData
+        });
+      } else {
+        res.json({ 
+          success: true, 
+          message: 'El servidor ya estaba funcionando normalmente'
+        });
+      }
+    } else {
+      res.status(400).json({ error: 'Acción inválida. Use "on" o "off"' });
+    }
+  } catch (error) {
+    console.error('[MAINTENANCE TOGGLE] Error:', error);
+    res.status(500).json({ error: 'Error al cambiar modo mantenimiento' });
+  }
+});
+
+// Endpoint para obtener suscriptores de mantenimiento
+app.get('/api/maintenance/subscribers', ensureAuthAndAdmin, (req, res) => {
+  try {
+    const subscribers = readMaintSubs();
+    res.json({ subscribers });
+  } catch (error) {
+    console.error('[MAINTENANCE SUBSCRIBERS] Error:', error);
+    res.status(500).json({ error: 'Error obteniendo suscriptores' });
+  }
+});
+
+// Endpoint para obtener perfil de Roblox
+app.get('/api/roblox/profile/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    console.log(`[ROBLOX PROFILE] Obteniendo perfil para: ${userId}`);
+    
+    // Por ahora devolver datos de ejemplo
+    res.json({
+      success: true,
+      profile: {
+        userId: userId,
+        username: 'UsuarioEjemplo',
+        displayName: 'Usuario Ejemplo',
+        avatar: 'https://cdn.discordapp.com/embed/avatars/0.png',
+        verified: false
+      }
+    });
+  } catch (error) {
+    console.error('[ROBLOX PROFILE] Error:', error);
+    res.status(500).json({ error: 'Error obteniendo perfil de Roblox' });
+  }
+});
+
+// Endpoint para obtener canales de Discord
+app.get('/api/discord/channels', ensureAuthAndAdmin, (req, res) => {
+  try {
+    if (!discordClient || !discordClient.readyAt) {
+      return res.status(503).json({ error: 'Bot de Discord no disponible' });
+    }
+    
+    const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
+    const guild = discordClient.guilds.cache.get(guildId);
+    
+    if (!guild) {
+      return res.status(404).json({ error: 'Servidor no encontrado' });
+    }
+    
+    const channels = guild.channels.cache.map(channel => ({
+      id: channel.id,
+      name: channel.name,
+      type: channel.type,
+      position: channel.position
+    }));
+    
+    res.json({ channels });
+  } catch (error) {
+    console.error('[DISCORD CHANNELS] Error:', error);
+    res.status(500).json({ error: 'Error obteniendo canales' });
+  }
+});
+
+// Endpoint para obtener permisos de Discord
+app.get('/api/discord/permissions', ensureAuthAndAdmin, (req, res) => {
+  try {
+    if (!discordClient || !discordClient.readyAt) {
+      return res.status(503).json({ error: 'Bot de Discord no disponible' });
+    }
+    
+    const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
+    const guild = discordClient.guilds.cache.get(guildId);
+    
+    if (!guild) {
+      return res.status(404).json({ error: 'Servidor no encontrado' });
+    }
+    
+    const permissions = {
+      guild: {
+        id: guild.id,
+        name: guild.name,
+        permissions: guild.members.me.permissions.toArray()
+      },
+      roles: guild.roles.cache.map(role => ({
+        id: role.id,
+        name: role.name,
+        permissions: role.permissions.toArray(),
+        position: role.position
+      }))
+    };
+    
+    res.json(permissions);
+  } catch (error) {
+    console.error('[DISCORD PERMISSIONS] Error:', error);
+    res.status(500).json({ error: 'Error obteniendo permisos' });
+  }
+});
+
 // Endpoint para miembros activos (widget)
 app.get('/api/widget', async (req, res) => {
   try {
@@ -3155,12 +3297,12 @@ app.post('/api/discord/mute', express.json(), async (req, res) => {
       for (const channel of guild.channels.cache.values()) {
         if (channel.type === 0 || channel.type === 2) { // 0: GUILD_TEXT, 2: GUILD_VOICE
           try {
-            await channel.permissionOverwrites.edit(muteRole, {
-              SendMessages: false,
-              Speak: false,
-              Connect: false,
-              AddReactions: false
-            });
+          await channel.permissionOverwrites.edit(muteRole, {
+            SendMessages: false,
+            Speak: false,
+            Connect: false,
+            AddReactions: false
+          });
           } catch (e) {
             console.warn(`[DISCORD MUTE] No se pudo configurar permisos en canal ${channel.name}:`, e.message);
           }
@@ -3190,7 +3332,7 @@ app.post('/api/discord/mute', express.json(), async (req, res) => {
         } catch (e) {
           console.error('[DISCORD MUTE] Error en desmute automático:', e);
         }
-      }, parseInt(time) * 60000);
+    }, parseInt(time) * 60000);
     }
 
     res.json({ 
