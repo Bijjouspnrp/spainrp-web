@@ -58,7 +58,7 @@ const AdminNotificationSender = ({ isOpen, onClose }) => {
         targetUser: formData.target === 'specific' ? formData.targetUser : undefined
       };
 
-      const response = await authFetch(apiUrl('/api/admin/notifications/send'), {
+      const response = await authFetch(apiUrl('/api/notifications/send'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

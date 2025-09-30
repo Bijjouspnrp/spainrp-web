@@ -142,8 +142,7 @@ const io = new Server(server, {
       process.env.PUBLIC_BASE_URL || 'https://spainrp-oficial.onrender.com'
     ].filter(Boolean),
     credentials: true
-  },
-  path: "/ws/notifications"
+  }
 });
 
 // Manejar conexiones WebSocket
