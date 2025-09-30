@@ -500,7 +500,9 @@ const Navbar = () => {
           gap: isMobile ? 2 : 6,
           flexShrink: 0,
           minWidth: 0,
-          maxWidth: isMobile ? 120 : 200
+          maxWidth: isMobile ? 120 : 200,
+          position: 'relative',
+          zIndex: 1002
         }}>
           <a
             href="/panel"
@@ -517,7 +519,9 @@ const Navbar = () => {
               boxShadow: '0 2px 8px rgba(114, 137, 218, 0.22)',
               minWidth: 0,
               flexShrink: 1,
-              maxWidth: isMobile ? 80 : 150
+              maxWidth: isMobile ? 80 : 150,
+              position: 'relative',
+              zIndex: 1002
             }}
           >
             <img
@@ -582,7 +586,9 @@ const Navbar = () => {
                 textDecoration: 'none',
                 padding: '2px 6px',
                 borderRadius: 4,
-                flexShrink: 0
+                flexShrink: 0,
+                position: 'relative',
+                zIndex: 1002
               }}
             >
               Salir
@@ -609,7 +615,9 @@ const Navbar = () => {
           fontWeight: 600,
           color: '#7289da',
           fontSize: isMobile ? 10 : 12,
-          flexShrink: 0
+          flexShrink: 0,
+          position: 'relative',
+          zIndex: 1002
         }}
       >
         <FaUserCircle size={isMobile ? 14 : 18} color="#7289da" />
@@ -804,7 +812,9 @@ const Navbar = () => {
                 transition: 'background 0.2s ease',
                 marginLeft: 4,
                 flexShrink: 0,
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
+                position: 'relative',
+                zIndex: 1002
               }}
             >
               <FaDiscord size={14} /> Unirse
