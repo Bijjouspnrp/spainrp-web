@@ -1,7 +1,20 @@
 import { apiUrl } from '../utils/api';
 import React from 'react';
 import './StaffSection.css';
-import { FaCrown, FaShieldAlt, FaUserTie, FaUsers } from 'react-icons/fa';
+import { 
+  FaCrown, 
+  FaShieldAlt, 
+  FaUserTie, 
+  FaUsers, 
+  FaStar, 
+  FaTrophy, 
+  FaDollarSign, 
+  FaHandshake, 
+  FaChartLine, 
+  FaGem,
+  FaMedal,
+  FaAward
+} from 'react-icons/fa';
 // Importa tus imágenes de avatares locales en assets y pon el nombre de cada staff
 // Ejemplo:
 // import adminAvatar from '../assets/admin.png';
@@ -20,7 +33,10 @@ const staffMembers = [
     robloxUserId: "BijjouPro08", // Cambia este ID por el del usuario de Roblox
     color: "#ffd700",
     icon: <FaCrown />,
-    medals: ["👑 Dueño", "⭐ Fundador"]
+    medals: [
+      { icon: <FaCrown />, text: "Dueño", color: "#ffd700" },
+      { icon: <FaStar />, text: "Fundador", color: "#4ecdc4" }
+    ]
   },
   {
     name: "Co-Dueño",
@@ -28,7 +44,10 @@ const staffMembers = [
     robloxUserId: "1400001231", // Cambia este ID por el del usuario de Roblox
     color: "#ff6b6b",
     icon: <FaShieldAlt />,
-    medals: ["🛡️ Co-Dueño", "⭐ Fundador"]
+    medals: [
+      { icon: <FaShieldAlt />, text: "Co-Dueño", color: "#ff6b6b" },
+      { icon: <FaStar />, text: "Fundador", color: "#4ecdc4" }
+    ]
   },
   {
     name: "Co-Dueño",
@@ -36,7 +55,10 @@ const staffMembers = [
     robloxUserId: "Sergiojpni",
     color: "#4ecdc4",
     icon: <FaUserTie />,
-    medals: ["🛡️ Co-Dueño", "⭐ Fundador"]
+    medals: [
+      { icon: <FaShieldAlt />, text: "Co-Dueño", color: "#ff6b6b" },
+      { icon: <FaStar />, text: "Fundador", color: "#4ecdc4" }
+    ]
   },
   {
     name: "Fundador",
@@ -44,7 +66,10 @@ const staffMembers = [
     robloxUserId: "gamessss5025",
     color: "#030968ff",
     icon: <FaUsers />,
-    medals: ["⭐ Fundador", "🏆 OG"]
+    medals: [
+      { icon: <FaStar />, text: "Fundador", color: "#4ecdc4" },
+      { icon: <FaTrophy />, text: "OG", color: "#ffd700" }
+    ]
   },
   {
     name: "Asistente de Fundación",
@@ -52,7 +77,11 @@ const staffMembers = [
     robloxUserId: "XxBoy931xX",
     color: "#96ceb4",
     icon: <FaUsers />,
-    medals: ["🏆 OG", "💰 Inversor", "🤝 Apoyo al Servidor"]
+    medals: [
+      { icon: <FaTrophy />, text: "OG", color: "#ffd700" },
+      { icon: <FaDollarSign />, text: "Inversor", color: "#27ae60" },
+      { icon: <FaHandshake />, text: "Apoyo al Servidor", color: "#3498db" }
+    ]
   },
   {
     name: "Asistente de Fundación",
@@ -60,7 +89,11 @@ const staffMembers = [
     robloxUserId: "JoSEyALEx3000",
     color: "#feca57",
     icon: <FaUsers />,
-    medals: ["🏆 OG", "💰 Inversor", "🤝 Apoyo al Servidor"]
+    medals: [
+      { icon: <FaTrophy />, text: "OG", color: "#ffd700" },
+      { icon: <FaDollarSign />, text: "Inversor", color: "#27ae60" },
+      { icon: <FaHandshake />, text: "Apoyo al Servidor", color: "#3498db" }
+    ]
   },
   {
     name: "Coordinador",
@@ -68,7 +101,10 @@ const staffMembers = [
     robloxUserId: "EricPGarrido",
     color: "#9b59b6",
     icon: <FaUsers />,
-    medals: ["📈 Actividad", "💎 Lealtad al Servidor"]
+    medals: [
+      { icon: <FaChartLine />, text: "Actividad", color: "#e74c3c" },
+      { icon: <FaGem />, text: "Lealtad al Servidor", color: "#9b59b6" }
+    ]
   }
 ];
 
@@ -222,22 +258,23 @@ function StaffMemberCard({ member, resolvedId, getRoleColor }) {
                 key={index} 
                 className="staff-medal"
                 style={{
-                  background: 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)',
-                  color: '#1a1a1a',
+                  background: `linear-gradient(135deg, ${medal.color} 0%, ${medal.color}dd 100%)`,
+                  color: '#ffffff',
                   fontSize: '0.75rem',
                   fontWeight: '600',
                   padding: '0.3rem 0.6rem',
                   borderRadius: '20px',
-                  border: '1px solid rgba(255, 215, 0, 0.3)',
-                  boxShadow: '0 2px 8px rgba(255, 215, 0, 0.2)',
+                  border: `1px solid ${medal.color}80`,
+                  boxShadow: `0 2px 8px ${medal.color}40`,
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.25rem',
+                  gap: '0.4rem',
                   transition: 'all 0.3s ease',
-                  textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
+                  textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)'
                 }}
               >
-                {medal}
+                <span style={{ fontSize: '0.8rem' }}>{medal.icon}</span>
+                <span>{medal.text}</span>
               </span>
             );
           })}
