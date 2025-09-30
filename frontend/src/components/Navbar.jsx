@@ -729,6 +729,46 @@ const Navbar = () => {
             </a>
           )}
 
+          {/* Botón de login en móvil si el usuario NO está logueado */}
+          {isMenuOpen && !user && !loading && (
+            <a
+              href="/auth/login"
+              onClick={() => closeMenu()}
+              style={{
+                marginTop: 12,
+                marginBottom: 8,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '8px 16px',
+                background: 'rgba(114, 137, 218, 0.15)',
+                color: '#7289da',
+                borderRadius: 8,
+                fontWeight: 700,
+                fontSize: 15,
+                border: '1px solid #7289da',
+                textDecoration: 'none',
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(114, 137, 218, 0.22)',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = '#7289da';
+                e.target.style.color = '#fff';
+                e.target.style.transform = 'translateY(-1px)';
+                e.target.style.boxShadow = '0 4px 12px rgba(114, 137, 218, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'rgba(114, 137, 218, 0.15)';
+                e.target.style.color = '#7289da';
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 2px 8px rgba(114, 137, 218, 0.22)';
+              }}
+            >
+              <FaUserCircle size={16} /> Iniciar Sesión
+            </a>
+          )}
+
           {/* Botón de logout en móvil si el usuario está logueado */}
           {isMenuOpen && user && (
             <button
@@ -772,7 +812,18 @@ const Navbar = () => {
                 fontSize: 15,
                 border: 'none',
                 cursor: 'pointer',
-                textDecoration: 'none'
+                textDecoration: 'none',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = '#c0392b';
+                e.target.style.transform = 'translateY(-1px)';
+                e.target.style.boxShadow = '0 4px 12px rgba(231, 76, 60, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = '#e74c3c';
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = 'none';
               }}
             >
               <FaTimes /> Cerrar Sesión
