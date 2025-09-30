@@ -17,7 +17,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
 });
 
 // Configurar timeout y modo WAL para mejor rendimiento
-db.configure("busy_timeout", 30000);
+db.run("PRAGMA busy_timeout=30000");
 db.run("PRAGMA journal_mode=WAL");
 db.run("PRAGMA synchronous=NORMAL");
 db.run("PRAGMA cache_size=1000");
