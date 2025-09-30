@@ -215,59 +215,37 @@ const Panel = () => {
   const [userRecords, setUserRecords] = useState({ antecedentes: 0, multasTotal: 0, multasPendientes: 0 });
 
   useEffect(() => {
-    console.log('[Panel] Consultando estadísticas generales');
     fetch(apiUrl('/api/admin-records/stats/records'))
-      .then(res => {
-        console.log('[Panel] Respuesta estadísticas:', res.status, res.ok);
-        return res.ok ? res.json() : null;
-      })
+      .then(res => res.ok ? res.json() : null)
       .then(data => {
-        console.log('[Panel] Datos estadísticas recibidos:', data);
         if (data) setStatsTotals({
           antecedentes: data.antecedentes || 0,
           arrestos: data.arrestos || 0,
           multasPendientes: data.multasPendientes || 0
         });
       })
-      .catch(err => {
-        console.error('[Panel] Error consultando estadísticas:', err);
-      });
+      .catch(() => {});
   }, []);
 
   // Consultar antecedentes y multas del usuario autenticado
   useEffect(() => {
     if (user?.id) {
-      console.log('[Panel] Consultando antecedentes para usuario:', user.id);
       fetch(apiUrl(`/api/admin-records/antecedentes/${user.id}`))
-        .then(res => {
-          console.log('[Panel] Respuesta antecedentes:', res.status, res.ok);
-          return res.ok ? res.json() : null;
-        })
+        .then(res => res.ok ? res.json() : null)
         .then(data => {
-          console.log('[Panel] Datos antecedentes recibidos:', data);
           setUserRecords(r => ({ ...r, antecedentes: data?.total || 0 }));
         })
-        .catch(err => {
-          console.error('[Panel] Error consultando antecedentes:', err);
-        });
-      
-      console.log('[Panel] Consultando multas para usuario:', user.id);
+        .catch(() => {});
       fetch(apiUrl(`/api/admin-records/multas/${user.id}`))
-        .then(res => {
-          console.log('[Panel] Respuesta multas:', res.status, res.ok);
-          return res.ok ? res.json() : null;
-        })
+        .then(res => res.ok ? res.json() : null)
         .then(data => {
-          console.log('[Panel] Datos multas recibidos:', data);
           setUserRecords(r => ({
             ...r,
             multasTotal: data?.total || 0,
             multasPendientes: data?.pendientes || 0
           }));
         })
-        .catch(err => {
-          console.error('[Panel] Error consultando multas:', err);
-        });
+        .catch(() => {});
     }
   }, [user?.id]);
 
