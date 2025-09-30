@@ -2015,21 +2015,73 @@ app.use((err, req, res, next) => {
 });
 
 
-// Buscar usuarios por nombre (solo administradores)
+// Buscar usuarios por nombre (solo administradores) - Usar endpoint local
 app.get('/api/proxy/admin/search/:query', async (req, res) => {
   try {
     const { query } = req.params;
     const { adminUserId } = req.query;
-    console.log(`[PROXY] Searching users with query: ${query}, admin: ${adminUserId}`);
+    console.log('[ADMIN PROXY] ===== INICIO SEARCH (LOCAL) =====');
+    console.log(`[ADMIN PROXY] GET /api/proxy/admin/search/${query}?adminUserId=${adminUserId}`);
     
-    const response = await fetch(`${process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/'}/api/admin/search/${query}?adminUserId=${adminUserId}`);
-    const data = await response.json();
+    // Verificar si el bot de Discord está disponible
+    if (!discordClient.readyAt) {
+      console.warn('[ADMIN PROXY] ⚠️ Bot de Discord no disponible, devolviendo lista vacía');
+      return res.json({ users: [], message: 'Bot de Discord no disponible' });
+    }
     
-    console.log(`[PROXY] Search result:`, data);
-    res.json(data);
-  } catch (error) {
-    console.error('[PROXY] Error searching users:', error);
-    res.status(500).json({ error: 'Error al buscar usuarios' });
+    // Usar el endpoint local directamente
+    const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
+    console.log(`[ADMIN PROXY] Guild ID: ${guildId}, Query: ${query}, Admin User ID: ${adminUserId}`);
+    
+    const guild = discordClient.guilds.cache.get(guildId);
+    if (!guild) {
+      console.error(`[ADMIN PROXY] ❌ Servidor no encontrado: ${guildId}`);
+      return res.status(404).json({ error: 'Servidor no encontrado', users: [] });
+    }
+    
+    await guild.members.fetch();
+    const adminMember = guild.members.cache.get(adminUserId);
+    if (!adminMember) {
+      console.error(`[ADMIN PROXY] ❌ Admin no encontrado: ${adminUserId}`);
+      return res.status(404).json({ error: 'Admin no encontrado', users: [] });
+    }
+    
+    const hasAdminRole = adminMember.roles.cache.has('1384340649205301359');
+    const hasAdminPerms = adminMember.permissions.has(PermissionsBitField.Flags.Administrator);
+    if (!hasAdminRole && !hasAdminPerms) {
+      console.error(`[ADMIN PROXY] ❌ Sin permisos de admin: ${adminUserId}`);
+      return res.status(403).json({ error: 'No tienes permisos de administrador', users: [] });
+    }
+    
+    // Buscar usuarios por nombre de usuario o display name
+    const members = guild.members.cache.filter(member => 
+      member.user.username.toLowerCase().includes(query.toLowerCase()) ||
+      (member.displayName && member.displayName.toLowerCase().includes(query.toLowerCase()))
+    );
+    
+    const results = members.map(member => ({
+      id: member.user.id,
+      username: member.user.username,
+      displayName: member.displayName,
+      discriminator: member.user.discriminator,
+      avatar: member.user.avatar,
+      joinedAt: member.joinedAt
+    })).slice(0, 20); // Limitar a 20 resultados
+    
+    const payload = { users: results };
+    console.log(`[ADMIN PROXY] ✅ Search result for "${query}": ${results.length} users found`);
+    console.log('[ADMIN PROXY] ===== FIN SEARCH (LOCAL) =====');
+    res.json(payload);
+  } catch (e) {
+    console.error('[ADMIN PROXY] ===== ERROR SEARCH (LOCAL) =====');
+    console.error(`[ADMIN PROXY] Error:`, e.message);
+    console.error(`[ADMIN PROXY] Stack trace:`, e.stack);
+    console.log('[ADMIN PROXY] ===== FIN ERROR =====');
+    res.status(500).json({ 
+      error: 'Error al buscar usuarios', 
+      details: e.message,
+      users: [] 
+    });
   }
 });
 
