@@ -672,13 +672,30 @@ const handleDNIExport = async (req, res) => {
   const { discordId } = req.params;
   const DNI_BOT_URL = process.env.DNI_BOT_URL || 'http://37.27.21.91:5021';
   const isHeadRequest = req.method === 'HEAD';
+  const timestamp = req.query.t ? parseInt(req.query.t) : null;
   
   console.log(`[DNI PROXY] ===== INICIO DNI EXPORT =====`);
   console.log(`[DNI PROXY] ${req.method} request para DiscordID: ${discordId}`);
   console.log(`[DNI PROXY] URL del bot: ${DNI_BOT_URL}/api/bolsa/dni/${discordId}/exportar`);
   console.log(`[DNI PROXY] Timestamp: ${new Date().toISOString()}`);
   
+  // Importar cache de DNI
+  const { getCachedDNI, cacheDNI } = require('./utils/dniCache');
+  
   try {
+    // Verificar cache primero (solo para GET requests)
+    if (!isHeadRequest) {
+      const cached = getCachedDNI(discordId, timestamp);
+      if (cached.found) {
+        console.log(`[DNI PROXY] Usando DNI del cache para ${discordId}`);
+        res.set('Content-Type', 'image/png');
+        res.set('Content-Length', cached.buffer.length);
+        res.set('Cache-Control', 'public, max-age=3600'); // Cache por 1 hora
+        res.set('X-Cache', 'HIT');
+        return res.send(cached.buffer);
+      }
+    }
+    
     const fetchDNI = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
     
     // Añadir timeout y headers
@@ -716,8 +733,10 @@ const handleDNIExport = async (req, res) => {
     // Para HEAD, solo enviar headers
     if (isHeadRequest) {
       console.log(`[DNI PROXY] Enviando headers para HEAD request`);
-    res.set('Content-Type', response.headers.get('content-type') || 'image/png');
+      res.set('Content-Type', response.headers.get('content-type') || 'image/png');
       res.set('Content-Length', response.headers.get('content-length') || '0');
+      res.set('Cache-Control', 'public, max-age=3600');
+      res.set('X-Cache', 'MISS');
       return res.status(200).end();
     }
     
@@ -729,8 +748,19 @@ const handleDNIExport = async (req, res) => {
     console.log(`[DNI PROXY] Imagen recibida (${buffer.length} bytes) para ${discordId}`);
     console.log(`[DNI PROXY] Content-Type final: ${contentType}`);
     
+    // Guardar en cache (asíncrono, no bloquear respuesta)
+    cacheDNI(discordId, buffer, timestamp).then(result => {
+      if (result.success) {
+        console.log(`[DNI PROXY] DNI cacheado exitosamente: ${result.size} bytes`);
+      }
+    }).catch(err => {
+      console.error(`[DNI PROXY] Error cacheando DNI:`, err);
+    });
+    
     res.set('Content-Type', contentType);
     res.set('Content-Length', buffer.length);
+    res.set('Cache-Control', 'public, max-age=3600'); // Cache por 1 hora
+    res.set('X-Cache', 'MISS');
     res.send(buffer);
     
     console.log(`[DNI PROXY] Exportación exitosa para ${discordId}`);
@@ -790,6 +820,30 @@ app.get('/api/proxy/dni/test/:discordId', async (req, res) => {
       error: e.message,
       discordId: discordId,
       botUrl: DNI_BOT_URL,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Endpoint para estadísticas del cache de DNI
+app.get('/api/proxy/dni/cache/stats', (req, res) => {
+  try {
+    const { getCacheStats, cleanExpiredCache } = require('./utils/dniCache');
+    
+    const stats = getCacheStats();
+    const cleaned = cleanExpiredCache();
+    
+    res.json({
+      success: true,
+      cache: stats,
+      cleanedFiles: cleaned,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[DNI CACHE STATS] Error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
       timestamp: new Date().toISOString()
     });
   }

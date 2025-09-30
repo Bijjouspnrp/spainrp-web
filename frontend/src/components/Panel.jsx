@@ -6,6 +6,7 @@ import StatsChart from './Charts/StatsChart.jsx';
 import AnimatedCard from './Charts/AnimatedCard.jsx';
 import NotificationCenter from './Notifications/NotificationCenter.jsx';
 import AdminNotificationSender from './Notifications/AdminNotificationSender.jsx';
+import DNIShareModal from './DNIShareModal.jsx';
 import './Panel.css';
 import { apiUrl } from '../utils/api';
 import { 
@@ -40,7 +41,12 @@ import {
   FaHistory,
   FaClipboardList,
   FaCheckCircle,
-  FaSpinner
+  FaSpinner,
+  FaShare,
+  FaDownload,
+  FaPrint,
+  FaCopy,
+  FaExpand
 } from 'react-icons/fa';
 
 const TERMS_KEY = 'spainrp_terms_accepted';
@@ -63,7 +69,8 @@ const Panel = () => {
   const [showRoles, setShowRoles] = useState(false);
   const [activeSection, setActiveSection] = useState('overview');
   const [showNotificationSender, setShowNotificationSender] = useState(false);
-  
+  const [showDNIShare, setShowDNIShare] = useState(false);
+  const [dniFullscreen, setDniFullscreen] = useState(false);
 
   // Estado para imagen real de DNI
   const [dniImgUrl, setDniImgUrl] = useState(null);
@@ -352,49 +359,113 @@ const Panel = () => {
                 {/* Flip Card */}
                 <div 
                   className={`dni-flip-card${dniFlipped ? ' flipped' : ''}`}
-                  style={{width:340,height:210,margin:'0 auto',perspective:1000,position:'relative'}}
                   onClick={() => setDniFlipped(f => !f)}
                   title="Haz click para girar el DNI"
                 >
-                  <div className="dni-flip-inner" style={{position:'relative',width:'100%',height:'100%',transition:'transform 0.7s cubic-bezier(.4,2,.6,1)',transformStyle:'preserve-3d',transform: dniFlipped ? 'rotateY(180deg)' : 'none'}}>
+                  <div className="dni-flip-inner">
                     {/* Anverso */}
-                    <div className="dni-flip-front" style={{position:'absolute',width:'100%',height:'100%',backfaceVisibility:'hidden',zIndex:2}}>
-                      <img src={dniImgUrl} alt="DNI SpainRP" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:12,boxShadow:'0 2px 12px #23272a44',background:'#fff'}} />
+                    <div className="dni-flip-front">
+                      <img 
+                        src={dniImgUrl} 
+                        alt="DNI SpainRP" 
+                        style={{
+                          width:'100%',
+                          height:'100%',
+                          objectFit:'cover',
+                          borderRadius:12,
+                          boxShadow:'0 2px 12px #23272a44',
+                          background:'#fff'
+                        }} 
+                      />
                     </div>
-                    {/* Reverso: solo datos básicos */}
-                    <div className="dni-flip-back" style={{position:'absolute',width:'100%',height:'100%',backfaceVisibility:'hidden',transform:'rotateY(180deg)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',background:'#fff',borderRadius:12,boxShadow:'0 2px 12px #23272a44'}}>
-                      <div style={{fontSize:14,color:'#333',marginBottom:4}}>ID: {user?.id}</div>
-                      <div style={{fontSize:12,color:'#888'}}>Usuario: {user?.username}</div>
+                    {/* Reverso: datos básicos mejorados */}
+                    <div className="dni-flip-back">
+                      <div className="dni-info">
+                        <h4>DNI SpainRP</h4>
+                        <p><strong>ID:</strong> {user?.id}</p>
+                        <p><strong>Usuario:</strong> {user?.username}</p>
+                        <p><strong>Fecha:</strong> {new Date().toLocaleDateString()}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-                {/* Botón descargar pequeño y centrado */}
-                <button
-                  className="btn-primary"
-                  style={{margin:'10px auto 0 auto',padding:'4px 16px',fontSize:13,display:'block',borderRadius:8,minWidth:120}}
-                  onClick={e => {
-                    e.stopPropagation();
-                    const link = document.createElement('a');
-                    link.href = dniImgUrl;
-                    link.download = `DNI_SpainRP_${user?.username || 'usuario'}.png`;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                  }}
-                >
-                  Descargar DNI
-                </button>
-                {/* Botón reportar problema */}
-                <button
-                  className="btn-secondary"
-                  style={{margin:'8px auto 0 auto',padding:'3px 12px',fontSize:12,display:'block',borderRadius:8,minWidth:120,background:'#f8d7da',color:'#721c24',border:'none'}}
-                  onClick={e => {
-                    e.stopPropagation();
-                    setShowReport(true);
-                  }}
-                >
-                  Reportar problema
-                </button>
+                
+                {/* Botones de acción mejorados */}
+                <div className="dni-actions">
+                  <button
+                    className="dni-action-btn primary"
+                    onClick={e => {
+                      e.stopPropagation();
+                      setShowDNIShare(true);
+                    }}
+                  >
+                    <FaShare />
+                    Compartir
+                  </button>
+                  
+                  <button
+                    className="dni-action-btn secondary"
+                    onClick={e => {
+                      e.stopPropagation();
+                      const link = document.createElement('a');
+                      link.href = dniImgUrl;
+                      link.download = `DNI_SpainRP_${user?.username || 'usuario'}.png`;
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                    }}
+                  >
+                    <FaDownload />
+                    Descargar
+                  </button>
+                  
+                  <button
+                    className="dni-action-btn secondary"
+                    onClick={e => {
+                      e.stopPropagation();
+                      const printWindow = window.open('', '_blank');
+                      printWindow.document.write(`
+                        <html>
+                          <head>
+                            <title>DNI SpainRP - ${user?.username}</title>
+                            <style>
+                              body { margin: 0; padding: 20px; text-align: center; }
+                              img { max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+                              .info { margin-top: 20px; font-family: Arial, sans-serif; }
+                              .info h2 { color: #7289da; margin-bottom: 10px; }
+                              .info p { color: #666; margin: 5px 0; }
+                            </style>
+                          </head>
+                          <body>
+                            <img src="${dniImgUrl}" alt="DNI SpainRP" />
+                            <div class="info">
+                              <h2>DNI SpainRP</h2>
+                              <p><strong>Usuario:</strong> ${user?.username}</p>
+                              <p><strong>ID:</strong> ${user?.id}</p>
+                              <p><strong>Fecha:</strong> ${new Date().toLocaleDateString()}</p>
+                            </div>
+                          </body>
+                        </html>
+                      `);
+                      printWindow.document.close();
+                      printWindow.print();
+                    }}
+                  >
+                    <FaPrint />
+                    Imprimir
+                  </button>
+                  
+                  <button
+                    className="dni-action-btn danger"
+                    onClick={e => {
+                      e.stopPropagation();
+                      setShowReport(true);
+                    }}
+                  >
+                    <FaCopy />
+                    Reportar
+                  </button>
+                </div>
               </div>
             ) : dniExists === false ? (
               <div style={{
@@ -1048,6 +1119,15 @@ const Panel = () => {
           onClose={() => setShowNotificationSender(false)}
         />
       )}
+
+      {/* DNI Share Modal */}
+      <DNIShareModal
+        isOpen={showDNIShare}
+        onClose={() => setShowDNIShare(false)}
+        dniUrl={dniImgUrl}
+        userName={user?.username}
+        userId={user?.id}
+      />
     </div>
   );
 };
