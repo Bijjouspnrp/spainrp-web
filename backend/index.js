@@ -2126,7 +2126,7 @@ app.get('/api/proxy/admin/inventory/:targetUserId', async (req, res) => {
     console.log(`[ADMIN PROXY] ✅ Permisos verificados para admin: ${adminUserId}`);
     
     // Llamar directamente a la API externa del bot
-    const botUrl = `${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/admin/inventory/${targetUserId}`;
+    const botUrl = `${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/blackmarket/admin/inventory/${targetUserId}`;
     console.log(`[ADMIN PROXY] URL del bot: ${botUrl}`);
     
     const response = await fetch(botUrl);
@@ -2184,7 +2184,7 @@ app.get('/api/proxy/admin/balance/:targetUserId', async (req, res) => {
     console.log(`[ADMIN PROXY] ✅ Permisos verificados para admin: ${adminUserId}`);
     
     // Llamar directamente a la API externa del bot
-    const botUrl = `${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/admin/balance/${targetUserId}`;
+    const botUrl = `${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/blackmarket/admin/balance/${targetUserId}`;
     console.log(`[ADMIN PROXY] URL del bot: ${botUrl}`);
     
     const response = await fetch(botUrl);
