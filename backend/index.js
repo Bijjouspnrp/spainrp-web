@@ -673,46 +673,127 @@ const handleDNIExport = async (req, res) => {
   const DNI_BOT_URL = process.env.DNI_BOT_URL || 'http://37.27.21.91:5021';
   const isHeadRequest = req.method === 'HEAD';
   
+  console.log(`[DNI PROXY] ===== INICIO DNI EXPORT =====`);
   console.log(`[DNI PROXY] ${req.method} request para DiscordID: ${discordId}`);
   console.log(`[DNI PROXY] URL del bot: ${DNI_BOT_URL}/dni/${discordId}/exportar`);
+  console.log(`[DNI PROXY] Timestamp: ${new Date().toISOString()}`);
   
   try {
     const fetchDNI = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+    
+    // Añadir timeout y headers
     const response = await fetchDNI(`${DNI_BOT_URL}/dni/${encodeURIComponent(discordId)}/exportar`, {
-      method: req.method
+      method: req.method,
+      timeout: 10000, // 10 segundos timeout
+      headers: {
+        'User-Agent': 'SpainRP-Web/1.0',
+        'Accept': 'image/png,image/*,*/*'
+      }
     });
     
     console.log(`[DNI PROXY] Respuesta del bot: ${response.status} ${response.statusText}`);
+    console.log(`[DNI PROXY] Content-Type: ${response.headers.get('content-type')}`);
+    console.log(`[DNI PROXY] Content-Length: ${response.headers.get('content-length')}`);
     
     if (!response.ok) {
       console.error(`[DNI PROXY] Bot respondió con error: ${response.status}`);
-      return res.status(response.status).json({ error: 'No existe ese DNI o error en el bot externo' });
+      
+      // Intentar obtener el mensaje de error del bot
+      try {
+        const errorText = await response.text();
+        console.error(`[DNI PROXY] Error del bot: ${errorText}`);
+      } catch (e) {
+        console.error(`[DNI PROXY] No se pudo leer el error del bot`);
+      }
+      
+      return res.status(response.status).json({ 
+        error: 'No existe ese DNI o error en el bot externo',
+        status: response.status,
+        discordId: discordId
+      });
     }
     
     // Para HEAD, solo enviar headers
     if (isHeadRequest) {
-    res.set('Content-Type', response.headers.get('content-type') || 'image/png');
+      console.log(`[DNI PROXY] Enviando headers para HEAD request`);
+      res.set('Content-Type', response.headers.get('content-type') || 'image/png');
+      res.set('Content-Length', response.headers.get('content-length') || '0');
       return res.status(200).end();
     }
     
     // Para GET, enviar la imagen completa
+    console.log(`[DNI PROXY] Obteniendo buffer de imagen...`);
     const buffer = await response.buffer();
     const contentType = response.headers.get('content-type') || 'image/png';
     
     console.log(`[DNI PROXY] Imagen recibida (${buffer.length} bytes) para ${discordId}`);
+    console.log(`[DNI PROXY] Content-Type final: ${contentType}`);
     
     res.set('Content-Type', contentType);
+    res.set('Content-Length', buffer.length);
     res.send(buffer);
     
     console.log(`[DNI PROXY] Exportación exitosa para ${discordId}`);
+    console.log(`[DNI PROXY] ===== FIN DNI EXPORT =====`);
   } catch (e) {
     console.error(`[DNI PROXY] Error de conexión:`, e.message);
-    res.status(502).json({ error: 'Error conectando con el bot de DNI', details: e.message });
+    console.error(`[DNI PROXY] Stack trace:`, e.stack);
+    console.log(`[DNI PROXY] ===== FIN DNI EXPORT (ERROR) =====`);
+    res.status(502).json({ 
+      error: 'Error conectando con el bot de DNI', 
+      details: e.message,
+      discordId: discordId,
+      botUrl: DNI_BOT_URL
+    });
   }
 };
 
 app.get('/api/proxy/dni/:discordId/exportar', handleDNIExport);
 app.head('/api/proxy/dni/:discordId/exportar', handleDNIExport);
+
+// Endpoint de prueba para verificar conectividad con el bot de DNI
+app.get('/api/proxy/dni/test/:discordId', async (req, res) => {
+  const { discordId } = req.params;
+  const DNI_BOT_URL = process.env.DNI_BOT_URL || 'http://37.27.21.91:5021';
+  
+  console.log(`[DNI TEST] Probando conectividad con bot para DiscordID: ${discordId}`);
+  console.log(`[DNI TEST] URL del bot: ${DNI_BOT_URL}/dni/${discordId}/exportar`);
+  
+  try {
+    const fetchDNI = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+    
+    const response = await fetchDNI(`${DNI_BOT_URL}/dni/${encodeURIComponent(discordId)}/exportar`, {
+      method: 'HEAD',
+      timeout: 5000,
+      headers: {
+        'User-Agent': 'SpainRP-Web/1.0',
+        'Accept': 'image/png,image/*,*/*'
+      }
+    });
+    
+    console.log(`[DNI TEST] Respuesta del bot: ${response.status} ${response.statusText}`);
+    
+    res.json({
+      success: response.ok,
+      status: response.status,
+      statusText: response.statusText,
+      contentType: response.headers.get('content-type'),
+      contentLength: response.headers.get('content-length'),
+      discordId: discordId,
+      botUrl: DNI_BOT_URL,
+      timestamp: new Date().toISOString()
+    });
+  } catch (e) {
+    console.error(`[DNI TEST] Error de conexión:`, e.message);
+    res.status(502).json({
+      success: false,
+      error: e.message,
+      discordId: discordId,
+      botUrl: DNI_BOT_URL,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
 
 // ===== PROXY BLACKMARKET =====
 const BLACKMARKET_BOT_URL = process.env.BLACKMARKET_BOT_URL || 'http://37.27.21.91:5021';
