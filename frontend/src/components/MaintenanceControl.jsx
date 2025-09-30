@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaTools, FaPowerOff, FaPlay, FaClock, FaUsers, FaEnvelope, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
 import { apiUrl } from '../utils/api';
 
-const MaintenanceControl = ({ showToast }) => {
+const MaintenanceControl = ({ showToast, onMaintenanceToggle }) => {
   const [maintenanceStatus, setMaintenanceStatus] = useState({
     maintenance: false,
     startedAt: null,
@@ -74,6 +74,13 @@ const MaintenanceControl = ({ showToast }) => {
         showToast(data.message, 'success');
         await fetchMaintenanceStatus();
         await fetchSubscribers();
+        
+        // Si se desactivó el mantenimiento, llamar al callback
+        if (action === 'off' && onMaintenanceToggle) {
+          setTimeout(() => {
+            onMaintenanceToggle();
+          }, 1000); // Esperar 1 segundo para que se vea el mensaje de éxito
+        }
       } else {
         showToast(data.error || 'Error al cambiar modo mantenimiento', 'error');
       }

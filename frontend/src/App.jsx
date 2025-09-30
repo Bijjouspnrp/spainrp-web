@@ -31,6 +31,7 @@ import spainLogo from '/assets/spainrplogo.png';
 import SimuladorTienda from './components/Apps/SimuladorTienda';
 import GlobalSearch from './components/GlobalSearch';
 import ToastProvider from './components/ToastProvider';
+import MaintenanceControl from './components/MaintenanceControl';
 
 // Componente de Login
 function LoginPage() {
@@ -281,6 +282,213 @@ function Home({ memberCount, totalMembers, loading }) {
 }
 
 
+// Componente de página de mantenimiento con panel administrativo
+function MaintenancePage({ vantaElRef, totalMinutes, elapsed, percent, apiUrl }) {
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminLoading, setAdminLoading] = useState(true);
+  const [toast, setToast] = useState(null);
+
+  // Verificar si el usuario es administrador
+  useEffect(() => {
+    const checkAdmin = async () => {
+      try {
+        const token = localStorage.getItem('spainrp_token');
+        if (!token) {
+          setAdminLoading(false);
+          return;
+        }
+
+        const response = await fetch(apiUrl('/auth/me'), {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const userId = data.user?.id;
+          
+          // Verificar si es administrador
+          if (userId === '710112055985963090') {
+            setIsAdmin(true);
+          }
+        }
+      } catch (error) {
+        console.error('[MAINTENANCE] Error verificando admin:', error);
+      } finally {
+        setAdminLoading(false);
+      }
+    };
+
+    checkAdmin();
+  }, [apiUrl]);
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleMaintenanceToggle = () => {
+    // Recargar la página para salir del modo mantenimiento
+    window.location.reload();
+  };
+
+  return (
+    <div style={{
+      background: 'transparent',
+      minHeight: '100vh',
+      width: '100vw',
+      overflow: 'hidden',
+      position: 'relative',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: 'Bangers,Impact,sans-serif'
+    }}>
+      {/* Fondo Vanta NET */}
+      <div ref={vantaElRef} id="vanta-bg" style={{position:'absolute',inset:0,zIndex:0}} />
+      
+      {/* Panel administrativo flotante */}
+      {isAdmin && !adminLoading && (
+        <div style={{
+          position: 'fixed',
+          top: 20,
+          right: 20,
+          zIndex: 1000,
+          background: 'rgba(0, 0, 0, 0.8)',
+          backdropFilter: 'blur(10px)',
+          borderRadius: 12,
+          padding: 16,
+          border: '1px solid rgba(114, 137, 218, 0.3)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            marginBottom: 12,
+            color: '#FFD700',
+            fontSize: 14,
+            fontWeight: 600
+          }}>
+            🔧 Panel Administrativo
+          </div>
+          
+          <button
+            onClick={() => setShowAdminPanel(!showAdminPanel)}
+            style={{
+              background: showAdminPanel ? '#e74c3c' : '#7289da',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              padding: '8px 16px',
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: 'pointer',
+              marginBottom: 8,
+              transition: 'all 0.2s ease'
+            }}
+          >
+            {showAdminPanel ? 'Ocultar Control' : 'Mostrar Control'}
+          </button>
+
+          {showAdminPanel && (
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: 8,
+              padding: 12,
+              border: '1px solid rgba(255, 255, 255, 0.2)'
+            }}>
+              <MaintenanceControl 
+                showToast={showToast}
+                onMaintenanceToggle={handleMaintenanceToggle}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Branding y mensaje */}
+      <div style={{zIndex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
+        {/* Icono FontAwesome spinner centrado */}
+        <div style={{display:'flex',alignItems:'center',justifyContent:'center',marginBottom:16}}>
+          <i className="fa fa-spinner fa-spin" style={{fontSize: '4.5rem', color: '#61dafb'}}></i>
+        </div>
+        {/* FontAwesome CDN para el icono spinner */}
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+        <h1 style={{fontSize:'2.7rem',color:'#FFD700',textShadow:'2px 2px 0rgb(114, 8, 73),0 0 16pxrgb(201, 148, 180)',marginBottom:'1.2rem',letterSpacing:1}}>SpainRP™ / Mantenimiento</h1>
+        <div style={{fontSize:'1.4rem',color:'#fff',marginBottom:'1.2rem',maxWidth:500,textAlign:'center'}}>
+          Estamos mejorando la web y añadiendo nuevas funciones.<br/>
+          <span style={{color:'#FFD700'}}>¡Gracias por tu paciencia!</span>
+        </div>
+        {/* Tiempo estimado y barra de progreso */}
+        <div style={{marginBottom:'1.2rem',width:320,maxWidth:'90%',textAlign:'center'}}>
+          <div style={{fontSize:'1.1rem',marginBottom:6}}>Tiempo estimado restante: <b>{Math.max(0, totalMinutes - Math.floor(elapsed))} min</b></div>
+          <div style={{background:'#23272a',borderRadius:12,overflow:'hidden',height:18,boxShadow:'0 2px 8px #23272a33'}}>
+            <div style={{width:`${percent}%`,height:'100%',background:'#61dafb',transition:'width 0.5s',borderRadius:12}}></div>
+          </div>
+          <div style={{fontSize:'0.95rem',color:'#FFD700',marginTop:4}}>{percent}% completado</div>
+        </div>
+        {/* Suscripción y botón de reintentar */}
+        <form onSubmit={async (e)=>{
+          e.preventDefault();
+          const fd = new FormData(e.currentTarget);
+          const email = fd.get('email');
+          try {
+            const resp = await fetch(apiUrl('/api/maintenance/subscribe'), { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email }) });
+            if (resp.ok) alert('Te avisaremos cuando volvamos.'); else alert('No se pudo suscribir.');
+          } catch { alert('No se pudo suscribir.'); }
+        }} style={{display:'flex',gap:8,alignItems:'center',justifyContent:'center',flexWrap:'wrap',marginBottom:12}}>
+          <input type="email" name="email" required placeholder="Tu email" aria-label="Tu email" style={{padding:'0.6rem 0.8rem',borderRadius:8,border:'1px solid #ffffff22',background:'rgba(0,0,0,.35)',color:'#fff',minWidth:220}} />
+          <button type="submit" style={{background:'#ef4444',color:'#fff',border:'none',borderRadius:8,padding:'0.7rem 1.5rem',fontWeight:700,cursor:'pointer',boxShadow:'0 2px 8px #ef444433'}}>
+            Avisarme cuando vuelva
+          </button>
+        </form>
+        {/* Botón de reintentar */}
+        <button onClick={()=>window.location.reload()} style={{
+          background:'#FFD700',color:'#23272a',border:'none',borderRadius:8,
+          padding:'0.7rem 1.5rem',fontWeight:700,fontSize:'1.1rem',cursor:'pointer',
+          boxShadow:'0 2px 8px #FFD70033',marginBottom:'1.5rem',marginTop:8
+        }}>
+          Reintentar
+        </button>
+        {/* Discord o soporte */}
+        <div style={{color:'#aaa',fontSize:'1rem',marginTop:'1rem'}}>
+          ¿Dudas? Únete a nuestro <a href='https://discord.gg/spainrp' style={{color:'#FFD700'}}>Discord</a>
+        </div>
+      </div>
+
+      {/* Toast notifications */}
+      {toast && (
+        <div style={{
+          position: 'fixed',
+          top: 20,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: toast.type === 'error' ? '#e74c3c' : '#27ae60',
+          color: '#fff',
+          padding: '12px 24px',
+          borderRadius: 8,
+          zIndex: 1001,
+          fontSize: 14,
+          fontWeight: 600,
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+        }}>
+          {toast.message}
+        </div>
+      )}
+
+      <style>{`
+        @keyframes bounce { 0%{transform:translateY(0);} 100%{transform:translateY(-18px) scale(1.08);} }
+        @keyframes spin { 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
+      `}</style>
+    </div>
+  );
+}
+
 function App() {
   const [memberCount, setMemberCount] = useState(0);
   const [totalMembers, setTotalMembers] = useState(0);
@@ -521,78 +729,13 @@ function App() {
   const noFooterRoutes = ['/apps/tienda'];
 
   if (maintenance) {
-    return (
-      <div style={{
-        background: 'transparent',
-        minHeight: '100vh',
-        width: '100vw',
-        overflow: 'hidden',
-        position: 'relative',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontFamily: 'Bangers,Impact,sans-serif'
-      }}>
-        {/* Fondo Vanta NET */}
-        <div ref={vantaElRef} id="vanta-bg" style={{position:'absolute',inset:0,zIndex:0}} />
-        {/* Branding y mensaje */}
-        <div style={{zIndex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
-          {/* Icono FontAwesome spinner centrado */}
-          <div style={{display:'flex',alignItems:'center',justifyContent:'center',marginBottom:16}}>
-            <i className="fa fa-spinner fa-spin" style={{fontSize: '4.5rem', color: '#61dafb'}}></i>
-          </div>
-          {/* FontAwesome CDN para el icono spinner */}
-          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
-          {/* FontAwesome CDN para el icono spinner */}
-          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
-          <h1 style={{fontSize:'2.7rem',color:'#FFD700',textShadow:'2px 2px 0rgb(114, 8, 73),0 0 16pxrgb(201, 148, 180)',marginBottom:'1.2rem',letterSpacing:1}}>SpainRP™ / Mantenimiento</h1>
-          <div style={{fontSize:'1.4rem',color:'#fff',marginBottom:'1.2rem',maxWidth:500,textAlign:'center'}}>
-            Estamos mejorando la web y añadiendo nuevas funciones.<br/>
-            <span style={{color:'#FFD700'}}>¡Gracias por tu paciencia!</span>
-          </div>
-          {/* Tiempo estimado y barra de progreso */}
-          <div style={{marginBottom:'1.2rem',width:320,maxWidth:'90%',textAlign:'center'}}>
-            <div style={{fontSize:'1.1rem',marginBottom:6}}>Tiempo estimado restante: <b>{Math.max(0, totalMinutes - Math.floor(elapsed))} min</b></div>
-            <div style={{background:'#23272a',borderRadius:12,overflow:'hidden',height:18,boxShadow:'0 2px 8px #23272a33'}}>
-              <div style={{width:`${percent}%`,height:'100%',background:'#61dafb',transition:'width 0.5s',borderRadius:12}}></div>
-            </div>
-            <div style={{fontSize:'0.95rem',color:'#FFD700',marginTop:4}}>{percent}% completado</div>
-          </div>
-          {/* Suscripción y botón de reintentar */}
-          <form onSubmit={async (e)=>{
-            e.preventDefault();
-            const fd = new FormData(e.currentTarget);
-            const email = fd.get('email');
-            try {
-              const resp = await fetch(apiUrl('/api/maintenance/subscribe'), { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email }) });
-              if (resp.ok) alert('Te avisaremos cuando volvamos.'); else alert('No se pudo suscribir.');
-            } catch { alert('No se pudo suscribir.'); }
-          }} style={{display:'flex',gap:8,alignItems:'center',justifyContent:'center',flexWrap:'wrap',marginBottom:12}}>
-            <input type="email" name="email" required placeholder="Tu email" aria-label="Tu email" style={{padding:'0.6rem 0.8rem',borderRadius:8,border:'1px solid #ffffff22',background:'rgba(0,0,0,.35)',color:'#fff',minWidth:220}} />
-            <button type="submit" style={{background:'#ef4444',color:'#fff',border:'none',borderRadius:8,padding:'0.7rem 1.5rem',fontWeight:700,cursor:'pointer',boxShadow:'0 2px 8px #ef444433'}}>
-              Avisarme cuando vuelva
-            </button>
-          </form>
-          {/* Botón de reintentar */}
-          <button onClick={()=>window.location.reload()} style={{
-            background:'#FFD700',color:'#23272a',border:'none',borderRadius:8,
-            padding:'0.7rem 1.5rem',fontWeight:700,fontSize:'1.1rem',cursor:'pointer',
-            boxShadow:'0 2px 8px #FFD70033',marginBottom:'1.5rem',marginTop:8
-          }}>
-            Reintentar
-          </button>
-          {/* Discord o soporte */}
-          <div style={{color:'#aaa',fontSize:'1rem',marginTop:'1rem'}}>
-            ¿Dudas? Únete a nuestro <a href='https://discord.gg/spainrp' style={{color:'#FFD700'}}>Discord</a>
-          </div>
-        </div>
-        <style>{`
-          @keyframes bounce { 0%{transform:translateY(0);} 100%{transform:translateY(-18px) scale(1.08);} }
-          @keyframes spin { 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
-        `}</style>
-      </div>
-    );
+    return <MaintenancePage 
+      vantaElRef={vantaElRef}
+      totalMinutes={totalMinutes}
+      elapsed={elapsed}
+      percent={percent}
+      apiUrl={apiUrl}
+    />;
   }
 
   // Mostrar loading mientras se procesa el token
