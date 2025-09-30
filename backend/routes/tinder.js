@@ -8,7 +8,20 @@ const path = require('path');
 const dbPath = path.join(__dirname, '../spainrp.db');
 
 // Crear tabla si no existe
-const db = new sqlite3.Database(dbPath);
+const db = new sqlite3.Database(dbPath, (err) => {
+  if (err) {
+    console.error('[TINDER] Error abriendo base de datos:', err);
+  } else {
+    console.log('[TINDER] Base de datos conectada correctamente');
+  }
+});
+
+// Configurar timeout y modo WAL para mejor rendimiento
+db.configure("busy_timeout", 30000);
+db.run("PRAGMA journal_mode=WAL");
+db.run("PRAGMA synchronous=NORMAL");
+db.run("PRAGMA cache_size=1000");
+db.run("PRAGMA temp_store=MEMORY");
 db.run(`CREATE TABLE IF NOT EXISTS tinder_profiles (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   discord_id TEXT NOT NULL,

@@ -593,6 +593,12 @@ const db = new sqlite3.Database('./spainrp.db', (err) => {
     console.error('Error opening SQLite DB:', err.message);
   } else {
     console.log('Connected to SQLite database.');
+    // Configurar timeout y modo WAL para mejor rendimiento
+    db.configure("busy_timeout", 30000);
+    db.run("PRAGMA journal_mode=WAL");
+    db.run("PRAGMA synchronous=NORMAL");
+    db.run("PRAGMA cache_size=1000");
+    db.run("PRAGMA temp_store=MEMORY");
   }
 });
 

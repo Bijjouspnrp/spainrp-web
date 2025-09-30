@@ -6,7 +6,20 @@ const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const dbPath = path.join(__dirname, '../spainrp.db');
-const db = new sqlite3.Database(dbPath);
+const db = new sqlite3.Database(dbPath, (err) => {
+  if (err) {
+    console.error('[ROBLOX] Error abriendo base de datos:', err);
+  } else {
+    console.log('[ROBLOX] Base de datos conectada correctamente');
+  }
+});
+
+// Configurar timeout y modo WAL para mejor rendimiento
+db.configure("busy_timeout", 30000);
+db.run("PRAGMA journal_mode=WAL");
+db.run("PRAGMA synchronous=NORMAL");
+db.run("PRAGMA cache_size=1000");
+db.run("PRAGMA temp_store=MEMORY");
 
 // Crear tabla al inicializar el módulo
 db.run(`CREATE TABLE IF NOT EXISTS roblox_verifications (

@@ -6,7 +6,20 @@ const jwt = require('jsonwebtoken');
 
 // Crear conexión directa a la base de datos
 const dbPath = path.join(__dirname, '..', 'spainrp.db');
-const db = new sqlite3.Database(dbPath);
+const db = new sqlite3.Database(dbPath, (err) => {
+  if (err) {
+    console.error('[NOTIFICATIONS] Error abriendo base de datos:', err);
+  } else {
+    console.log('[NOTIFICATIONS] Base de datos conectada correctamente');
+  }
+});
+
+// Configurar timeout y modo WAL para mejor rendimiento
+db.configure("busy_timeout", 30000);
+db.run("PRAGMA journal_mode=WAL");
+db.run("PRAGMA synchronous=NORMAL");
+db.run("PRAGMA cache_size=1000");
+db.run("PRAGMA temp_store=MEMORY");
 
 // Middleware para autenticación JWT
 const authenticateJWT = (req, res, next) => {
