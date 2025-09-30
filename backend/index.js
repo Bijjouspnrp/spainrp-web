@@ -14,6 +14,7 @@ const multiroleRoutes = require('./routes/multirole');
 const tinderRoutes = require('./routes/tinder');
 const robloxRoutes = require('./routes/roblox');
 const adminRecordsRoutes = require('./routes/adminRecords');
+const notificationRoutes = require('./routes/notifications');
 const session = require('express-session');
 const passport = require('passport');
 const multer = require('multer');
@@ -124,6 +125,7 @@ app.use(passport.session());
 app.use('/api/tinder', tinderRoutes);
 app.use('/api/roblox', robloxRoutes);
 app.use('/api/admin-records', adminRecordsRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // --- SOCKET.IO para notificaciones en tiempo real ---
 const http = require('http');

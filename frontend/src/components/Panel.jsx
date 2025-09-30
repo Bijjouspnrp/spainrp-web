@@ -2,6 +2,10 @@ import React, { useEffect, useState } from 'react';
 
 import DailyCalendar from './DailyCalendar.jsx';
 import AdminPanel from './AdminPanel.jsx';
+import StatsChart from './Charts/StatsChart.jsx';
+import AnimatedCard from './Charts/AnimatedCard.jsx';
+import NotificationCenter from './Notifications/NotificationCenter.jsx';
+import AdminNotificationSender from './Notifications/AdminNotificationSender.jsx';
 import './Panel.css';
 import { apiUrl } from '../utils/api';
 import { 
@@ -58,6 +62,7 @@ const Panel = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showRoles, setShowRoles] = useState(false);
   const [activeSection, setActiveSection] = useState('overview');
+  const [showNotificationSender, setShowNotificationSender] = useState(false);
   
 
   // Estado para imagen real de DNI
@@ -257,9 +262,40 @@ const Panel = () => {
     userRecords.multasTotal === 0 &&
     userRecords.multasPendientes === 0;
 
+  // Datos para gráficos
+  const chartData = {
+    records: {
+      labels: ['Antecedentes', 'Arrestos', 'Multas Pendientes'],
+      datasets: [{
+        label: 'Tus registros',
+        data: [userRecords.antecedentes, 0, userRecords.multasPendientes],
+        backgroundColor: ['rgba(239, 68, 68, 0.8)', 'rgba(245, 158, 11, 0.8)', 'rgba(34, 197, 94, 0.8)'],
+        borderColor: ['#ef4444', '#f59e0b', '#10b981'],
+        borderWidth: 2,
+        borderRadius: 8
+      }, {
+        label: 'Total global',
+        data: [statsTotals.antecedentes, statsTotals.arrestos, statsTotals.multasPendientes],
+        backgroundColor: ['rgba(239, 68, 68, 0.4)', 'rgba(245, 158, 11, 0.4)', 'rgba(34, 197, 94, 0.4)'],
+        borderColor: ['#ef4444', '#f59e0b', '#10b981'],
+        borderWidth: 2,
+        borderRadius: 8
+      }]
+    },
+    balance: {
+      labels: ['Efectivo', 'Banco'],
+      datasets: [{
+        data: [100, 0], // Placeholder - necesitaríamos obtener el saldo real
+        backgroundColor: ['rgba(114, 137, 218, 0.8)', 'rgba(114, 137, 218, 0.4)'],
+        borderColor: ['#7289da', '#5865f2'],
+        borderWidth: 2
+      }]
+    }
+  };
+
   const renderOverview = () => (
     <div className="overview-section">
-      <div className="welcome-card">
+      <AnimatedCard delay={0} className="welcome-card">
         <div className="welcome-header">
           <img 
             src={user?.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : '/assets/spainrplogo.png'} 
@@ -271,12 +307,11 @@ const Panel = () => {
             <p>Panel de control de SpainRP</p>
           </div>
         </div>
-      </div>
-
+      </AnimatedCard>
 
       <div className="stats-grid">
         {allZero && (
-          <div style={{
+          <AnimatedCard delay={0.1} style={{
             background: '#fffbe6',
             color: '#856404',
             border: '1px solid #ffeeba',
@@ -285,16 +320,27 @@ const Panel = () => {
             marginBottom: 18,
             textAlign: 'center',
             fontWeight: 500,
-            fontSize: 16
+            fontSize: 16,
+            gridColumn: 'span 2'
           }}>
             <span role="img" aria-label="info" style={{marginRight:8}}>ℹ️</span>
             No tienes registros, arrestos ni multas pendientes actualmente.<br/>
             Si esperabas ver datos, contacta con el staff o recarga más tarde.
-          </div>
+          </AnimatedCard>
         )}
 
+        {/* Gráfico de estadísticas */}
+        <AnimatedCard delay={0.2} style={{gridColumn:'span 2'}}>
+          <StatsChart 
+            type="bar" 
+            data={chartData.records} 
+            title="Estadísticas de Registros"
+            className="records-chart"
+          />
+        </AnimatedCard>
+
         {/* DNI digital */}
-        <div className="stat-card" style={{gridColumn:'span 2',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'1.2rem 0'}}>
+        <AnimatedCard delay={0.3} className="stat-card" style={{gridColumn:'span 2',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'1.2rem 0'}}>
           <div className="stat-icon" style={{marginBottom:8}}>
             <FaIdCard />
           </div>
@@ -386,33 +432,33 @@ const Panel = () => {
             <div style={{marginTop:8,fontSize:13,color:'#888'}}>Puedes usar este DNI en el servidor y exportarlo como imagen.<br/>Haz click en el DNI para girar y ver el reverso.</div>
             {/* ...fin DNI... */}
           </div>
-        </div>
+        </AnimatedCard>
 
         {/* Estadísticas ordenadas */}
         <div className="stat-row" style={{display:'flex',gap:24,marginTop:16,flexWrap:'wrap'}}>
-          <div className="stat-card" style={{flex:1,minWidth:180}}>
+          <AnimatedCard delay={0.4} className="stat-card" style={{flex:1,minWidth:180}}>
             <div className="stat-icon"><FaFolderOpen /></div>
             <div className="stat-content">
               <h3>Antecedentes</h3>
               <div style={{fontSize:15,fontWeight:600}}>Tus registros: <span style={{color:'#007bff'}}>{userRecords.antecedentes}</span></div>
               <div style={{fontSize:14,color:'#888',marginTop:2}}>Total global: <span style={{color:'#333'}}>{statsTotals.antecedentes}</span></div>
             </div>
-          </div>
-          <div className="stat-card" style={{flex:1,minWidth:180}}>
+          </AnimatedCard>
+          <AnimatedCard delay={0.5} className="stat-card" style={{flex:1,minWidth:180}}>
             <div className="stat-icon"><FaGavel /></div>
             <div className="stat-content">
               <h3>Arrestos</h3>
               <div style={{fontSize:15,fontWeight:600}}>Global: <span style={{color:'#333'}}>{statsTotals.arrestos}</span></div>
             </div>
-          </div>
-          <div className="stat-card" style={{flex:1,minWidth:180}}>
+          </AnimatedCard>
+          <AnimatedCard delay={0.6} className="stat-card" style={{flex:1,minWidth:180}}>
             <div className="stat-icon"><FaCoins /></div>
             <div className="stat-content">
               <h3>Multas</h3>
               <div style={{fontSize:15,fontWeight:600}}>Tus pendientes: <span style={{color:'#d9534f'}}>{userRecords.multasPendientes}</span></div>
               <div style={{fontSize:14,color:'#888',marginTop:2}}>Total usuario: <span style={{color:'#333'}}>{userRecords.multasTotal}</span> | Global: <span style={{color:'#333'}}>{statsTotals.multasPendientes}</span></div>
             </div>
-          </div>
+          </AnimatedCard>
         </div>
       </div>
 
@@ -909,9 +955,31 @@ const Panel = () => {
           </button>
           <h1>Panel de Control</h1>
           <div className="header-actions">
-            <button className="notification-btn">
-              <FaBell />
-            </button>
+            <NotificationCenter />
+            {isAdmin && (
+              <button 
+                className="notification-btn"
+                onClick={() => setShowNotificationSender(true)}
+                style={{
+                  background: 'linear-gradient(135deg, #10b981, #059669)',
+                  border: 'none',
+                  borderRadius: '12px',
+                  padding: '12px',
+                  color: 'white',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                }}
+                title="Enviar notificación a todos los usuarios"
+              >
+                <FaBell size={14} />
+                Enviar Notificación
+              </button>
+            )}
           </div>
         </header>
 
@@ -971,6 +1039,14 @@ const Panel = () => {
             </button>
           </div>
         </div>
+      )}
+
+      {/* Admin Notification Sender */}
+      {isAdmin && (
+        <AdminNotificationSender 
+          isOpen={showNotificationSender}
+          onClose={() => setShowNotificationSender(false)}
+        />
       )}
     </div>
   );
