@@ -203,12 +203,279 @@ const StockMarket = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center">
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533483 100%)',
+        color: '#fff',
+        fontFamily: 'Inter, Segoe UI, sans-serif',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
         <DiscordUserBar />
-        <div className="flex flex-col items-center gap-6">
-          <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-          <h2 className="text-2xl font-bold">Cargando Bolsa...</h2>
+        
+        {/* Fondo animado con partículas */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%)',
+          animation: 'backgroundShift 8s ease-in-out infinite'
+        }} />
+        
+        {/* Contenedor principal */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10,
+          textAlign: 'center',
+          padding: '2rem'
+        }}>
+          
+          {/* Logo animado de la bolsa */}
+          <div style={{
+            position: 'relative',
+            marginBottom: '2rem',
+            animation: 'logoFloat 3s ease-in-out infinite'
+          }}>
+            <div style={{
+              width: '120px',
+              height: '120px',
+              background: 'linear-gradient(45deg, #ffd700, #ffed4e, #ffd700)',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '4rem',
+              boxShadow: '0 0 40px rgba(255, 215, 0, 0.6), 0 0 80px rgba(255, 215, 0, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.2)',
+              animation: 'logoGlow 2s ease-in-out infinite alternate',
+              position: 'relative'
+            }}>
+              💹
+              {/* Efecto de ondas */}
+              <div style={{
+                position: 'absolute',
+                width: '140px',
+                height: '140px',
+                border: '2px solid rgba(255, 215, 0, 0.3)',
+                borderRadius: '50%',
+                animation: 'waveExpand 2s ease-out infinite'
+              }} />
+              <div style={{
+                position: 'absolute',
+                width: '160px',
+                height: '160px',
+                border: '1px solid rgba(255, 215, 0, 0.2)',
+                borderRadius: '50%',
+                animation: 'waveExpand 2s ease-out infinite 0.5s'
+              }} />
+            </div>
+          </div>
+          
+          {/* Título principal */}
+          <h1 style={{
+            fontSize: '3.5rem',
+            fontWeight: '900',
+            background: 'linear-gradient(45deg, #ffd700, #ffed4e, #ffd700, #ffed4e)',
+            backgroundSize: '300% 300%',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            marginBottom: '0.5rem',
+            letterSpacing: '3px',
+            textShadow: '0 0 30px rgba(255, 215, 0, 0.5)',
+            animation: 'titleShine 3s ease-in-out infinite'
+          }}>
+            BOLSA SPAINRP
+          </h1>
+          
+          {/* Subtítulo */}
+          <p style={{
+            fontSize: '1.3rem',
+            color: '#a0a0a0',
+            marginBottom: '3rem',
+            fontWeight: '300',
+            letterSpacing: '1px'
+          }}>
+            Iniciando sistema de trading en tiempo real...
+          </p>
+          
+          {/* Gráfico de previsualización animado */}
+          <div style={{
+            width: '400px',
+            height: '200px',
+            background: 'rgba(0, 0, 0, 0.3)',
+            borderRadius: '20px',
+            padding: '1.5rem',
+            marginBottom: '2rem',
+            border: '1px solid rgba(255, 215, 0, 0.3)',
+            backdropFilter: 'blur(10px)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <h3 style={{
+              fontSize: '1.1rem',
+              color: '#ffd700',
+              marginBottom: '1rem',
+              textAlign: 'center',
+              fontWeight: '600'
+            }}>
+              📈 Precios en Tiempo Real
+            </h3>
+            
+            {/* Gráfico simulado */}
+            <div style={{
+              position: 'relative',
+              height: '120px',
+              background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 119, 198, 0.1) 100%)',
+              borderRadius: '10px',
+              overflow: 'hidden'
+            }}>
+              {/* Línea de precio animada */}
+              <svg width="100%" height="100%" style={{ position: 'absolute', top: 0, left: 0 }}>
+                <defs>
+                  <linearGradient id="priceGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#ffd700" stopOpacity="0.8" />
+                    <stop offset="50%" stopColor="#ff6bcb" stopOpacity="0.8" />
+                    <stop offset="100%" stopColor="#4ecdc4" stopOpacity="0.8" />
+                  </linearGradient>
+                </defs>
+                <path
+                  d="M 0,80 Q 50,60 100,40 T 200,20 T 300,30 T 400,10"
+                  stroke="url(#priceGradient)"
+                  strokeWidth="3"
+                  fill="none"
+                  style={{
+                    strokeDasharray: '1000',
+                    strokeDashoffset: '1000',
+                    animation: 'drawLine 3s ease-in-out infinite'
+                  }}
+                />
+                {/* Puntos de datos */}
+                <circle cx="50" cy="60" r="4" fill="#ffd700" style={{ animation: 'pulse 2s ease-in-out infinite' }} />
+                <circle cx="150" cy="20" r="4" fill="#ff6bcb" style={{ animation: 'pulse 2s ease-in-out infinite 0.5s' }} />
+                <circle cx="250" cy="30" r="4" fill="#4ecdc4" style={{ animation: 'pulse 2s ease-in-out infinite 1s' }} />
+                <circle cx="350" cy="10" r="4" fill="#ffd700" style={{ animation: 'pulse 2s ease-in-out infinite 1.5s' }} />
+              </svg>
+            </div>
+          </div>
+          
+          {/* Barra de progreso */}
+          <div style={{
+            width: '300px',
+            height: '6px',
+            background: 'rgba(255, 255, 255, 0.1)',
+            borderRadius: '3px',
+            overflow: 'hidden',
+            marginBottom: '1rem'
+          }}>
+            <div style={{
+              height: '100%',
+              background: 'linear-gradient(90deg, #ffd700, #ffed4e, #ffd700)',
+              borderRadius: '3px',
+              width: '0%',
+              animation: 'progressBar 5s ease-in-out forwards',
+              boxShadow: '0 0 10px rgba(255, 215, 0, 0.6)'
+            }} />
+          </div>
+          
+          {/* Texto de progreso */}
+          <div style={{
+            fontSize: '1rem',
+            color: '#ffd700',
+            fontWeight: '600',
+            marginBottom: '2rem',
+            animation: 'textPulse 2s ease-in-out infinite'
+          }}>
+            Conectando con servidores de trading...
+          </div>
+          
+          {/* Indicadores de estado */}
+          <div style={{
+            display: 'flex',
+            gap: '2rem',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            justifyContent: 'center'
+          }}>
+            {['📊', '💰', '📈', '⚡'].map((icon, index) => (
+              <div key={index} style={{
+                fontSize: '2rem',
+                animation: `iconBounce 2s ease-in-out infinite ${index * 0.2}s`,
+                filter: 'drop-shadow(0 0 10px rgba(255, 215, 0, 0.5))'
+              }}>
+                {icon}
+              </div>
+            ))}
+          </div>
         </div>
+        
+        {/* Estilos CSS */}
+        <style>{`
+          @keyframes backgroundShift {
+            0%, 100% { transform: translateX(0) translateY(0); }
+            25% { transform: translateX(-10px) translateY(-5px); }
+            50% { transform: translateX(10px) translateY(5px); }
+            75% { transform: translateX(-5px) translateY(10px); }
+          }
+          
+          @keyframes logoFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+          }
+          
+          @keyframes logoGlow {
+            0% { box-shadow: 0 0 40px rgba(255, 215, 0, 0.6), 0 0 80px rgba(255, 215, 0, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.2); }
+            100% { box-shadow: 0 0 60px rgba(255, 215, 0, 0.8), 0 0 120px rgba(255, 215, 0, 0.5), inset 0 0 30px rgba(255, 255, 255, 0.3); }
+          }
+          
+          @keyframes waveExpand {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+          }
+          
+          @keyframes titleShine {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+          }
+          
+          @keyframes drawLine {
+            0% { stroke-dashoffset: 1000; }
+            100% { stroke-dashoffset: 0; }
+          }
+          
+          @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+          }
+          
+          @keyframes progressBar {
+            0% { width: 0%; }
+            20% { width: 25%; }
+            40% { width: 50%; }
+            60% { width: 75%; }
+            80% { width: 90%; }
+            100% { width: 100%; }
+          }
+          
+          @keyframes textPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+          }
+          
+          @keyframes iconBounce {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-10px) scale(1.1); }
+          }
+        `}</style>
       </div>
     );
   }
