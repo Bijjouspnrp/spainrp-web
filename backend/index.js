@@ -1652,10 +1652,39 @@ app.get('/admin/sessions', ensureAuthAndAdmin, (req, res) => {
 // --- Anuncios con imágenes ---
 // Declaraciones de multer movidas al inicio del archivo
 
+// Endpoint de prueba para crear anuncio
+app.post('/api/announcements/test', (req, res) => {
+  console.log('[ANNOUNCEMENTS] POST /api/announcements/test - Creando anuncio de prueba');
+  const testAnnouncement = {
+    title: 'Anuncio de Prueba',
+    body: 'Este es un anuncio de prueba para verificar que el sistema funciona correctamente.',
+    authorName: 'Sistema',
+    createdAt: new Date().toISOString(),
+    images: JSON.stringify([])
+  };
+  
+  db.run('INSERT INTO announcements (title, body, authorId, authorName, createdAt, images) VALUES (?, ?, ?, ?, ?, ?)', 
+    [testAnnouncement.title, testAnnouncement.body, null, testAnnouncement.authorName, testAnnouncement.createdAt, testAnnouncement.images], 
+    function(err) {
+      if (err) {
+        console.error('[ANNOUNCEMENTS] Error creando anuncio de prueba:', err.message);
+        return res.status(500).json({ error: 'Error creando anuncio de prueba' });
+      }
+      console.log('[ANNOUNCEMENTS] Anuncio de prueba creado con ID:', this.lastID);
+      res.json({ success: true, id: this.lastID, message: 'Anuncio de prueba creado correctamente' });
+    }
+  );
+});
+
 // GET: noticias en vivo
 app.get('/api/announcements', (req, res) => {
+  console.log('[ANNOUNCEMENTS] GET /api/announcements - Consultando anuncios');
   db.all('SELECT * FROM announcements ORDER BY id DESC LIMIT 100', [], (err, rows) => {
-    if (err) return res.status(500).json({ error: 'Error leyendo anuncios' });
+    if (err) {
+      console.error('[ANNOUNCEMENTS] Error:', err.message);
+      return res.status(500).json({ error: 'Error leyendo anuncios' });
+    }
+    console.log(`[ANNOUNCEMENTS] Encontrados ${rows ? rows.length : 0} anuncios`);
     // Parsear imágenes
     const anns = (rows || []).map(row => {
       let images = [];
