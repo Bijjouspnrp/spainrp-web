@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaTools, FaPowerOff, FaPowerOn, FaClock, FaUsers, FaEnvelope, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
+import { FaTools, FaPowerOff, FaPlay, FaClock, FaUsers, FaEnvelope, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
 import { apiUrl } from '../utils/api';
 
 const MaintenanceControl = ({ showToast }) => {
@@ -163,7 +163,7 @@ const MaintenanceControl = ({ showToast }) => {
               onClick={() => toggleMaintenance('on')}
               disabled={loading}
             >
-              <FaPowerOn />
+              <FaPlay />
               {loading ? 'Activando...' : 'Activar Mantenimiento'}
             </button>
           ) : (
