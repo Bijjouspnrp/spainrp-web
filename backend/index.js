@@ -2985,6 +2985,68 @@ app.get('/api/admin/balance/:targetUserId', async (req, res) => {
   }
 });
 
+// Modificar saldo de un usuario (solo administradores) - PROXY
+app.post('/api/proxy/admin/setbalance', express.json(), async (req, res) => {
+  try {
+    const { targetUserId, cash, bank, adminUserId } = req.body;
+    console.log(`[ADMIN PROXY] ===== INICIO SETBALANCE =====`);
+    console.log(`[ADMIN PROXY] POST /api/proxy/admin/setbalance`, { targetUserId, cash, bank, adminUserId });
+    
+    // Verificar si el bot de Discord está disponible
+    if (!discordClient.readyAt) {
+      console.warn('[ADMIN PROXY] ⚠️ Bot de Discord no disponible');
+      return res.status(503).json({ error: 'Bot de Discord no disponible' });
+    }
+    
+    // Verificar permisos de admin usando discordClient local
+    const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
+    console.log(`[ADMIN PROXY] Guild ID: ${guildId}, Target User ID: ${targetUserId}, Admin User ID: ${adminUserId}`);
+    
+    const guild = discordClient.guilds.cache.get(guildId);
+    if (!guild) {
+      console.error(`[ADMIN PROXY] ❌ Servidor no encontrado: ${guildId}`);
+      return res.status(404).json({ error: 'Servidor no encontrado' });
+    }
+    
+    await guild.members.fetch();
+    const adminMember = guild.members.cache.get(adminUserId);
+    if (!adminMember) {
+      console.error(`[ADMIN PROXY] ❌ Admin no encontrado: ${adminUserId}`);
+      return res.status(404).json({ error: 'Admin no encontrado' });
+    }
+    
+    const hasAdminRole = adminMember.roles.cache.has('1384340649205301359');
+    const hasAdminPerms = adminMember.permissions.has(PermissionsBitField.Flags.Administrator);
+    if (!hasAdminRole && !hasAdminPerms) {
+      console.error(`[ADMIN PROXY] ❌ Sin permisos de admin: ${adminUserId}`);
+      return res.status(403).json({ error: 'No tienes permisos de administrador' });
+    }
+    
+    console.log(`[ADMIN PROXY] ✅ Permisos verificados para admin: ${adminUserId}`);
+    
+    // Llamar directamente a la API externa del bot
+    const botUrl = `${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/blackmarket/admin/setbalance`;
+    console.log(`[ADMIN PROXY] URL del bot: ${botUrl}`);
+    
+    const response = await fetch(botUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: targetUserId, cash, bank })
+    });
+    
+    const data = await response.json();
+    
+    console.log(`[ADMIN PROXY] Response status: ${response.status}`);
+    console.log(`[ADMIN PROXY] Response data:`, data);
+    console.log(`[ADMIN PROXY] ===== FIN SETBALANCE =====`);
+    
+    res.status(response.status).json(data);
+  } catch (error) {
+    console.error('[ADMIN PROXY] ❌ Error setting balance:', error);
+    res.status(500).json({ error: 'Error al modificar saldo', details: error.message });
+  }
+});
+
 // Modificar saldo de un usuario (solo administradores)
 app.post('/api/admin/setbalance', express.json(), async (req, res) => {
   try {
