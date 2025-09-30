@@ -675,14 +675,14 @@ const handleDNIExport = async (req, res) => {
   
   console.log(`[DNI PROXY] ===== INICIO DNI EXPORT =====`);
   console.log(`[DNI PROXY] ${req.method} request para DiscordID: ${discordId}`);
-  console.log(`[DNI PROXY] URL del bot: ${DNI_BOT_URL}/dni/${discordId}/exportar`);
+  console.log(`[DNI PROXY] URL del bot: ${DNI_BOT_URL}/api/bolsa/dni/${discordId}/exportar`);
   console.log(`[DNI PROXY] Timestamp: ${new Date().toISOString()}`);
   
   try {
     const fetchDNI = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
     
     // Añadir timeout y headers
-    const response = await fetchDNI(`${DNI_BOT_URL}/dni/${encodeURIComponent(discordId)}/exportar`, {
+    const response = await fetchDNI(`${DNI_BOT_URL}/api/bolsa/dni/${encodeURIComponent(discordId)}/exportar`, {
       method: req.method,
       timeout: 10000, // 10 segundos timeout
       headers: {
@@ -704,12 +704,6 @@ const handleDNIExport = async (req, res) => {
         console.error(`[DNI PROXY] Error del bot: ${errorText}`);
       } catch (e) {
         console.error(`[DNI PROXY] No se pudo leer el error del bot`);
-      }
-      
-      // Si es 404, usar fallback de demostración
-      if (response.status === 404) {
-        console.log(`[DNI PROXY] Usando fallback de demostración para ${discordId}`);
-        return handleDNIDemo(req, res);
       }
       
       return res.status(response.status).json({ 
@@ -763,12 +757,12 @@ app.get('/api/proxy/dni/test/:discordId', async (req, res) => {
   const DNI_BOT_URL = process.env.DNI_BOT_URL || 'http://37.27.21.91:5021';
   
   console.log(`[DNI TEST] Probando conectividad con bot para DiscordID: ${discordId}`);
-  console.log(`[DNI TEST] URL del bot: ${DNI_BOT_URL}/dni/${discordId}/exportar`);
+  console.log(`[DNI TEST] URL del bot: ${DNI_BOT_URL}/api/bolsa/dni/${discordId}/exportar`);
   
   try {
     const fetchDNI = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
     
-    const response = await fetchDNI(`${DNI_BOT_URL}/dni/${encodeURIComponent(discordId)}/exportar`, {
+    const response = await fetchDNI(`${DNI_BOT_URL}/api/bolsa/dni/${encodeURIComponent(discordId)}/exportar`, {
       method: 'HEAD',
       timeout: 5000,
       headers: {
@@ -801,10 +795,9 @@ app.get('/api/proxy/dni/test/:discordId', async (req, res) => {
   }
 });
 
-// Función para generar DNI de demostración
-const handleDNIDemo = async (req, res) => {
+// Endpoint para crear un DNI de prueba (solo para desarrollo)
+app.get('/api/proxy/dni/demo/:discordId', async (req, res) => {
   const { discordId } = req.params;
-  const isHeadRequest = req.method === 'HEAD';
   
   console.log(`[DNI DEMO] Generando DNI de demostración para DiscordID: ${discordId}`);
   
@@ -891,14 +884,6 @@ const handleDNIDemo = async (req, res) => {
     
     console.log(`[DNI DEMO] DNI de demostración generado (${buffer.length} bytes) para ${discordId}`);
     
-    // Para HEAD, solo enviar headers
-    if (isHeadRequest) {
-      console.log(`[DNI DEMO] Enviando headers para HEAD request`);
-      res.set('Content-Type', 'image/png');
-      res.set('Content-Length', buffer.length);
-      return res.status(200).end();
-    }
-    
     res.set('Content-Type', 'image/png');
     res.set('Content-Length', buffer.length);
     res.send(buffer);
@@ -911,11 +896,7 @@ const handleDNIDemo = async (req, res) => {
       discordId: discordId
     });
   }
-};
-
-// Endpoint para crear un DNI de prueba (solo para desarrollo)
-app.get('/api/proxy/dni/demo/:discordId', handleDNIDemo);
-app.head('/api/proxy/dni/demo/:discordId', handleDNIDemo);
+});
 
 // ===== PROXY BLACKMARKET =====
 const BLACKMARKET_BOT_URL = process.env.BLACKMARKET_BOT_URL || 'http://37.27.21.91:5021';

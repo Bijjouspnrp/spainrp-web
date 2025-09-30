@@ -118,7 +118,7 @@ const News = () => {
   React.useEffect(() => {
     const loadNews = async () => {
       try {
-        setNewsLoading(true);
+    setNewsLoading(true);
         const resp = await fetch(apiUrl('/api/announcements'));
         
         // Verificar si la respuesta es HTML (error)
@@ -135,7 +135,7 @@ const News = () => {
         const data = await resp.json();
         if (data && Array.isArray(data.announcements)) {
           setNews(data.announcements.reverse());
-          setFilteredNews(data.announcements.reverse());
+            setFilteredNews(data.announcements.reverse());
         } else {
           console.warn('[News] Formato de datos inesperado:', data);
           setNews([]);
