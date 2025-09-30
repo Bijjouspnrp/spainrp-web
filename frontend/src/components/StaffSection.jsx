@@ -114,6 +114,91 @@ function useRobloxUserId(identifier) {
   }, [identifier]);
   return resolvedId;
 }
+
+// Componente separado para cada miembro del staff
+function StaffMemberCard({ member, resolvedId, getRoleColor }) {
+  const [avatarUrl, setAvatarUrl] = useState(null);
+  const [avatarLoading, setAvatarLoading] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    
+    if (resolvedId && /^\d+$/.test(resolvedId)) {
+      console.log(`[StaffSection] Obteniendo avatar para ${member.name} (ID: ${resolvedId})`);
+      setAvatarLoading(true);
+      
+      fetchRobloxAvatarUrl(resolvedId).then(url => {
+        if (mounted) {
+          console.log(`[StaffSection] Avatar para ${member.name}:`, url);
+          setAvatarUrl(url);
+          setAvatarLoading(false);
+        }
+      }).catch(e => {
+        console.error(`[StaffSection] Error obteniendo avatar para ${member.name}:`, e);
+        if (mounted) {
+          setAvatarUrl(null);
+          setAvatarLoading(false);
+        }
+      });
+    } else {
+      console.log(`[StaffSection] No hay ID resuelto para ${member.name}`);
+      setAvatarUrl(null);
+      setAvatarLoading(false);
+    }
+    
+    return () => { mounted = false; };
+  }, [resolvedId, member.name]);
+
+  return (
+    <div
+      className="staff-card"
+      style={{ '--role-color': getRoleColor(member.role) }}
+    >
+      <div className="staff-avatar-container">
+        {avatarLoading ? (
+          <div className="staff-avatar staff-avatar-loading">
+            <div style={{ 
+              width: '20px', 
+              height: '20px', 
+              border: '2px solid #f3f3f3',
+              borderTop: '2px solid #7289da',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite'
+            }}></div>
+          </div>
+        ) : avatarUrl ? (
+          <img
+            src={avatarUrl}
+            alt={`Avatar de Roblox de ${member.name}`}
+            className="staff-avatar"
+            onError={e => {
+              console.warn(`[StaffSection] Error cargando imagen para ${member.name}`);
+              e.target.onerror = null;
+              e.target.src = '/vite.svg';
+            }}
+            onLoad={() => console.log(`[StaffSection] Avatar cargado para ${member.name}`)}
+          />
+        ) : (
+          <div className="staff-avatar staff-avatar-placeholder">
+            {member.name.charAt(0)}
+          </div>
+        )}
+        <div className="staff-role-badge">
+          {member.icon}
+        </div>
+      </div>
+      <div className="staff-info">
+        <h3 className="staff-name">{member.name}</h3>
+        <span className="staff-role">{member.role}</span>
+        {resolvedId && (
+          <small style={{ color: '#666', fontSize: '0.8rem' }}>
+            ID: {resolvedId}
+          </small>
+        )}
+      </div>
+    </div>
+  );
+}
 const StaffSection = () => {
   const getRoleColor = (role) => {
     const roleColors = {
@@ -216,92 +301,14 @@ const StaffSection = () => {
               <p style={{ marginTop: '1rem', color: '#666' }}>Cargando avatares de Roblox...</p>
             </div>
           ) : (
-            staffMembers.map((member, index) => {
-              const identifier = member.robloxUserId;
-              const resolvedId = resolvedIds[identifier];
-              const [avatarUrl, setAvatarUrl] = React.useState(null);
-              const [avatarLoading, setAvatarLoading] = React.useState(false);
-
-              React.useEffect(() => {
-                let mounted = true;
-                
-                if (resolvedId && /^\d+$/.test(resolvedId)) {
-                  console.log(`[StaffSection] Obteniendo avatar para ${member.name} (ID: ${resolvedId})`);
-                  setAvatarLoading(true);
-                  
-                  fetchRobloxAvatarUrl(resolvedId).then(url => {
-                    if (mounted) {
-                      console.log(`[StaffSection] Avatar para ${member.name}:`, url);
-                      setAvatarUrl(url);
-                      setAvatarLoading(false);
-                    }
-                  }).catch(e => {
-                    console.error(`[StaffSection] Error obteniendo avatar para ${member.name}:`, e);
-                    if (mounted) {
-                      setAvatarUrl(null);
-                      setAvatarLoading(false);
-                    }
-                  });
-                } else {
-                  console.log(`[StaffSection] No hay ID resuelto para ${member.name}`);
-                  setAvatarUrl(null);
-                  setAvatarLoading(false);
-                }
-                
-                return () => { mounted = false; };
-              }, [resolvedId, member.name]);
-
-              return (
-                <div
-                  key={index}
-                  className="staff-card"
-                  style={{ '--role-color': getRoleColor(member.role) }}
-                >
-                  <div className="staff-avatar-container">
-                    {avatarLoading ? (
-                      <div className="staff-avatar staff-avatar-loading">
-                        <div style={{ 
-                          width: '20px', 
-                          height: '20px', 
-                          border: '2px solid #f3f3f3',
-                          borderTop: '2px solid #7289da',
-                          borderRadius: '50%',
-                          animation: 'spin 1s linear infinite'
-                        }}></div>
-                      </div>
-                    ) : avatarUrl ? (
-                      <img
-                        src={avatarUrl}
-                        alt={`Avatar de Roblox de ${member.name}`}
-                        className="staff-avatar"
-                        onError={e => {
-                          console.warn(`[StaffSection] Error cargando imagen para ${member.name}`);
-                          e.target.onerror = null;
-                          e.target.src = '/vite.svg';
-                        }}
-                        onLoad={() => console.log(`[StaffSection] Avatar cargado para ${member.name}`)}
-                      />
-                    ) : (
-                      <div className="staff-avatar staff-avatar-placeholder">
-                        {member.name.charAt(0)}
-                      </div>
-                    )}
-                    <div className="staff-role-badge">
-                      {member.icon}
-                    </div>
-                  </div>
-                  <div className="staff-info">
-                    <h3 className="staff-name">{member.name}</h3>
-                    <span className="staff-role">{member.role}</span>
-                    {resolvedId && (
-                      <small style={{ color: '#666', fontSize: '0.8rem' }}>
-                        ID: {resolvedId}
-                      </small>
-                    )}
-                  </div>
-                </div>
-              );
-            })
+            staffMembers.map((member, index) => (
+              <StaffMemberCard 
+                key={index} 
+                member={member} 
+                resolvedId={resolvedIds[member.robloxUserId]}
+                getRoleColor={getRoleColor}
+              />
+            ))
           )}
         </div>
 
