@@ -5,7 +5,8 @@ const EMOJIS = ['👍','❤️','😂','😮','😢','👎'];
 // Helper para verificar permisos de edición/eliminación
 async function canDeleteNews(userId) {
   try {
-    const resp = await fetch(`/api/discord/candeletenews/${userId}`);
+    const resp = await fetch(apiUrl(`/api/discord/candeletenews/${userId}`));
+    if (!resp.ok) return false;
     const data = await resp.json();
     return !!data.canDelete;
   } catch {
@@ -14,7 +15,8 @@ async function canDeleteNews(userId) {
 }
 async function canEditNews(userId) {
   try {
-    const resp = await fetch(`/api/discord/canpostnews/${userId}`);
+    const resp = await fetch(apiUrl(`/api/discord/canpostnews/${userId}`));
+    if (!resp.ok) return false;
     const data = await resp.json();
     return !!data.canPost;
   } catch {
@@ -55,7 +57,7 @@ const News = () => {
     const interval = setInterval(() => {
       filteredNews.forEach(n => {
         // Comentarios
-        fetch(`/api/announcements/${n.id}/comments`)
+        fetch(apiUrl(`/api/announcements/${n.id}/comments`))
           .then(res => res.ok ? res.json() : null)
           .then(data => {
             if (data && Array.isArray(data.comments)) {
@@ -65,7 +67,7 @@ const News = () => {
             }
           });
         // Reacciones
-        fetch(`/api/announcements/${n.id}/reactions`)
+        fetch(apiUrl(`/api/announcements/${n.id}/reactions`))
           .then(res => res.ok ? res.json() : null)
           .then(data => {
             if (data && Array.isArray(data.reactions)) {
@@ -114,17 +116,42 @@ const News = () => {
 
   // Cargar noticias en vivo del backend
   React.useEffect(() => {
-    setNewsLoading(true);
-  fetch(apiUrl('/api/announcements'))
-      .then(res => res.ok ? res.json() : null)
-      .then(data => {
+    const loadNews = async () => {
+      try {
+        setNewsLoading(true);
+        const resp = await fetch(apiUrl('/api/announcements'));
+        
+        // Verificar si la respuesta es HTML (error)
+        const contentType = resp.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          console.error('[News] Respuesta no es JSON:', contentType);
+          throw new Error('El servidor devolvió HTML en lugar de JSON');
+        }
+        
+        if (!resp.ok) {
+          throw new Error(`Error HTTP: ${resp.status}`);
+        }
+        
+        const data = await resp.json();
         if (data && Array.isArray(data.announcements)) {
           setNews(data.announcements.reverse());
-            setFilteredNews(data.announcements.reverse());
+          setFilteredNews(data.announcements.reverse());
+        } else {
+          console.warn('[News] Formato de datos inesperado:', data);
+          setNews([]);
+          setFilteredNews([]);
         }
+      } catch (e) {
+        console.error('[News] Error cargando noticias:', e);
+        setMsg({ type: 'error', text: 'Error al cargar noticias: ' + e.message });
+        setNews([]);
+        setFilteredNews([]);
+      } finally {
         setNewsLoading(false);
-      })
-      .catch(() => setNewsLoading(false));
+      }
+    };
+    
+    loadNews();
   }, []);
   // Buscador y filtros
   React.useEffect(() => {
@@ -146,7 +173,7 @@ const News = () => {
   // Al enviar reacción, solo actualizar desde backend
   const handleReaction = async (newsId, emoji) => {
     if (userReactions[newsId]?.[emoji]) return;
-    const resp = await fetch(`/api/announcements/${newsId}/reactions`, {
+    const resp = await fetch(apiUrl(`/api/announcements/${newsId}/reactions`), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId: user.id, emoji })
@@ -165,7 +192,7 @@ const News = () => {
       return;
     }
     if(commentInput.trim()){
-      const resp = await fetch(`/api/announcements/${newsId}/comments`, {
+      const resp = await fetch(apiUrl(`/api/announcements/${newsId}/comments`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: user.id, username: user.username, text: commentInput })
@@ -601,7 +628,7 @@ const News = () => {
                   {canEdit && <button style={{background:'#2ecc71',color:'#fff',border:'none',borderRadius:8,padding:'0.5rem 1.2rem',fontWeight:700,fontSize:'1rem',cursor:'pointer',boxShadow:'0 2px 8px #2ecc7144'}} onClick={()=>alert('Función editar próximamente')}>Editar</button>}
                   {canDelete && <button style={{background:'#e74c3c',color:'#fff',border:'none',borderRadius:8,padding:'0.5rem 1.2rem',fontWeight:700,fontSize:'1rem',cursor:'pointer',boxShadow:'0 2px 8px #e74c3c44'}} onClick={async()=>{
                     if(window.confirm('¿Seguro que quieres eliminar esta noticia?')){
-                      const resp = await fetch(`/api/announcements/${selectedNews.id}`, {
+                      const resp = await fetch(apiUrl(`/api/announcements/${selectedNews.id}`), {
                         method: 'DELETE',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ userId: user.id })
