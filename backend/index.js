@@ -795,6 +795,47 @@ app.get('/api/proxy/dni/test/:discordId', async (req, res) => {
   }
 });
 
+// Endpoint para verificar si un DNI existe (más simple)
+app.get('/api/proxy/dni/check/:discordId', async (req, res) => {
+  const { discordId } = req.params;
+  const DNI_BOT_URL = process.env.DNI_BOT_URL || 'http://37.27.21.91:5021';
+  
+  console.log(`[DNI CHECK] Verificando existencia de DNI para DiscordID: ${discordId}`);
+  
+  try {
+    const fetchDNI = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+    
+    const response = await fetchDNI(`${DNI_BOT_URL}/dni/${encodeURIComponent(discordId)}/exportar`, {
+      method: 'HEAD',
+      timeout: 5000,
+      headers: {
+        'User-Agent': 'SpainRP-Web/1.0',
+        'Accept': 'image/png,image/*,*/*'
+      }
+    });
+    
+    const exists = response.ok;
+    console.log(`[DNI CHECK] DNI ${exists ? 'EXISTE' : 'NO EXISTE'} para DiscordID: ${discordId}`);
+    
+    res.json({
+      exists: exists,
+      discordId: discordId,
+      status: response.status,
+      message: exists ? 'DNI encontrado' : 'DNI no encontrado',
+      timestamp: new Date().toISOString()
+    });
+  } catch (e) {
+    console.error(`[DNI CHECK] Error:`, e.message);
+    res.json({
+      exists: false,
+      discordId: discordId,
+      error: e.message,
+      message: 'Error verificando DNI',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // ===== PROXY BLACKMARKET =====
 const BLACKMARKET_BOT_URL = process.env.BLACKMARKET_BOT_URL || 'http://37.27.21.91:5021';
 
