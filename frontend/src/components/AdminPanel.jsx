@@ -34,7 +34,8 @@ import {
   FaChevronUp,
   FaChevronRight,
   FaChevronLeft,
-  FaBars
+  FaBars,
+  FaTools
 } from 'react-icons/fa';
 import MaintenanceControl from './MaintenanceControl';
 // Toast feedback mejorado
