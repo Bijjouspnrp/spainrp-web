@@ -19,49 +19,56 @@ const staffMembers = [
     role: "BijjouPro08",
     robloxUserId: "BijjouPro08", // Cambia este ID por el del usuario de Roblox
     color: "#ffd700",
-    icon: <FaCrown />
+    icon: <FaCrown />,
+    medals: ["👑 Dueño", "⭐ Fundador"]
   },
   {
     name: "Co-Dueño",
     role: "Mimi_YTgamer100",
     robloxUserId: "1400001231", // Cambia este ID por el del usuario de Roblox
     color: "#ff6b6b",
-    icon: <FaShieldAlt />
+    icon: <FaShieldAlt />,
+    medals: ["🛡️ Co-Dueño", "⭐ Fundador"]
   },
   {
     name: "Co-Dueño",
     role: "Sergiojpni",
     robloxUserId: "Sergiojpni",
     color: "#4ecdc4",
-    icon: <FaUserTie />
+    icon: <FaUserTie />,
+    medals: ["🛡️ Co-Dueño", "⭐ Fundador"]
   },
   {
     name: "Fundador",
     role: "gamessss5025",
     robloxUserId: "gamessss5025",
     color: "#030968ff",
-    icon: <FaUsers />
+    icon: <FaUsers />,
+    medals: ["⭐ Fundador", "🏆 OG"]
   },
   {
     name: "Asistente de Fundación",
     role: "XxBoy931xX",
     robloxUserId: "XxBoy931xX",
     color: "#96ceb4",
-    icon: <FaUsers />
+    icon: <FaUsers />,
+    medals: ["🏆 OG", "💰 Inversor", "🤝 Apoyo al Servidor"]
   },
   {
     name: "Asistente de Fundación",
     role: "JoSEyALEx3000",
     robloxUserId: "JoSEyALEx3000",
     color: "#feca57",
-    icon: <FaUsers />
+    icon: <FaUsers />,
+    medals: ["🏆 OG", "💰 Inversor", "🤝 Apoyo al Servidor"]
   },
   {
     name: "Coordinador",
     role: "EricPGarrido",
     robloxUserId: "EricPGarrido",
     color: "#9b59b6",
-    icon: <FaUsers />
+    icon: <FaUsers />,
+    medals: ["📈 Actividad", "💎 Lealtad al Servidor"]
   }
 ];
 
@@ -197,6 +204,16 @@ function StaffMemberCard({ member, resolvedId, getRoleColor }) {
       <div className="staff-info">
         <h3 className="staff-name">{member.name}</h3>
         <span className="staff-role">{member.role}</span>
+        
+        {/* Medallas */}
+        <div className="staff-medals">
+          {member.medals && member.medals.map((medal, index) => (
+            <span key={index} className="staff-medal">
+              {medal}
+            </span>
+          ))}
+        </div>
+        
         {resolvedId && (
           <small style={{ color: '#666', fontSize: '0.8rem' }}>
             ID: {resolvedId}

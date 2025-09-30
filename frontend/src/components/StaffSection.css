@@ -124,6 +124,55 @@
   padding: 0.25rem 0.75rem;
   border-radius: 12px;
   display: inline-block;
+  margin-bottom: 0.75rem;
+}
+
+.staff-medals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.staff-medal {
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  color: #1a1a1a;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.3rem 0.6rem;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.2);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: all 0.3s ease;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.staff-medal:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+/* Medallas especiales con colores únicos */
+.staff-medal:nth-child(1) {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
+  border-color: rgba(255, 107, 107, 0.3);
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.2);
+}
+
+.staff-medal:nth-child(2) {
+  background: linear-gradient(135deg, #4ecdc4 0%, #7ed6d0 100%);
+  border-color: rgba(78, 205, 196, 0.3);
+  box-shadow: 0 2px 8px rgba(78, 205, 196, 0.2);
+}
+
+.staff-medal:nth-child(3) {
+  background: linear-gradient(135deg, #9b59b6 0%, #b370d1 100%);
+  border-color: rgba(155, 89, 182, 0.3);
+  box-shadow: 0 2px 8px rgba(155, 89, 182, 0.2);
 }
 
 .staff-cta {
@@ -181,6 +230,15 @@
 
   .staff-role {
     font-size: 0.8rem;
+  }
+
+  .staff-medals {
+    gap: 0.3rem;
+  }
+
+  .staff-medal {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
   }
 }
 
