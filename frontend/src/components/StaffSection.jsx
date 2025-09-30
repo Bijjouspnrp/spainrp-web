@@ -52,7 +52,7 @@ const staffMembers = [
   {
     name: "Vacio",
     role: "Vacio",
-    robloxUserId: "",
+    robloxUserId: "Vacio",
     color: "#feca57",
     icon: <FaUsers />
   }
@@ -74,6 +74,11 @@ function useRobloxUserId(identifier) {
   const [resolvedId, setResolvedId] = useState(null);
 
   useEffect(() => {
+    if (!identifier || identifier.trim() === '') {
+      setResolvedId(null);
+      return;
+    }
+    
     if (/^\d+$/.test(identifier)) {
       setResolvedId(identifier);
       return;
@@ -122,6 +127,11 @@ const StaffSection = () => {
       await Promise.all(
         staffMembers.map(async member => {
           const identifier = member.robloxUserId;
+          if (!identifier || identifier.trim() === '') {
+            results[identifier] = null;
+            return;
+          }
+          
           if (/^\d+$/.test(identifier)) {
             results[identifier] = identifier;
           } else {
