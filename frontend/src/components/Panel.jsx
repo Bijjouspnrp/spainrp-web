@@ -957,7 +957,7 @@ const Panel = () => {
           <div className="modal">
             <h3>Términos y Servicio</h3>
             <p>
-              Al usar el panel SpainRP aceptas los <a href="/terms">Términos y Servicio</a> y la <a href="/privacy">Política de Privacidad</a>.
+              Al usar el panel SpainRP aceptas los <a href="/terms">Términos y Servicio</a> y la <a href="/terms#privacy">Política de Privacidad</a>.
               El uso indebido puede conllevar sanciones o expulsión del servidor.
             </p>
             <button 
