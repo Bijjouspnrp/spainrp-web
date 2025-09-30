@@ -3,25 +3,10 @@ const express = require('express');
 const router = express.Router();
 // Middleware para parsear JSON en todas las rutas de este router
 router.use(express.json());
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
-const dbPath = path.join(__dirname, '../spainrp.db');
+const { getDatabase } = require('../db/database');
 
-// Crear tabla si no existe
-const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error('[TINDER] Error abriendo base de datos:', err);
-  } else {
-    console.log('[TINDER] Base de datos conectada correctamente');
-  }
-});
-
-// Configurar timeout y modo WAL para mejor rendimiento
-db.run("PRAGMA busy_timeout=30000");
-db.run("PRAGMA journal_mode=WAL");
-db.run("PRAGMA synchronous=NORMAL");
-db.run("PRAGMA cache_size=1000");
-db.run("PRAGMA temp_store=MEMORY");
+// Usar conexión centralizada de base de datos
+const db = getDatabase();
 db.run(`CREATE TABLE IF NOT EXISTS tinder_profiles (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   discord_id TEXT NOT NULL,
