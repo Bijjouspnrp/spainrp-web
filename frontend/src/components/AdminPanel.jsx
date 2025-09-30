@@ -703,10 +703,14 @@ function OverviewTab() {
     memberCount: 0,
     onlineCount: 0,
     bannedCount: 0,
-    todayActions: 0
+    todayActions: 0,
+    mutedCount: 0,
+    channelsCount: 0,
+    rolesCount: 0
   });
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [lastUpdate, setLastUpdate] = useState(new Date());
 
   useEffect(() => {
     fetchStats();
@@ -715,22 +719,28 @@ function OverviewTab() {
 
   const fetchStats = async () => {
     try {
-      const [memberRes, widgetRes, bannedRes] = await Promise.all([
+      const [memberRes, widgetRes, bannedRes, rolesRes] = await Promise.all([
         fetch(apiUrl('/api/membercount')),
         fetch(apiUrl('/api/widget')),
-        fetch(apiUrl('/api/discord/banned'))
+        fetch(apiUrl('/api/discord/banned')),
+        fetch(apiUrl('/api/discord/roles'))
       ]);
       
       const memberData = await memberRes.json();
       const widgetData = await widgetRes.json();
       const bannedData = await bannedRes.json();
+      const rolesData = await rolesRes.json();
       
       setStats({
         memberCount: memberData.memberCount || 0,
         onlineCount: widgetData.presence_count || 0,
-        bannedCount: bannedData.bans?.length || 0,
-        todayActions: 0 // Se calculará desde los logs
+        bannedCount: bannedData.count || bannedData.bans?.length || 0,
+        todayActions: logs.length,
+        mutedCount: 0, // Se calculará si hay endpoint específico
+        channelsCount: 0, // Se calculará si hay endpoint específico
+        rolesCount: rolesData.roles?.length || 0
       });
+      setLastUpdate(new Date());
     } catch (err) {
       console.error('Error fetching stats:', err);
     }
@@ -752,6 +762,15 @@ function OverviewTab() {
       <div className="tab-header">
         <h2><FaChartLine /> Resumen del Servidor</h2>
         <p>Estadísticas generales y estado del servidor</p>
+        <div className="header-actions">
+          <button 
+            onClick={fetchStats} 
+            className="btn-secondary" 
+            disabled={loading}
+          >
+            <FaCog /> {loading ? 'Actualizando...' : 'Actualizar'}
+          </button>
+        </div>
       </div>
       
       <div className="stats-grid">
@@ -796,6 +815,39 @@ function OverviewTab() {
             <h3>Acciones Hoy</h3>
             <p className="stat-value">{loading ? 'Cargando...' : logs.length}</p>
             <span className="stat-label">Moderaciones</span>
+        </div>
+        </div>
+
+        <div className="stat-card">
+          <div className="stat-icon">
+            <FaUserShield />
+        </div>
+          <div className="stat-content">
+            <h3>Roles</h3>
+            <p className="stat-value">{loading ? 'Cargando...' : stats.rolesCount}</p>
+            <span className="stat-label">Roles del servidor</span>
+        </div>
+        </div>
+
+        <div className="stat-card">
+          <div className="stat-icon">
+            <FaVolumeMute />
+        </div>
+          <div className="stat-content">
+            <h3>Muteados</h3>
+            <p className="stat-value">{loading ? 'Cargando...' : stats.mutedCount}</p>
+            <span className="stat-label">Usuarios silenciados</span>
+        </div>
+        </div>
+
+        <div className="stat-card">
+          <div className="stat-icon">
+            <FaCog />
+        </div>
+          <div className="stat-content">
+            <h3>Última Actualización</h3>
+            <p className="stat-value">{loading ? 'Cargando...' : lastUpdate.toLocaleTimeString()}</p>
+            <span className="stat-label">Datos en tiempo real</span>
         </div>
         </div>
       </div>
@@ -908,17 +960,17 @@ function ModerationTab() {
     setResult('');
     const ids = massIds.split(',').map(id => id.trim()).filter(Boolean);
     try {
-      const res = await fetch(apiUrl('/api/discord/mass'), {
+      const res = await fetch(apiUrl('/api/discord/mass-action'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userIds: ids, action: massAction })
+        body: JSON.stringify({ userIds: ids, action: massAction, reason: reason })
       });
       const data = await res.json();
-      if (data.results) {
+      if (data.success) {
         const results = data.results.map(r => 
           `${r.userId}: ${r.success ? `✅ ${r.action}` : `❌ ${r.error}`}`
         ).join('\n');
-        setResult(`Resultados:\n${results}`);
+        setResult(`✅ Acción masiva completada:\n${data.successful}/${data.total} exitosos\n\nResultados:\n${results}`);
       } else {
         setResult(`❌ ${data.error}`);
       }
@@ -1066,7 +1118,17 @@ function ModerationTab() {
               >
                 <option value="kick">Kickear</option>
                 <option value="ban">Banear</option>
+                <option value="mute">Mutear</option>
               </select>
+            </div>
+            <div className="form-group">
+              <label>Motivo (opcional)</label>
+              <input 
+                type="text" 
+                value={reason} 
+                onChange={e => setReason(e.target.value)}
+                placeholder="Motivo de la acción masiva" 
+              />
             </div>
             <button type="submit" className="btn-primary" disabled={loading}>
               <FaGavel /> {loading ? 'Ejecutando...' : 'Ejecutar Acción Masiva'}
@@ -1528,6 +1590,7 @@ function LogsTab() {
   const [bannedList, setBannedList] = useState([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(false);
+  const [autoRefresh, setAutoRefresh] = useState(false);
 
   const fetchLogs = async () => {
     setLoading(true);
@@ -1540,6 +1603,14 @@ function LogsTab() {
     }
     setLoading(false);
   };
+
+  // Auto-refresh cada 30 segundos si está activado
+  useEffect(() => {
+    if (autoRefresh) {
+      const interval = setInterval(fetchLogs, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [autoRefresh]);
 
   const fetchCommandLogs = async () => {
     setLoading(true);
@@ -1597,18 +1668,35 @@ function LogsTab() {
               <button onClick={fetchLogs} className="btn-primary" disabled={loading}>
                 <FaHistory /> {loading ? 'Cargando...' : 'Cargar Logs'}
               </button>
+              <button 
+                onClick={() => setAutoRefresh(!autoRefresh)} 
+                className={`btn-secondary ${autoRefresh ? 'active' : ''}`}
+              >
+                <FaBell /> {autoRefresh ? 'Auto-refresh ON' : 'Auto-refresh OFF'}
+              </button>
             </div>
             <div className="logs-list">
               {logs.length > 0 ? (
-                <ul>
+                <div className="logs-grid">
                   {filteredLogs.map((log, i) => (
-                    <li key={i}>
-                      <strong>{log.action}</strong> - {log.user} - {log.target} - {new Date(log.timestamp).toLocaleString()}
-                    </li>
+                    <div key={i} className={`log-item log-${log.action?.toLowerCase() || 'unknown'}`}>
+                      <div className="log-header">
+                        <span className="log-action">{log.action}</span>
+                        <span className="log-time">{new Date(log.timestamp).toLocaleString()}</span>
+                      </div>
+                      <div className="log-content">
+                        <p><strong>Moderador:</strong> {log.user}</p>
+                        <p><strong>Objetivo:</strong> {log.target}</p>
+                        {log.reason && <p><strong>Motivo:</strong> {log.reason}</p>}
+                      </div>
+                    </div>
                   ))}
-                </ul>
+                </div>
               ) : (
-                <p>No hay logs disponibles</p>
+                <div className="no-data">
+                  <FaHistory size={48} />
+                  <p>No hay logs disponibles</p>
+                </div>
               )}
             </div>
           </div>
@@ -1644,16 +1732,47 @@ function LogsTab() {
             </button>
             <div className="logs-list">
               {bannedList.length > 0 ? (
-                <ul>
+                <div className="banned-grid">
                   {bannedList.map((ban, i) => (
-                    <li key={i}>
-                      <strong>{ban.user.username}#{ban.user.discriminator}</strong> ({ban.user.id})
-                      {ban.reason && <span> - Motivo: {ban.reason}</span>}
-                    </li>
+                    <div key={i} className="banned-card">
+                      <div className="banned-avatar">
+                        <img 
+                          src={ban.avatar || `https://cdn.discordapp.com/embed/avatars/${ban.user.discriminator % 5}.png`} 
+                          alt={ban.user.username}
+                          onError={(e) => {
+                            e.target.src = `https://cdn.discordapp.com/embed/avatars/${ban.user.discriminator % 5}.png`;
+                          }}
+                        />
+                      </div>
+                      <div className="banned-info">
+                        <h4>{ban.user.username}#{ban.user.discriminator}</h4>
+                        <p className="banned-id">ID: {ban.user.id}</p>
+                        <p className="banned-reason">
+                          <strong>Motivo:</strong> {ban.reason || 'Sin motivo especificado'}
+                        </p>
+                        <p className="banned-date">
+                          <strong>Baneado:</strong> {new Date(ban.bannedAt).toLocaleString()}
+                        </p>
+                        <div className="banned-actions">
+                          <button 
+                            className="btn-secondary btn-sm"
+                            onClick={() => {
+                              navigator.clipboard.writeText(ban.user.id);
+                              showToast('ID copiado al portapapeles');
+                            }}
+                          >
+                            <FaCopy /> Copiar ID
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   ))}
-                </ul>
+                </div>
               ) : (
-                <p>No hay usuarios baneados</p>
+                <div className="no-data">
+                  <FaBan size={48} />
+                  <p>No hay usuarios baneados</p>
+                </div>
               )}
             </div>
           </div>
