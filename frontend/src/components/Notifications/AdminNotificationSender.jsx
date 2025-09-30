@@ -22,6 +22,7 @@ const AdminNotificationSender = ({ isOpen, onClose }) => {
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
 
   const notificationTypes = [
     { value: 'info', label: 'Información', icon: 'ℹ️', color: '#3b82f6' },
@@ -51,6 +52,7 @@ const AdminNotificationSender = ({ isOpen, onClose }) => {
 
     setLoading(true);
     setSuccess(false);
+    setError('');
 
     try {
       const payload = {
@@ -67,6 +69,9 @@ const AdminNotificationSender = ({ isOpen, onClose }) => {
       });
 
       if (response.ok) {
+        const data = await response.json();
+        console.log('[ADMIN-NOTIFICATIONS] Notificación enviada:', data);
+        
         setSuccess(true);
         setFormData({
           title: '',
@@ -82,11 +87,12 @@ const AdminNotificationSender = ({ isOpen, onClose }) => {
           onClose();
         }, 2000);
       } else {
-        throw new Error('Error enviando notificación');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error enviando notificación');
       }
     } catch (error) {
       console.error('[ADMIN-NOTIFICATIONS] Error:', error);
-      alert('Error enviando notificación. Intenta de nuevo.');
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -94,6 +100,7 @@ const AdminNotificationSender = ({ isOpen, onClose }) => {
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    if (error) setError(''); // Limpiar error al cambiar el formulario
   };
 
   if (!isOpen) return null;
@@ -194,6 +201,27 @@ const AdminNotificationSender = ({ isOpen, onClose }) => {
           >
             <FaCheck />
             Notificación enviada exitosamente
+          </motion.div>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            style={{
+              background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+              color: 'white',
+              padding: '12px 16px',
+              borderRadius: '12px',
+              marginBottom: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontWeight: '600'
+            }}
+          >
+            ❌ {error}
           </motion.div>
         )}
 

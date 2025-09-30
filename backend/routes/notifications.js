@@ -193,11 +193,17 @@ router.post('/send', async (req, res) => {
       targetUserId = targetUser;
     }
 
-    // Crear notificación
+    // Determinar el user_id correcto según el target
+    let finalUserId = targetUserId;
+    if (target === 'all' || target === 'online') {
+      finalUserId = null; // Notificación global
+    }
+
+    // Crear notificación (solo una vez)
     const notificationId = await new Promise((resolve, reject) => {
       db.run(
         'INSERT INTO notifications (user_id, title, message, type, priority) VALUES (?, ?, ?, ?, ?)',
-        [targetUserId, title, message, type || 'info', priority || 'normal'],
+        [finalUserId, title, message, type || 'info', priority || 'normal'],
         function(err) {
           if (err) reject(err);
           else resolve(this.lastID);
@@ -211,10 +217,11 @@ router.post('/send', async (req, res) => {
       message,
       type,
       target,
-      targetUser: targetUserId
+      targetUser: finalUserId,
+      isGlobal: finalUserId === null
     });
 
-    // Crear notificación en la base de datos
+    // Crear objeto de notificación para WebSocket
     const notification = {
       id: notificationId,
       title,
@@ -224,24 +231,9 @@ router.post('/send', async (req, res) => {
       timestamp: new Date().toISOString()
     };
 
-    // Si es para todos los usuarios, crear notificación global y enviar por WebSocket
-    if (target === 'all' || target === 'online') {
-      // Crear notificación global (user_id = NULL)
-      await new Promise((resolve, reject) => {
-        db.run(
-          'INSERT INTO notifications (user_id, title, message, type, priority) VALUES (NULL, ?, ?, ?, ?)',
-          [title, message, type || 'info', priority || 'normal'],
-          function(err) {
-            if (err) reject(err);
-            else resolve();
-          }
-        );
-      });
-
-      // Enviar por WebSocket a todos los usuarios conectados
-      if (global.broadcastNotification) {
-        global.broadcastNotification(notification);
-      }
+    // Enviar por WebSocket si es para todos los usuarios
+    if ((target === 'all' || target === 'online') && global.broadcastNotification) {
+      global.broadcastNotification(notification);
     }
 
     res.json({
