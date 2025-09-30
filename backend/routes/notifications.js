@@ -169,11 +169,18 @@ router.post('/send', async (req, res) => {
     const { title, message, type, target, targetUser, priority } = req.body;
 
     // Verificar permisos de administrador
-    if (!req.user || !req.user.roles?.some(r => 
-      r.name?.toLowerCase().includes('admin') || 
-      r.name?.toLowerCase().includes('staff') || 
-      r.name?.toLowerCase().includes('moderador')
-    )) {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Usuario no autenticado' });
+    }
+
+    // Lista de IDs de administradores (puedes añadir más IDs aquí)
+    const adminUserIds = [
+      '710112055985963090', // bijjoupro08
+      // Añade más IDs de administradores aquí
+    ];
+
+    if (!adminUserIds.includes(userId)) {
+      console.log(`[NOTIFICATIONS] Usuario ${userId} no está en la lista de administradores`);
       return res.status(403).json({ error: 'No tienes permisos de administrador' });
     }
 
