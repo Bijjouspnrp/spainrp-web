@@ -1868,15 +1868,40 @@ app.put('/api/announcements/:id', express.json(), async (req, res) => {
 app.post('/api/announcements', uploadAnnouncements.fields([
   { name: 'images', maxCount: 5 }
 ]), async (req, res) => {
-  // Verificación de rol Discord vía bot API
+  // Verificación de rol Discord usando discordClient local
   try {
     const userId = req.body.userId || req.body.authorId || req.body.author || req.body.authorName;
     if (!userId) return res.status(400).json({ error: 'Falta userId para verificación de rol' });
-    const BOT_API_URL = process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/';
-    const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-    const resp = await fetch(`${BOT_API_URL}/api/discord/canpostnews/${encodeURIComponent(userId)}`);
-    const data = await resp.json();
-    if (!data.canPost) return res.status(403).json({ error: 'No tienes permisos para publicar noticias' });
+    
+    // Verificar si el bot de Discord está disponible
+    if (!discordClient.readyAt) {
+      console.warn('[ANNOUNCEMENTS] ⚠️ Bot de Discord no disponible');
+      return res.status(503).json({ error: 'Bot de Discord no disponible' });
+    }
+    
+    // Verificar permisos usando discordClient local
+    const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
+    const reporteroRoleId = process.env.REPORTERO_ROLE_ID || '1384340819590512700';
+    const guild = discordClient.guilds.cache.get(guildId);
+    if (!guild) {
+      console.error(`[ANNOUNCEMENTS] ❌ Servidor no encontrado: ${guildId}`);
+      return res.status(404).json({ error: 'Servidor no encontrado' });
+    }
+    
+    await guild.members.fetch();
+    const member = guild.members.cache.get(userId);
+    if (!member) {
+      console.error(`[ANNOUNCEMENTS] ❌ Usuario no encontrado: ${userId}`);
+      return res.status(404).json({ error: 'Usuario no encontrado en el servidor' });
+    }
+    
+    const canPost = member.roles.cache.has(reporteroRoleId);
+    if (!canPost) {
+      console.warn(`[ANNOUNCEMENTS] ❌ Usuario ${userId} no tiene rol de reportero`);
+      return res.status(403).json({ error: 'No tienes permisos para publicar noticias' });
+    }
+    
+    console.log(`[ANNOUNCEMENTS] ✅ Usuario ${userId} autorizado para publicar noticias`);
     // --- lógica original ---
     const { title, body, authorName, company, tags } = req.body || {};
     let imageUrls = [];
