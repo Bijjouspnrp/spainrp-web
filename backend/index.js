@@ -706,6 +706,12 @@ const handleDNIExport = async (req, res) => {
         console.error(`[DNI PROXY] No se pudo leer el error del bot`);
       }
       
+      // Si es 404, usar fallback de demostración
+      if (response.status === 404) {
+        console.log(`[DNI PROXY] Usando fallback de demostración para ${discordId}`);
+        return handleDNIDemo(req, res);
+      }
+      
       return res.status(response.status).json({ 
         error: 'No existe ese DNI o error en el bot externo',
         status: response.status,
@@ -795,9 +801,10 @@ app.get('/api/proxy/dni/test/:discordId', async (req, res) => {
   }
 });
 
-// Endpoint para crear un DNI de prueba (solo para desarrollo)
-app.get('/api/proxy/dni/demo/:discordId', async (req, res) => {
+// Función para generar DNI de demostración
+const handleDNIDemo = async (req, res) => {
   const { discordId } = req.params;
+  const isHeadRequest = req.method === 'HEAD';
   
   console.log(`[DNI DEMO] Generando DNI de demostración para DiscordID: ${discordId}`);
   
@@ -884,6 +891,14 @@ app.get('/api/proxy/dni/demo/:discordId', async (req, res) => {
     
     console.log(`[DNI DEMO] DNI de demostración generado (${buffer.length} bytes) para ${discordId}`);
     
+    // Para HEAD, solo enviar headers
+    if (isHeadRequest) {
+      console.log(`[DNI DEMO] Enviando headers para HEAD request`);
+      res.set('Content-Type', 'image/png');
+      res.set('Content-Length', buffer.length);
+      return res.status(200).end();
+    }
+    
     res.set('Content-Type', 'image/png');
     res.set('Content-Length', buffer.length);
     res.send(buffer);
@@ -896,7 +911,11 @@ app.get('/api/proxy/dni/demo/:discordId', async (req, res) => {
       discordId: discordId
     });
   }
-});
+};
+
+// Endpoint para crear un DNI de prueba (solo para desarrollo)
+app.get('/api/proxy/dni/demo/:discordId', handleDNIDemo);
+app.head('/api/proxy/dni/demo/:discordId', handleDNIDemo);
 
 // ===== PROXY BLACKMARKET =====
 const BLACKMARKET_BOT_URL = process.env.BLACKMARKET_BOT_URL || 'http://37.27.21.91:5021';
