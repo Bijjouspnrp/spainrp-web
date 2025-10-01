@@ -224,16 +224,28 @@ app.post('/api/admin/notify-balance-change', async (req, res) => {
     console.log(`📱 User Agent: ${logData.userAgent}`);
     console.log('🚨 ========================================================\n');
 
-    // Aquí puedes agregar el envío de email real
-    // Por ahora solo loggeamos, pero puedes integrar con servicios como:
-    // - Nodemailer + Gmail/SMTP
-    // - SendGrid
-    // - Mailgun
-    // - AWS SES
-    
-    // Ejemplo de estructura de email que se enviaría:
+    // Configurar el transporter de email si no existe
+    if (!mailTransporter) {
+      try {
+        mailTransporter = nodemailer.createTransporter({
+          host: HARDCODED_SMTP.host,
+          port: HARDCODED_SMTP.port,
+          secure: false, // true para 465, false para otros puertos
+          auth: {
+            user: HARDCODED_SMTP.user,
+            pass: HARDCODED_SMTP.pass
+          }
+        });
+        console.log('📧 Transporter de email configurado correctamente');
+      } catch (error) {
+        console.error('❌ Error configurando transporter de email:', error);
+      }
+    }
+
+    // Estructura del email
     const emailData = {
-      to: 'tu-email@ejemplo.com', // Tu email
+      from: `"SpainRP Security" <${HARDCODED_SMTP.user}>`,
+      to: 'bijjou433@gmail.com', // Tu email
       subject: '🚨 ACCIÓN CRÍTICA - Modificación de Saldo SpainRP',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -292,17 +304,33 @@ app.post('/api/admin/notify-balance-change', async (req, res) => {
       `
     };
 
-    // Log del email que se enviaría
-    console.log('📧 Email que se enviaría:', {
-      to: emailData.to,
-      subject: emailData.subject,
-      timestamp: new Date().toISOString()
-    });
+    // Enviar email real
+    let emailSent = false;
+    let emailError = null;
+    
+    if (mailTransporter) {
+      try {
+        const info = await mailTransporter.sendMail(emailData);
+        emailSent = true;
+        console.log('📧 ✅ Email enviado correctamente:', {
+          messageId: info.messageId,
+          to: emailData.to,
+          timestamp: new Date().toISOString()
+        });
+      } catch (error) {
+        emailError = error.message;
+        console.error('📧 ❌ Error enviando email:', error);
+      }
+    } else {
+      console.warn('📧 ⚠️ Transporter de email no configurado');
+    }
 
     res.json({ 
       success: true, 
       message: 'Notificación registrada correctamente',
       logged: true,
+      emailSent: emailSent,
+      emailError: emailError,
       emailData: emailData // Para debugging
     });
 
