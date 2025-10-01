@@ -198,6 +198,120 @@ app.get('/cookies', (req, res) => {
   `);
 });
 
+// Ruta para notificaciones de cambios de saldo críticos
+app.post('/api/admin/notify-balance-change', async (req, res) => {
+  try {
+    const logData = req.body;
+    
+    // Validar datos requeridos
+    if (!logData.adminId || !logData.targetUserId) {
+      return res.status(400).json({ error: 'Datos requeridos faltantes' });
+    }
+
+    // Obtener IP real del cliente
+    const clientIP = req.ip || req.connection.remoteAddress || req.socket.remoteAddress || 'Unknown';
+    logData.ip = clientIP;
+
+    // Log en consola del servidor
+    console.log('\n🚨 ===== NOTIFICACIÓN CRÍTICA - MODIFICACIÓN DE SALDO =====');
+    console.log(`👤 Administrador: ${logData.adminUsername} (${logData.adminId})`);
+    console.log(`🎯 Usuario objetivo: ${logData.targetUserId}`);
+    console.log(`💰 Cambios de saldo:`);
+    console.log(`   Efectivo: ${logData.previousCash}€ → ${logData.newCash}€ (${logData.cashChange >= 0 ? '+' : ''}${logData.cashChange}€)`);
+    console.log(`   Banco: ${logData.previousBank}€ → ${logData.newBank}€ (${logData.bankChange >= 0 ? '+' : ''}${logData.bankChange}€)`);
+    console.log(`🌐 IP: ${logData.ip}`);
+    console.log(`🕐 Timestamp: ${logData.timestamp}`);
+    console.log(`📱 User Agent: ${logData.userAgent}`);
+    console.log('🚨 ========================================================\n');
+
+    // Aquí puedes agregar el envío de email real
+    // Por ahora solo loggeamos, pero puedes integrar con servicios como:
+    // - Nodemailer + Gmail/SMTP
+    // - SendGrid
+    // - Mailgun
+    // - AWS SES
+    
+    // Ejemplo de estructura de email que se enviaría:
+    const emailData = {
+      to: 'tu-email@ejemplo.com', // Tu email
+      subject: '🚨 ACCIÓN CRÍTICA - Modificación de Saldo SpainRP',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0;">
+            <h1 style="margin: 0; font-size: 24px;">🚨 NOTIFICACIÓN CRÍTICA</h1>
+            <p style="margin: 10px 0 0 0; font-size: 16px;">Modificación de Saldo de Usuario</p>
+          </div>
+          
+          <div style="background: #f8f9fa; padding: 20px; border: 1px solid #dee2e6;">
+            <h2 style="color: #dc2626; margin-top: 0;">📊 Detalles de la Operación</h2>
+            
+            <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #ef4444;">
+              <h3 style="margin-top: 0; color: #374151;">👤 Administrador</h3>
+              <p style="margin: 5px 0;"><strong>Usuario:</strong> ${logData.adminUsername}</p>
+              <p style="margin: 5px 0;"><strong>ID Discord:</strong> ${logData.adminId}</p>
+              <p style="margin: 5px 0;"><strong>IP:</strong> ${logData.ip}</p>
+            </div>
+            
+            <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #3b82f6;">
+              <h3 style="margin-top: 0; color: #374151;">🎯 Usuario Afectado</h3>
+              <p style="margin: 5px 0;"><strong>ID Discord:</strong> ${logData.targetUserId}</p>
+            </div>
+            
+            <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #10b981;">
+              <h3 style="margin-top: 0; color: #374151;">💰 Cambios de Saldo</h3>
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;"><strong>Efectivo:</strong></td>
+                  <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${logData.previousCash}€ → ${logData.newCash}€</td>
+                  <td style="padding: 8px; border-bottom: 1px solid #e5e7eb; color: ${logData.cashChange >= 0 ? '#10b981' : '#ef4444'};">
+                    ${logData.cashChange >= 0 ? '+' : ''}${logData.cashChange}€
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px;"><strong>Banco:</strong></td>
+                  <td style="padding: 8px;">${logData.previousBank}€ → ${logData.newBank}€</td>
+                  <td style="padding: 8px; color: ${logData.bankChange >= 0 ? '#10b981' : '#ef4444'};">
+                    ${logData.bankChange >= 0 ? '+' : ''}${logData.bankChange}€
+                  </td>
+                </tr>
+              </table>
+            </div>
+            
+            <div style="background: white; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+              <h3 style="margin-top: 0; color: #374151;">🕐 Información Técnica</h3>
+              <p style="margin: 5px 0;"><strong>Timestamp:</strong> ${new Date(logData.timestamp).toLocaleString('es-ES')}</p>
+              <p style="margin: 5px 0;"><strong>User Agent:</strong> ${logData.userAgent}</p>
+              <p style="margin: 5px 0;"><strong>Severidad:</strong> <span style="color: #ef4444; font-weight: bold;">CRÍTICA</span></p>
+            </div>
+          </div>
+          
+          <div style="background: #ef4444; color: white; padding: 15px; text-align: center; border-radius: 0 0 10px 10px;">
+            <p style="margin: 0; font-weight: bold;">⚠️ Esta acción ha sido registrada y será monitoreada</p>
+          </div>
+        </div>
+      `
+    };
+
+    // Log del email que se enviaría
+    console.log('📧 Email que se enviaría:', {
+      to: emailData.to,
+      subject: emailData.subject,
+      timestamp: new Date().toISOString()
+    });
+
+    res.json({ 
+      success: true, 
+      message: 'Notificación registrada correctamente',
+      logged: true,
+      emailData: emailData // Para debugging
+    });
+
+  } catch (error) {
+    console.error('❌ Error en notificación de balance:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
 // --- SOCKET.IO para notificaciones en tiempo real ---
 const http = require('http');
 const server = http.createServer(app);

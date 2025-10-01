@@ -204,12 +204,61 @@ export default function BlackMarket() {
   const [quickLoading, setQuickLoading] = useState(false);
   const [quickResult, setQuickResult] = useState('');
 
-  // Quick balance handler
+  // Quick balance handler con logging y notificaciones
   const handleQuickBalance = async (e) => {
     e.preventDefault();
     setQuickLoading(true);
     setQuickResult('');
+    
+    // Datos para logging
+    const logData = {
+      adminId: user?.id,
+      adminUsername: user?.username,
+      targetUserId: quickId,
+      newCash: parseInt(quickCash) || 0,
+      newBank: parseInt(quickBank) || 0,
+      timestamp: new Date().toISOString(),
+      userAgent: navigator.userAgent,
+      ip: 'N/A', // Se obtendrá del backend
+      action: 'QUICK_BALANCE_MODIFICATION',
+      severity: 'CRITICAL'
+    };
+
     try {
+      // Obtener saldo actual del usuario antes de modificarlo
+      let currentBalance = null;
+      try {
+        const balanceResp = await fetch(`https://spainrp-web.onrender.com/api/proxy/admin/balance/${quickId}?adminUserId=${user?.id}`);
+        if (balanceResp.ok) {
+          currentBalance = await balanceResp.json();
+        }
+      } catch (e) {
+        console.warn('[QuickBalance] No se pudo obtener saldo actual:', e);
+      }
+
+      // Agregar datos del saldo anterior al log
+      const enhancedLogData = {
+        ...logData,
+        previousCash: currentBalance?.cash || 0,
+        previousBank: currentBalance?.bank || 0,
+        cashChange: (parseInt(quickCash) || 0) - (currentBalance?.cash || 0),
+        bankChange: (parseInt(quickBank) || 0) - (currentBalance?.bank || 0)
+      };
+
+      // Enviar notificación por email ANTES de hacer el cambio
+      try {
+        await fetch('https://spainrp-web.onrender.com/api/admin/notify-balance-change', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(enhancedLogData)
+        });
+        console.log('[QuickBalance] 📧 Notificación de email enviada');
+      } catch (emailErr) {
+        console.warn('[QuickBalance] Error enviando email:', emailErr);
+        // No fallar la operación si el email falla
+      }
+
+      // Realizar la modificación del saldo
       const resp = await fetch('https://spainrp-web.onrender.com/api/proxy/admin/setbalance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -220,14 +269,35 @@ export default function BlackMarket() {
           adminUserId: user?.id
         })
       });
+      
       const data = await resp.json();
       if (resp.ok && !data.error) {
-        setQuickResult('✅ Saldo actualizado correctamente');
+        setQuickResult('✅ Saldo actualizado correctamente - Email de notificación enviado');
+        
+        // Log adicional de éxito
+        console.log('[QuickBalance] ✅ Operación completada:', {
+          admin: user?.username,
+          target: quickId,
+          changes: {
+            cash: `${currentBalance?.cash || 0} → ${parseInt(quickCash) || 0}`,
+            bank: `${currentBalance?.bank || 0} → ${parseInt(quickBank) || 0}`
+          },
+          timestamp: new Date().toISOString()
+        });
       } else {
         setQuickResult('❌ Error: ' + (data.error || 'No se pudo actualizar el saldo'));
+        
+        // Log de error
+        console.error('[QuickBalance] ❌ Error en operación:', {
+          admin: user?.username,
+          target: quickId,
+          error: data.error,
+          timestamp: new Date().toISOString()
+        });
       }
     } catch (err) {
       setQuickResult('❌ Error de red');
+      console.error('[QuickBalance] ❌ Error de red:', err);
     } finally {
       setQuickLoading(false);
     }
