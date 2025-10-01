@@ -252,7 +252,10 @@ app.post('/api/admin/notify-balance-change', async (req, res) => {
       } catch (error) {
         console.error('❌ Error configurando transporter de email:', error);
         console.error('❌ Detalles del error:', error.message);
+        console.error('❌ Stack trace:', error.stack);
       }
+    } else {
+      console.log('📧 Transporter de email ya configurado');
     }
 
     // Estructura del email

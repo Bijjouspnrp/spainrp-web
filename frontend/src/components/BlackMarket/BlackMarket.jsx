@@ -276,7 +276,11 @@ export default function BlackMarket() {
         })
       });
       
+      console.log('[QuickBalance] Respuesta del servidor:', resp.status, resp.statusText);
+      
       const data = await resp.json();
+      console.log('[QuickBalance] Datos de respuesta:', data);
+      
       if (resp.ok && !data.error) {
         setQuickResult('✅ Saldo actualizado correctamente');
         
