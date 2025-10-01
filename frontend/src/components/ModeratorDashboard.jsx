@@ -14,29 +14,46 @@ const ModeratorDashboard = () => {
     const checkModeratorStatus = async () => {
       try {
         const token = localStorage.getItem('token');
+        console.log('[ModeratorDashboard] 🔍 Verificando token:', token ? 'Presente' : 'Ausente');
+        
         if (!token) {
+          console.log('[ModeratorDashboard] ❌ No hay token, usuario no logueado');
           setLoading(false);
           return;
         }
 
         // Obtener información del usuario
-        const userResponse = await fetch('https://spainrp-web.onrender.com/auth/me', {
+        const apiUrl = process.env.REACT_APP_API_URL || 'https://spainrp-oficial.onrender.com';
+        console.log('[ModeratorDashboard] 🌐 Haciendo petición a /auth/me...', apiUrl);
+        const userResponse = await fetch(`${apiUrl}/auth/me`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
 
+        console.log('[ModeratorDashboard] 📡 Respuesta de /auth/me:', {
+          status: userResponse.status,
+          ok: userResponse.ok,
+          statusText: userResponse.statusText
+        });
+
         if (userResponse.ok) {
           const userData = await userResponse.json();
+          console.log('[ModeratorDashboard] 👤 Datos del usuario:', userData);
           setUser(userData.user);
 
           // Verificar si es moderador (esto se haría con una API específica)
           // Por ahora, asumimos que si está logueado es moderador
           // En producción, verificarías contra Discord
+          console.log('[ModeratorDashboard] ✅ Usuario autenticado, permitiendo acceso como moderador');
           setIsModerator(true);
+        } else {
+          console.log('[ModeratorDashboard] ❌ Error en autenticación:', userResponse.status);
+          const errorText = await userResponse.text();
+          console.log('[ModeratorDashboard] ❌ Error details:', errorText);
         }
       } catch (error) {
-        console.error('Error verificando estado de moderador:', error);
+        console.error('[ModeratorDashboard] ❌ Error verificando estado de moderador:', error);
       } finally {
         setLoading(false);
       }
