@@ -1306,11 +1306,268 @@
   transform: none;
 }
 
+/* =============================================================================
+   DISEÑO RESPONSIVE COMPLETO Y MÓVIL
+   ============================================================================= */
+
+/* Header responsive */
+.blackmarket-hack-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  position: relative;
+}
+
+.mobile-menu-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 1001;
+}
+
+.hamburger-line {
+  width: 25px;
+  height: 3px;
+  background: #00ff99;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.mobile-menu-toggle:hover .hamburger-line {
+  background: #FFD700;
+}
+
+.mobile-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+  color: #00ff99;
+  text-shadow: 0 0 8px #00ff99aa;
+}
+
+.mobile-header-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.mobile-inventory-btn,
+.mobile-admin-btn {
+  background: rgba(0, 255, 153, 0.1);
+  border: 1px solid #00ff99;
+  border-radius: 8px;
+  padding: 0.5rem;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+}
+
+.mobile-inventory-btn:hover,
+.mobile-admin-btn:hover {
+  background: rgba(0, 255, 153, 0.2);
+  transform: scale(1.1);
+}
+
+/* Menú móvil lateral */
+.mobile-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 9998;
+  animation: fadeIn 0.3s ease;
+}
+
+.mobile-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100vh;
+  background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+  border-right: 2px solid #00ff99;
+  z-index: 9999;
+  transform: translateX(-100%);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.mobile-menu-open {
+  transform: translateX(0);
+}
+
+.mobile-menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 1rem;
+  border-bottom: 1px solid rgba(0, 255, 153, 0.3);
+  background: rgba(0, 255, 153, 0.1);
+}
+
+.mobile-menu-header h3 {
+  color: #00ff99;
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.mobile-menu-close {
+  background: none;
+  border: none;
+  color: #00ff99;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.mobile-menu-close:hover {
+  background: rgba(0, 255, 153, 0.2);
+  transform: scale(1.1);
+}
+
+.mobile-menu-content {
+  padding: 1rem;
+}
+
+.mobile-menu-section {
+  margin-bottom: 2rem;
+}
+
+.mobile-menu-section h4 {
+  color: #FFD700;
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mobile-menu-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mobile-menu-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 255, 153, 0.2);
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.mobile-menu-tab:hover {
+  background: rgba(0, 255, 153, 0.1);
+  border-color: #00ff99;
+  transform: translateX(5px);
+}
+
+.mobile-menu-tab.active {
+  background: rgba(0, 255, 153, 0.2);
+  border-color: #00ff99;
+  color: #00ff99;
+}
+
+.mobile-menu-tab span {
+  flex: 1;
+}
+
+.mobile-menu-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mobile-menu-action {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: left;
+  width: 100%;
+}
+
+.mobile-menu-action:hover {
+  background: rgba(255, 107, 107, 0.2);
+  border-color: #ff6b6b;
+  transform: translateX(5px);
+}
+
+/* Tabs responsive */
+.blackmarket-hack-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  padding: 0 1rem;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.blackmarket-hack-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.blackmarket-hack-tab {
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+}
+
+/* Lista de items responsive */
+.blackmarket-hack-list {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto 2rem auto;
+  padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 /* Responsive design mejorado */
 @media (max-width: 768px) {
+  .blackmarket-hack-bg {
+    padding: 0;
+  }
+  
+  .blackmarket-hack-header {
+    padding: 0.75rem 1rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+  }
+  
   .blackmarket-hack-item {
     padding: 1rem;
     margin-bottom: 1rem;
+    border-radius: 8px;
   }
   
   .item-header {
@@ -1344,6 +1601,46 @@
   
   .item-description.expanded {
     padding: 0.8rem;
+  }
+  
+  .blackmarket-hack-tabs {
+    margin-bottom: 1rem;
+    padding: 0 0.5rem;
+  }
+  
+  .blackmarket-hack-tab {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* Responsive para tablets */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .blackmarket-hack-list {
+    max-width: 600px;
+  }
+  
+  .blackmarket-hack-item {
+    padding: 1.1rem;
+  }
+  
+  .item-header {
+    gap: 1.2rem;
+  }
+}
+
+/* Responsive para pantallas grandes */
+@media (min-width: 1025px) {
+  .blackmarket-hack-list {
+    max-width: 700px;
+  }
+  
+  .blackmarket-hack-item {
+    padding: 1.25rem;
+  }
+  
+  .item-header {
+    gap: 1.5rem;
   }
 }
 .toast-slide-out {

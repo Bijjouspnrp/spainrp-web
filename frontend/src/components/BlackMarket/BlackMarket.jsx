@@ -399,6 +399,18 @@ export default function BlackMarket() {
     console.log('[BlackMarket] 📍 Referrer:', document.referrer);
     console.log('[BlackMarket] 📍 Timestamp:', new Date().toISOString());
   }, []);
+
+  // Detección de móvil y responsive
+  React.useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   const [showModal, setShowModal] = React.useState(false);
   const [modalItem, setModalItem] = React.useState(null);
   const [showToast, setShowToast] = React.useState(false);
@@ -470,6 +482,29 @@ export default function BlackMarket() {
     }
     setExpandedItems(newExpanded);
   };
+
+  // Funciones para menús móviles
+  const toggleMobileMenu = () => {
+    setShowMobileMenu(!showMobileMenu);
+  };
+
+  const closeMobileMenu = () => {
+    setShowMobileMenu(false);
+  };
+
+  const toggleMobileInventory = () => {
+    setShowMobileInventory(!showMobileInventory);
+    if (isMobile) {
+      setShowMobileMenu(false);
+    }
+  };
+
+  const toggleMobileAdmin = () => {
+    setShowMobileAdmin(!showMobileAdmin);
+    if (isMobile) {
+      setShowMobileMenu(false);
+    }
+  };
   const [authorized, setAuthorized] = React.useState(false);
   const [roleChecking, setRoleChecking] = React.useState(true);
   const [roleToast, setRoleToast] = React.useState('');
@@ -509,6 +544,12 @@ export default function BlackMarket() {
   
   // Estados para descripciones desplegables
   const [expandedItems, setExpandedItems] = useState(new Set());
+  
+  // Estados para responsive y móvil
+  const [isMobile, setIsMobile] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showMobileInventory, setShowMobileInventory] = useState(false);
+  const [showMobileAdmin, setShowMobileAdmin] = useState(false);
 
   // Quick balance handler con logging y notificaciones
   const handleQuickBalance = async (e) => {
@@ -1150,10 +1191,43 @@ if (!user) {
       {roleToast && <div className="role-ok-toast">{roleToast}</div>}
       <DiscordUserBar />
       <div className="blackmarket-hack-header">
-        <FaLock size={32} style={{marginRight:12}} />
-        <span>BLACKMARKET SPAINRP</span>
+        {isMobile && (
+          <button 
+            className="mobile-menu-toggle"
+            onClick={toggleMobileMenu}
+            aria-label="Abrir menú"
+          >
+            <span className="hamburger-line"></span>
+            <span className="hamburger-line"></span>
+            <span className="hamburger-line"></span>
+          </button>
+        )}
+        <FaLock size={isMobile ? 24 : 32} style={{marginRight: isMobile ? 8 : 12}} />
+        <span className={isMobile ? "mobile-title" : ""}>BLACKMARKET SPAINRP</span>
+        {isMobile && (
+          <div className="mobile-header-actions">
+            {user && (
+              <button 
+                className="mobile-inventory-btn"
+                onClick={toggleMobileInventory}
+                title="Inventario"
+              >
+                🎒
+              </button>
+            )}
+            {isAdmin && (
+              <button 
+                className="mobile-admin-btn"
+                onClick={toggleMobileAdmin}
+                title="Admin"
+              >
+                ⚙️
+              </button>
+            )}
+          </div>
+        )}
       </div>
-      {user && (
+      {user && !isMobile && (
         <button
           className="inventory-fab"
           title="Inventario"
@@ -1193,7 +1267,7 @@ if (!user) {
         </button>
       )}
       
-      {isAdmin && (
+      {isAdmin && !isMobile && (
         <>
           <button
             className="admin-fab"
@@ -2002,6 +2076,99 @@ if (!user) {
         <FaSkull size={18} style={{marginRight:6}} />
         <span>Acceso solo para Criminales en SpainRP.</span>
       </div>
+
+      {/* Menú móvil lateral */}
+      {isMobile && (
+        <>
+          {/* Overlay del menú móvil */}
+          {showMobileMenu && (
+            <div 
+              className="mobile-menu-overlay"
+              onClick={closeMobileMenu}
+            />
+          )}
+          
+          {/* Menú lateral móvil */}
+          <div className={`mobile-menu ${showMobileMenu ? 'mobile-menu-open' : ''}`}>
+            <div className="mobile-menu-header">
+              <h3>Menú BlackMarket</h3>
+              <button 
+                className="mobile-menu-close"
+                onClick={closeMobileMenu}
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="mobile-menu-content">
+              <div className="mobile-menu-section">
+                <h4>Navegación</h4>
+                <div className="mobile-menu-tabs">
+                  {ITEMS.map((cat, idx) => (
+                    <button
+                      key={idx}
+                      className={`mobile-menu-tab ${selected === idx ? 'active' : ''}`}
+                      onClick={() => {
+                        setSelected(idx);
+                        closeMobileMenu();
+                      }}
+                    >
+                      {cat.icon}
+                      <span>{cat.category}</span>
+                    </button>
+                  ))}
+                  <button
+                    className={`mobile-menu-tab ${selected === ITEMS.length ? 'active' : ''}`}
+                    onClick={() => {
+                      setSelected(ITEMS.length);
+                      closeMobileMenu();
+                    }}
+                  >
+                    <FaChartLine />
+                    <span>Bolsa Negra</span>
+                  </button>
+                </div>
+              </div>
+              
+              <div className="mobile-menu-section">
+                <h4>Acciones</h4>
+                <div className="mobile-menu-actions">
+                  {user && (
+                    <button 
+                      className="mobile-menu-action"
+                      onClick={toggleMobileInventory}
+                    >
+                      🎒 Inventario
+                    </button>
+                  )}
+                  {isAdmin && (
+                    <>
+                      <button 
+                        className="mobile-menu-action"
+                        onClick={() => {
+                          setShowAdminPanel(true);
+                          closeMobileMenu();
+                        }}
+                      >
+                        ⚙️ Panel Admin
+                      </button>
+                      <button 
+                        className="mobile-menu-action"
+                        onClick={() => {
+                          setShowQuickBalanceWarning(true);
+                          closeMobileMenu();
+                        }}
+                      >
+                        💸 Quick Balance
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Estilos CSS para las animaciones del modal de advertencia */}
       <style>{`
