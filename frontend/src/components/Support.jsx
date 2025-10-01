@@ -33,6 +33,7 @@ import {
   FaCircle,
   FaUserCheck
 } from 'react-icons/fa';
+import io from 'socket.io-client';
 import './Support.css';
 
 const Support = () => {
@@ -45,6 +46,10 @@ const Support = () => {
   const [moderatorOnline, setModeratorOnline] = useState(true);
   const [userName, setUserName] = useState('');
   const [showNameInput, setShowNameInput] = useState(true);
+  const [socket, setSocket] = useState(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [currentChatId, setCurrentChatId] = useState(null);
+  const [user, setUser] = useState(null);
 
   // Detección de móvil
   useEffect(() => {
@@ -57,62 +62,253 @@ const Support = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Simular mensajes de moderadores
+  // Obtener información del usuario
   useEffect(() => {
-    if (showLiveChat && chatMessages.length === 0) {
-      // Mensaje de bienvenida automático
-      setTimeout(() => {
-        addMessage('moderator', '¡Hola! Soy un moderador de SpainRP. ¿En qué puedo ayudarte?', 'Moderador');
-      }, 1000);
-    }
-  }, [showLiveChat]);
+    const getUserInfo = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
 
-  const addMessage = (sender, message, name) => {
-    const newMsg = {
-      id: Date.now(),
-      sender,
-      message,
-      name,
-      timestamp: new Date().toLocaleTimeString('es-ES', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-      })
+        const response = await fetch('https://spainrp-web.onrender.com/auth/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setUser(data.user);
+        }
+      } catch (error) {
+        console.error('Error obteniendo información del usuario:', error);
+      }
     };
-    setChatMessages(prev => [...prev, newMsg]);
-  };
+
+    getUserInfo();
+  }, []);
+
+  // Configurar Socket.IO con mejor manejo de errores
+  useEffect(() => {
+    if (!user) {
+      console.log('[SUPPORT] No hay usuario, no se inicializa Socket.IO');
+      return;
+    }
+
+    console.log('[SUPPORT] Inicializando Socket.IO para usuario:', user.username);
+    
+    const newSocket = io(process.env.REACT_APP_API_URL || 'https://spainrp-web.onrender.com', {
+      transports: ['websocket', 'polling'],
+      timeout: 10000,
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000
+    });
+
+    // Eventos de conexión
+    newSocket.on('connect', () => {
+      console.log('[SUPPORT][Socket] ✅ Conectado a Socket.IO');
+      console.log('[SUPPORT][Socket] ID de conexión:', newSocket.id);
+      setIsConnected(true);
+    });
+
+    newSocket.on('disconnect', (reason) => {
+      console.log('[SUPPORT][Socket] ❌ Desconectado de Socket.IO');
+      console.log('[SUPPORT][Socket] Razón:', reason);
+      setIsConnected(false);
+    });
+
+    newSocket.on('connect_error', (error) => {
+      console.error('[SUPPORT][Socket] ❌ Error de conexión:', error);
+      console.error('[SUPPORT][Socket] Tipo de error:', error.type);
+      console.error('[SUPPORT][Socket] Descripción:', error.description);
+    });
+
+    newSocket.on('reconnect', (attemptNumber) => {
+      console.log('[SUPPORT][Socket] 🔄 Reconectado después de', attemptNumber, 'intentos');
+      setIsConnected(true);
+    });
+
+    newSocket.on('reconnect_error', (error) => {
+      console.error('[SUPPORT][Socket] ❌ Error de reconexión:', error);
+    });
+
+    newSocket.on('reconnect_failed', () => {
+      console.error('[SUPPORT][Socket] ❌ Falló la reconexión después de todos los intentos');
+      setIsConnected(false);
+    });
+
+    // Eventos de chat
+    newSocket.on('chat_started', (data) => {
+      console.log('[SUPPORT][Chat] ✅ Chat iniciado exitosamente');
+      console.log('[SUPPORT][Chat] ID del chat:', data.chatId);
+      console.log('[SUPPORT][Chat] Mensaje:', data.message);
+      setCurrentChatId(data.chatId);
+      setShowNameInput(false);
+    });
+
+    newSocket.on('new_message', (data) => {
+      console.log('[SUPPORT][Chat] 📨 Nuevo mensaje recibido');
+      console.log('[SUPPORT][Chat] De:', data.senderName, '(' + data.senderType + ')');
+      console.log('[SUPPORT][Chat] Contenido:', data.message);
+      console.log('[SUPPORT][Chat] Timestamp:', data.timestamp);
+      
+      setChatMessages(prev => {
+        const newMessage = {
+          id: Date.now() + Math.random(), // ID único
+          sender_type: data.senderType,
+          sender_id: data.senderId,
+          sender_name: data.senderName,
+          message: data.message,
+          created_at: data.timestamp
+        };
+        console.log('[SUPPORT][Chat] Agregando mensaje al estado:', newMessage);
+        return [...prev, newMessage];
+      });
+    });
+
+    newSocket.on('chat_error', (data) => {
+      console.error('[SUPPORT][Chat] ❌ Error en el chat');
+      console.error('[SUPPORT][Chat] Mensaje de error:', data.message);
+      console.error('[SUPPORT][Chat] Datos completos:', data);
+      
+      // Mostrar error al usuario de forma más amigable
+      const errorMessage = data.message || 'Error desconocido en el chat';
+      alert(`Error en el chat: ${errorMessage}`);
+    });
+
+    newSocket.on('chat_closed', (data) => {
+      console.log('[SUPPORT][Chat] 🔒 Chat cerrado');
+      console.log('[SUPPORT][Chat] ID del chat cerrado:', data.chatId);
+      setShowLiveChat(false);
+      setChatMessages([]);
+      setCurrentChatId(null);
+      setShowNameInput(true);
+    });
+
+    // Eventos de moderador
+    newSocket.on('moderator_joined', (data) => {
+      console.log('[SUPPORT][Moderator] 👮 Moderador conectado');
+      console.log('[SUPPORT][Moderator] Mensaje:', data.message);
+      console.log('[SUPPORT][Moderator] Chats activos:', data.activeChats?.length || 0);
+    });
+
+    newSocket.on('moderator_error', (data) => {
+      console.error('[SUPPORT][Moderator] ❌ Error de moderador');
+      console.error('[SUPPORT][Moderator] Mensaje:', data.message);
+    });
+
+    setSocket(newSocket);
+
+    return () => {
+      console.log('[SUPPORT] Cerrando conexión Socket.IO');
+      newSocket.close();
+    };
+  }, [user]);
 
   const sendMessage = (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || !userName.trim()) return;
+    
+    console.log('[SUPPORT][sendMessage] Intentando enviar mensaje');
+    console.log('[SUPPORT][sendMessage] Mensaje:', newMessage);
+    console.log('[SUPPORT][sendMessage] Chat ID:', currentChatId);
+    console.log('[SUPPORT][sendMessage] Socket conectado:', !!socket);
+    console.log('[SUPPORT][sendMessage] Usuario:', user?.username);
+    
+    if (!newMessage.trim()) {
+      console.warn('[SUPPORT][sendMessage] Mensaje vacío, no se envía');
+      return;
+    }
+    
+    if (!currentChatId) {
+      console.error('[SUPPORT][sendMessage] No hay chat activo');
+      alert('No hay un chat activo. Inicia un chat primero.');
+      return;
+    }
+    
+    if (!socket) {
+      console.error('[SUPPORT][sendMessage] Socket no disponible');
+      alert('Conexión no disponible. Intenta recargar la página.');
+      return;
+    }
 
-    // Agregar mensaje del usuario
-    addMessage('user', newMessage, userName);
-    setNewMessage('');
-
-    // Simular respuesta del moderador
-    setIsTyping(true);
-    setTimeout(() => {
-      const responses = [
-        'Entiendo tu consulta. Déjame revisar eso para ti.',
-        'Gracias por contactarnos. Te ayudo con eso.',
-        'Perfecto, voy a verificar esa información.',
-        'Claro, puedo ayudarte con eso. Un momento.',
-        'Excelente pregunta. Déjame consultar con el equipo.',
-        'Entendido. Te voy a guiar paso a paso.'
-      ];
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-      addMessage('moderator', randomResponse, 'Moderador');
-      setIsTyping(false);
-    }, 1500 + Math.random() * 2000);
+    const messageData = {
+      chatId: currentChatId,
+      message: newMessage.trim(),
+      senderType: 'user',
+      senderId: user?.id || 'anonymous',
+      senderName: userName || user?.username || 'Usuario'
+    };
+    
+    console.log('[SUPPORT][sendMessage] Enviando datos:', messageData);
+    
+    try {
+      socket.emit('chat_message', messageData);
+      console.log('[SUPPORT][sendMessage] ✅ Mensaje enviado exitosamente');
+      setNewMessage('');
+    } catch (error) {
+      console.error('[SUPPORT][sendMessage] ❌ Error enviando mensaje:', error);
+      alert('Error enviando mensaje. Intenta de nuevo.');
+    }
   };
 
   const startChat = () => {
+    console.log('[SUPPORT][startChat] Intentando iniciar chat');
+    console.log('[SUPPORT][startChat] Nombre de usuario:', userName);
+    console.log('[SUPPORT][startChat] Usuario ID:', user?.id);
+    console.log('[SUPPORT][startChat] Socket disponible:', !!socket);
+    console.log('[SUPPORT][startChat] Conectado:', isConnected);
+    
     if (!userName.trim()) {
+      console.warn('[SUPPORT][startChat] Nombre de usuario vacío');
       alert('Por favor, ingresa tu nombre para comenzar el chat');
       return;
     }
-    setShowNameInput(false);
-    setShowLiveChat(true);
+    
+    if (!socket || !isConnected) {
+      console.error('[SUPPORT][startChat] Socket no disponible o no conectado');
+      alert('No hay conexión con el servidor. Intenta de nuevo.');
+      return;
+    }
+
+    const chatData = {
+      userId: user?.id || 'anonymous',
+      userName: userName.trim()
+    };
+    
+    console.log('[SUPPORT][startChat] Enviando datos de inicio:', chatData);
+    
+    try {
+      socket.emit('start_chat', chatData);
+      console.log('[SUPPORT][startChat] ✅ Solicitud de chat enviada');
+    } catch (error) {
+      console.error('[SUPPORT][startChat] ❌ Error iniciando chat:', error);
+      alert('Error iniciando chat. Intenta de nuevo.');
+    }
+  };
+
+  const closeChat = () => {
+    console.log('[SUPPORT][closeChat] Cerrando chat');
+    console.log('[SUPPORT][closeChat] Chat ID:', currentChatId);
+    console.log('[SUPPORT][closeChat] Socket disponible:', !!socket);
+    
+    if (currentChatId && socket) {
+      console.log('[SUPPORT][closeChat] Enviando solicitud de cierre al servidor');
+      try {
+        socket.emit('close_chat', { chatId: currentChatId });
+        console.log('[SUPPORT][closeChat] ✅ Solicitud de cierre enviada');
+      } catch (error) {
+        console.error('[SUPPORT][closeChat] ❌ Error cerrando chat:', error);
+      }
+    } else {
+      console.warn('[SUPPORT][closeChat] No hay chat activo o socket no disponible');
+    }
+    
+    // Limpiar estado local
+    setShowLiveChat(false);
+    setChatMessages([]);
+    setCurrentChatId(null);
+    setShowNameInput(true);
+    console.log('[SUPPORT][closeChat] Estado local limpiado');
   };
 
   const supportOptions = [
@@ -542,14 +738,14 @@ const Support = () => {
                 <div className="moderator-info">
                   <h3>Moderador SpainRP</h3>
                   <div className="online-status">
-                    <FaCircle className="status-dot" />
-                    <span>{moderatorOnline ? 'En línea' : 'Desconectado'}</span>
+                    <FaCircle className={`status-dot ${isConnected ? 'connected' : 'disconnected'}`} />
+                    <span>{isConnected ? 'Conectado' : 'Desconectado'}</span>
                   </div>
                 </div>
               </div>
               <button 
                 className="close-chat-btn"
-                onClick={() => setShowLiveChat(false)}
+                onClick={closeChat}
               >
                 <FaTimes />
               </button>
@@ -580,41 +776,46 @@ const Support = () => {
               </div>
             )}
 
-            {/* Área de Mensajes */}
-            {!showNameInput && (
-              <>
-                <div className="chat-messages">
-                  {chatMessages.map((msg) => (
-                    <div key={msg.id} className={`message ${msg.sender}`}>
-                      <div className="message-avatar">
-                        {msg.sender === 'user' ? <FaUserCheck /> : <FaUserFriends />}
-                      </div>
-                      <div className="message-content">
-                        <div className="message-header">
-                          <span className="message-name">{msg.name}</span>
-                          <span className="message-time">{msg.timestamp}</span>
+                {/* Área de Mensajes */}
+                {!showNameInput && (
+                  <>
+                    <div className="chat-messages">
+                      {chatMessages.map((msg) => (
+                        <div key={msg.id} className={`message ${msg.sender_type}`}>
+                          <div className="message-avatar">
+                            {msg.sender_type === 'user' ? <FaUserCheck /> : <FaUserFriends />}
+                          </div>
+                          <div className="message-content">
+                            <div className="message-header">
+                              <span className="message-name">{msg.sender_name}</span>
+                              <span className="message-time">
+                                {new Date(msg.created_at).toLocaleTimeString('es-ES', {
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </span>
+                            </div>
+                            <div className="message-text">{msg.message}</div>
+                          </div>
                         </div>
-                        <div className="message-text">{msg.message}</div>
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {isTyping && (
-                    <div className="message moderator">
-                      <div className="message-avatar">
-                        <FaUserFriends />
-                      </div>
-                      <div className="message-content">
-                        <div className="typing-indicator">
-                          <span></span>
-                          <span></span>
-                          <span></span>
-                          <span>Moderador está escribiendo...</span>
+                      ))}
+                      
+                      {isTyping && (
+                        <div className="message moderator">
+                          <div className="message-avatar">
+                            <FaUserFriends />
+                          </div>
+                          <div className="message-content">
+                            <div className="typing-indicator">
+                              <span></span>
+                              <span></span>
+                              <span></span>
+                              <span>Moderador está escribiendo...</span>
+                            </div>
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
-                  )}
-                </div>
 
                 {/* Input de Mensaje */}
                 <form onSubmit={sendMessage} className="chat-input-container">

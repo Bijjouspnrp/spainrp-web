@@ -172,6 +172,41 @@ function initializeDatabase() {
               read INTEGER DEFAULT 0,
               created_at TEXT
             )`
+          },
+          {
+            name: 'live_chats',
+            sql: `CREATE TABLE IF NOT EXISTS live_chats (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              user_id TEXT NOT NULL,
+              user_name TEXT NOT NULL,
+              status TEXT DEFAULT 'active',
+              created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+              closed_at DATETIME NULL,
+              assigned_moderator TEXT NULL
+            )`
+          },
+          {
+            name: 'chat_messages',
+            sql: `CREATE TABLE IF NOT EXISTS chat_messages (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              chat_id INTEGER NOT NULL,
+              sender_type TEXT NOT NULL,
+              sender_id TEXT NOT NULL,
+              sender_name TEXT NOT NULL,
+              message TEXT NOT NULL,
+              created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+              FOREIGN KEY (chat_id) REFERENCES live_chats (id)
+            )`
+          },
+          {
+            name: 'moderators_online',
+            sql: `CREATE TABLE IF NOT EXISTS moderators_online (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              user_id TEXT NOT NULL,
+              user_name TEXT NOT NULL,
+              last_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
+              is_online INTEGER DEFAULT 1
+            )`
           }
         ];
 

@@ -9,6 +9,8 @@ const fs = require('fs');
 const path = require('path');
 const nodemailer = require('nodemailer');
 const sgMail = require('@sendgrid/mail');
+const { Server } = require('socket.io');
+const http = require('http');
 
 const authRoutes = require('./auth');
 const discordRoutes = require('./routes/discord');
@@ -469,6 +471,305 @@ const broadcastNotification = (notification) => {
 
 // Exportar la función para usar en las rutas
 global.broadcastNotification = broadcastNotification;
+
+// =============================================================================
+// SISTEMA DE CHAT EN VIVO - SOCKET.IO
+// =============================================================================
+
+// Almacenar chats activos y moderadores online
+const activeChats = new Map(); // chatId -> { user_id, user_name, socket_id, status }
+const moderatorsOnline = new Map(); // user_id -> { socket_id, user_name, last_seen }
+const userChats = new Map(); // user_id -> chatId
+
+// Funciones de base de datos para chat
+function createLiveChat(userId, userName) {
+  return new Promise((resolve, reject) => {
+    const sql = `INSERT INTO live_chats (user_id, user_name, status) VALUES (?, ?, 'active')`;
+    db.run(sql, [userId, userName], function(err) {
+      if (err) {
+        console.error('[CHAT] Error creando chat:', err);
+        reject(err);
+      } else {
+        console.log('[CHAT] Chat creado con ID:', this.lastID);
+        resolve(this.lastID);
+      }
+    });
+  });
+}
+
+function addChatMessage(chatId, senderType, senderId, senderName, message) {
+  return new Promise((resolve, reject) => {
+    const sql = `INSERT INTO chat_messages (chat_id, sender_type, sender_id, sender_name, message) VALUES (?, ?, ?, ?, ?)`;
+    db.run(sql, [chatId, senderType, senderId, senderName, message], function(err) {
+      if (err) {
+        console.error('[CHAT] Error agregando mensaje:', err);
+        reject(err);
+      } else {
+        resolve(this.lastID);
+      }
+    });
+  });
+}
+
+function getChatMessages(chatId) {
+  return new Promise((resolve, reject) => {
+    const sql = `SELECT * FROM chat_messages WHERE chat_id = ? ORDER BY created_at ASC`;
+    db.all(sql, [chatId], (err, rows) => {
+      if (err) {
+        console.error('[CHAT] Error obteniendo mensajes:', err);
+        reject(err);
+      } else {
+        resolve(rows);
+      }
+    });
+  });
+}
+
+function closeLiveChat(chatId) {
+  return new Promise((resolve, reject) => {
+    const sql = `UPDATE live_chats SET status = 'closed', closed_at = CURRENT_TIMESTAMP WHERE id = ?`;
+    db.run(sql, [chatId], function(err) {
+      if (err) {
+        console.error('[CHAT] Error cerrando chat:', err);
+        reject(err);
+      } else {
+        resolve();
+      }
+    });
+  });
+}
+
+function isModerator(userId) {
+  return new Promise((resolve, reject) => {
+    const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
+    const moderatorRoleId = '1384340649205301359'; // ID del rol de moderador
+    
+    console.log(`[CHAT][isModerator] Verificando moderador: ${userId} en servidor: ${guildId}`);
+    
+    if (!global.discordClient || !global.discordClient.readyAt) {
+      console.warn('[CHAT][isModerator] Bot de Discord no disponible o no conectado');
+      resolve(false);
+      return;
+    }
+
+    const guild = global.discordClient.guilds.cache.get(guildId);
+    if (!guild) {
+      console.error(`[CHAT][isModerator] Servidor Discord no encontrado: ${guildId}`);
+      resolve(false);
+      return;
+    }
+
+    console.log(`[CHAT][isModerator] Servidor encontrado: ${guild.name} (${guild.id})`);
+
+    guild.members.fetch(userId).then(member => {
+      console.log(`[CHAT][isModerator] Miembro encontrado: ${member.user.username} (${member.id})`);
+      
+      // Verificar si tiene el rol de moderador específico
+      const hasModeratorRole = member.roles.cache.has(moderatorRoleId);
+      console.log(`[CHAT][isModerator] Tiene rol moderador (${moderatorRoleId}): ${hasModeratorRole}`);
+      
+      // Verificar si tiene permisos de administrador
+      const hasAdminPerms = member.permissions.has(PermissionsBitField.Flags.Administrator);
+      console.log(`[CHAT][isModerator] Tiene permisos admin: ${hasAdminPerms}`);
+      
+      // Listar todos los roles del usuario para debug
+      const userRoles = member.roles.cache.map(role => `${role.name} (${role.id})`);
+      console.log(`[CHAT][isModerator] Roles del usuario: [${userRoles.join(', ')}]`);
+      
+      const isMod = hasModeratorRole || hasAdminPerms;
+      console.log(`[CHAT][isModerator] Resultado final: ${isMod ? 'ES MODERADOR' : 'NO ES MODERADOR'}`);
+      
+      resolve(isMod);
+    }).catch(err => {
+      console.error(`[CHAT][isModerator] Error obteniendo miembro ${userId}:`, err.message);
+      console.error(`[CHAT][isModerator] Stack trace:`, err.stack);
+      resolve(false);
+    });
+  });
+}
+
+// Manejar conexiones de chat en vivo
+io.on('connection', (socket) => {
+  console.log('[CHAT] Usuario conectado:', socket.id);
+  
+  // Unirse a la sala de notificaciones
+  socket.join('notifications');
+  
+  // Manejar inicio de chat
+  socket.on('start_chat', async (data) => {
+    try {
+      const { userId, userName } = data;
+      
+      // Verificar si el usuario ya tiene un chat activo
+      if (userChats.has(userId)) {
+        const existingChatId = userChats.get(userId);
+        const chatData = activeChats.get(existingChatId);
+        
+        if (chatData && chatData.status === 'active') {
+          socket.emit('chat_started', { 
+            chatId: existingChatId, 
+            message: 'Chat existente encontrado' 
+          });
+          socket.join(`chat_${existingChatId}`);
+          return;
+        }
+      }
+      
+      // Crear nuevo chat
+      const chatId = await createLiveChat(userId, userName);
+      
+      // Almacenar en memoria
+      activeChats.set(chatId, {
+        user_id: userId,
+        user_name: userName,
+        socket_id: socket.id,
+        status: 'active'
+      });
+      userChats.set(userId, chatId);
+      
+      // Unirse a la sala del chat
+      socket.join(`chat_${chatId}`);
+      
+      // Notificar a moderadores
+      socket.to('moderators').emit('new_chat', {
+        chatId,
+        userId,
+        userName,
+        timestamp: new Date().toISOString()
+      });
+      
+      socket.emit('chat_started', { 
+        chatId, 
+        message: 'Chat iniciado correctamente' 
+      });
+      
+      console.log(`[CHAT] Chat iniciado - ID: ${chatId}, Usuario: ${userName}`);
+      
+    } catch (error) {
+      console.error('[CHAT] Error iniciando chat:', error);
+      socket.emit('chat_error', { message: 'Error iniciando chat' });
+    }
+  });
+  
+  // Manejar mensajes del chat
+  socket.on('chat_message', async (data) => {
+    try {
+      const { chatId, message, senderType, senderId, senderName } = data;
+      
+      // Guardar mensaje en base de datos
+      await addChatMessage(chatId, senderType, senderId, senderName, message);
+      
+      // Enviar mensaje a la sala del chat
+      io.to(`chat_${chatId}`).emit('new_message', {
+        chatId,
+        senderType,
+        senderId,
+        senderName,
+        message,
+        timestamp: new Date().toISOString()
+      });
+      
+      console.log(`[CHAT] Mensaje enviado en chat ${chatId}: ${message}`);
+      
+    } catch (error) {
+      console.error('[CHAT] Error enviando mensaje:', error);
+      socket.emit('chat_error', { message: 'Error enviando mensaje' });
+    }
+  });
+  
+  // Manejar cierre de chat
+  socket.on('close_chat', async (data) => {
+    try {
+      const { chatId } = data;
+      
+      // Cerrar en base de datos
+      await closeLiveChat(chatId);
+      
+      // Remover de memoria
+      const chatData = activeChats.get(chatId);
+      if (chatData) {
+        userChats.delete(chatData.user_id);
+        activeChats.delete(chatId);
+      }
+      
+      // Notificar a todos en la sala
+      io.to(`chat_${chatId}`).emit('chat_closed', { chatId });
+      
+      console.log(`[CHAT] Chat cerrado: ${chatId}`);
+      
+    } catch (error) {
+      console.error('[CHAT] Error cerrando chat:', error);
+    }
+  });
+  
+  // Manejar moderadores
+  socket.on('moderator_join', async (data) => {
+    try {
+      const { userId, userName } = data;
+      
+      // Verificar si es moderador
+      const isMod = await isModerator(userId);
+      if (!isMod) {
+        socket.emit('moderator_error', { message: 'No tienes permisos de moderador' });
+        return;
+      }
+      
+      // Agregar a moderadores online
+      moderatorsOnline.set(userId, {
+        socket_id: socket.id,
+        user_name: userName,
+        last_seen: new Date()
+      });
+      
+      // Unirse a la sala de moderadores
+      socket.join('moderators');
+      
+      // Enviar lista de chats activos
+      const activeChatsList = Array.from(activeChats.entries()).map(([id, data]) => ({
+        chatId: id,
+        userId: data.user_id,
+        userName: data.user_name,
+        status: data.status
+      }));
+      
+      socket.emit('moderator_joined', { 
+        message: 'Conectado como moderador',
+        activeChats: activeChatsList
+      });
+      
+      console.log(`[CHAT] Moderador conectado: ${userName}`);
+      
+    } catch (error) {
+      console.error('[CHAT] Error conectando moderador:', error);
+      socket.emit('moderator_error', { message: 'Error conectando como moderador' });
+    }
+  });
+  
+  // Manejar solicitud de historial de chat
+  socket.on('get_chat_history', async (data) => {
+    try {
+      const { chatId } = data;
+      const messages = await getChatMessages(chatId);
+      socket.emit('chat_history', { chatId, messages });
+    } catch (error) {
+      console.error('[CHAT] Error obteniendo historial:', error);
+      socket.emit('chat_error', { message: 'Error obteniendo historial' });
+    }
+  });
+  
+  socket.on('disconnect', () => {
+    console.log('[CHAT] Usuario desconectado:', socket.id);
+    
+    // Remover de moderadores online si estaba conectado
+    for (const [userId, data] of moderatorsOnline.entries()) {
+      if (data.socket_id === socket.id) {
+        moderatorsOnline.delete(userId);
+        console.log(`[CHAT] Moderador desconectado: ${data.user_name}`);
+        break;
+      }
+    }
+  });
+});
 
 // --- Subscriptores de mantenimiento (almacenados en JSON) ---
 const DATA_DIR = path.join(__dirname, 'data');
