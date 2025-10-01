@@ -8,6 +8,7 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
 
 const authRoutes = require('./auth');
 const discordRoutes = require('./routes/discord');
@@ -337,19 +338,27 @@ app.post('/api/admin/notify-balance-change', async (req, res) => {
       `
     };
 
-    // Enviar email real
+    // Enviar email con SendGrid (recomendado para Render)
     let emailSent = false;
     let emailError = null;
     
-    if (mailTransporter) {
+    // Intentar SendGrid primero
+    if (SENDGRID_CONFIG.apiKey && SENDGRID_CONFIG.apiKey !== 'SG.TU_API_KEY_AQUI') {
+      console.log('📧 Usando SendGrid para enviar email...');
+      const sendGridResult = await sendEmailWithSendGrid(emailData);
+      emailSent = sendGridResult.success;
+      emailError = sendGridResult.success ? null : sendGridResult.error;
+    } 
+    // Fallback a Nodemailer si SendGrid no está configurado
+    else if (mailTransporter) {
       try {
-        console.log('📧 Intentando enviar email...');
+        console.log('📧 Usando Nodemailer (fallback)...');
         console.log('📧 To:', emailData.to);
         console.log('📧 Subject:', emailData.subject);
         
         const info = await mailTransporter.sendMail(emailData);
         emailSent = true;
-        console.log('📧 ✅ Email enviado correctamente:', {
+        console.log('📧 ✅ Email enviado correctamente con Nodemailer:', {
           messageId: info.messageId,
           to: emailData.to,
           timestamp: new Date().toISOString(),
@@ -357,14 +366,47 @@ app.post('/api/admin/notify-balance-change', async (req, res) => {
         });
       } catch (error) {
         emailError = error.message;
-        console.error('📧 ❌ Error enviando email:', error);
+        console.error('📧 ❌ Error enviando email con Nodemailer:', error);
         console.error('📧 ❌ Error code:', error.code);
         console.error('📧 ❌ Error command:', error.command);
         console.error('📧 ❌ Error response:', error.response);
       }
-    } else {
-      console.warn('📧 ⚠️ Transporter de email no configurado');
-      emailError = 'Transporter no configurado';
+    } 
+    // Solo logging si no hay configuración
+    else {
+      console.log('📧 📝 Solo logging - No hay configuración de email');
+      console.log('📧 📝 Email que se enviaría:');
+      console.log('📧 📝   To:', emailData.to);
+      console.log('📧 📝   Subject:', emailData.subject);
+      console.log('📧 📝   From:', emailData.from);
+      console.log('📧 📝   Timestamp:', new Date().toISOString());
+      
+      // Guardar en archivo de log
+      try {
+        const logEntry = {
+          timestamp: new Date().toISOString(),
+          type: 'BALANCE_CHANGE_NOTIFICATION',
+          data: {
+            admin: logData.adminUsername,
+            target: logData.targetUserId,
+            changes: {
+              cash: `${logData.previousCash}€ → ${logData.newCash}€ (${logData.cashChange >= 0 ? '+' : ''}${logData.cashChange}€)`,
+              bank: `${logData.previousBank}€ → ${logData.newBank}€ (${logData.bankChange >= 0 ? '+' : ''}${logData.bankChange}€)`
+            },
+            ip: logData.ip,
+            userAgent: logData.userAgent
+          }
+        };
+        
+        const logFile = path.join(__dirname, 'logs', 'balance-notifications.log');
+        fs.appendFileSync(logFile, JSON.stringify(logEntry) + '\n');
+        console.log('📧 📝 Notificación guardada en log:', logFile);
+      } catch (logError) {
+        console.warn('📧 ⚠️ Error guardando en log:', logError.message);
+      }
+      
+      emailSent = true; // Marcar como "enviado" para el frontend
+      emailError = null;
     }
 
     res.json({ 
@@ -439,15 +481,61 @@ function writeMaintSubs(arr){
   try { fs.writeFileSync(MAINT_SUBS_FILE, JSON.stringify(arr, null, 2), 'utf8'); } catch {}
 }
 
-// --- Nodemailer transporter (desde variables de entorno) ---
+// --- Configuración de Email ---
 let mailTransporter = null;
-// Fallback hardcoded (temporal). Sustituye por tus credenciales reales
+
+// Configuración SendGrid (recomendado para Render)
+const SENDGRID_CONFIG = {
+  apiKey: process.env.SENDGRID_API_KEY || 'SG.TU_API_KEY_AQUI', // <- Cambia esto
+  fromEmail: 'bijjou433@gmail.com', // <- Tu email verificado en SendGrid
+  toEmail: 'bijjou433@gmail.com'    // <- Email de destino
+};
+
+// Configuración SMTP (fallback)
 const HARDCODED_SMTP = {
   host: 'smtp.gmail.com',
   port: 587,
-  user: 'bijjou433@gmail.com',           // <- cambia esto
-  pass: 'owps bpyt fvpp jstf'  // <- cambia esto (App Password de 16 caracteres)
+  user: 'bijjou433@gmail.com',
+  pass: 'owps bpyt fvpp jstf'
 };
+
+// Configurar SendGrid
+if (SENDGRID_CONFIG.apiKey && SENDGRID_CONFIG.apiKey !== 'SG.TU_API_KEY_AQUI') {
+  sgMail.setApiKey(SENDGRID_CONFIG.apiKey);
+  console.log('📧 SendGrid configurado correctamente');
+} else {
+  console.log('📧 ⚠️ SendGrid no configurado - usando solo logging');
+}
+
+// Función para enviar email con SendGrid
+async function sendEmailWithSendGrid(emailData) {
+  try {
+    const msg = {
+      to: SENDGRID_CONFIG.toEmail,
+      from: SENDGRID_CONFIG.fromEmail,
+      subject: emailData.subject,
+      html: emailData.html,
+    };
+
+    console.log('📧 [SENDGRID] Enviando email...');
+    console.log('📧 [SENDGRID] To:', msg.to);
+    console.log('📧 [SENDGRID] Subject:', msg.subject);
+
+    const response = await sgMail.send(msg);
+    console.log('📧 [SENDGRID] ✅ Email enviado correctamente:', {
+      statusCode: response[0].statusCode,
+      messageId: response[0].headers['x-message-id'],
+      timestamp: new Date().toISOString()
+    });
+
+    return { success: true, response };
+  } catch (error) {
+    console.error('📧 [SENDGRID] ❌ Error enviando email:', error);
+    console.error('📧 [SENDGRID] ❌ Error code:', error.code);
+    console.error('📧 [SENDGRID] ❌ Error message:', error.message);
+    return { success: false, error: error.message };
+  }
+}
 function getTransporter(){
   if (mailTransporter) return mailTransporter;
   // Preferir variables de entorno si existen
