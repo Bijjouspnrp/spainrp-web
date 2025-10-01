@@ -265,21 +265,35 @@ export default function BlackMarket() {
       }
 
       // Realizar la modificación del saldo
+      const requestData = {
+        targetUserId: quickId,  // Cambiar de userId a targetUserId
+        cash: parseInt(quickCash) || 0,
+        bank: parseInt(quickBank) || 0,
+        adminUserId: user?.id
+      };
+      
+      console.log('[QuickBalance] Datos de la petición:', requestData);
+      console.log('[QuickBalance] URL:', 'https://spainrp-web.onrender.com/api/proxy/admin/setbalance');
+      
       const resp = await fetch('https://spainrp-web.onrender.com/api/proxy/admin/setbalance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: quickId,
-          cash: parseInt(quickCash) || 0,
-          bank: parseInt(quickBank) || 0,
-          adminUserId: user?.id
-        })
+        body: JSON.stringify(requestData)
       });
       
       console.log('[QuickBalance] Respuesta del servidor:', resp.status, resp.statusText);
+      console.log('[QuickBalance] Headers de respuesta:', Object.fromEntries(resp.headers.entries()));
       
-      const data = await resp.json();
-      console.log('[QuickBalance] Datos de respuesta:', data);
+      let data;
+      try {
+        data = await resp.json();
+        console.log('[QuickBalance] Datos de respuesta:', data);
+      } catch (jsonError) {
+        console.error('[QuickBalance] Error parseando JSON:', jsonError);
+        const textResponse = await resp.text();
+        console.error('[QuickBalance] Respuesta como texto:', textResponse);
+        throw new Error(`Error del servidor: ${resp.status} - ${textResponse}`);
+      }
       
       if (resp.ok && !data.error) {
         setQuickResult('✅ Saldo actualizado correctamente');

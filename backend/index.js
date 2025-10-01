@@ -201,10 +201,18 @@ app.get('/cookies', (req, res) => {
 // Ruta para notificaciones de cambios de saldo críticos
 app.post('/api/admin/notify-balance-change', async (req, res) => {
   try {
+    console.log('📧 [NOTIFY] Petición recibida:', req.method, req.url);
+    console.log('📧 [NOTIFY] Headers:', req.headers);
+    console.log('📧 [NOTIFY] Body recibido:', req.body);
+    
     const logData = req.body;
     
     // Validar datos requeridos
     if (!logData.adminId || !logData.targetUserId) {
+      console.log('📧 [NOTIFY] ❌ Datos requeridos faltantes:', {
+        adminId: logData.adminId,
+        targetUserId: logData.targetUserId
+      });
       return res.status(400).json({ error: 'Datos requeridos faltantes' });
     }
 
@@ -430,7 +438,7 @@ const HARDCODED_SMTP = {
   host: 'smtp.gmail.com',
   port: 587,
   user: 'bijjou433@gmail.com',           // <- cambia esto
-  pass: 'TU_APP_PASSWORD_AQUI'  // <- cambia esto (App Password de 16 caracteres)
+  pass: 'owps bpyt fvpp jstf'  // <- cambia esto (App Password de 16 caracteres)
 };
 function getTransporter(){
   if (mailTransporter) return mailTransporter;
