@@ -115,11 +115,12 @@ const Support = () => {
     // El usuario se usará cuando esté disponible
     
     const newSocket = io(process.env.REACT_APP_API_URL || 'https://spainrp-oficial.onrender.com', {
-      transports: ['websocket', 'polling'],
+      transports: ['polling'], // Solo polling para compatibilidad con Render
       timeout: 10000,
       reconnection: true,
       reconnectionAttempts: 5,
-      reconnectionDelay: 1000
+      reconnectionDelay: 1000,
+      forceNew: true
     });
 
     // Eventos de conexión
@@ -290,11 +291,12 @@ const Support = () => {
       
       // Intentar reconectar el socket
       const newSocket = io(process.env.REACT_APP_API_URL || 'https://spainrp-oficial.onrender.com', {
-        transports: ['websocket', 'polling'],
+        transports: ['polling'], // Solo polling para compatibilidad con Render
         timeout: 10000,
         reconnection: true,
         reconnectionAttempts: 5,
-        reconnectionDelay: 1000
+        reconnectionDelay: 1000,
+        forceNew: true
       });
       
       newSocket.on('connect', () => {
