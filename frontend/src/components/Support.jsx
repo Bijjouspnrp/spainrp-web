@@ -24,13 +24,27 @@ import {
   FaVideo,
   FaStream,
   FaYoutube,
-  FaTwitch
+  FaTwitch,
+  FaCommentsDollar,
+  FaUserFriends,
+  FaRobot,
+  FaPaperPlane,
+  FaTimes,
+  FaCircle,
+  FaUserCheck
 } from 'react-icons/fa';
 import './Support.css';
 
 const Support = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
+  const [showLiveChat, setShowLiveChat] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [moderatorOnline, setModeratorOnline] = useState(true);
+  const [userName, setUserName] = useState('');
+  const [showNameInput, setShowNameInput] = useState(true);
 
   // Detección de móvil
   useEffect(() => {
@@ -43,7 +57,76 @@ const Support = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Simular mensajes de moderadores
+  useEffect(() => {
+    if (showLiveChat && chatMessages.length === 0) {
+      // Mensaje de bienvenida automático
+      setTimeout(() => {
+        addMessage('moderator', '¡Hola! Soy un moderador de SpainRP. ¿En qué puedo ayudarte?', 'Moderador');
+      }, 1000);
+    }
+  }, [showLiveChat]);
+
+  const addMessage = (sender, message, name) => {
+    const newMsg = {
+      id: Date.now(),
+      sender,
+      message,
+      name,
+      timestamp: new Date().toLocaleTimeString('es-ES', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      })
+    };
+    setChatMessages(prev => [...prev, newMsg]);
+  };
+
+  const sendMessage = (e) => {
+    e.preventDefault();
+    if (!newMessage.trim() || !userName.trim()) return;
+
+    // Agregar mensaje del usuario
+    addMessage('user', newMessage, userName);
+    setNewMessage('');
+
+    // Simular respuesta del moderador
+    setIsTyping(true);
+    setTimeout(() => {
+      const responses = [
+        'Entiendo tu consulta. Déjame revisar eso para ti.',
+        'Gracias por contactarnos. Te ayudo con eso.',
+        'Perfecto, voy a verificar esa información.',
+        'Claro, puedo ayudarte con eso. Un momento.',
+        'Excelente pregunta. Déjame consultar con el equipo.',
+        'Entendido. Te voy a guiar paso a paso.'
+      ];
+      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+      addMessage('moderator', randomResponse, 'Moderador');
+      setIsTyping(false);
+    }, 1500 + Math.random() * 2000);
+  };
+
+  const startChat = () => {
+    if (!userName.trim()) {
+      alert('Por favor, ingresa tu nombre para comenzar el chat');
+      return;
+    }
+    setShowNameInput(false);
+    setShowLiveChat(true);
+  };
+
   const supportOptions = [
+    {
+      id: 'livechat',
+      title: 'Chat en Vivo',
+      description: 'Habla directamente con un moderador en tiempo real para resolver tus dudas al instante',
+      icon: <FaCommentsDollar />,
+      color: '#00ff99',
+      action: 'Iniciar Chat',
+      link: '#livechat',
+      popular: true,
+      features: ['Respuesta inmediata', 'Moderadores online', 'Chat directo', 'Soporte personalizado']
+    },
     {
       id: 'discord',
       title: 'Discord',
@@ -52,7 +135,7 @@ const Support = () => {
       color: '#7289da',
       action: 'Unirse al Discord',
       link: 'https://discord.gg/sMzFgFQHXA',
-      popular: true,
+      popular: false,
       features: ['Soporte 24/7', 'Canales de ayuda', 'Tickets automáticos', 'Comunidad activa']
     },
     {
@@ -286,7 +369,7 @@ const Support = () => {
             </div>
           ))}
         </div>
-      </div>
+              </div>
 
       {/* Canales de Contacto */}
       <div className="support-section">
@@ -309,19 +392,29 @@ const Support = () => {
                   <span key={index} className="feature-tag">{feature}</span>
                 ))}
               </div>
-              <a 
-                href={option.link} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="contact-button"
-                style={{ backgroundColor: option.color }}
-              >
-                {option.action}
-              </a>
+              {option.id === 'livechat' ? (
+                <button 
+                  onClick={() => setShowLiveChat(true)}
+                  className="contact-button"
+                  style={{ backgroundColor: option.color }}
+                >
+                  {option.action}
+                </button>
+              ) : (
+                <a 
+                  href={option.link} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="contact-button"
+                  style={{ backgroundColor: option.color }}
+                >
+                  {option.action}
+                </a>
+              )}
             </div>
           ))}
         </div>
-      </div>
+          </div>
 
       {/* Categorías de Ayuda */}
       <div className="support-section">
@@ -331,7 +424,7 @@ const Support = () => {
             <div key={category.id} className="help-card">
               <div className="help-icon" style={{ color: category.color }}>
                 {category.icon}
-              </div>
+                    </div>
               <h3 className="help-title">{category.title}</h3>
               <ul className="help-list">
                 {category.items.map((item, index) => (
@@ -358,8 +451,8 @@ const Support = () => {
               </div>
             </div>
           ))}
+          </div>
         </div>
-      </div>
 
       {/* Streams en Vivo */}
       <div className="support-section">
@@ -416,25 +509,136 @@ const Support = () => {
           <h3>¿No encuentras lo que buscas?</h3>
           <p>Nuestro equipo está disponible 24/7 para ayudarte</p>
           <div className="support-footer-actions">
+            <button 
+              onClick={() => setShowLiveChat(true)}
+              className="footer-button primary"
+            >
+              <FaCommentsDollar />
+              Chat en Vivo
+            </button>
             <a 
-              href="https://discord.gg/spainrp" 
+              href="https://discord.gg/sMzFgFQHXA" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="footer-button primary"
+              className="footer-button secondary"
             >
               <FaDiscord />
               Discord
             </a>
-            <a 
-              href="mailto:soporte@spainrp.com"
-              className="footer-button secondary"
-            >
-              <FaEnvelope />
-              Email
-            </a>
           </div>
         </div>
       </div>
+
+      {/* Chat en Vivo Modal */}
+      {showLiveChat && (
+        <div className="live-chat-overlay" onClick={(e) => e.target === e.currentTarget && setShowLiveChat(false)}>
+          <div className="live-chat-container">
+            {/* Header del Chat */}
+            <div className="chat-header">
+              <div className="chat-header-info">
+                <div className="moderator-avatar">
+                  <FaUserFriends />
+                </div>
+                <div className="moderator-info">
+                  <h3>Moderador SpainRP</h3>
+                  <div className="online-status">
+                    <FaCircle className="status-dot" />
+                    <span>{moderatorOnline ? 'En línea' : 'Desconectado'}</span>
+                  </div>
+                </div>
+              </div>
+              <button 
+                className="close-chat-btn"
+                onClick={() => setShowLiveChat(false)}
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            {/* Input de Nombre */}
+            {showNameInput && (
+              <div className="name-input-container">
+                <h4>Antes de comenzar, dinos tu nombre:</h4>
+                <div className="name-input-group">
+                  <input
+                    type="text"
+                    placeholder="Tu nombre o nickname"
+                    value={userName}
+                    onChange={(e) => setUserName(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && startChat()}
+                    className="name-input"
+                  />
+                  <button 
+                    onClick={startChat}
+                    className="start-chat-btn"
+                    disabled={!userName.trim()}
+                  >
+                    <FaPaperPlane />
+                    Iniciar Chat
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Área de Mensajes */}
+            {!showNameInput && (
+              <>
+                <div className="chat-messages">
+                  {chatMessages.map((msg) => (
+                    <div key={msg.id} className={`message ${msg.sender}`}>
+                      <div className="message-avatar">
+                        {msg.sender === 'user' ? <FaUserCheck /> : <FaUserFriends />}
+                      </div>
+                      <div className="message-content">
+                        <div className="message-header">
+                          <span className="message-name">{msg.name}</span>
+                          <span className="message-time">{msg.timestamp}</span>
+                        </div>
+                        <div className="message-text">{msg.message}</div>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {isTyping && (
+                    <div className="message moderator">
+                      <div className="message-avatar">
+                        <FaUserFriends />
+                      </div>
+                      <div className="message-content">
+                        <div className="typing-indicator">
+                          <span></span>
+                          <span></span>
+                          <span></span>
+                          <span>Moderador está escribiendo...</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Input de Mensaje */}
+                <form onSubmit={sendMessage} className="chat-input-container">
+                  <input
+                    type="text"
+                    placeholder="Escribe tu mensaje..."
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    className="chat-input"
+                    disabled={!moderatorOnline}
+                  />
+                  <button 
+                    type="submit" 
+                    className="send-btn"
+                    disabled={!newMessage.trim() || !moderatorOnline}
+                  >
+                    <FaPaperPlane />
+                  </button>
+                </form>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
