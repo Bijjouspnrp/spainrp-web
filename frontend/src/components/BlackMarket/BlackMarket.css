@@ -852,22 +852,22 @@
    MEJORAS DE UI PARA ITEMS CON DESCRIPCIONES Y STOCK
    ============================================================================= */
 
-/* Estilos para items mejorados */
+/* Estilos para items minimalistas */
 .blackmarket-hack-item {
-  background: linear-gradient(135deg, rgba(35, 39, 42, 0.9), rgba(24, 27, 38, 0.9));
-  border: 1px solid rgba(114, 137, 218, 0.2);
-  border-radius: 12px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  transition: all 0.3s ease;
+  background: rgba(35, 39, 42, 0.8);
+  border: 1px solid rgba(114, 137, 218, 0.15);
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+  transition: all 0.2s ease;
   position: relative;
   overflow: hidden;
 }
 
 .blackmarket-hack-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(114, 137, 218, 0.3);
-  border-color: rgba(114, 137, 218, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(114, 137, 218, 0.2);
+  border-color: rgba(114, 137, 218, 0.3);
 }
 
 /* Rarity colors */
@@ -921,53 +921,50 @@
   margin: 0;
 }
 
-/* Stock indicator */
+/* Stock indicator minimalista */
 .item-stock {
   display: flex;
   align-items: center;
+  gap: 0.5rem;
 }
 
-.stock-indicator {
-  padding: 0.25rem 0.5rem;
-  border-radius: 6px;
+.stock-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.stock-dot.high {
+  background: #2ecc71;
+}
+
+.stock-dot.medium {
+  background: #f39c12;
+}
+
+.stock-dot.low {
+  background: #e74c3c;
+}
+
+.stock-text {
   font-size: 0.8rem;
-  font-weight: 600;
-  text-align: center;
-  min-width: 60px;
+  color: #bdc3c7;
+  font-weight: 500;
 }
 
-.stock-indicator.high {
-  background: rgba(46, 204, 113, 0.2);
-  color: #2ecc71;
-  border: 1px solid rgba(46, 204, 113, 0.3);
-}
-
-.stock-indicator.medium {
-  background: rgba(243, 156, 18, 0.2);
-  color: #f39c12;
-  border: 1px solid rgba(243, 156, 18, 0.3);
-}
-
-.stock-indicator.low {
-  background: rgba(231, 76, 60, 0.2);
-  color: #e74c3c;
-  border: 1px solid rgba(231, 76, 60, 0.3);
-}
-
-/* Item description */
+/* Item description minimalista */
 .item-description {
-  margin: 0.75rem 0;
-  padding: 0.75rem;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 8px;
-  border-left: 3px solid #7289da;
+  margin: 0.5rem 0;
+  padding: 0.5rem 0;
 }
 
 .item-description p {
   margin: 0;
-  color: #bdc3c7;
-  font-size: 0.9rem;
-  line-height: 1.4;
+  color: #95a5a6;
+  font-size: 0.85rem;
+  line-height: 1.3;
+  font-style: italic;
 }
 
 /* Item effects */
@@ -1016,49 +1013,37 @@
   border: 1px solid rgba(149, 165, 166, 0.3);
 }
 
-/* Item actions */
+/* Item actions minimalistas */
 .item-actions {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-top: 1rem;
-  padding-top: 0.75rem;
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
   border-top: 1px solid rgba(114, 137, 218, 0.1);
 }
 
 .blackmarket-hack-buy {
-  flex: 1;
-  padding: 0.75rem 1rem;
-  background: linear-gradient(135deg, #7289da, #5865f2);
+  width: 100%;
+  padding: 0.6rem 1rem;
+  background: #7289da;
   color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   cursor: pointer;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
 }
 
 .blackmarket-hack-buy:hover:not(.disabled) {
-  background: linear-gradient(135deg, #5865f2, #4752c4);
+  background: #5865f2;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(114, 137, 218, 0.4);
 }
 
 .blackmarket-hack-buy.disabled {
   background: #7f8c8d;
   cursor: not-allowed;
   opacity: 0.6;
-}
-
-.out-of-stock {
-  color: #e74c3c;
-  font-weight: 600;
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 /* Responsive design */

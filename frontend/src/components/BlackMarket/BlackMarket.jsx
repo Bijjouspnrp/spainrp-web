@@ -16,7 +16,7 @@ const ITEMS = [
         name: 'Beretta M9', 
         price: 1900, 
         icon: <GiPistolGun />,
-        description: 'Pistola semiautomática de 9mm. Precisión alta y confiable. Ideal para combate urbano.',
+        description: 'Pistola semiautomática de 9mm. Precisión alta y confiable.',
         stock: 12,
         maxStock: 15,
         rarity: 'common',
@@ -27,7 +27,7 @@ const ITEMS = [
         name: 'Remington 870', 
         price: 24000, 
         icon: <GiPistolGun />,
-        description: 'Escopeta de acción de bombeo. Devastadora a corta distancia. Perfecta para asaltos.',
+        description: 'Escopeta de acción de bombeo. Devastadora a corta distancia.',
         stock: 5,
         maxStock: 8,
         rarity: 'rare',
@@ -38,7 +38,7 @@ const ITEMS = [
         name: 'AK-47', 
         price: 125000, 
         icon: <GiPistolGun />,
-        description: 'Rifle de asalto legendario. Confiable en cualquier condición. El arma más temida.',
+        description: 'Rifle de asalto legendario. Confiable en cualquier condición.',
         stock: 2,
         maxStock: 3,
         rarity: 'epic',
@@ -49,7 +49,7 @@ const ITEMS = [
         name: 'Desert Eagle', 
         price: 25000, 
         icon: <GiPistolGun />,
-        description: 'Pistola de calibre .50. Potencia devastadora. Para aquellos que buscan el máximo impacto.',
+        description: 'Pistola de calibre .50. Potencia devastadora.',
         stock: 3,
         maxStock: 5,
         rarity: 'rare',
@@ -60,7 +60,7 @@ const ITEMS = [
         name: 'LMT L129A1', 
         price: 50000, 
         icon: <GiPistolGun />,
-        description: 'Rifle de precisión militar. Alcance extremo y precisión letal. Para francotiradores expertos.',
+        description: 'Rifle de precisión militar. Alcance extremo y precisión letal.',
         stock: 1,
         maxStock: 2,
         rarity: 'legendary',
@@ -71,7 +71,7 @@ const ITEMS = [
         name: 'Cuchillo Táctico', 
         price: 800, 
         icon: <GiKnifeThrust />,
-        description: 'Cuchillo de combate silencioso. Letal en combate cuerpo a cuerpo. No hace ruido.',
+        description: 'Cuchillo de combate silencioso. Letal en combate cuerpo a cuerpo.',
         stock: 20,
         maxStock: 25,
         rarity: 'common',
@@ -82,7 +82,7 @@ const ITEMS = [
         name: 'M249 SAW', 
         price: 140000, 
         icon: <GiSentryGun />,
-        description: 'Ametralladora ligera de 5.56mm. Supresión de fuego devastadora. Para combate intenso.',
+        description: 'Ametralladora ligera de 5.56mm. Supresión de fuego devastadora.',
         stock: 1,
         maxStock: 1,
         rarity: 'legendary',
@@ -98,7 +98,7 @@ const ITEMS = [
         itemId: 'bm_cafe_magico', 
         name: 'Café Mágico', 
         price: 4000,
-        description: 'Café especial con propiedades energizantes únicas. Efecto prolongado y sin efectos secundarios.',
+        description: 'Café especial con propiedades energizantes únicas.',
         stock: 15,
         maxStock: 20,
         rarity: 'uncommon',
@@ -108,7 +108,7 @@ const ITEMS = [
         itemId: 'bm_marihuana', 
         name: 'Marihuana Medicinal', 
         price: 1200,
-        description: 'Cannabis de alta calidad. Efecto relajante y analgésico. Menos adictivo que otras sustancias.',
+        description: 'Cannabis de alta calidad. Efecto relajante y analgésico.',
         stock: 25,
         maxStock: 30,
         rarity: 'common',
@@ -118,7 +118,7 @@ const ITEMS = [
         itemId: 'bm_lsd', 
         name: 'LSD', 
         price: 2500,
-        description: 'Ácido lisérgico de alta pureza. Experiencia psicodélica intensa. Solo para usuarios experimentados.',
+        description: 'Ácido lisérgico de alta pureza. Experiencia psicodélica intensa.',
         stock: 8,
         maxStock: 12,
         rarity: 'rare',
@@ -128,7 +128,7 @@ const ITEMS = [
         itemId: 'bm_extasis', 
         name: 'Éxtasis', 
         price: 1800,
-        description: 'MDMA de alta pureza. Efecto estimulante y empatógeno. Popular en fiestas y eventos.',
+        description: 'MDMA de alta pureza. Efecto estimulante y empatógeno.',
         stock: 12,
         maxStock: 18,
         rarity: 'uncommon',
@@ -138,7 +138,7 @@ const ITEMS = [
         itemId: 'bm_metanfetamina', 
         name: 'Metanfetamina', 
         price: 3500,
-        description: 'Estimulante extremadamente potente. Efecto energizante intenso pero altamente adictivo.',
+        description: 'Estimulante extremadamente potente. Altamente adictivo.',
         stock: 6,
         maxStock: 10,
         rarity: 'epic',
@@ -148,7 +148,7 @@ const ITEMS = [
         itemId: 'bm_heroina', 
         name: 'Heroína', 
         price: 5000,
-        description: 'Sustancia altamente adictiva. Efecto eufórico intenso. Extremadamente peligrosa y adictiva.',
+        description: 'Sustancia altamente adictiva. Efecto eufórico intenso.',
         stock: 3,
         maxStock: 5,
         rarity: 'epic',
@@ -1541,9 +1541,8 @@ if (!user) {
                   <span className="blackmarket-hack-item-price">{Number(displayPrice).toLocaleString()}€</span>
                 </div>
                 <div className="item-stock">
-                  <span className={`stock-indicator ${item.stock <= 2 ? 'low' : item.stock <= 5 ? 'medium' : 'high'}`}>
-                    {item.stock || 0}/{item.maxStock || 10}
-                  </span>
+                  <span className={`stock-dot ${item.stock <= 2 ? 'low' : item.stock <= 5 ? 'medium' : 'high'}`}></span>
+                  <span className="stock-text">{item.stock || 0}</span>
                 </div>
               </div>
               
@@ -1553,30 +1552,14 @@ if (!user) {
                 </div>
               )}
               
-              {item.effects && item.effects.length > 0 && (
-                <div className="item-effects">
-                  <h4>Efectos:</h4>
-                  <ul>
-                    {item.effects.map((effect, idx) => (
-                      <li key={idx} className={`effect ${effect.includes('+') ? 'positive' : effect.includes('-') ? 'negative' : 'neutral'}`}>
-                        {effect}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              
               <div className="item-actions">
                 <button 
                   className={`blackmarket-hack-buy ${item.stock <= 0 ? 'disabled' : ''}`} 
                   onClick={() => handleBuy({ ...item, name: displayName, price: displayPrice })}
                   disabled={item.stock <= 0}
                 >
-                  {item.stock <= 0 ? 'Sin Stock' : 'Comprar'}
+                  {item.stock <= 0 ? 'Agotado' : 'Comprar'}
                 </button>
-                {item.stock <= 0 && (
-                  <span className="out-of-stock">Agotado</span>
-                )}
               </div>
             </div>
             );
