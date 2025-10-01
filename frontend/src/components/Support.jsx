@@ -93,7 +93,7 @@ const Support = () => {
           const data = await response.json();
           console.log('[SUPPORT] 👤 Datos del usuario:', data);
           setUser(data.user);
-        } else {
+      } else {
           console.log('[SUPPORT] ❌ Error en autenticación:', response.status);
           const errorText = await response.text();
           console.log('[SUPPORT] ❌ Error details:', errorText);
@@ -108,12 +108,11 @@ const Support = () => {
 
   // Configurar Socket.IO con mejor manejo de errores
   useEffect(() => {
-    if (!user) {
-      console.log('[SUPPORT] No hay usuario, no se inicializa Socket.IO');
-      return;
-    }
-
-    console.log('[SUPPORT] Inicializando Socket.IO para usuario:', user.username);
+    console.log('[SUPPORT] Inicializando Socket.IO...');
+    console.log('[SUPPORT] Usuario actual:', user);
+    
+    // Inicializar Socket.IO independientemente del usuario
+    // El usuario se usará cuando esté disponible
     
     const newSocket = io(process.env.REACT_APP_API_URL || 'https://spainrp-oficial.onrender.com', {
       transports: ['websocket', 'polling'],
@@ -274,6 +273,8 @@ const Support = () => {
     console.log('[SUPPORT][startChat] Intentando iniciar chat');
     console.log('[SUPPORT][startChat] Nombre de usuario:', userName);
     console.log('[SUPPORT][startChat] Usuario ID:', user?.id);
+    console.log('[SUPPORT][startChat] Usuario completo:', user);
+    console.log('[SUPPORT][startChat] Token en localStorage:', localStorage.getItem('token') ? 'Presente' : 'Ausente');
     console.log('[SUPPORT][startChat] Socket disponible:', !!socket);
     console.log('[SUPPORT][startChat] Conectado:', isConnected);
     
@@ -285,7 +286,39 @@ const Support = () => {
     
     if (!socket || !isConnected) {
       console.error('[SUPPORT][startChat] Socket no disponible o no conectado');
-      alert('No hay conexión con el servidor. Intenta de nuevo.');
+      console.log('[SUPPORT][startChat] Intentando reconectar...');
+      
+      // Intentar reconectar el socket
+      const newSocket = io(process.env.REACT_APP_API_URL || 'https://spainrp-oficial.onrender.com', {
+        transports: ['websocket', 'polling'],
+        timeout: 10000,
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000
+      });
+      
+      newSocket.on('connect', () => {
+        console.log('[SUPPORT][startChat] ✅ Reconectado a Socket.IO');
+        setSocket(newSocket);
+        setIsConnected(true);
+        
+        // Intentar iniciar chat después de reconectar
+        setTimeout(() => {
+          const chatData = {
+            userId: user?.id || 'anonymous',
+            userName: userName.trim()
+          };
+          
+          console.log('[SUPPORT][startChat] Enviando datos de inicio después de reconectar:', chatData);
+          newSocket.emit('start_chat', chatData);
+        }, 1000);
+      });
+      
+      newSocket.on('connect_error', (error) => {
+        console.error('[SUPPORT][startChat] ❌ Error de reconexión:', error);
+        alert('No se pudo conectar con el servidor. Intenta de nuevo más tarde.');
+      });
+      
       return;
     }
 
@@ -748,8 +781,8 @@ const Support = () => {
               Discord
             </a>
           </div>
-        </div>
-      </div>
+                </div>
+              </div>
 
       {/* Chat en Vivo Modal */}
       {showLiveChat && (
@@ -776,8 +809,8 @@ const Support = () => {
                       <FaUserFriends />
                       Panel Moderadores
                     </button>
-                  </div>
-                </div>
+                      </div>
+                    </div>
               </div>
               <button 
                 className="close-chat-btn"
@@ -785,14 +818,14 @@ const Support = () => {
               >
                 <FaTimes />
               </button>
-            </div>
+              </div>
 
             {/* Input de Nombre */}
             {showNameInput && (
               <div className="name-input-container">
                 <h4>Antes de comenzar, dinos tu nombre:</h4>
                 <div className="name-input-group">
-                  <input
+                <input
                     type="text"
                     placeholder="Tu nombre o nickname"
                     value={userName}
@@ -848,8 +881,8 @@ const Support = () => {
                               <span></span>
                               <span>Moderador está escribiendo...</span>
                             </div>
-                          </div>
-                        </div>
+              </div>
+            </div>
                       )}
                     </div>
 
@@ -872,9 +905,9 @@ const Support = () => {
                   </button>
                 </form>
               </>
-            )}
-          </div>
+          )}
         </div>
+      </div>
       )}
     </div>
   );
