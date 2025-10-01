@@ -288,6 +288,25 @@ function MaintenancePage({ vantaElRef, totalMinutes, elapsed, percent, apiUrl })
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminLoading, setAdminLoading] = useState(true);
   const [toast, setToast] = useState(null);
+  const [maintenanceData, setMaintenanceData] = useState(null);
+  const [emailSubmitting, setEmailSubmitting] = useState(false);
+
+  // Obtener datos de mantenimiento
+  useEffect(() => {
+    const fetchMaintenanceData = async () => {
+      try {
+        const response = await fetch(apiUrl('/api/maintenance/status'));
+        if (response.ok) {
+          const data = await response.json();
+          setMaintenanceData(data);
+        }
+      } catch (error) {
+        console.error('[MAINTENANCE] Error obteniendo datos:', error);
+      }
+    };
+
+    fetchMaintenanceData();
+  }, [apiUrl]);
 
   // Verificar si el usuario es administrador
   useEffect(() => {
@@ -333,6 +352,55 @@ function MaintenancePage({ vantaElRef, totalMinutes, elapsed, percent, apiUrl })
   const handleMaintenanceToggle = () => {
     // Recargar la página para salir del modo mantenimiento
     window.location.reload();
+  };
+
+  // Calcular tiempo restante basado en los datos reales
+  const calculateTimeRemaining = () => {
+    if (!maintenanceData?.startedAt) {
+      return { minutes: 0, percent: 0 };
+    }
+    
+    const startTime = new Date(maintenanceData.startedAt).getTime();
+    const now = Date.now();
+    const elapsedMs = now - startTime;
+    const elapsedMinutes = Math.floor(elapsedMs / 60000);
+    const remainingMinutes = Math.max(0, totalMinutes - elapsedMinutes);
+    const percent = Math.min(100, Math.round((elapsedMinutes / totalMinutes) * 100));
+    
+    return { minutes: remainingMinutes, percent };
+  };
+
+  const { minutes: remainingMinutes, percent: calculatedPercent } = calculateTimeRemaining();
+
+  // Manejar suscripción por email
+  const handleEmailSubmit = async (e) => {
+    e.preventDefault();
+    setEmailSubmitting(true);
+    
+    try {
+      const formData = new FormData(e.target);
+      const email = formData.get('email');
+      
+      const response = await fetch(apiUrl('/api/maintenance/subscribe'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email })
+      });
+      
+      if (response.ok) {
+        showToast('¡Te avisaremos cuando volvamos!', 'success');
+        e.target.reset();
+      } else {
+        showToast('No se pudo suscribir. Inténtalo de nuevo.', 'error');
+      }
+    } catch (error) {
+      console.error('[MAINTENANCE] Error suscribiendo email:', error);
+      showToast('Error al suscribirse. Inténtalo de nuevo.', 'error');
+    } finally {
+      setEmailSubmitting(false);
+    }
   };
 
   return (
@@ -426,25 +494,38 @@ function MaintenancePage({ vantaElRef, totalMinutes, elapsed, percent, apiUrl })
         </div>
         {/* Tiempo estimado y barra de progreso */}
         <div style={{marginBottom:'1.2rem',width:320,maxWidth:'90%',textAlign:'center'}}>
-          <div style={{fontSize:'1.1rem',marginBottom:6}}>Tiempo estimado restante: <b>{Math.max(0, totalMinutes - Math.floor(elapsed))} min</b></div>
+          <div style={{fontSize:'1.1rem',marginBottom:6}}>Tiempo estimado restante: <b>{remainingMinutes} min</b></div>
           <div style={{background:'#23272a',borderRadius:12,overflow:'hidden',height:18,boxShadow:'0 2px 8px #23272a33'}}>
-            <div style={{width:`${percent}%`,height:'100%',background:'#61dafb',transition:'width 0.5s',borderRadius:12}}></div>
+            <div style={{width:`${calculatedPercent}%`,height:'100%',background:'#61dafb',transition:'width 0.5s',borderRadius:12}}></div>
           </div>
-          <div style={{fontSize:'0.95rem',color:'#FFD700',marginTop:4}}>{percent}% completado</div>
+          <div style={{fontSize:'0.95rem',color:'#FFD700',marginTop:4}}>{calculatedPercent}% completado</div>
         </div>
         {/* Suscripción y botón de reintentar */}
-        <form onSubmit={async (e)=>{
-          e.preventDefault();
-          const fd = new FormData(e.currentTarget);
-          const email = fd.get('email');
-          try {
-            const resp = await fetch(apiUrl('/api/maintenance/subscribe'), { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email }) });
-            if (resp.ok) alert('Te avisaremos cuando volvamos.'); else alert('No se pudo suscribir.');
-          } catch { alert('No se pudo suscribir.'); }
-        }} style={{display:'flex',gap:8,alignItems:'center',justifyContent:'center',flexWrap:'wrap',marginBottom:12}}>
-          <input type="email" name="email" required placeholder="Tu email" aria-label="Tu email" style={{padding:'0.6rem 0.8rem',borderRadius:8,border:'1px solid #ffffff22',background:'rgba(0,0,0,.35)',color:'#fff',minWidth:220}} />
-          <button type="submit" style={{background:'#ef4444',color:'#fff',border:'none',borderRadius:8,padding:'0.7rem 1.5rem',fontWeight:700,cursor:'pointer',boxShadow:'0 2px 8px #ef444433'}}>
-            Avisarme cuando vuelva
+        <form onSubmit={handleEmailSubmit} style={{display:'flex',gap:8,alignItems:'center',justifyContent:'center',flexWrap:'wrap',marginBottom:12}}>
+          <input 
+            type="email" 
+            name="email" 
+            required 
+            placeholder="Tu email" 
+            aria-label="Tu email" 
+            style={{padding:'0.6rem 0.8rem',borderRadius:8,border:'1px solid #ffffff22',background:'rgba(0,0,0,.35)',color:'#fff',minWidth:220}} 
+          />
+          <button 
+            type="submit" 
+            disabled={emailSubmitting}
+            style={{
+              background: emailSubmitting ? '#666' : '#ef4444',
+              color:'#fff',
+              border:'none',
+              borderRadius:8,
+              padding:'0.7rem 1.5rem',
+              fontWeight:700,
+              cursor: emailSubmitting ? 'not-allowed' : 'pointer',
+              boxShadow:'0 2px 8px #ef444433',
+              opacity: emailSubmitting ? 0.7 : 1
+            }}
+          >
+            {emailSubmitting ? 'Enviando...' : 'Avisarme cuando vuelva'}
           </button>
         </form>
         {/* Botón de reintentar */}

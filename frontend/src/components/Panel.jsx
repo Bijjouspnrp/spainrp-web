@@ -7,6 +7,8 @@ import AnimatedCard from './Charts/AnimatedCard.jsx';
 import NotificationCenter from './Notifications/NotificationCenter.jsx';
 import AdminNotificationSender from './Notifications/AdminNotificationSender.jsx';
 import DNIShareModal from './DNIShareModal.jsx';
+import TermsAcceptanceModal from './TermsAcceptanceModal.jsx';
+import { useTermsAcceptance } from '../hooks/useTermsAcceptance.js';
 import './Panel.css';
 import { apiUrl } from '../utils/api';
 import { 
@@ -64,6 +66,9 @@ const Panel = () => {
   const [user, setUser] = useState(null);
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // Terms acceptance hook
+  const { needsAcceptance, isChecking, acceptTerms, rejectTerms } = useTermsAcceptance(user);
   const [showTerms, setShowTerms] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showRoles, setShowRoles] = useState(false);
@@ -1127,6 +1132,14 @@ const Panel = () => {
         dniUrl={dniImgUrl}
         userName={user?.username}
         userId={user?.id}
+      />
+
+      {/* Terms Acceptance Modal */}
+      <TermsAcceptanceModal
+        isOpen={needsAcceptance && !isChecking}
+        onAccept={acceptTerms}
+        onReject={rejectTerms}
+        user={user}
       />
     </div>
   );

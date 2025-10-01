@@ -306,11 +306,15 @@ app.use((req, res, next) => {
     if (!fs.existsSync(MAINTENANCE_START_FILE)) {
       try { fs.writeFileSync(MAINTENANCE_START_FILE, Date.now().toString()); } catch {}
     }
-    // Permitir acceso a /admin/maintenance-off, /api/maintenance (incluye /subscribe) y /socket.io
+    // Permitir acceso a rutas críticas para administradores durante mantenimiento
     if (
       req.path === '/admin/maintenance-off' ||
       req.path.startsWith('/api/maintenance') ||
-      req.path.startsWith('/socket.io')
+      req.path.startsWith('/socket.io') ||
+      req.path.startsWith('/api/auth/') ||  // Rutas de autenticación JWT
+      req.path.startsWith('/api/notifications') ||  // Notificaciones
+      req.path.startsWith('/api/widget') ||  // Widget de Discord
+      req.path.startsWith('/api/membercount')  // Contador de miembros
     ) {
       return next();
     }
