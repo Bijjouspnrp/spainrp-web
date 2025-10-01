@@ -224,8 +224,8 @@ app.post('/api/admin/notify-balance-change', async (req, res) => {
     console.log(`📱 User Agent: ${logData.userAgent}`);
     console.log('🚨 ========================================================\n');
 
-    // Configurar el transporter de email si no existe
-    if (!mailTransporter) {
+    // Configurar el transporter de email (forzar reconexión para debugging)
+    if (!mailTransporter || true) { // Temporal: forzar reconexión
       try {
         console.log('📧 Configurando transporter de email...');
         console.log('📧 Host:', HARDCODED_SMTP.host);
@@ -430,7 +430,7 @@ const HARDCODED_SMTP = {
   host: 'smtp.gmail.com',
   port: 587,
   user: 'bijjou433@gmail.com',           // <- cambia esto
-  pass: 'owps bpyt fvpp jstf'  // <- cambia esto (App Password)
+  pass: 'TU_APP_PASSWORD_AQUI'  // <- cambia esto (App Password de 16 caracteres)
 };
 function getTransporter(){
   if (mailTransporter) return mailTransporter;
