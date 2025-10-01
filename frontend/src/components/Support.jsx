@@ -71,8 +71,8 @@ const Support = () => {
         
         if (!token) {
           console.log('[SUPPORT] ❌ No hay token, usuario no logueado');
-          return;
-        }
+      return;
+    }
 
         const apiUrl = process.env.REACT_APP_API_URL || 'https://spainrp-oficial.onrender.com';
         console.log('[SUPPORT] 🌐 Haciendo petición a /auth/me...', apiUrl);
@@ -93,7 +93,7 @@ const Support = () => {
           const data = await response.json();
           console.log('[SUPPORT] 👤 Datos del usuario:', data);
           setUser(data.user);
-      } else {
+    } else {
           console.log('[SUPPORT] ❌ Error en autenticación:', response.status);
           const errorText = await response.text();
           console.log('[SUPPORT] ❌ Error details:', errorText);
@@ -623,10 +623,10 @@ const Support = () => {
               </div>
               <h3 className="quick-action-title">{action.title}</h3>
               <p className="quick-action-description">{action.description}</p>
-            </div>
-          ))}
-        </div>
               </div>
+          ))}
+              </div>
+          </div>
 
       {/* Canales de Contacto */}
       <div className="support-section">
@@ -641,7 +641,7 @@ const Support = () => {
               {option.popular && <div className="popular-badge">Más Popular</div>}
               <div className="contact-icon" style={{ color: option.color }}>
                 {option.icon}
-              </div>
+                    </div>
               <h3 className="contact-title">{option.title}</h3>
               <p className="contact-description">{option.description}</p>
               <div className="contact-features">
@@ -757,8 +757,8 @@ const Support = () => {
               </a>
             </div>
           ))}
+          </div>
         </div>
-      </div>
 
       {/* Footer de Soporte */}
       <div className="support-footer">
@@ -782,7 +782,7 @@ const Support = () => {
               <FaDiscord />
               Discord
             </a>
-          </div>
+                </div>
                 </div>
               </div>
 
@@ -883,14 +883,14 @@ const Support = () => {
                               <span></span>
                               <span>Moderador está escribiendo...</span>
                             </div>
-              </div>
-            </div>
-                      )}
+                      </div>
                     </div>
+                )}
+              </div>
 
                 {/* Input de Mensaje */}
                 <form onSubmit={sendMessage} className="chat-input-container">
-                  <input
+                <input
                     type="text"
                     placeholder="Escribe tu mensaje..."
                     value={newMessage}
@@ -908,9 +908,9 @@ const Support = () => {
                 </form>
               </>
           )}
-        </div>
-      </div>
-      )}
+              </div>
+            </div>
+          )}
     </div>
   );
 };
