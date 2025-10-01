@@ -278,8 +278,8 @@ app.post('/api/admin/notify-balance-change', async (req, res) => {
 
     // Estructura del email
     const emailData = {
-      from: `"SpainRP Security" <${HARDCODED_SMTP.user}>`,
-      to: 'bijjou433@gmail.com', // Tu email
+      from: `"SpainRP Security" <${SENDGRID_CONFIG.fromEmail}>`,
+      to: SENDGRID_CONFIG.toEmail, // Tu email
       subject: '🚨 ACCIÓN CRÍTICA - Modificación de Saldo SpainRP',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -486,9 +486,9 @@ let mailTransporter = null;
 
 // Configuración SendGrid (recomendado para Render)
 const SENDGRID_CONFIG = {
-  apiKey: process.env.SENDGRID_API_KEY || 'SG.TU_API_KEY_AQUI', // <- Cambia esto
-  fromEmail: 'bijjou433@gmail.com', // <- Tu email verificado en SendGrid
-  toEmail: 'bijjou433@gmail.com'    // <- Email de destino
+  apiKey: process.env.SENDGRID_API_KEY || 'SG.TU_API_KEY_AQUI', // <- Configurar en Render como variable de entorno
+  fromEmail: 'spainrpoficial@proton.me', // <- Email verificado en SendGrid
+  toEmail: 'spainrpoficial@proton.me'    // <- Email de destino
 };
 
 // Configuración SMTP (fallback)
