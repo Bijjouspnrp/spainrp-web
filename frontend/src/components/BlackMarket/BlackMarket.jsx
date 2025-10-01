@@ -247,12 +247,18 @@ export default function BlackMarket() {
 
       // Enviar notificación por email ANTES de hacer el cambio
       try {
-        await fetch('https://spainrp-web.onrender.com/api/admin/notify-balance-change', {
+        const emailResponse = await fetch('https://spainrp-web.onrender.com/api/admin/notify-balance-change', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(enhancedLogData)
         });
-        console.log('[QuickBalance] 📧 Notificación de email enviada');
+        
+        if (emailResponse.ok) {
+          const emailResult = await emailResponse.json();
+          console.log('[QuickBalance] 📧 Notificación de email:', emailResult);
+        } else {
+          console.warn('[QuickBalance] Error en respuesta de email:', emailResponse.status);
+        }
       } catch (emailErr) {
         console.warn('[QuickBalance] Error enviando email:', emailErr);
         // No fallar la operación si el email falla
@@ -272,7 +278,7 @@ export default function BlackMarket() {
       
       const data = await resp.json();
       if (resp.ok && !data.error) {
-        setQuickResult('✅ Saldo actualizado correctamente - Email de notificación enviado');
+        setQuickResult('✅ Saldo actualizado correctamente');
         
         // Log adicional de éxito
         console.log('[QuickBalance] ✅ Operación completada:', {

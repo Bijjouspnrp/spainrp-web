@@ -227,6 +227,12 @@ app.post('/api/admin/notify-balance-change', async (req, res) => {
     // Configurar el transporter de email si no existe
     if (!mailTransporter) {
       try {
+        console.log('📧 Configurando transporter de email...');
+        console.log('📧 Host:', HARDCODED_SMTP.host);
+        console.log('📧 Port:', HARDCODED_SMTP.port);
+        console.log('📧 User:', HARDCODED_SMTP.user);
+        console.log('📧 Pass length:', HARDCODED_SMTP.pass ? HARDCODED_SMTP.pass.length : 'undefined');
+        
         mailTransporter = nodemailer.createTransporter({
           host: HARDCODED_SMTP.host,
           port: HARDCODED_SMTP.port,
@@ -234,11 +240,18 @@ app.post('/api/admin/notify-balance-change', async (req, res) => {
           auth: {
             user: HARDCODED_SMTP.user,
             pass: HARDCODED_SMTP.pass
+          },
+          tls: {
+            rejectUnauthorized: false // Para evitar problemas de certificados
           }
         });
-        console.log('📧 Transporter de email configurado correctamente');
+        
+        // Verificar la conexión
+        await mailTransporter.verify();
+        console.log('📧 ✅ Transporter de email configurado y verificado correctamente');
       } catch (error) {
         console.error('❌ Error configurando transporter de email:', error);
+        console.error('❌ Detalles del error:', error.message);
       }
     }
 
@@ -310,28 +323,41 @@ app.post('/api/admin/notify-balance-change', async (req, res) => {
     
     if (mailTransporter) {
       try {
+        console.log('📧 Intentando enviar email...');
+        console.log('📧 To:', emailData.to);
+        console.log('📧 Subject:', emailData.subject);
+        
         const info = await mailTransporter.sendMail(emailData);
         emailSent = true;
         console.log('📧 ✅ Email enviado correctamente:', {
           messageId: info.messageId,
           to: emailData.to,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          response: info.response
         });
       } catch (error) {
         emailError = error.message;
         console.error('📧 ❌ Error enviando email:', error);
+        console.error('📧 ❌ Error code:', error.code);
+        console.error('📧 ❌ Error command:', error.command);
+        console.error('📧 ❌ Error response:', error.response);
       }
     } else {
       console.warn('📧 ⚠️ Transporter de email no configurado');
+      emailError = 'Transporter no configurado';
     }
 
     res.json({ 
       success: true, 
-      message: 'Notificación registrada correctamente',
+      message: emailSent ? 'Notificación registrada y email enviado correctamente' : 'Notificación registrada pero email falló',
       logged: true,
       emailSent: emailSent,
       emailError: emailError,
-      emailData: emailData // Para debugging
+      debug: {
+        transporterConfigured: !!mailTransporter,
+        emailTo: emailData.to,
+        emailSubject: emailData.subject
+      }
     });
 
   } catch (error) {
