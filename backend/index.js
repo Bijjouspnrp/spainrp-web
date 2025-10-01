@@ -500,11 +500,22 @@ const HARDCODED_SMTP = {
 };
 
 // Configurar SendGrid
+console.log('📧 [SENDGRID] Verificando configuración...');
+console.log('📧 [SENDGRID] API Key from env:', process.env.SENDGRID_API_KEY ? 'SET' : 'NOT SET');
+console.log('📧 [SENDGRID] API Key length:', process.env.SENDGRID_API_KEY ? process.env.SENDGRID_API_KEY.length : 0);
+console.log('📧 [SENDGRID] Fallback API Key:', SENDGRID_CONFIG.apiKey);
+
 if (SENDGRID_CONFIG.apiKey && SENDGRID_CONFIG.apiKey !== 'SG.TU_API_KEY_AQUI') {
   sgMail.setApiKey(SENDGRID_CONFIG.apiKey);
-  console.log('📧 SendGrid configurado correctamente');
+  console.log('📧 ✅ SendGrid configurado correctamente');
+  console.log('📧 ✅ From Email:', SENDGRID_CONFIG.fromEmail);
+  console.log('📧 ✅ To Email:', SENDGRID_CONFIG.toEmail);
 } else {
   console.log('📧 ⚠️ SendGrid no configurado - usando solo logging');
+  console.log('📧 ⚠️ Para configurar SendGrid:');
+  console.log('📧 ⚠️ 1. Ve a Render Dashboard → Environment Variables');
+  console.log('📧 ⚠️ 2. Agrega SENDGRID_API_KEY = SG.Lsw3MHfQS9K0n1VqcfJSDg...');
+  console.log('📧 ⚠️ 3. Redeploy el servicio');
 }
 
 // Función para enviar email con SendGrid
@@ -3293,9 +3304,9 @@ app.get('/api/roblox/profile/:userId', async (req, res) => {
     
     if (robloxData) {
       // Usuario verificado, devolver datos reales
-      res.json({
-        success: true,
-        profile: {
+    res.json({
+      success: true,
+      profile: {
           userId: robloxData.robloxId,
           username: robloxData.username,
           displayName: robloxData.displayName,
