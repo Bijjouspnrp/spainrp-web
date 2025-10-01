@@ -26,6 +26,7 @@ import Cookies from './components/Cookies';
 import CookieConsentBanner from './components/CookieConsentBanner';
 import Terms from './components/Terms';
 import Support from './components/Support';
+import ModeratorDashboard from './components/ModeratorDashboard';
 import NotFound from './components/NotFound';
 import spainLogo from '/assets/spainrplogo.png';
 import SimuladorTienda from './components/Apps/SimuladorTienda';
@@ -900,6 +901,7 @@ function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading }) {
         <Route path="/cookies" element={<Cookies />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/support" element={<Support />} />
+        <Route path="/moderator-dashboard" element={<ModeratorDashboard />} />
         <Route path="/blackmarket" element={<BlackMarket />} />
         <Route path="/rules" element={<Rules />} />
         <Route path="/news" element={<News />} />

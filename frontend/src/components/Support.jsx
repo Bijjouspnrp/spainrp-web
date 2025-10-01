@@ -741,6 +741,16 @@ const Support = () => {
                     <FaCircle className={`status-dot ${isConnected ? 'connected' : 'disconnected'}`} />
                     <span>{isConnected ? 'Conectado' : 'Desconectado'}</span>
                   </div>
+                  <div className="moderator-actions">
+                    <button 
+                      className="moderator-panel-btn"
+                      onClick={() => window.open('/moderator-dashboard', '_blank')}
+                      title="Abrir Panel de Moderadores"
+                    >
+                      <FaUserFriends />
+                      Panel Moderadores
+                    </button>
+                  </div>
                 </div>
               </div>
               <button 
