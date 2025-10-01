@@ -67,20 +67,39 @@ const Support = () => {
     const getUserInfo = async () => {
       try {
         const token = localStorage.getItem('token');
-        if (!token) return;
+        console.log('[SUPPORT] 🔍 Token encontrado:', token ? 'Sí' : 'No');
+        
+        if (!token) {
+          console.log('[SUPPORT] ❌ No hay token, usuario no logueado');
+          return;
+        }
 
-        const response = await fetch('https://spainrp-web.onrender.com/auth/me', {
+        const apiUrl = process.env.REACT_APP_API_URL || 'https://spainrp-oficial.onrender.com';
+        console.log('[SUPPORT] 🌐 Haciendo petición a /auth/me...', apiUrl);
+        
+        const response = await fetch(`${apiUrl}/auth/me`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
 
+        console.log('[SUPPORT] 📡 Respuesta de /auth/me:', {
+          status: response.status,
+          ok: response.ok,
+          statusText: response.statusText
+        });
+
         if (response.ok) {
           const data = await response.json();
+          console.log('[SUPPORT] 👤 Datos del usuario:', data);
           setUser(data.user);
+        } else {
+          console.log('[SUPPORT] ❌ Error en autenticación:', response.status);
+          const errorText = await response.text();
+          console.log('[SUPPORT] ❌ Error details:', errorText);
         }
       } catch (error) {
-        console.error('Error obteniendo información del usuario:', error);
+        console.error('[SUPPORT] ❌ Error obteniendo información del usuario:', error);
       }
     };
 
@@ -96,7 +115,7 @@ const Support = () => {
 
     console.log('[SUPPORT] Inicializando Socket.IO para usuario:', user.username);
     
-    const newSocket = io(process.env.REACT_APP_API_URL || 'https://spainrp-web.onrender.com', {
+    const newSocket = io(process.env.REACT_APP_API_URL || 'https://spainrp-oficial.onrender.com', {
       transports: ['websocket', 'polling'],
       timeout: 10000,
       reconnection: true,
