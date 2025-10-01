@@ -60,19 +60,32 @@ const ModeratorDashboard = () => {
     return (
       <div className="moderator-dashboard">
         <div className="access-denied">
-          <h2>Acceso Denegado</h2>
-          <p>Debes iniciar sesión para acceder al panel de moderadores.</p>
-          <button 
-            onClick={() => window.location.href = '/auth/login'}
-            className="login-button"
-          >
-            Iniciar Sesión
-          </button>
+          <h2>⚠️ Acceso Temporal</h2>
+          <p>Panel de moderadores en modo de prueba.</p>
+          <p>Puedes acceder sin iniciar sesión temporalmente.</p>
+          <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+            <button 
+              onClick={() => window.location.href = '/auth/login'}
+              className="login-button"
+            >
+              Iniciar Sesión
+            </button>
+            <button 
+              onClick={() => {
+                setUser({ username: 'Usuario Demo', id: 'demo' });
+                setIsModerator(true);
+              }}
+              className="demo-button"
+            >
+              Continuar como Demo
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
+  // Temporalmente permitir acceso a todos los usuarios logueados
   if (!isModerator) {
     return (
       <div className="moderator-dashboard">

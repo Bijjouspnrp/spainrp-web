@@ -210,6 +210,24 @@
   transform: translateY(-2px);
 }
 
+.demo-button {
+  margin-top: 1.5rem;
+  padding: 0.75rem 2rem;
+  background: #2ecc71;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.demo-button:hover {
+  background: #27ae60;
+  transform: translateY(-2px);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .moderator-header {

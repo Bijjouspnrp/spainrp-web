@@ -497,6 +497,13 @@ const Support = () => {
 
   const quickActions = [
     {
+      title: 'Panel Moderadores',
+      icon: <FaUserFriends />,
+      color: '#5865f2',
+      description: 'Acceder al panel de gestión de chats en vivo',
+      action: () => window.location.href = '/moderator-dashboard'
+    },
+    {
       title: 'Crear Ticket',
       icon: <FaTicketAlt />,
       color: '#f39c12',
