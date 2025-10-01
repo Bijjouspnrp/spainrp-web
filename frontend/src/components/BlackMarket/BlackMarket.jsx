@@ -11,73 +11,365 @@ const ITEMS = [
     category: 'Armas ERLC',
     icon: <GiPistolGun />,
     options: [
-      { itemId: 'bm_beretta_m9', name: 'Beretta M9', price: 1900, icon: <GiPistolGun /> },
-      { itemId: 'bm_remington_870', name: 'Remington 870', price: 24000, icon: <GiPistolGun /> },
-      { itemId: 'bm_ak_47', name: 'AK-47', price: 125000, icon: <GiPistolGun /> },
-      { itemId: 'bm_desert_eagle', name: 'Desert Eagle', price: 25000, icon: <GiPistolGun /> },
-      { itemId: 'bm_lmt_l129a1', name: 'LMT_L129A1', price: 50000, icon: <GiPistolGun /> },
-      { itemId: 'bm_cuchillo_erlc', name: 'Cuchillo', price: 800, icon: <GiKnifeThrust /> },
-      { itemId: 'bm_m249', name: 'M249', price: 140000, icon: <GiSentryGun /> },
+      { 
+        itemId: 'bm_beretta_m9', 
+        name: 'Beretta M9', 
+        price: 1900, 
+        icon: <GiPistolGun />,
+        description: 'Pistola semiautomática de 9mm. Precisión alta y confiable. Ideal para combate urbano.',
+        stock: 12,
+        maxStock: 15,
+        rarity: 'common',
+        effects: ['+15% precisión', '+10% daño']
+      },
+      { 
+        itemId: 'bm_remington_870', 
+        name: 'Remington 870', 
+        price: 24000, 
+        icon: <GiPistolGun />,
+        description: 'Escopeta de acción de bombeo. Devastadora a corta distancia. Perfecta para asaltos.',
+        stock: 5,
+        maxStock: 8,
+        rarity: 'rare',
+        effects: ['+50% daño corta distancia', 'Disparo múltiple']
+      },
+      { 
+        itemId: 'bm_ak_47', 
+        name: 'AK-47', 
+        price: 125000, 
+        icon: <GiPistolGun />,
+        description: 'Rifle de asalto legendario. Confiable en cualquier condición. El arma más temida.',
+        stock: 2,
+        maxStock: 3,
+        rarity: 'epic',
+        effects: ['+40% daño', '+25% cadencia', 'Resistente a daños']
+      },
+      { 
+        itemId: 'bm_desert_eagle', 
+        name: 'Desert Eagle', 
+        price: 25000, 
+        icon: <GiPistolGun />,
+        description: 'Pistola de calibre .50. Potencia devastadora. Para aquellos que buscan el máximo impacto.',
+        stock: 3,
+        maxStock: 5,
+        rarity: 'rare',
+        effects: ['+80% daño', '+30% penetración', 'Retroceso alto']
+      },
+      { 
+        itemId: 'bm_lmt_l129a1', 
+        name: 'LMT L129A1', 
+        price: 50000, 
+        icon: <GiPistolGun />,
+        description: 'Rifle de precisión militar. Alcance extremo y precisión letal. Para francotiradores expertos.',
+        stock: 1,
+        maxStock: 2,
+        rarity: 'legendary',
+        effects: ['+100% precisión', '+200% alcance', 'Daño crítico']
+      },
+      { 
+        itemId: 'bm_cuchillo_erlc', 
+        name: 'Cuchillo Táctico', 
+        price: 800, 
+        icon: <GiKnifeThrust />,
+        description: 'Cuchillo de combate silencioso. Letal en combate cuerpo a cuerpo. No hace ruido.',
+        stock: 20,
+        maxStock: 25,
+        rarity: 'common',
+        effects: ['Silencioso', '+25% daño cuerpo a cuerpo', 'Velocidad de ataque']
+      },
+      { 
+        itemId: 'bm_m249', 
+        name: 'M249 SAW', 
+        price: 140000, 
+        icon: <GiSentryGun />,
+        description: 'Ametralladora ligera de 5.56mm. Supresión de fuego devastadora. Para combate intenso.',
+        stock: 1,
+        maxStock: 1,
+        rarity: 'legendary',
+        effects: ['+200% cadencia', '+150% daño', 'Supresión de fuego']
+      },
     ]
   },
   {
     category: 'Sustancias (Compras se realizan en la Cafeteria)',
     icon: <FaPills />,
     options: [
-      { itemId: 'bm_cafe_magico', name: 'Cafe con magia', price: 4000 },
-      { itemId: 'bm_marihuana', name: 'Marihuana', price: 1200 },
-      { itemId: 'bm_lsd', name: 'LSD', price: 2500 },
-      { itemId: 'bm_extasis', name: 'Éxtasis', price: 1800 },
-      { itemId: 'bm_metanfetamina', name: 'Metanfetamina', price: 3500 },
-      { itemId: 'bm_heroina', name: 'Heroína', price: 5000 },
+      { 
+        itemId: 'bm_cafe_magico', 
+        name: 'Café Mágico', 
+        price: 4000,
+        description: 'Café especial con propiedades energizantes únicas. Efecto prolongado y sin efectos secundarios.',
+        stock: 15,
+        maxStock: 20,
+        rarity: 'uncommon',
+        effects: ['+30% energía', '+20% concentración', 'Sin adicción']
+      },
+      { 
+        itemId: 'bm_marihuana', 
+        name: 'Marihuana Medicinal', 
+        price: 1200,
+        description: 'Cannabis de alta calidad. Efecto relajante y analgésico. Menos adictivo que otras sustancias.',
+        stock: 25,
+        maxStock: 30,
+        rarity: 'common',
+        effects: ['+25% relajación', '-20% dolor', 'Efecto calmante']
+      },
+      { 
+        itemId: 'bm_lsd', 
+        name: 'LSD', 
+        price: 2500,
+        description: 'Ácido lisérgico de alta pureza. Experiencia psicodélica intensa. Solo para usuarios experimentados.',
+        stock: 8,
+        maxStock: 12,
+        rarity: 'rare',
+        effects: ['+100% percepción', 'Experiencia psicodélica', 'Riesgo de mal viaje']
+      },
+      { 
+        itemId: 'bm_extasis', 
+        name: 'Éxtasis', 
+        price: 1800,
+        description: 'MDMA de alta pureza. Efecto estimulante y empatógeno. Popular en fiestas y eventos.',
+        stock: 12,
+        maxStock: 18,
+        rarity: 'uncommon',
+        effects: ['+40% energía', '+50% sociabilidad', 'Efecto temporal']
+      },
+      { 
+        itemId: 'bm_metanfetamina', 
+        name: 'Metanfetamina', 
+        price: 3500,
+        description: 'Estimulante extremadamente potente. Efecto energizante intenso pero altamente adictivo.',
+        stock: 6,
+        maxStock: 10,
+        rarity: 'epic',
+        effects: ['+80% energía', '+60% resistencia', 'Adicción alta']
+      },
+      { 
+        itemId: 'bm_heroina', 
+        name: 'Heroína', 
+        price: 5000,
+        description: 'Sustancia altamente adictiva. Efecto eufórico intenso. Extremadamente peligrosa y adictiva.',
+        stock: 3,
+        maxStock: 5,
+        rarity: 'epic',
+        effects: ['+100% euforia', 'Adicción extrema', 'Riesgo de sobredosis']
+      },
     ]
   },
   {
     category: 'Servicios',
     icon: <FaUserSecret />,
     options: [
-      { itemId: 'bm_dni_falso_7d', name: 'DNI FALSO (7 dias)', price: 3000 },
-      { itemId: 'bm_eliminar_multa', name: 'Eliminación 1 multa', price: 28000 },
-      { itemId: 'bm_borrar_antecedente', name: 'Borrar 1 antecedente', price: 95000 },
-      { itemId: 'bm_acceso_panel_policia', name: 'Acceso panel policía', price: 9000000 },
+      { 
+        itemId: 'bm_dni_falso_7d', 
+        name: 'DNI Falso (7 días)', 
+        price: 3000,
+        description: 'Documento de identidad falsificado válido por 7 días. Incluye verificación en bases de datos.',
+        stock: 5,
+        maxStock: 8,
+        rarity: 'rare',
+        effects: ['Nueva identidad temporal', 'Acceso a servicios', 'Riesgo de detección']
+      },
+      { 
+        itemId: 'bm_eliminar_multa', 
+        name: 'Eliminación de Multa', 
+        price: 28000,
+        description: 'Servicio para eliminar una multa de tráfico del sistema. Conexiones internas en la policía.',
+        stock: 3,
+        maxStock: 5,
+        rarity: 'epic',
+        effects: ['Elimina 1 multa', 'Conexiones internas', 'Riesgo alto']
+      },
+      { 
+        itemId: 'bm_borrar_antecedente', 
+        name: 'Borrar Antecedente', 
+        price: 95000,
+        description: 'Elimina un antecedente penal del registro. Requiere acceso a sistemas judiciales.',
+        stock: 1,
+        maxStock: 2,
+        rarity: 'legendary',
+        effects: ['Elimina antecedente penal', 'Acceso judicial', 'Riesgo extremo']
+      },
+      { 
+        itemId: 'bm_acceso_panel_policia', 
+        name: 'Acceso Panel Policía', 
+        price: 9000000,
+        description: 'Acceso completo al panel interno de la policía. Información clasificada y controles del sistema.',
+        stock: 1,
+        maxStock: 1,
+        rarity: 'legendary',
+        effects: ['Acceso total policía', 'Información clasificada', 'Control del sistema']
+      },
     ]
   },
   {
     category: 'Dinero',
     icon: <FaMoneyBillWave />,
     options: [
-      { itemId: 'bm_dinero_falso', name: 'Dinero falso', price: 2000 },
-      { itemId: 'bm_transferencia_oculta', name: 'Transferencia oculta', price: 5000 },
-      { itemId: 'bm_lavado_dinero', name: 'Lavado de dinero', price: 9000 },
+      { 
+        itemId: 'bm_dinero_falso', 
+        name: 'Dinero Falso', 
+        price: 2000,
+        description: 'Billetes falsos de alta calidad. Difícil de detectar. Incluye diferentes denominaciones.',
+        stock: 8,
+        maxStock: 12,
+        rarity: 'rare',
+        effects: ['+100% dinero temporal', 'Riesgo de detección', 'Valor variable']
+      },
+      { 
+        itemId: 'bm_transferencia_oculta', 
+        name: 'Transferencia Oculta', 
+        price: 5000,
+        description: 'Transferencia bancaria sin rastro. Dinero limpio que no puede ser rastreado.',
+        stock: 5,
+        maxStock: 8,
+        rarity: 'epic',
+        effects: ['Dinero limpio', 'Sin rastro', 'Transferencia segura']
+      },
+      { 
+        itemId: 'bm_lavado_dinero', 
+        name: 'Lavado de Dinero', 
+        price: 9000,
+        description: 'Servicio profesional para lavar dinero sucio. Convierte dinero ilegal en legal.',
+        stock: 3,
+        maxStock: 5,
+        rarity: 'epic',
+        effects: ['Dinero legalizado', 'Sin rastro', 'Comisión 20%']
+      },
     ]
   },
   {
     category: 'Hacking',
     icon: <FaLaptopCode />,
     options: [
-      { itemId: 'bm_vpn_premium', name: 'VPN Premium', price: 2500 },
-      { itemId: 'bm_movil_seguro', name: 'Movil seguro (Irrastreable)', price: 12000 },
-      { itemId: 'bm_keylogger', name: 'Keylogger', price: 4000 },
-      { itemId: 'bm_md_anonimos', name: 'Acceso a mensajes anonimos mediante bot por MD', price: 7000 },
-      { itemId: 'bm_root_servidor', name: 'Acceso root servidor', price: 25000 },
+      { 
+        itemId: 'bm_vpn_premium', 
+        name: 'VPN Premium', 
+        price: 2500,
+        description: 'VPN de alta seguridad con servidores en múltiples países. Anonimato total y velocidad alta.',
+        stock: 15,
+        maxStock: 20,
+        rarity: 'uncommon',
+        effects: ['Anonimato total', 'Servidores globales', 'Velocidad alta']
+      },
+      { 
+        itemId: 'bm_movil_seguro', 
+        name: 'Móvil Seguro', 
+        price: 12000,
+        description: 'Dispositivo móvil completamente irrastreable. Modificado para evitar cualquier tipo de seguimiento.',
+        stock: 4,
+        maxStock: 6,
+        rarity: 'epic',
+        effects: ['Irrastreable', 'Comunicación segura', 'Anti-espionaje']
+      },
+      { 
+        itemId: 'bm_keylogger', 
+        name: 'Keylogger', 
+        price: 4000,
+        description: 'Software espía para capturar contraseñas y datos. Instalación remota y oculta.',
+        stock: 8,
+        maxStock: 12,
+        rarity: 'rare',
+        effects: ['Captura de contraseñas', 'Instalación remota', 'Oculto']
+      },
+      { 
+        itemId: 'bm_md_anonimos', 
+        name: 'Mensajes Anónimos', 
+        price: 7000,
+        description: 'Acceso a sistema de mensajes anónimos mediante bot. Comunicación completamente privada.',
+        stock: 6,
+        maxStock: 10,
+        rarity: 'rare',
+        effects: ['Mensajes anónimos', 'Comunicación privada', 'Bot automatizado']
+      },
+      { 
+        itemId: 'bm_root_servidor', 
+        name: 'Acceso Root Servidor', 
+        price: 25000,
+        description: 'Acceso completo de administrador a servidores. Control total del sistema.',
+        stock: 1,
+        maxStock: 2,
+        rarity: 'legendary',
+        effects: ['Control total servidor', 'Acceso administrativo', 'Poder ilimitado']
+      },
     ]
   },
   {
     category: 'Sustancias',
     icon: <GiChemicalDrop />,
     options: [
-      { itemId: 'bm_cocaina', name: 'Cocaína', price: 8000, icon: <GiChemicalDrop /> },
-      { itemId: 'bm_extasis_2', name: 'Éxtasis', price: 4000, icon: <FaPills /> },
-      { itemId: 'bm_veneno', name: 'Veneno', price: 6000, icon: <FaSkullCrossbones /> },
+      { 
+        itemId: 'bm_cocaina', 
+        name: 'Cocaína Premium', 
+        price: 8000, 
+        icon: <GiChemicalDrop />,
+        description: 'Cocaína de alta pureza (95%). Efecto energizante extremo. Peligroso pero muy rentable.',
+        stock: 5,
+        maxStock: 8,
+        rarity: 'epic',
+        effects: ['+50% velocidad', '+30% resistencia', 'Adicción alta']
+      },
+      { 
+        itemId: 'bm_extasis_2', 
+        name: 'Éxtasis Premium', 
+        price: 4000, 
+        icon: <FaPills />,
+        description: 'MDMA de pureza extrema. Efecto estimulante y empatógeno de larga duración.',
+        stock: 10,
+        maxStock: 15,
+        rarity: 'rare',
+        effects: ['+60% energía', '+70% sociabilidad', 'Duración extendida']
+      },
+      { 
+        itemId: 'bm_veneno', 
+        name: 'Veneno Letal', 
+        price: 6000, 
+        icon: <FaSkullCrossbones />,
+        description: 'Sustancia tóxica mortal. Efecto letal en dosis pequeñas. Solo para uso profesional.',
+        stock: 2,
+        maxStock: 3,
+        rarity: 'legendary',
+        effects: ['Efecto letal', 'Dosis pequeña', 'Riesgo extremo']
+      },
     ]
   },
   {
     category: 'Servicios',
     icon: <FaLaptopCode />,
     options: [
-      { itemId: 'bm_hackeo', name: 'Hackeo', price: 15000, icon: <FaLaptopCode /> },
-      { itemId: 'bm_falsificacion', name: 'Falsificación', price: 10000, icon: <FaUserSecret /> },
-      { itemId: 'bm_lavado_dinero_2', name: 'Lavado de dinero', price: 20000, icon: <FaMoneyBillWave /> },
+      { 
+        itemId: 'bm_hackeo', 
+        name: 'Servicio de Hackeo', 
+        price: 15000, 
+        icon: <FaLaptopCode />,
+        description: 'Servicio profesional de hacking. Acceso a sistemas informáticos vulnerables.',
+        stock: 3,
+        maxStock: 5,
+        rarity: 'epic',
+        effects: ['Hackeo profesional', 'Acceso a sistemas', 'Riesgo alto']
+      },
+      { 
+        itemId: 'bm_falsificacion', 
+        name: 'Servicio de Falsificación', 
+        price: 10000, 
+        icon: <FaUserSecret />,
+        description: 'Servicio completo de falsificación de documentos. Calidad profesional garantizada.',
+        stock: 4,
+        maxStock: 6,
+        rarity: 'rare',
+        effects: ['Documentos falsos', 'Calidad profesional', 'Riesgo medio']
+      },
+      { 
+        itemId: 'bm_lavado_dinero_2', 
+        name: 'Lavado de Dinero Premium', 
+        price: 20000, 
+        icon: <FaMoneyBillWave />,
+        description: 'Servicio premium de lavado de dinero. Convierte grandes cantidades de dinero ilegal en legal.',
+        stock: 2,
+        maxStock: 3,
+        rarity: 'legendary',
+        effects: ['Lavado masivo', 'Dinero legalizado', 'Comisión 15%']
+      },
     ]
   },
   
@@ -1241,13 +1533,51 @@ if (!user) {
             const displayName = apiDef?.name || item.name;
             const displayPrice = typeof apiDef?.price === 'number' ? apiDef.price : item.price;
             return (
-            <div key={item.name} className="blackmarket-hack-item">
-              {item.icon && <span className="blackmarket-hack-item-icon">{item.icon}</span>}
-              <span className="blackmarket-hack-item-name">{displayName}</span>
-              <span className="blackmarket-hack-item-price">{Number(displayPrice).toLocaleString()}€</span>
-              <button className="blackmarket-hack-buy" onClick={() => handleBuy({ ...item, name: displayName, price: displayPrice })}>
-                Comprar
-              </button>
+            <div key={item.name} className={`blackmarket-hack-item ${item.rarity || 'common'}`}>
+              <div className="item-header">
+                {item.icon && <span className="blackmarket-hack-item-icon">{item.icon}</span>}
+                <div className="item-info">
+                  <span className="blackmarket-hack-item-name">{displayName}</span>
+                  <span className="blackmarket-hack-item-price">{Number(displayPrice).toLocaleString()}€</span>
+                </div>
+                <div className="item-stock">
+                  <span className={`stock-indicator ${item.stock <= 2 ? 'low' : item.stock <= 5 ? 'medium' : 'high'}`}>
+                    {item.stock || 0}/{item.maxStock || 10}
+                  </span>
+                </div>
+              </div>
+              
+              {item.description && (
+                <div className="item-description">
+                  <p>{item.description}</p>
+                </div>
+              )}
+              
+              {item.effects && item.effects.length > 0 && (
+                <div className="item-effects">
+                  <h4>Efectos:</h4>
+                  <ul>
+                    {item.effects.map((effect, idx) => (
+                      <li key={idx} className={`effect ${effect.includes('+') ? 'positive' : effect.includes('-') ? 'negative' : 'neutral'}`}>
+                        {effect}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              <div className="item-actions">
+                <button 
+                  className={`blackmarket-hack-buy ${item.stock <= 0 ? 'disabled' : ''}`} 
+                  onClick={() => handleBuy({ ...item, name: displayName, price: displayPrice })}
+                  disabled={item.stock <= 0}
+                >
+                  {item.stock <= 0 ? 'Sin Stock' : 'Comprar'}
+                </button>
+                {item.stock <= 0 && (
+                  <span className="out-of-stock">Agotado</span>
+                )}
+              </div>
             </div>
             );
           })}

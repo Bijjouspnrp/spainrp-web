@@ -847,6 +847,249 @@
 .toast-slide-in {
   animation: toastIn 360ms cubic-bezier(.2,.9,.2,1) forwards;
 }
+
+/* =============================================================================
+   MEJORAS DE UI PARA ITEMS CON DESCRIPCIONES Y STOCK
+   ============================================================================= */
+
+/* Estilos para items mejorados */
+.blackmarket-hack-item {
+  background: linear-gradient(135deg, rgba(35, 39, 42, 0.9), rgba(24, 27, 38, 0.9));
+  border: 1px solid rgba(114, 137, 218, 0.2);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.blackmarket-hack-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(114, 137, 218, 0.3);
+  border-color: rgba(114, 137, 218, 0.4);
+}
+
+/* Rarity colors */
+.blackmarket-hack-item.common {
+  border-left: 4px solid #95a5a6;
+}
+
+.blackmarket-hack-item.uncommon {
+  border-left: 4px solid #2ecc71;
+}
+
+.blackmarket-hack-item.rare {
+  border-left: 4px solid #3498db;
+}
+
+.blackmarket-hack-item.epic {
+  border-left: 4px solid #9b59b6;
+}
+
+.blackmarket-hack-item.legendary {
+  border-left: 4px solid #f39c12;
+  background: linear-gradient(135deg, rgba(243, 156, 18, 0.1), rgba(35, 39, 42, 0.9));
+}
+
+/* Item header */
+.item-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.blackmarket-hack-item-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+
+.blackmarket-hack-item-price {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #FFD700;
+  margin: 0;
+}
+
+/* Stock indicator */
+.item-stock {
+  display: flex;
+  align-items: center;
+}
+
+.stock-indicator {
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+  min-width: 60px;
+}
+
+.stock-indicator.high {
+  background: rgba(46, 204, 113, 0.2);
+  color: #2ecc71;
+  border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.stock-indicator.medium {
+  background: rgba(243, 156, 18, 0.2);
+  color: #f39c12;
+  border: 1px solid rgba(243, 156, 18, 0.3);
+}
+
+.stock-indicator.low {
+  background: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+  border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+/* Item description */
+.item-description {
+  margin: 0.75rem 0;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  border-left: 3px solid #7289da;
+}
+
+.item-description p {
+  margin: 0;
+  color: #bdc3c7;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+/* Item effects */
+.item-effects {
+  margin: 0.75rem 0;
+}
+
+.item-effects h4 {
+  margin: 0 0 0.5rem 0;
+  color: #7289da;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.item-effects ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.item-effects li {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.effect.positive {
+  background: rgba(46, 204, 113, 0.2);
+  color: #2ecc71;
+  border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.effect.negative {
+  background: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+  border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.effect.neutral {
+  background: rgba(149, 165, 166, 0.2);
+  color: #95a5a6;
+  border: 1px solid rgba(149, 165, 166, 0.3);
+}
+
+/* Item actions */
+.item-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(114, 137, 218, 0.1);
+}
+
+.blackmarket-hack-buy {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #7289da, #5865f2);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.blackmarket-hack-buy:hover:not(.disabled) {
+  background: linear-gradient(135deg, #5865f2, #4752c4);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(114, 137, 218, 0.4);
+}
+
+.blackmarket-hack-buy.disabled {
+  background: #7f8c8d;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.out-of-stock {
+  color: #e74c3c;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .item-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .item-info {
+    width: 100%;
+  }
+  
+  .item-stock {
+    align-self: flex-end;
+  }
+  
+  .item-effects ul {
+    flex-direction: column;
+  }
+  
+  .item-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .blackmarket-hack-buy {
+    width: 100%;
+  }
+}
 .toast-slide-out {
   animation: toastOut 220ms ease-in forwards;
 }
