@@ -91,7 +91,7 @@ const Hero = ({ memberCount, loading }) => {
               
               <div className="hero-card">
                 <img 
-                  src="https://images-ext-1.discordapp.net/external/9AUl789BvvLPVrMc3ke0P1xErcf9j2yCaRv5xW9kYik/%3Fsize%3D4096/https/cdn.discordapp.com/icons/1212556680911650866/621541c6d893bed04084ae171e5f1efc.png?format=webp&quality=lossless" 
+                  src="/assets/spainrplogo.png" 
                   alt="SpainRP Server" 
                   className="hero-server-icon"
                 />
