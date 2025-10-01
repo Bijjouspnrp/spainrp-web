@@ -197,7 +197,7 @@ router.post('/send', async (req, res) => {
       targetUserId = targetUser;
     }
 
-    // Determinar el user_id correcto según el target
+    // Determinar el userId correcto según el target
     let finalUserId = targetUserId;
     if (target === 'all' || target === 'online') {
       finalUserId = null; // Notificación global

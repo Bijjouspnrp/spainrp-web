@@ -127,6 +127,77 @@ app.use('/api/roblox', robloxRoutes);
 app.use('/api/admin-records', adminRecordsRoutes);
 app.use('/api/notifications', notificationRoutes);
 
+// Ruta para página de cookies
+app.get('/cookies', (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Política de Cookies - SpainRP</title>
+      <style>
+        body {
+          background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+          color: white;
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          margin: 0;
+          padding: 2rem;
+          min-height: 100vh;
+        }
+        .container {
+          max-width: 800px;
+          margin: 0 auto;
+          text-align: center;
+        }
+        h1 {
+          color: #FFD700;
+          margin-bottom: 2rem;
+        }
+        .redirect-info {
+          background: rgba(114, 137, 218, 0.1);
+          border: 1px solid rgba(114, 137, 218, 0.3);
+          border-radius: 12px;
+          padding: 2rem;
+          margin: 2rem 0;
+        }
+        .redirect-link {
+          display: inline-block;
+          background: linear-gradient(135deg, #7289da, #5865f2);
+          color: white;
+          text-decoration: none;
+          padding: 12px 24px;
+          border-radius: 8px;
+          font-weight: 600;
+          margin-top: 1rem;
+          transition: all 0.3s ease;
+        }
+        .redirect-link:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(114, 137, 218, 0.4);
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>🍪 Política de Cookies</h1>
+        <div class="redirect-info">
+          <h2>Redirigiendo a la página de cookies...</h2>
+          <p>Esta página se ha movido a la aplicación principal. Serás redirigido automáticamente.</p>
+          <a href="/cookies" class="redirect-link">Ir a Política de Cookies</a>
+        </div>
+        <script>
+          // Redirigir automáticamente después de 2 segundos
+          setTimeout(() => {
+            window.location.href = '/cookies';
+          }, 2000);
+        </script>
+      </div>
+    </body>
+    </html>
+  `);
+});
+
 // --- SOCKET.IO para notificaciones en tiempo real ---
 const http = require('http');
 const server = http.createServer(app);

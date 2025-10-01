@@ -80,6 +80,7 @@ function initializeDatabase() {
             title TEXT,
             message TEXT,
             type TEXT DEFAULT 'info',
+            priority TEXT DEFAULT 'normal',
             read INTEGER DEFAULT 0,
             createdAt TEXT
           )`
