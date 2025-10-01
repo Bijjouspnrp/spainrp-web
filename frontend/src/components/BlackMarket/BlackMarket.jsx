@@ -459,6 +459,17 @@ export default function BlackMarket() {
     setShowQuickBalanceWarning(false);
     setShowQuickBalance(true);
   };
+
+  // Funciones para manejar descripciones desplegables
+  const toggleItemDescription = (itemId) => {
+    const newExpanded = new Set(expandedItems);
+    if (newExpanded.has(itemId)) {
+      newExpanded.delete(itemId);
+    } else {
+      newExpanded.add(itemId);
+    }
+    setExpandedItems(newExpanded);
+  };
   const [authorized, setAuthorized] = React.useState(false);
   const [roleChecking, setRoleChecking] = React.useState(true);
   const [roleToast, setRoleToast] = React.useState('');
@@ -495,6 +506,9 @@ export default function BlackMarket() {
   const [quickBank, setQuickBank] = useState('');
   const [quickLoading, setQuickLoading] = useState(false);
   const [quickResult, setQuickResult] = useState('');
+  
+  // Estados para descripciones desplegables
+  const [expandedItems, setExpandedItems] = useState(new Set());
 
   // Quick balance handler con logging y notificaciones
   const handleQuickBalance = async (e) => {
@@ -1547,8 +1561,34 @@ if (!user) {
               </div>
               
               {item.description && (
-                <div className="item-description">
-                  <p>{item.description}</p>
+                <div className="item-description-container">
+                  <button 
+                    className="description-toggle"
+                    onClick={() => toggleItemDescription(item.itemId || item.name)}
+                  >
+                    <span className="description-title">Descripción</span>
+                    <span className={`description-arrow ${expandedItems.has(item.itemId || item.name) ? 'expanded' : ''}`}>
+                      ▼
+                    </span>
+                  </button>
+                  <div className={`item-description ${expandedItems.has(item.itemId || item.name) ? 'expanded' : ''}`}>
+                    <p>{item.description}</p>
+                    {item.effects && item.effects.length > 0 && (
+                      <div className="item-effects-mini">
+                        <div className="effects-label">Efectos:</div>
+                        <div className="effects-list">
+                          {item.effects.slice(0, 3).map((effect, idx) => (
+                            <span key={idx} className={`effect-tag ${effect.includes('+') ? 'positive' : effect.includes('-') ? 'negative' : 'neutral'}`}>
+                              {effect}
+                            </span>
+                          ))}
+                          {item.effects.length > 3 && (
+                            <span className="effect-tag more">+{item.effects.length - 3} más</span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
               
