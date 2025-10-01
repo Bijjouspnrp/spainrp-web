@@ -391,31 +391,39 @@ const Navbar = () => {
     width: '100%',
     maxWidth: '100vw',
     margin: 0,
-    padding: '0 1.5rem',
-    height: 64,
-    gap: 32
-  }), []);
+    padding: isMobile ? '0 0.5rem' : '0 1.5rem',
+    height: isMobile ? 48 : 64,
+    gap: isMobile ? 8 : 16
+  }), [isMobile]);
 
   const brandStyles = useMemo(() => ({
     display: 'flex',
     alignItems: 'center',
-    gap: 12,
-    justifyContent: 'center'
-  }), []);
+    gap: isMobile ? 6 : 12,
+    justifyContent: 'center',
+    flexShrink: 0,
+    minWidth: 0,
+    maxWidth: isMobile ? '40%' : 'none'
+  }), [isMobile]);
 
   const logoStyles = useMemo(() => ({
-    width: 30,
-    height: 30,
+    width: isMobile ? 20 : 30,
+    height: isMobile ? 20 : 30,
     borderRadius: '50%',
-    boxShadow: '0 2px 8px rgba(114, 137, 218, 0.33)'
-  }), []);
+    boxShadow: '0 2px 8px rgba(114, 137, 218, 0.33)',
+    flexShrink: 0
+  }), [isMobile]);
 
   const brandTextStyles = useMemo(() => ({
     fontWeight: 800,
-    fontSize: 22,
+    fontSize: isMobile ? 16 : 22,
     color: dark ? '#fff' : '#23272a',
-    letterSpacing: 1
-  }), [dark]);
+    letterSpacing: 1,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    maxWidth: isMobile ? 120 : 'none'
+  }), [dark, isMobile]);
 
   // Función para renderizar enlaces de navegación
   const renderNavigationLink = useCallback((link, index) => {
@@ -424,18 +432,20 @@ const Navbar = () => {
     const linkStyles = {
       display: 'inline-flex',
       alignItems: 'center',
-      gap: 6,
-      padding: '6px 12px',
+      gap: isMobile ? 4 : 6,
+      padding: isMobile ? '4px 8px' : '6px 12px',
       borderRadius: 8,
       fontWeight: 500,
       color: dark ? '#fff' : '#23272a',
       background: isActive ? 'rgba(114, 137, 218, 0.12)' : 'none',
       border: isActive ? '2px solid #7289da' : 'none',
-      fontSize: 15,
+      fontSize: isMobile ? 13 : 15,
       textDecoration: 'none',
       transition: 'background 0.2s ease',
       position: 'relative',
-      boxShadow: isActive ? '0 2px 8px rgba(114, 137, 218, 0.22)' : 'none'
+      boxShadow: isActive ? '0 2px 8px rgba(114, 137, 218, 0.22)' : 'none',
+      flexShrink: 0,
+      whiteSpace: 'nowrap'
     };
 
     return (
@@ -662,7 +672,19 @@ const Navbar = () => {
         </div>
 
         {/* Menú de navegación */}
-        <div className={`navbar-menu${isMenuOpen ? ' active' : ''}`}>
+        <div 
+          className={`navbar-menu${isMenuOpen ? ' active' : ''}`}
+          style={{
+            display: isMobile ? 'none' : 'flex',
+            alignItems: 'center',
+            gap: isMobile ? 4 : 16,
+            flexWrap: 'nowrap',
+            minWidth: 0,
+            flex: 1,
+            justifyContent: 'center',
+            maxWidth: '100%'
+          }}
+        >
           {NAVIGATION_CONFIG.mainLinks.map(renderNavigationLink)}
           
           {/* Dropdown de apps y servicios */}
@@ -672,26 +694,29 @@ const Navbar = () => {
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: 8,
-                padding: '8px 16px',
+                gap: isMobile ? 4 : 8,
+                padding: isMobile ? '4px 8px' : '8px 16px',
                 borderRadius: 8,
                 fontWeight: 600,
                 color: dark ? '#fff' : '#23272a',
                 background: showDropdown ? 'rgba(114, 137, 218, 0.15)' : 'none',
                 border: 'none',
-                fontSize: 15,
+                fontSize: isMobile ? 13 : 15,
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
                 flexShrink: 0,
                 transition: 'all 0.2s ease',
                 textDecoration: 'none',
-                minHeight: '40px',
+                minHeight: isMobile ? '32px' : '40px',
                 justifyContent: 'center'
               }}
               aria-expanded={showDropdown}
               aria-haspopup="true"
             >
-              <FaAppStore size={16} /> Apps & Servicios ▾
+              <FaAppStore size={isMobile ? 14 : 16} /> 
+              <span style={{ display: isMobile ? 'none' : 'inline' }}>Apps & Servicios</span>
+              <span style={{ display: isMobile ? 'inline' : 'none' }}>Apps</span>
+              ▾
             </button>
             
             <NavigationDropdown
@@ -835,8 +860,11 @@ const Navbar = () => {
         <div className="navbar-actions" style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '1rem',
-          justifyContent: 'center'
+          gap: isMobile ? '4px' : '8px',
+          justifyContent: 'center',
+          flexShrink: 0,
+          minWidth: 0,
+          maxWidth: isMobile ? '120px' : '200px'
         }}>
           {/* Sección de usuario/login */}
           {renderUserSection()}
@@ -851,13 +879,13 @@ const Navbar = () => {
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: 6,
-                padding: '6px 12px',
+                gap: 4,
+                padding: '4px 8px',
                 background: '#7289da',
                 color: '#fff',
                 borderRadius: 6,
                 fontWeight: 600,
-                fontSize: 13,
+                fontSize: 12,
                 boxShadow: '0 2px 8px rgba(114, 137, 218, 0.33)',
                 textDecoration: 'none',
                 transition: 'background 0.2s ease',
@@ -868,7 +896,7 @@ const Navbar = () => {
                 zIndex: 1002
               }}
             >
-              <FaDiscord size={14} /> Unirse
+              <FaDiscord size={12} /> Unirse
             </a>
           )}
 
@@ -878,18 +906,19 @@ const Navbar = () => {
             style={{
               background: 'none',
               border: 'none',
-              padding: 8,
+              padding: isMobile ? 4 : 8,
               borderRadius: 8,
               cursor: 'pointer',
-              transition: 'background 0.2s ease'
+              transition: 'background 0.2s ease',
+              flexShrink: 0
             }}
             title={dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
             aria-label={dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
           >
             {dark ? (
-              <FaSun size={20} color="#FFD700" />
+              <FaSun size={isMobile ? 16 : 20} color="#FFD700" />
             ) : (
-              <FaMoon size={20} color="#7289da" />
+              <FaMoon size={isMobile ? 16 : 20} color="#7289da" />
             )}
           </button>
         </div>
@@ -899,22 +928,26 @@ const Navbar = () => {
           className="navbar-toggle"
           onClick={toggleMenu}
           style={{
-            marginLeft: 16,
+            marginLeft: isMobile ? 4 : 16,
             background: 'none',
             border: 'none',
-            padding: 8,
+            padding: isMobile ? 4 : 8,
             borderRadius: 8,
             cursor: 'pointer',
             zIndex: 101,
-            transition: 'background 0.2s ease'
+            transition: 'background 0.2s ease',
+            display: isMobile ? 'flex' : 'none',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0
           }}
           aria-expanded={isMenuOpen}
           aria-label={isMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
         >
           {isMenuOpen ? (
-            <FaTimes size={24} color="#7289da" />
+            <FaTimes size={isMobile ? 20 : 24} color="#7289da" />
           ) : (
-            <FaBars size={24} color={dark ? '#fff' : '#7289da'} />
+            <FaBars size={isMobile ? 20 : 24} color={dark ? '#fff' : '#7289da'} />
           )}
         </button>
       </div>
