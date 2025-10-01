@@ -7,6 +7,7 @@ const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const nodemailer = require('nodemailer');
 
 const authRoutes = require('./auth');
 const discordRoutes = require('./routes/discord');
@@ -241,7 +242,7 @@ app.post('/api/admin/notify-balance-change', async (req, res) => {
         console.log('📧 User:', HARDCODED_SMTP.user);
         console.log('📧 Pass length:', HARDCODED_SMTP.pass ? HARDCODED_SMTP.pass.length : 'undefined');
         
-        mailTransporter = nodemailer.createTransporter({
+        mailTransporter = nodemailer.createTransport({
           host: HARDCODED_SMTP.host,
           port: HARDCODED_SMTP.port,
           secure: false, // true para 465, false para otros puertos
@@ -426,7 +427,6 @@ const broadcastNotification = (notification) => {
 
 // Exportar la función para usar en las rutas
 global.broadcastNotification = broadcastNotification;
-const nodemailer = require('nodemailer');
 
 // --- Subscriptores de mantenimiento (almacenados en JSON) ---
 const DATA_DIR = path.join(__dirname, 'data');
