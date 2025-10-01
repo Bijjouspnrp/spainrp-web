@@ -251,7 +251,15 @@ app.post('/api/admin/notify-balance-change', async (req, res) => {
           },
           tls: {
             rejectUnauthorized: false // Para evitar problemas de certificados
-          }
+          },
+          connectionTimeout: 60000, // 60 segundos
+          greetingTimeout: 30000,   // 30 segundos
+          socketTimeout: 60000,     // 60 segundos
+          pool: true,               // Usar pool de conexiones
+          maxConnections: 1,        // Máximo 1 conexión
+          maxMessages: 3,           // Máximo 3 mensajes por conexión
+          rateDelta: 20000,         // 20 segundos entre reintentos
+          rateLimit: 5              // Máximo 5 mensajes por minuto
         });
         
         // Verificar la conexión
@@ -4164,9 +4172,13 @@ app.get('/api/admin/balance/:targetUserId', async (req, res) => {
 // Modificar saldo de un usuario (solo administradores) - PROXY
 app.post('/api/proxy/admin/setbalance', express.json(), async (req, res) => {
   try {
+    console.log(`[ADMIN PROXY] ===== INICIO SETBALANCE =====`);
+    console.log(`[ADMIN PROXY] Raw body:`, req.body);
+    console.log(`[ADMIN PROXY] Body type:`, typeof req.body);
+    console.log(`[ADMIN PROXY] Body keys:`, Object.keys(req.body || {}));
+    
     const { targetUserId, userId, cash, bank, adminUserId } = req.body;
     const actualTargetUserId = targetUserId || userId;
-    console.log(`[ADMIN PROXY] ===== INICIO SETBALANCE =====`);
     console.log(`[ADMIN PROXY] POST /api/proxy/admin/setbalance`, { targetUserId, userId, actualTargetUserId, cash, bank, adminUserId });
     
     // Verificar si el bot de Discord está disponible
@@ -4205,10 +4217,13 @@ app.post('/api/proxy/admin/setbalance', express.json(), async (req, res) => {
     const botUrl = `http://37.27.21.91:5021/api/blackmarket/admin/setbalance`;
     console.log(`[ADMIN PROXY] URL del bot: ${botUrl}`);
     
+    const botRequestData = { userId: targetUserId, cash, bank };
+    console.log(`[ADMIN PROXY] Datos enviados al bot:`, botRequestData);
+    
     const response = await fetch(botUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: targetUserId, cash, bank })
+      body: JSON.stringify(botRequestData)
     });
     
     const data = await response.json();
