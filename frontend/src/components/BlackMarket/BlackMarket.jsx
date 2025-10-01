@@ -158,6 +158,15 @@ export default function BlackMarket() {
       setPurchaseState({ visible: false, status: 'idle', message: '' });
     }, 260);
   };
+
+  const closeQuickBalanceWarning = () => {
+    setShowQuickBalanceWarning(false);
+  };
+
+  const confirmQuickBalanceAccess = () => {
+    setShowQuickBalanceWarning(false);
+    setShowQuickBalance(true);
+  };
   const [authorized, setAuthorized] = React.useState(false);
   const [roleChecking, setRoleChecking] = React.useState(true);
   const [roleToast, setRoleToast] = React.useState('');
@@ -188,6 +197,7 @@ export default function BlackMarket() {
 
   // Quick balance admin panel states
   const [showQuickBalance, setShowQuickBalance] = useState(false);
+  const [showQuickBalanceWarning, setShowQuickBalanceWarning] = useState(false);
   const [quickId, setQuickId] = useState('');
   const [quickCash, setQuickCash] = useState('');
   const [quickBank, setQuickBank] = useState('');
@@ -814,7 +824,7 @@ if (!user) {
           <button
             className="quick-balance-fab"
             title="Solo admins: Modificar saldo por ID Discord"
-            onClick={() => setShowQuickBalance(v => !v)}
+            onClick={() => setShowQuickBalanceWarning(true)}
             disabled={quickLoading}
             style={{
               position: 'fixed',
@@ -888,6 +898,215 @@ if (!user) {
           </form>
           {quickResult && <div style={{marginTop:'1rem',color:quickResult.startsWith('✅')?'#22c55e':'#ef4444',fontWeight:700,transition:'color 0.2s'}}>{quickResult}</div>}
           <button onClick={()=>setShowQuickBalance(false)} style={{marginTop:'1.2rem',background:'#eee',color:'#0ea5e9',border:'none',borderRadius:8,padding:'0.7rem 1.2rem',fontWeight:700,cursor:'pointer'}}>Cerrar</button>
+        </div>
+      )}
+
+      {/* Modal de advertencia para Quick Balance */}
+      {showQuickBalanceWarning && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 3000,
+          animation: 'fadeIn 0.3s ease-out'
+        }}>
+          <div style={{
+            background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+            borderRadius: '20px',
+            padding: '2rem',
+            maxWidth: '500px',
+            width: '90%',
+            border: '2px solid #ef4444',
+            boxShadow: '0 20px 40px rgba(239, 68, 68, 0.3)',
+            animation: 'slideInScale 0.4s ease-out',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            {/* Efecto de parpadeo de advertencia */}
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '4px',
+              background: 'linear-gradient(90deg, #ef4444, #f59e0b, #ef4444)',
+              animation: 'warningPulse 1s ease-in-out infinite'
+            }} />
+            
+            {/* Icono de advertencia */}
+            <div style={{
+              textAlign: 'center',
+              marginBottom: '1.5rem'
+            }}>
+              <div style={{
+                fontSize: '4rem',
+                animation: 'warningBounce 0.6s ease-in-out infinite alternate'
+              }}>
+                ⚠️
+              </div>
+            </div>
+
+            {/* Título */}
+            <h2 style={{
+              color: '#ef4444',
+              textAlign: 'center',
+              marginBottom: '1rem',
+              fontSize: '1.8rem',
+              fontWeight: '800',
+              textShadow: '0 0 10px rgba(239, 68, 68, 0.5)'
+            }}>
+              ADVERTENCIA CRÍTICA
+            </h2>
+
+            {/* Contenido de advertencia */}
+            <div style={{
+              color: '#fff',
+              lineHeight: '1.6',
+              marginBottom: '2rem'
+            }}>
+              <p style={{
+                fontSize: '1.1rem',
+                marginBottom: '1rem',
+                fontWeight: '600'
+              }}>
+                Estás a punto de acceder a una función <strong style={{color: '#ef4444'}}>EXTREMADAMENTE PELIGROSA</strong>.
+              </p>
+              
+              <div style={{
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                borderRadius: '12px',
+                padding: '1rem',
+                marginBottom: '1rem'
+              }}>
+                <h3 style={{
+                  color: '#f59e0b',
+                  marginBottom: '0.8rem',
+                  fontSize: '1.2rem'
+                }}>
+                  ⚠️ CONSECUENCIAS GRAVES:
+                </h3>
+                <ul style={{
+                  margin: 0,
+                  paddingLeft: '1.2rem',
+                  fontSize: '0.95rem'
+                }}>
+                  <li>Modificación directa de saldos de usuarios</li>
+                  <li>Acceso a datos financieros sensibles</li>
+                  <li>Posible desequilibrio económico del servidor</li>
+                  <li>Impacto directo en la experiencia de juego</li>
+                </ul>
+              </div>
+
+              <div style={{
+                background: 'rgba(245, 158, 11, 0.1)',
+                border: '1px solid rgba(245, 158, 11, 0.3)',
+                borderRadius: '12px',
+                padding: '1rem',
+                marginBottom: '1.5rem'
+              }}>
+                <h3 style={{
+                  color: '#f59e0b',
+                  marginBottom: '0.8rem',
+                  fontSize: '1.2rem'
+                }}>
+                  🚨 SANCIONES INMEDIATAS:
+                </h3>
+                <p style={{
+                  margin: 0,
+                  fontSize: '0.95rem',
+                  fontWeight: '600'
+                }}>
+                  El uso de esta función sin motivos obligatorios y documentados resultará en:
+                </p>
+                <ul style={{
+                  margin: '0.5rem 0 0 0',
+                  paddingLeft: '1.2rem',
+                  fontSize: '0.9rem'
+                }}>
+                  <li>Revocación inmediata de permisos de administrador</li>
+                  <li>Sanción temporal o permanente del servidor</li>
+                  <li>Investigación de todas las acciones realizadas</li>
+                  <li>Posible expulsión del staff</li>
+                </ul>
+              </div>
+
+              <p style={{
+                fontSize: '1rem',
+                textAlign: 'center',
+                fontWeight: '700',
+                color: '#f59e0b'
+              }}>
+                ¿Estás seguro de que necesitas usar esta función?
+              </p>
+            </div>
+
+            {/* Botones de acción */}
+            <div style={{
+              display: 'flex',
+              gap: '1rem',
+              justifyContent: 'center'
+            }}>
+              <button
+                onClick={closeQuickBalanceWarning}
+                style={{
+                  background: 'linear-gradient(135deg, #6b7280, #4b5563)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '12px',
+                  padding: '0.8rem 2rem',
+                  fontSize: '1rem',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 4px 12px rgba(107, 114, 128, 0.3)'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 6px 16px rgba(107, 114, 128, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 12px rgba(107, 114, 128, 0.3)';
+                }}
+              >
+                Cancelar
+              </button>
+              
+              <button
+                onClick={confirmQuickBalanceAccess}
+                style={{
+                  background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '12px',
+                  padding: '0.8rem 2rem',
+                  fontSize: '1rem',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)',
+                  animation: 'dangerPulse 2s ease-in-out infinite'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 6px 16px rgba(239, 68, 68, 0.6)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.4)';
+                }}
+              >
+                Entiendo los riesgos
+              </button>
+            </div>
+          </div>
         </div>
       )}
       <div className="blackmarket-hack-tabs">
@@ -1336,6 +1555,54 @@ if (!user) {
         <FaSkull size={18} style={{marginRight:6}} />
         <span>Acceso solo para Criminales en SpainRP.</span>
       </div>
+
+      {/* Estilos CSS para las animaciones del modal de advertencia */}
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        
+        @keyframes slideInScale {
+          from {
+            opacity: 0;
+            transform: scale(0.8) translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+        
+        @keyframes warningPulse {
+          0%, 100% {
+            opacity: 1;
+            transform: scaleX(1);
+          }
+          50% {
+            opacity: 0.7;
+            transform: scaleX(1.05);
+          }
+        }
+        
+        @keyframes warningBounce {
+          from {
+            transform: scale(1);
+          }
+          to {
+            transform: scale(1.1);
+          }
+        }
+        
+        @keyframes dangerPulse {
+          0%, 100% {
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+          }
+          50% {
+            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.8);
+          }
+        }
+      `}</style>
     </div>
   );
 }
