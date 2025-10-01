@@ -431,7 +431,6 @@ app.post('/api/admin/notify-balance-change', async (req, res) => {
 });
 
 // --- SOCKET.IO para notificaciones en tiempo real ---
-const http = require('http');
 const server = http.createServer(app);
 const { Server } = require('socket.io');
 
