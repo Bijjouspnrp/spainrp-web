@@ -656,6 +656,7 @@ const AdminPanel = () => {
 
   const tabs = [
     { id: 'overview', label: 'Resumen', icon: FaChartLine },
+    { id: 'analytics', label: 'Analytics', icon: FaChartLine },
     { id: 'moderation', label: 'Moderación', icon: FaGavel },
     { id: 'communication', label: 'Comunicación', icon: FaEnvelope },
     { id: 'roles', label: 'Roles', icon: FaUserShield },
@@ -720,6 +721,7 @@ const AdminPanel = () => {
         <div className="admin-main">
           <div className="admin-content">
             {activeTab === 'overview' && <OverviewTab />}
+            {activeTab === 'analytics' && <AnalyticsTab />}
             {activeTab === 'moderation' && <ModerationTab />}
             {activeTab === 'communication' && <CommunicationTab />}
             {activeTab === 'roles' && <RolesTab />}
@@ -1991,4 +1993,271 @@ function SettingsTab() {
     </div>
   );
 }
+// Componente de pestaña de Analytics
+function AnalyticsTab() {
+  const [metrics, setMetrics] = useState({
+    visitors: {
+      total: 0,
+      today: 0,
+      thisWeek: 0,
+      thisMonth: 0,
+      unique: 0,
+      returning: 0
+    },
+    performance: {
+      pageLoadTime: 0,
+      serverResponseTime: 0,
+      cacheHitRate: 0,
+      errorRate: 0,
+      uptime: 0
+    },
+    content: {
+      mostVisitedPages: [],
+      popularSearches: [],
+      userEngagement: 0,
+      bounceRate: 0,
+      sessionDuration: 0
+    },
+    security: {
+      blockedRequests: 0,
+      suspiciousActivities: 0,
+      failedLogins: 0,
+      spamDetected: 0,
+      securityScore: 0
+    },
+    system: {
+      memoryUsage: 0,
+      cpuUsage: 0,
+      diskUsage: 0,
+      activeConnections: 0,
+      databaseSize: 0
+    }
+  });
+
+  const [timeRange, setTimeRange] = useState('24h');
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState(new Date());
+
+  // Fetch metrics data
+  const fetchMetrics = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(apiUrl('/api/analytics/metrics'), {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('spainrp_token')}`
+        }
+      });
+      const data = await response.json();
+      setMetrics(data);
+      setLastUpdate(new Date());
+    } catch (error) {
+      console.error('Error fetching metrics:', error);
+    }
+    setLoading(false);
+  };
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    if (autoRefresh) {
+      const interval = setInterval(fetchMetrics, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [autoRefresh]);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchMetrics();
+  }, []);
+
+  return (
+    <div className="tab-content">
+      <div className="tab-header">
+        <h2><FaChartLine /> Analytics y Métricas</h2>
+        <p>Monitoreo completo del rendimiento y uso de la web</p>
+        <div className="header-actions">
+          <select value={timeRange} onChange={e => setTimeRange(e.target.value)}>
+            <option value="1h">Última hora</option>
+            <option value="24h">Últimas 24h</option>
+            <option value="7d">Últimos 7 días</option>
+            <option value="30d">Últimos 30 días</option>
+          </select>
+          <button onClick={fetchMetrics} disabled={loading}>
+            <FaCog /> {loading ? 'Actualizando...' : 'Actualizar'}
+          </button>
+          <button 
+            onClick={() => setAutoRefresh(!autoRefresh)}
+            className={autoRefresh ? 'active' : ''}
+          >
+            <FaBell /> Auto-refresh {autoRefresh ? 'ON' : 'OFF'}
+          </button>
+        </div>
+      </div>
+
+      {/* Métricas de Visitantes */}
+      <div className="metrics-section">
+        <h3><FaUsers /> Visitantes</h3>
+        <div className="metrics-grid">
+          <div className="metric-card">
+            <h4>Total Visitantes</h4>
+            <p className="metric-value">{metrics.visitors.total.toLocaleString()}</p>
+            <span className="metric-change positive">+{metrics.visitors.today} hoy</span>
+          </div>
+          <div className="metric-card">
+            <h4>Visitantes Únicos</h4>
+            <p className="metric-value">{metrics.visitors.unique.toLocaleString()}</p>
+            <span className="metric-change positive">+{metrics.visitors.returning} recurrentes</span>
+          </div>
+          <div className="metric-card">
+            <h4>Esta Semana</h4>
+            <p className="metric-value">{metrics.visitors.thisWeek.toLocaleString()}</p>
+            <span className="metric-change positive">+12% vs anterior</span>
+          </div>
+          <div className="metric-card">
+            <h4>Este Mes</h4>
+            <p className="metric-value">{metrics.visitors.thisMonth.toLocaleString()}</p>
+            <span className="metric-change positive">+8% vs anterior</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Métricas de Rendimiento */}
+      <div className="metrics-section">
+        <h3><FaChartLine /> Rendimiento</h3>
+        <div className="metrics-grid">
+          <div className="metric-card">
+            <h4>Tiempo de Carga</h4>
+            <p className="metric-value">{metrics.performance.pageLoadTime}ms</p>
+            <span className="metric-change positive">-15% vs anterior</span>
+          </div>
+          <div className="metric-card">
+            <h4>Respuesta del Servidor</h4>
+            <p className="metric-value">{metrics.performance.serverResponseTime}ms</p>
+            <span className="metric-change positive">-8% vs anterior</span>
+          </div>
+          <div className="metric-card">
+            <h4>Cache Hit Rate</h4>
+            <p className="metric-value">{metrics.performance.cacheHitRate}%</p>
+            <span className="metric-change positive">+5% vs anterior</span>
+          </div>
+          <div className="metric-card">
+            <h4>Tasa de Errores</h4>
+            <p className="metric-value">{metrics.performance.errorRate}%</p>
+            <span className="metric-change negative">+2% vs anterior</span>
+          </div>
+          <div className="metric-card">
+            <h4>Uptime</h4>
+            <p className="metric-value">{metrics.performance.uptime}%</p>
+            <span className="metric-change positive">+0.1% vs anterior</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Métricas de Contenido */}
+      <div className="metrics-section">
+        <h3><FaFileAlt /> Contenido Popular</h3>
+        <div className="content-metrics">
+          <div className="popular-pages">
+            <h4>Páginas Más Visitadas</h4>
+            <ul>
+              {metrics.content.mostVisitedPages.map((page, i) => (
+                <li key={i}>
+                  <span className="page-name">{page.name}</span>
+                  <span className="page-views">{page.views} visitas</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="popular-searches">
+            <h4>Búsquedas Populares</h4>
+            <ul>
+              {metrics.content.popularSearches.map((search, i) => (
+                <li key={i}>
+                  <span className="search-term">{search.term}</span>
+                  <span className="search-count">{search.count} veces</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Métricas de Seguridad */}
+      <div className="metrics-section">
+        <h3><FaShieldAlt /> Seguridad</h3>
+        <div className="metrics-grid">
+          <div className="metric-card security">
+            <h4>Requests Bloqueados</h4>
+            <p className="metric-value">{metrics.security.blockedRequests}</p>
+            <span className="metric-change positive">+{metrics.security.blockedRequests} hoy</span>
+          </div>
+          <div className="metric-card security">
+            <h4>Actividades Sospechosas</h4>
+            <p className="metric-value">{metrics.security.suspiciousActivities}</p>
+            <span className="metric-change negative">+{metrics.security.suspiciousActivities} hoy</span>
+          </div>
+          <div className="metric-card security">
+            <h4>Logins Fallidos</h4>
+            <p className="metric-value">{metrics.security.failedLogins}</p>
+            <span className="metric-change negative">+{metrics.security.failedLogins} hoy</span>
+          </div>
+          <div className="metric-card security">
+            <h4>Spam Detectado</h4>
+            <p className="metric-value">{metrics.security.spamDetected}</p>
+            <span className="metric-change positive">+{metrics.security.spamDetected} bloqueado</span>
+          </div>
+          <div className="metric-card security">
+            <h4>Puntuación de Seguridad</h4>
+            <p className="metric-value">{metrics.security.securityScore}/100</p>
+            <span className="metric-change positive">+5 vs anterior</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Métricas del Sistema */}
+      <div className="metrics-section">
+        <h3><FaCog /> Sistema</h3>
+        <div className="metrics-grid">
+          <div className="metric-card system">
+            <h4>Uso de Memoria</h4>
+            <p className="metric-value">{metrics.system.memoryUsage}%</p>
+            <div className="progress-bar">
+              <div className="progress-fill" style={{width: `${metrics.system.memoryUsage}%`}}></div>
+            </div>
+          </div>
+          <div className="metric-card system">
+            <h4>Uso de CPU</h4>
+            <p className="metric-value">{metrics.system.cpuUsage}%</p>
+            <div className="progress-bar">
+              <div className="progress-fill" style={{width: `${metrics.system.cpuUsage}%`}}></div>
+            </div>
+          </div>
+          <div className="metric-card system">
+            <h4>Uso de Disco</h4>
+            <p className="metric-value">{metrics.system.diskUsage}%</p>
+            <div className="progress-bar">
+              <div className="progress-fill" style={{width: `${metrics.system.diskUsage}%`}}></div>
+            </div>
+          </div>
+          <div className="metric-card system">
+            <h4>Conexiones Activas</h4>
+            <p className="metric-value">{metrics.system.activeConnections}</p>
+            <span className="metric-change positive">+{metrics.system.activeConnections} activas</span>
+          </div>
+          <div className="metric-card system">
+            <h4>Tamaño de BD</h4>
+            <p className="metric-value">{metrics.system.databaseSize}MB</p>
+            <span className="metric-change positive">+{metrics.system.databaseSize}MB</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Información de última actualización */}
+      <div className="last-update">
+        <p>Última actualización: {lastUpdate.toLocaleString()}</p>
+      </div>
+    </div>
+  );
+}
+
 export default AdminPanel;

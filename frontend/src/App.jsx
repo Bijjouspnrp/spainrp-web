@@ -33,6 +33,7 @@ import SimuladorTienda from './components/Apps/SimuladorTienda';
 import GlobalSearch from './components/GlobalSearch';
 import ToastProvider from './components/ToastProvider';
 import MaintenanceControl from './components/MaintenanceControl';
+import OfflineIndicator from './components/OfflineIndicator';
 
 // Componente de Login
 function LoginPage() {
@@ -635,6 +636,33 @@ function App() {
     console.log('[App] 📍 Timestamp:', new Date().toISOString());
     console.log('[App] 📊 Initial state:', { memberCount, totalMembers, loading, maintenance });
   }, []);
+
+  // Registrar Service Worker para modo offline
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then((registration) => {
+          console.log('[SW] Service Worker registrado:', registration);
+          
+          // Verificar actualizaciones
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // Nueva versión disponible
+                if (confirm('Hay una nueva versión disponible. ¿Quieres actualizar?')) {
+                  newWorker.postMessage({ type: 'SKIP_WAITING' });
+                  window.location.reload();
+                }
+              }
+            });
+          });
+        })
+        .catch((error) => {
+          console.error('[SW] Error registrando Service Worker:', error);
+        });
+    }
+  }, []);
   // Progreso mantenimiento (hooks siempre fuera de condicionales)
   const totalMinutes = 50;
   const [elapsed, setElapsed] = useState(0);
@@ -856,6 +884,7 @@ function App() {
     <Router>
       <ToastProvider>
         <GlobalSearch />
+        <OfflineIndicator />
         <AppContent noNavbarRoutes={noNavbarRoutes} memberCount={memberCount} totalMembers={totalMembers} loading={loading} />
       </ToastProvider>
     </Router>
