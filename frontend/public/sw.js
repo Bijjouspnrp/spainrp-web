@@ -11,6 +11,21 @@ const CACHE_URLS = [
   // Agregar más archivos estáticos según sea necesario
 ];
 
+// Rutas que NUNCA se deben cachear (autenticación, APIs dinámicas)
+const NEVER_CACHE = [
+  '/auth/',
+  '/api/notifications',
+  '/api/roblox/profile',
+  '/api/proxy/',
+  '/socket.io/',
+  '/api/member/',
+  '/api/discord/isadmin',
+  '/api/admin-records/',
+  '/api/analytics/metrics',
+  '/api/widget',
+  '/api/membercount'
+];
+
 // Instalar Service Worker
 self.addEventListener('install', (event) => {
   console.log('[SW] Installing Service Worker');
@@ -84,6 +99,12 @@ function isApiRequest(request) {
   return url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/');
 }
 
+// Verificar si la ruta NO se debe cachear
+function shouldNeverCache(request) {
+  const url = new URL(request.url);
+  return NEVER_CACHE.some(pattern => url.pathname.includes(pattern));
+}
+
 // Estrategia: Cache First
 async function cacheFirst(request) {
   try {
@@ -108,7 +129,8 @@ async function cacheFirst(request) {
 async function networkFirst(request) {
   try {
     const networkResponse = await fetch(request);
-    if (networkResponse.ok) {
+    if (networkResponse.ok && request.method === 'GET' && !shouldNeverCache(request)) {
+      // Solo cachear requests GET que no estén en la lista de NEVER_CACHE
       const cache = await caches.open(CACHE_NAME);
       cache.put(request, networkResponse.clone());
     }

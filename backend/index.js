@@ -182,10 +182,10 @@ app.use(security.securityMiddleware());
 // Middleware de analytics para tracking
 app.use(analytics.trackVisit.bind(analytics));
 
-// Middleware de cache para rutas específicas - TTL optimizado para Render
-app.use('/api/widget', cache.middleware(900000)); // 15 minutos
-app.use('/api/membercount', cache.middleware(900000)); // 15 minutos
-app.use('/api/discord/roles', cache.middleware(1800000)); // 30 minutos
+// Middleware de cache para rutas específicas - TEMPORALMENTE REDUCIDO
+app.use('/api/widget', cache.middleware(120000)); // 2 minutos (era 15min)
+app.use('/api/membercount', cache.middleware(120000)); // 2 minutos (era 15min)
+app.use('/api/discord/roles', cache.middleware(300000)); // 5 minutos (era 30min)
 
 // Health check endpoint
 app.use(health.healthMiddleware());
@@ -2265,12 +2265,29 @@ app.post('/api/backup/restore', async (req, res) => {
 // Rutas de Health Check
 app.get('/api/health', (req, res) => {
   try {
+    console.log('[HEALTH] Health check requested');
+    
+    // Verificar que el sistema de health esté inicializado
+    if (!health) {
+      console.error('[HEALTH] Health system not initialized');
+      return res.status(500).json({ 
+        error: 'Sistema de health no inicializado',
+        status: 'error'
+      });
+    }
+
     const status = health.getSystemStatus();
+    console.log('[HEALTH] Status retrieved:', status);
+    
     const statusCode = status.status === 'error' ? 503 : 200;
     res.status(statusCode).json(status);
   } catch (error) {
     console.error('[HEALTH] Error getting health status:', error);
-    res.status(500).json({ error: 'Error obteniendo estado del sistema' });
+    res.status(500).json({ 
+      error: 'Error obteniendo estado del sistema',
+      details: error.message,
+      status: 'error'
+    });
   }
 });
 

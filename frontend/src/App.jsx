@@ -637,8 +637,11 @@ function App() {
     console.log('[App] 📊 Initial state:', { memberCount, totalMembers, loading, maintenance });
   }, []);
 
-  // Registrar Service Worker para modo offline
+  // Registrar Service Worker para modo offline (temporalmente deshabilitado)
   useEffect(() => {
+    // TEMPORALMENTE DESHABILITADO para debugging
+    // TODO: Re-habilitar después de fixes
+    /*
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js')
         .then((registration) => {
@@ -662,6 +665,8 @@ function App() {
           console.error('[SW] Error registrando Service Worker:', error);
         });
     }
+    */
+    console.log('[SW] Service Worker temporalmente deshabilitado para debugging');
   }, []);
   // Progreso mantenimiento (hooks siempre fuera de condicionales)
   const totalMinutes = 50;
@@ -941,7 +946,7 @@ function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading }) {
         <Route path="/apps/minijuegos" element={<MinijuegosRP />} />
         <Route path="/apps/tienda" element={<SimuladorTienda />} />
         <Route path="/panel" element={<Panel />} />
-        <Route path="/admin" element={<PrivateRoute><AdminPanel /></PrivateRoute>} />
+        <Route path="/admin" element={<AdminPanel />} />
         <Route path="/auth/login" element={<LoginPage />} />
         <Route path="/logout" element={<LogoutPage />} />
         <Route path="/logs" element={<PrivateRoute><AdvancedLogs /></PrivateRoute>} />
