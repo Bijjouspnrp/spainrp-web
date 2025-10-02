@@ -712,16 +712,19 @@ export default function BlackMarket() {
     authFetch('/auth/me')
       .then(res => res.ok ? res.json() : null)
       .then(async data => {
-          console.log('[BlackMarket] /auth/me data:', data);
+        console.log('[BlackMarket] /auth/me data:', data);
+        try {
           if (data && data.user) {
             setUser(data.user);
+            setRoleChecking(true);
+            
             try {
-              setRoleChecking(true);
               // Verificar membresía directa contra el bot API (vía proxy)
               const REQUIRED_ROLE_ID = '1384340799013257307';
               const memberRes = await fetch(`https://spainrp-web.onrender.com/api/proxy/discord/ismember/${encodeURIComponent(data.user.id)}`);
               const member = await memberRes.json();
               let ok = Boolean(member?.isMember);
+              
               if (ok) {
                 const roleRes = await fetch(`https://spainrp-web.onrender.com/api/proxy/discord/hasrole/${encodeURIComponent(data.user.id)}/${REQUIRED_ROLE_ID}`);
                 const role = await roleRes.json();
@@ -761,17 +764,31 @@ export default function BlackMarket() {
                   setAdminChecking(false);
                 }
               }
-              
-              setRoleChecking(false);
             } catch (e) {
               console.warn('[BlackMarket] user-info error', e);
               setAuthorized(false);
+            } finally {
               setRoleChecking(false);
             }
+          } else {
+            console.log('[BlackMarket] No user data available');
+            setAuthorized(false);
+            setRoleChecking(false);
           }
-        setLoading(false);
+        } catch (e) {
+          console.error('[BlackMarket] Error processing auth data:', e);
+          setAuthorized(false);
+          setRoleChecking(false);
+        } finally {
+          setLoading(false);
+        }
       })
-      .catch((e) => { console.error('[BlackMarket] /auth/me error:', e); setLoading(false); });
+      .catch((e) => { 
+        console.error('[BlackMarket] /auth/me error:', e); 
+        setLoading(false);
+        setRoleChecking(false);
+        setAuthorized(false);
+      });
   }, []);
 
   // Cargar catálogo desde API externa (vía proxy backend)

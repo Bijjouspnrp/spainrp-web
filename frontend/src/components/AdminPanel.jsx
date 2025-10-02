@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import GlobalDMCollectorPanel from './GlobalDMCollectorPanel';
 import { apiUrl } from '../utils/api';
+import { useToast } from './ToastProvider';
 import './AdminPanel.css';
 import { 
   FaBan, 
@@ -154,15 +155,14 @@ function PermissionsPanel() {
 }
 
 const AdminPanel = () => {
+  const { notify } = useToast();
   const [activeTab, setActiveTab] = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   
-  // Toast feedback global
-  const [toast, setToast] = useState({ message: '', type: 'success' });
+  // Helper function para mostrar notificaciones
   const showToast = (message, type = 'success') => {
-    setToast({ message, type });
-    setTimeout(() => setToast({ message: '', type }), 3000);
+    notify(message, { type, duration: 3000 });
   };
 
   // Hook para detectar tamaño de pantalla
@@ -674,7 +674,6 @@ const AdminPanel = () => {
 
   return (
     <div className="admin-panel-container">
-      <Toast message={toast.message} type={toast.type} onClose={()=>setToast({message:'',type:'success'})} />
       
       {/* Header */}
       <div className="admin-header">
@@ -1973,21 +1972,6 @@ function SettingsTab() {
           )}
         </div>
       </div>
-      
-      {/* Toast Notification */}
-      {toast.message && (
-        <div className={`toast ${toast.type === 'error' ? 'toast-error' : 'toast-success'}`}>
-          <div className="toast-content">
-            <span>{toast.message}</span>
-          </div>
-          <button 
-            className="toast-close" 
-            onClick={() => setToast({ message: '', type: 'success' })}
-          >
-            ×
-          </button>
-        </div>
-      )}
     </div>
   );
 }
