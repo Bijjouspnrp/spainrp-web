@@ -2374,6 +2374,52 @@ async function proxyRemoveAdminItem(userId, itemId, amount) {
   return await response.json();
 }
 
+// Proxy: consultar saldo de un usuario
+async function proxyGetUserBalance(userId) {
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/admin/balance/${encodeURIComponent(userId)}`);
+    return await response.json();
+}
+
+// Proxy: consultar saldo de varios usuarios
+async function proxyGetUserBalances(userIds) {
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/admin/balances`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userIds })
+    });
+    return await response.json();
+}
+
+// Proxy: transferir dinero entre usuarios
+async function proxyTransferMoney(fromId, toId, amount, origen) {
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/admin/transfer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fromId, toId, amount, origen })
+    });
+    return await response.json();
+}
+
+// Proxy: realizar trabajo
+async function proxyWork(userId, username) {
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/admin/trabajar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, username })
+    });
+    return await response.json();
+}
+
+// Proxy: cobrar nómina
+async function proxyCollectSalary(userId, roles) {
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/admin/cobrar-nomina`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, roles })
+    });
+    return await response.json();
+}
+
 // Widget Discord (público)
 app.get('/api/discord/widget', async (req, res) => {
   try {
@@ -3383,6 +3429,101 @@ app.post('/api/proxy/admin/removeitem', express.json(), async (req, res) => {
   } catch (error) {
     console.error('[PROXY] [removeitem] Exception:', error);
     res.status(500).json({ error: 'Error al retirar item', details: String(error) });
+  }
+});
+
+// Consultar saldo de un usuario (POST)
+app.post('/api/proxy/admin/balance', express.json(), async (req, res) => {
+  try {
+    const { userId } = req.body;
+    console.log(`[PROXY] [balance] POST request for userId: ${userId}`);
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'userId requerido' });
+    }
+    
+    const data = await proxyGetUserBalance(userId);
+    console.log(`[PROXY] [balance] Response:`, data);
+    res.json(data);
+  } catch (error) {
+    console.error('[PROXY] [balance] Exception:', error);
+    res.status(500).json({ error: 'Error al consultar saldo', details: String(error) });
+  }
+});
+
+// Consultar saldo de varios usuarios
+app.post('/api/proxy/admin/balances', express.json(), async (req, res) => {
+  try {
+    const { userIds } = req.body;
+    console.log(`[PROXY] [balances] POST request for userIds:`, userIds);
+    
+    if (!Array.isArray(userIds) || userIds.length === 0) {
+      return res.status(400).json({ error: 'userIds array requerido' });
+    }
+    
+    const data = await proxyGetUserBalances(userIds);
+    console.log(`[PROXY] [balances] Response:`, data);
+    res.json(data);
+  } catch (error) {
+    console.error('[PROXY] [balances] Exception:', error);
+    res.status(500).json({ error: 'Error al consultar saldos', details: String(error) });
+  }
+});
+
+// Transferir dinero entre usuarios
+app.post('/api/proxy/admin/transfer', express.json(), async (req, res) => {
+  try {
+    const { fromId, toId, amount, origen } = req.body;
+    console.log(`[PROXY] [transfer] POST request:`, { fromId, toId, amount, origen });
+    
+    if (!fromId || !toId || !amount || amount <= 0) {
+      return res.status(400).json({ error: 'fromId, toId y amount válidos requeridos' });
+    }
+    
+    const data = await proxyTransferMoney(fromId, toId, amount, origen || 'banco');
+    console.log(`[PROXY] [transfer] Response:`, data);
+    res.json(data);
+  } catch (error) {
+    console.error('[PROXY] [transfer] Exception:', error);
+    res.status(500).json({ error: 'Error al transferir dinero', details: String(error) });
+  }
+});
+
+// Realizar trabajo
+app.post('/api/proxy/admin/trabajar', express.json(), async (req, res) => {
+  try {
+    const { userId, username } = req.body;
+    console.log(`[PROXY] [trabajar] POST request:`, { userId, username });
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'userId requerido' });
+    }
+    
+    const data = await proxyWork(userId, username);
+    console.log(`[PROXY] [trabajar] Response:`, data);
+    res.json(data);
+  } catch (error) {
+    console.error('[PROXY] [trabajar] Exception:', error);
+    res.status(500).json({ error: 'Error al realizar trabajo', details: String(error) });
+  }
+});
+
+// Cobrar nómina
+app.post('/api/proxy/admin/cobrar-nomina', express.json(), async (req, res) => {
+  try {
+    const { userId, roles } = req.body;
+    console.log(`[PROXY] [cobrar-nomina] POST request:`, { userId, roles });
+    
+    if (!userId || !Array.isArray(roles)) {
+      return res.status(400).json({ error: 'userId y roles array requeridos' });
+    }
+    
+    const data = await proxyCollectSalary(userId, roles);
+    console.log(`[PROXY] [cobrar-nomina] Response:`, data);
+    res.json(data);
+  } catch (error) {
+    console.error('[PROXY] [cobrar-nomina] Exception:', error);
+    res.status(500).json({ error: 'Error al cobrar nómina', details: String(error) });
   }
 });
 
