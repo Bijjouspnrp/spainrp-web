@@ -44,20 +44,30 @@ const BancoCentralRP = () => {
 
   const loadBalance = async (userId) => {
     try {
-      console.log('[Banco] Cargando saldo para usuario:', userId);
-      const response = await authFetch(`${apiUrl()}/api/proxy/balance/${userId}`);
+      console.log('[BANCO-FRONTEND] 🏦 Cargando saldo para usuario:', userId);
+      console.log('[BANCO-FRONTEND] 🔗 URL de la API:', `/api/proxy/balance/${userId}`);
+      
+      const response = await authFetch(`/api/proxy/balance/${userId}`);
+      console.log('[BANCO-FRONTEND] 📡 Response status:', response.status);
+      console.log('[BANCO-FRONTEND] 📡 Response headers:', Object.fromEntries(response.headers.entries()));
+      console.log('[BANCO-FRONTEND] 📡 Response ok:', response.ok);
+      
       const data = await response.json();
-      console.log('[Banco] Respuesta del saldo:', data);
+      console.log('[BANCO-FRONTEND] 📊 Datos recibidos:', data);
       
       if (data.success && data.balance) {
+        console.log('[BANCO-FRONTEND] ✅ Saldo cargado correctamente:', data.balance);
         setBalance(data.balance);
       } else {
-        console.warn('[Banco] No se pudo cargar el saldo:', data);
+        console.warn('[BANCO-FRONTEND] ⚠️ No se pudo cargar el saldo:', data);
+        console.warn('[BANCO-FRONTEND] ⚠️ Estableciendo saldo por defecto');
         // Establecer saldo por defecto si no hay datos
         setBalance({ cash: 0, bank: 0 });
       }
     } catch (error) {
-      console.error('[Banco] Error cargando saldo:', error);
+      console.error('[BANCO-FRONTEND] ❌ Error cargando saldo:', error);
+      console.error('[BANCO-FRONTEND] ❌ Error stack:', error.stack);
+      console.error('[BANCO-FRONTEND] ❌ Estableciendo saldo por defecto');
       setBalance({ cash: 0, bank: 0 });
     }
   };
@@ -83,9 +93,10 @@ const BancoCentralRP = () => {
     setLoadingAction(true);
     try {
       const amount = 500; // Cantidad fija por ahora
-      console.log('[Banco] Realizando depósito:', { userId: user.id, amount });
+      console.log('[BANCO-FRONTEND] 💰 Realizando depósito:', { userId: user.id, amount });
+      console.log('[BANCO-FRONTEND] 🔗 URL de depósito:', `/api/proxy/deposit`);
       
-      const response = await authFetch(`${apiUrl()}/api/proxy/deposit`, {
+      const response = await authFetch(`/api/proxy/deposit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -94,17 +105,23 @@ const BancoCentralRP = () => {
         })
       });
       
+      console.log('[BANCO-FRONTEND] 📡 Response status:', response.status);
+      console.log('[BANCO-FRONTEND] 📡 Response ok:', response.ok);
+      
       const data = await response.json();
-      console.log('[Banco] Respuesta de depósito:', data);
+      console.log('[BANCO-FRONTEND] 📊 Respuesta de depósito:', data);
       
       if (data.success) {
+        console.log('[BANCO-FRONTEND] ✅ Depósito exitoso');
         showMessage(`Depósito de €${amount} realizado correctamente`);
         await loadBalance(user.id);
       } else {
+        console.warn('[BANCO-FRONTEND] ⚠️ Error en depósito:', data.error);
         showMessage(data.error || 'Error al realizar el depósito', 'error');
       }
     } catch (error) {
-      console.error('[Banco] Error en depósito:', error);
+      console.error('[BANCO-FRONTEND] ❌ Error en depósito:', error);
+      console.error('[BANCO-FRONTEND] ❌ Error stack:', error.stack);
       showMessage('Error al realizar el depósito', 'error');
     } finally {
       setLoadingAction(false);
@@ -118,7 +135,7 @@ const BancoCentralRP = () => {
       const amount = 500; // Cantidad fija por ahora
       console.log('[Banco] Realizando retiro:', { userId: user.id, amount });
       
-      const response = await authFetch(`${apiUrl()}/api/proxy/withdraw`, {
+      const response = await authFetch(`/api/proxy/withdraw`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -154,7 +171,7 @@ const BancoCentralRP = () => {
         amount: parseInt(transferData.amount)
       });
       
-      const response = await authFetch(`${apiUrl()}/api/proxy/transfer`, {
+      const response = await authFetch(`/api/proxy/transfer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -190,7 +207,7 @@ const BancoCentralRP = () => {
     try {
       console.log('[Banco] Realizando trabajo para usuario:', user.id);
       
-      const response = await authFetch(`${apiUrl()}/api/proxy/trabajar`, {
+      const response = await authFetch(`/api/proxy/trabajar`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -230,7 +247,7 @@ const BancoCentralRP = () => {
       const roles = ['1384340649205301359']; // Rol de admin
       console.log('[Banco] Cobrando nómina para usuario:', user.id, 'con roles:', roles);
       
-      const response = await authFetch(`${apiUrl()}/api/proxy/cobrar-nomina`, {
+      const response = await authFetch(`/api/proxy/cobrar-nomina`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

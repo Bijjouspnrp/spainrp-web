@@ -3533,14 +3533,30 @@ app.post('/api/proxy/admin/cobrar-nomina', express.json(), async (req, res) => {
 app.get('/api/proxy/balance/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    console.log(`[PROXY] [balance-user] GET request for userId: ${userId}`);
+    console.log(`[BANCO] [balance-user] GET request for userId: ${userId}`);
+    console.log(`[BANCO] [balance-user] Headers:`, req.headers);
+    console.log(`[BANCO] [balance-user] Query:`, req.query);
     
-    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/balance/${encodeURIComponent(userId)}`);
+    const economiaUrl = `${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/balance/${encodeURIComponent(userId)}`;
+    console.log(`[BANCO] [balance-user] Calling economia API: ${economiaUrl}`);
+    
+    const response = await fetch(economiaUrl);
+    console.log(`[BANCO] [balance-user] Economia API response status: ${response.status}`);
+    console.log(`[BANCO] [balance-user] Economia API response headers:`, Object.fromEntries(response.headers.entries()));
+    
     const data = await response.json();
-    console.log(`[PROXY] [balance-user] Response:`, data);
+    console.log(`[BANCO] [balance-user] Economia API response data:`, data);
+    
+    if (!response.ok) {
+      console.error(`[BANCO] [balance-user] Economia API error: ${response.status} - ${data.error || 'Unknown error'}`);
+      return res.status(response.status).json(data);
+    }
+    
+    console.log(`[BANCO] [balance-user] Sending response to frontend:`, data);
     res.json(data);
   } catch (error) {
-    console.error('[PROXY] [balance-user] Exception:', error);
+    console.error('[BANCO] [balance-user] Exception:', error);
+    console.error('[BANCO] [balance-user] Error stack:', error.stack);
     res.status(500).json({ error: 'Error al consultar saldo', details: String(error) });
   }
 });
@@ -3685,29 +3701,48 @@ app.post('/api/proxy/transfer', express.json(), async (req, res) => {
 app.post('/api/proxy/deposit', express.json(), async (req, res) => {
   try {
     const { userId, amount } = req.body;
-    console.log(`[PROXY] [deposit-user] POST request:`, { userId, amount });
+    console.log(`[BANCO] [deposit-user] POST request:`, { userId, amount });
+    console.log(`[BANCO] [deposit-user] Headers:`, req.headers);
     
     if (!userId || !amount || amount <= 0) {
+      console.error(`[BANCO] [deposit-user] Invalid parameters:`, { userId, amount });
       return res.status(400).json({ error: 'userId y amount válidos requeridos' });
     }
     
     // Simular depósito moviendo dinero de efectivo a banco
-    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/transfer`, {
+    const economiaUrl = `${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/transfer`;
+    const requestBody = {
+      fromId: userId,
+      toId: userId,
+      amount: parseInt(amount),
+      origen: 'cash_to_bank'
+    };
+    
+    console.log(`[BANCO] [deposit-user] Calling economia API: ${economiaUrl}`);
+    console.log(`[BANCO] [deposit-user] Request body:`, requestBody);
+    
+    const response = await fetch(economiaUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        fromId: userId,
-        toId: userId,
-        amount: parseInt(amount),
-        origen: 'cash_to_bank'
-      })
+      body: JSON.stringify(requestBody)
     });
     
+    console.log(`[BANCO] [deposit-user] Economia API response status: ${response.status}`);
+    console.log(`[BANCO] [deposit-user] Economia API response headers:`, Object.fromEntries(response.headers.entries()));
+    
     const data = await response.json();
-    console.log(`[PROXY] [deposit-user] Response:`, data);
+    console.log(`[BANCO] [deposit-user] Economia API response data:`, data);
+    
+    if (!response.ok) {
+      console.error(`[BANCO] [deposit-user] Economia API error: ${response.status} - ${data.error || 'Unknown error'}`);
+      return res.status(response.status).json(data);
+    }
+    
+    console.log(`[BANCO] [deposit-user] Sending response to frontend:`, data);
     res.json(data);
   } catch (error) {
-    console.error('[PROXY] [deposit-user] Exception:', error);
+    console.error('[BANCO] [deposit-user] Exception:', error);
+    console.error('[BANCO] [deposit-user] Error stack:', error.stack);
     res.status(500).json({ error: 'Error al depositar dinero', details: String(error) });
   }
 });
