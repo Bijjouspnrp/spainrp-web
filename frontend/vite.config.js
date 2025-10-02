@@ -225,6 +225,20 @@ export default defineConfig({
   }
   ,
   build: {
-    chunkSizeWarningLimit: 2000
+    chunkSizeWarningLimit: 2000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom'],
+          icons: ['react-icons']
+        }
+      }
+    }
+  },
+  // Configuración para el preview/producción
+  preview: {
+    port: 4173,
+    strictPort: true
   }
 })
