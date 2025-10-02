@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaWifi, FaWifiSlash, FaSync, FaExclamationTriangle } from 'react-icons/fa';
+import { FaWifi, FaTimesCircle, FaSync, FaExclamationTriangle } from 'react-icons/fa';
 import useOffline from '../hooks/useOffline';
 import './OfflineIndicator.css';
 
@@ -36,7 +36,7 @@ const OfflineIndicator = () => {
     <div className="offline-indicator">
       <div className="offline-content">
         <div className="offline-icon">
-          <FaWifiSlash />
+          <FaTimesCircle />
         </div>
         <div className="offline-text">
           <div className="offline-title">Sin Conexión</div>
