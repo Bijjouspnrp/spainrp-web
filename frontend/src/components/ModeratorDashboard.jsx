@@ -13,7 +13,7 @@ const ModeratorDashboard = () => {
   useEffect(() => {
     const checkModeratorStatus = async () => {
       try {
-        const token = localStorage.getItem('spainrp_token');
+        const token = localStorage.getItem('token');
         console.log('[ModeratorDashboard] 🔍 Verificando token:', token ? 'Presente' : 'Ausente');
         
         if (!token) {

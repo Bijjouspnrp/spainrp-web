@@ -37,13 +37,7 @@ db.run(`CREATE TABLE IF NOT EXISTS notifications (
     priority TEXT DEFAULT 'normal',
     read INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-)`, (err) => {
-  if (err) {
-    console.error('[NOTIFICATIONS] Error creando tabla:', err);
-  } else {
-    console.log('[NOTIFICATIONS] Tabla de notificaciones inicializada');
-  }
-});
+)`);
 
 // Obtener notificaciones del usuario
 router.get('/', async (req, res) => {

@@ -66,7 +66,7 @@ const Support = () => {
   useEffect(() => {
     const getUserInfo = async () => {
       try {
-        const token = localStorage.getItem('spainrp_token');
+        const token = localStorage.getItem('token');
         console.log('[SUPPORT] 🔍 Token encontrado:', token ? 'Sí' : 'No');
         
         if (!token) {
@@ -275,7 +275,7 @@ const Support = () => {
     console.log('[SUPPORT][startChat] Nombre de usuario:', userName);
     console.log('[SUPPORT][startChat] Usuario ID:', user?.id);
     console.log('[SUPPORT][startChat] Usuario completo:', user);
-          console.log('[SUPPORT][startChat] Token en localStorage:', localStorage.getItem('spainrp_token') ? 'Presente' : 'Ausente');
+    console.log('[SUPPORT][startChat] Token en localStorage:', localStorage.getItem('token') ? 'Presente' : 'Ausente');
     console.log('[SUPPORT][startChat] Socket disponible:', !!socket);
     console.log('[SUPPORT][startChat] Conectado:', isConnected);
     
