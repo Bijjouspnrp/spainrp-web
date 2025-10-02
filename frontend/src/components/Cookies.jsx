@@ -85,8 +85,8 @@ const Cookies = () => {
           animation: 'fadeInUp 0.8s ease-out'
         }}>
           <div style={{
-            display: 'flex',
-            alignItems: 'center',
+      display: 'flex',
+      alignItems: 'center',
             justifyContent: 'center',
             gap: '12px',
             marginBottom: '1rem'
@@ -155,8 +155,8 @@ const Cookies = () => {
               </h3>
               <p style={{ opacity: 0.85, margin: 0, fontSize: '14px' }}>
                 Esenciales para el funcionamiento básico del sitio web. No se pueden desactivar.
-              </p>
-            </div>
+          </p>
+        </div>
             <div style={{
               background: '#27ae60',
               color: 'white',
@@ -171,7 +171,7 @@ const Cookies = () => {
               <FaCheck size={12} />
               Siempre Activo
             </div>
-          </div>
+        </div>
 
           {/* Cookies de Análisis */}
           <div style={{
@@ -231,8 +231,8 @@ const Cookies = () => {
               </p>
             </div>
             <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-              <input
-                type="checkbox"
+                  <input
+                    type="checkbox"
                 checked={cookiePreferences.marketing}
                 onChange={() => handlePreferenceChange('marketing')}
                 style={{
@@ -244,8 +244,8 @@ const Cookies = () => {
               <span style={{ fontSize: '14px', fontWeight: '600' }}>
                 {cookiePreferences.marketing ? 'Activado' : 'Desactivado'}
               </span>
-            </label>
-          </div>
+                </label>
+              </div>
 
           {/* Cookies de Preferencias */}
           <div style={{
@@ -266,10 +266,10 @@ const Cookies = () => {
               <p style={{ opacity: 0.85, margin: 0, fontSize: '14px' }}>
                 Recuerdan tus configuraciones y preferencias para personalizar tu experiencia.
               </p>
-            </div>
+                </div>
             <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-              <input
-                type="checkbox"
+                  <input
+                    type="checkbox"
                 checked={cookiePreferences.preferences}
                 onChange={() => handlePreferenceChange('preferences')}
                 style={{
@@ -281,9 +281,9 @@ const Cookies = () => {
               <span style={{ fontSize: '14px', fontWeight: '600' }}>
                 {cookiePreferences.preferences ? 'Activado' : 'Desactivado'}
               </span>
-            </label>
-          </div>
-        </div>
+                </label>
+              </div>
+            </div>
 
         {/* Botones de acción */}
         <div style={{
@@ -382,7 +382,7 @@ const Cookies = () => {
             <FaCog />
             Guardar Preferencias
           </button>
-        </div>
+            </div>
 
         {/* Información adicional */}
         <div style={{

@@ -2354,6 +2354,26 @@ async function proxySetAdminBalance(userId, cash, bank) {
   return await response.json();
 }
 
+// Proxy: agregar item al inventario de un usuario (solo administradores)
+async function proxyAddAdminItem(userId, itemId, amount) {
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/blackmarket/admin/additem`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, itemId, amount })
+  });
+  return await response.json();
+}
+
+// Proxy: retirar item del inventario de un usuario (solo administradores)
+async function proxyRemoveAdminItem(userId, itemId, amount) {
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/blackmarket/admin/removeitem`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, itemId, amount })
+  });
+  return await response.json();
+}
+
 // Widget Discord (público)
 app.get('/api/discord/widget', async (req, res) => {
   try {
@@ -3313,7 +3333,7 @@ app.post('/api/proxy/admin/additem', express.json(), async (req, res) => {
     // El API externo espera 'userId', no 'targetUserId'
     const payload = { userId: targetUserId, itemId, amount, adminUserId };
     console.log(`[PROXY] [additem] Forwarding payload:`, payload);
-    const response = await fetch(`${process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/'}/api/admin/additem`, {
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/blackmarket/admin/additem`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -3343,7 +3363,7 @@ app.post('/api/proxy/admin/removeitem', express.json(), async (req, res) => {
     console.log(`[PROXY] [removeitem] Request body:`, req.body);
     const payload = { userId: targetUserId, itemId, amount, adminUserId };
     console.log(`[PROXY] [removeitem] Forwarding payload:`, payload);
-    const response = await fetch(`${process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/'}/api/admin/removeitem`, {
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/blackmarket/admin/removeitem`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)

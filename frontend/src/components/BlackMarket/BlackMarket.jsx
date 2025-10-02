@@ -5,6 +5,52 @@ import './BlackMarket.css';
 import DiscordUserBar from '../DiscordUserBar';
 import { apiUrl, authFetch } from '../../utils/api';
 
+// Definición de temas
+const THEMES = {
+  hacking: {
+    name: 'Hacking',
+    icon: '💻',
+    description: 'Tema de hacking y ciberseguridad',
+    colors: {
+      primary: '#00ff99',
+      secondary: '#0ea5e9',
+      accent: '#f59e0b',
+      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%)',
+      surface: 'rgba(0, 255, 153, 0.05)',
+      text: '#ffffff',
+      border: '#00ff99'
+    }
+  },
+  darkness: {
+    name: 'Oscuridad',
+    icon: '🌑',
+    description: 'Tema oscuro y misterioso',
+    colors: {
+      primary: '#8b5cf6',
+      secondary: '#a855f7',
+      accent: '#ec4899',
+      background: 'linear-gradient(135deg, #000000 0%, #1a0a1a 50%, #000000 100%)',
+      surface: 'rgba(139, 92, 246, 0.1)',
+      text: '#e5e7eb',
+      border: '#8b5cf6'
+    }
+  },
+  terror: {
+    name: 'Terror',
+    icon: '👻',
+    description: 'Tema de terror y horror',
+    colors: {
+      primary: '#ef4444',
+      secondary: '#dc2626',
+      accent: '#f59e0b',
+      background: 'linear-gradient(135deg, #1a0000 0%, #2d0000 50%, #0a0000 100%)',
+      surface: 'rgba(239, 68, 68, 0.1)',
+      text: '#fca5a5',
+      border: '#ef4444'
+    }
+  }
+};
+
 // Define ITEMS array above the component
 const ITEMS = [
   {
@@ -91,7 +137,7 @@ const ITEMS = [
     ]
   },
   {
-    category: 'Sustancias (Compras se realizan en la Cafeteria)',
+    category: 'Sustancias ',
     icon: <FaPills />,
     options: [
       { 
@@ -400,11 +446,24 @@ export default function BlackMarket() {
     console.log('[BlackMarket] 📍 Timestamp:', new Date().toISOString());
   }, []);
 
-  // Detección de móvil y responsive
+  // Detección de móvil y responsive mejorada
   React.useEffect(() => {
     const checkMobile = () => {
-      const mobile = window.innerWidth <= 768;
+      const width = window.innerWidth;
+      const mobile = width <= 768;
+      const smallMobile = width <= 480;
+      const tablet = width > 768 && width <= 1024;
+      
       setIsMobile(mobile);
+      
+      // Log para debugging
+      console.log('[BlackMarket] 📱 Device detection:', {
+        width,
+        mobile,
+        smallMobile,
+        tablet,
+        userAgent: navigator.userAgent.includes('Mobile')
+      });
     };
     
     checkMobile();
@@ -513,7 +572,7 @@ export default function BlackMarket() {
   const [isAdmin, setIsAdmin] = React.useState(false);
   const [adminChecking, setAdminChecking] = React.useState(false);
   const [showAdminPanel, setShowAdminPanel] = React.useState(false);
-  const [searchQuery, setSearchQuery] = React.useState('');
+  const [adminSearchQuery, setAdminSearchQuery] = React.useState('');
   const [searchResults, setSearchResults] = React.useState([]);
   const [selectedUser, setSelectedUser] = React.useState(null);
   const [userInventory, setUserInventory] = React.useState([]);
@@ -550,6 +609,91 @@ export default function BlackMarket() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showMobileInventory, setShowMobileInventory] = useState(false);
   const [showMobileAdmin, setShowMobileAdmin] = useState(false);
+  
+  // Estados para descripciones desplegables del modal de advertencia
+  const [showConsequences, setShowConsequences] = useState(false);
+  const [showSanctions, setShowSanctions] = useState(false);
+  
+  // Estados para sistema de temas
+  const [currentTheme, setCurrentTheme] = useState(() => {
+    const saved = localStorage.getItem('blackmarket-theme');
+    return saved || 'hacking';
+  });
+  
+  // Estados para búsqueda y filtros
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedRarity, setSelectedRarity] = useState('all');
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 1000000 });
+  const [stockFilter, setStockFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('name');
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Función para cambiar tema
+  const changeTheme = (themeKey) => {
+    setCurrentTheme(themeKey);
+    localStorage.setItem('blackmarket-theme', themeKey);
+  };
+
+  // Función para obtener items filtrados
+  const getFilteredItems = () => {
+    if (!ITEMS[selected] || selected >= ITEMS.length) return [];
+    
+    let filtered = ITEMS[selected].options.filter(item => {
+      // Filtro por búsqueda
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matchesName = item.name.toLowerCase().includes(query);
+        const matchesDescription = item.description?.toLowerCase().includes(query);
+        const matchesEffects = item.effects?.some(effect => 
+          effect.toLowerCase().includes(query)
+        );
+        if (!matchesName && !matchesDescription && !matchesEffects) return false;
+      }
+      
+      // Filtro por rareza
+      if (selectedRarity !== 'all' && item.rarity !== selectedRarity) return false;
+      
+      // Filtro por precio
+      if (item.price < priceRange.min || item.price > priceRange.max) return false;
+      
+      // Filtro por stock
+      if (stockFilter === 'in_stock' && item.stock <= 0) return false;
+      if (stockFilter === 'low_stock' && item.stock > 2) return false;
+      if (stockFilter === 'out_of_stock' && item.stock > 0) return false;
+      
+      return true;
+    });
+    
+    // Ordenamiento
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'price_low':
+          return a.price - b.price;
+        case 'price_high':
+          return b.price - a.price;
+        case 'name':
+          return a.name.localeCompare(b.name);
+        case 'rarity':
+          const rarityOrder = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 };
+          return (rarityOrder[a.rarity] || 0) - (rarityOrder[b.rarity] || 0);
+        case 'stock':
+          return b.stock - a.stock;
+        default:
+          return 0;
+      }
+    });
+    
+    return filtered;
+  };
+
+  // Función para limpiar filtros
+  const clearFilters = () => {
+    setSearchQuery('');
+    setSelectedRarity('all');
+    setPriceRange({ min: 0, max: 1000000 });
+    setStockFilter('all');
+    setSortBy('name');
+  };
 
   // Quick balance handler con logging y notificaciones
   const handleQuickBalance = async (e) => {
@@ -592,24 +736,8 @@ export default function BlackMarket() {
         bankChange: (parseInt(quickBank) || 0) - (currentBalance?.bank || 0)
       };
 
-      // Enviar notificación por email ANTES de hacer el cambio
-      try {
-        const emailResponse = await fetch('https://spainrp-web.onrender.com/api/admin/notify-balance-change', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(enhancedLogData)
-        });
-        
-        if (emailResponse.ok) {
-          const emailResult = await emailResponse.json();
-          console.log('[QuickBalance] 📧 Notificación de email:', emailResult);
-        } else {
-          console.warn('[QuickBalance] Error en respuesta de email:', emailResponse.status);
-        }
-      } catch (emailErr) {
-        console.warn('[QuickBalance] Error enviando email:', emailErr);
-        // No fallar la operación si el email falla
-      }
+      // Email temporalmente desactivado para evitar errores
+      console.log('[QuickBalance] 📧 Email desactivado temporalmente');
 
       // Realizar la modificación del saldo
       const requestData = {
@@ -999,36 +1127,24 @@ export default function BlackMarket() {
     setAdminLoading(true);
     const uid = selectedUser.id || selectedUser.userId;
     try {
-      let response;
-      try {
-        response = await fetch('https://spainrp-web.onrender.com/api/proxy/admin/additem', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: uid,
-            itemId,
-            amount: parseInt(amount),
-            adminUserId: user.id
-          })
-        });
-        if (!response.ok || response.headers.get('content-type')?.includes('text/html')) {
-          throw new Error('API externa no disponible');
-        }
-      } catch (e) {
-        console.log('[BlackMarket] API externa no disponible para additem, usando backend local');
-        response = await fetch('https://spainrp-web.onrender.com/api/proxy/admin/additem', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: uid,
-            itemId,
-            amount: parseInt(amount),
-            adminUserId: user.id
-          })
-        });
-      }
+      console.log('[BlackMarket] Agregando item:', { targetUserId: uid, itemId, amount, adminUserId: user.id });
+      
+      const response = await fetch('https://spainrp-web.onrender.com/api/proxy/admin/additem', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetUserId: uid,
+          itemId,
+          amount: parseInt(amount),
+          adminUserId: user.id
+        })
+      });
+      
+      console.log('[BlackMarket] AddItem response status:', response.status);
       const data = await response.json();
-      if (response.ok) {
+      console.log('[BlackMarket] AddItem response data:', data);
+      
+      if (response.ok && !data.error) {
         setAdminMessage(`✅ Item agregado exitosamente`);
         // Recargar inventario
         selectUser(selectedUser);
@@ -1036,6 +1152,7 @@ export default function BlackMarket() {
         setAdminMessage('❌ Error al agregar item: ' + (data.error || 'Error desconocido'));
       }
     } catch (error) {
+      console.error('[BlackMarket] AddItem error:', error);
       setAdminMessage('❌ Error al agregar item: ' + error.message);
     } finally {
       setAdminLoading(false);
@@ -1047,36 +1164,24 @@ export default function BlackMarket() {
     setAdminLoading(true);
     const uid = selectedUser.id || selectedUser.userId;
     try {
-      let response;
-      try {
-        response = await fetch('https://spainrp-web.onrender.com/api/proxy/admin/removeitem', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: uid,
-            itemId,
-            amount: parseInt(amount),
-            adminUserId: user.id
-          })
-        });
-        if (!response.ok || response.headers.get('content-type')?.includes('text/html')) {
-          throw new Error('API externa no disponible');
-        }
-      } catch (e) {
-        console.log('[BlackMarket] API externa no disponible para removeitem, usando backend local');
-        response = await fetch('https://spainrp-web.onrender.com/api/proxy/admin/removeitem', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: uid,
-            itemId,
-            amount: parseInt(amount),
-            adminUserId: user.id
-          })
-        });
-      }
+      console.log('[BlackMarket] Retirando item:', { targetUserId: uid, itemId, amount, adminUserId: user.id });
+      
+      const response = await fetch('https://spainrp-web.onrender.com/api/proxy/admin/removeitem', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetUserId: uid,
+          itemId,
+          amount: parseInt(amount),
+          adminUserId: user.id
+        })
+      });
+      
+      console.log('[BlackMarket] RemoveItem response status:', response.status);
       const data = await response.json();
-      if (response.ok) {
+      console.log('[BlackMarket] RemoveItem response data:', data);
+      
+      if (response.ok && !data.error) {
         setAdminMessage(`✅ Item retirado exitosamente`);
         // Recargar inventario
         selectUser(selectedUser);
@@ -1084,6 +1189,7 @@ export default function BlackMarket() {
         setAdminMessage('❌ Error al retirar item: ' + (data.error || 'Error desconocido'));
       }
     } catch (error) {
+      console.error('[BlackMarket] RemoveItem error:', error);
       setAdminMessage('❌ Error al retirar item: ' + error.message);
     } finally {
       setAdminLoading(false);
@@ -1292,7 +1398,7 @@ if (!user) {
   }
 
   return (
-    <div className="blackmarket-hack-bg">
+    <div className={`blackmarket-hack-bg theme-${currentTheme}`}>
       {roleChecking && <div className="role-check-bar" />}
       {roleToast && <div className="role-ok-toast">{roleToast}</div>}
       <DiscordUserBar />
@@ -1308,8 +1414,25 @@ if (!user) {
             <span className="hamburger-line"></span>
           </button>
         )}
-        <FaLock size={isMobile ? 24 : 32} style={{marginRight: isMobile ? 8 : 12}} />
+        <FaLock size={isMobile ? 20 : 32} style={{marginRight: isMobile ? 6 : 12}} />
         <span className={isMobile ? "mobile-title" : ""}>BLACKMARKET SPAINRP</span>
+        
+        {/* Botón de cambio de tema */}
+        <div className="theme-selector">
+          <button 
+            className="theme-btn"
+            onClick={() => {
+              const themes = Object.keys(THEMES);
+              const currentIndex = themes.indexOf(currentTheme);
+              const nextIndex = (currentIndex + 1) % themes.length;
+              changeTheme(themes[nextIndex]);
+            }}
+            title={`Cambiar tema (Actual: ${THEMES[currentTheme].name})`}
+          >
+            {THEMES[currentTheme].icon}
+          </button>
+        </div>
+        
         {isMobile && (
           <div className="mobile-header-actions">
             {user && (
@@ -1481,7 +1604,7 @@ if (!user) {
         </div>
       )}
 
-      {/* Modal de advertencia para Quick Balance */}
+      {/* Modal de advertencia para Quick Balance - Versión mejorada y responsive */}
       {showQuickBalanceWarning && (
         <div style={{
           position: 'fixed',
@@ -1494,19 +1617,22 @@ if (!user) {
           alignItems: 'center',
           justifyContent: 'center',
           zIndex: 3000,
-          animation: 'fadeIn 0.3s ease-out'
+          animation: 'fadeIn 0.3s ease-out',
+          padding: '1rem'
         }}>
           <div style={{
             background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
-            borderRadius: '20px',
-            padding: '2rem',
-            maxWidth: '500px',
-            width: '90%',
+            borderRadius: isMobile ? '12px' : '16px',
+            padding: isMobile ? '1.2rem' : '1.5rem',
+            maxWidth: isMobile ? '95%' : '420px',
+            width: '100%',
+            maxHeight: isMobile ? '90vh' : '80vh',
             border: '2px solid #ef4444',
             boxShadow: '0 20px 40px rgba(239, 68, 68, 0.3)',
             animation: 'slideInScale 0.4s ease-out',
             position: 'relative',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            overflowY: 'auto'
           }}>
             {/* Efecto de parpadeo de advertencia */}
             <div style={{
@@ -1514,124 +1640,169 @@ if (!user) {
               top: 0,
               left: 0,
               right: 0,
-              height: '4px',
+              height: '3px',
               background: 'linear-gradient(90deg, #ef4444, #f59e0b, #ef4444)',
               animation: 'warningPulse 1s ease-in-out infinite'
             }} />
             
-            {/* Icono de advertencia */}
+            {/* Header compacto */}
             <div style={{
               textAlign: 'center',
-              marginBottom: '1.5rem'
+              marginBottom: '1rem'
             }}>
               <div style={{
-                fontSize: '4rem',
-                animation: 'warningBounce 0.6s ease-in-out infinite alternate'
+                fontSize: isMobile ? '2.5rem' : '3rem',
+                animation: 'warningBounce 0.6s ease-in-out infinite alternate',
+                marginBottom: '0.5rem'
               }}>
                 ⚠️
               </div>
+              <h2 style={{
+                color: '#ef4444',
+                fontSize: isMobile ? '1.3rem' : '1.5rem',
+                fontWeight: '800',
+                margin: 0,
+                textShadow: '0 0 10px rgba(239, 68, 68, 0.5)'
+              }}>
+                ADVERTENCIA CRÍTICA
+              </h2>
             </div>
 
-            {/* Título */}
-            <h2 style={{
-              color: '#ef4444',
-              textAlign: 'center',
-              marginBottom: '1rem',
-              fontSize: '1.8rem',
-              fontWeight: '800',
-              textShadow: '0 0 10px rgba(239, 68, 68, 0.5)'
-            }}>
-              ADVERTENCIA CRÍTICA
-            </h2>
-
-            {/* Contenido de advertencia */}
+            {/* Contenido principal con descripciones desplegables */}
             <div style={{
               color: '#fff',
-              lineHeight: '1.6',
-              marginBottom: '2rem'
+              lineHeight: '1.5',
+              marginBottom: '1.5rem'
             }}>
               <p style={{
-                fontSize: '1.1rem',
+                fontSize: isMobile ? '0.95rem' : '1rem',
                 marginBottom: '1rem',
-                fontWeight: '600'
+                fontWeight: '600',
+                textAlign: 'center'
               }}>
-                Estás a punto de acceder a una función <strong style={{color: '#ef4444'}}>EXTREMADAMENTE PELIGROSA</strong>.
+                Función <strong style={{color: '#ef4444'}}>EXTREMADAMENTE PELIGROSA</strong>
               </p>
               
+              {/* Descripción desplegable 1 - Consecuencias */}
               <div style={{
                 background: 'rgba(239, 68, 68, 0.1)',
                 border: '1px solid rgba(239, 68, 68, 0.3)',
-                borderRadius: '12px',
-                padding: '1rem',
-                marginBottom: '1rem'
+                borderRadius: '8px',
+                marginBottom: '0.8rem',
+                overflow: 'hidden'
               }}>
-                <h3 style={{
-                  color: '#f59e0b',
-                  marginBottom: '0.8rem',
-                  fontSize: '1.2rem'
-                }}>
-                  ⚠️ CONSECUENCIAS GRAVES:
-                </h3>
-                <ul style={{
-                  margin: 0,
-                  paddingLeft: '1.2rem',
-                  fontSize: '0.95rem'
-                }}>
-                  <li>Modificación directa de saldos de usuarios</li>
-                  <li>Acceso a datos financieros sensibles</li>
-                  <li>Posible desequilibrio económico del servidor</li>
-                  <li>Impacto directo en la experiencia de juego</li>
-                </ul>
+                <button
+                  onClick={() => setShowConsequences(!showConsequences)}
+                  style={{
+                    width: '100%',
+                    background: 'none',
+                    border: 'none',
+                    color: '#f59e0b',
+                    padding: '0.8rem',
+                    fontSize: isMobile ? '0.9rem' : '1rem',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    textAlign: 'left'
+                  }}
+                >
+                  <span>⚠️ Consecuencias Graves</span>
+                  <span style={{
+                    transform: showConsequences ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.3s ease',
+                    fontSize: '0.8rem'
+                  }}>
+                    ▼
+                  </span>
+                </button>
+                {showConsequences && (
+                  <div style={{
+                    padding: '0 0.8rem 0.8rem 0.8rem',
+                    fontSize: isMobile ? '0.8rem' : '0.85rem',
+                    lineHeight: '1.4'
+                  }}>
+                    <ul style={{ margin: 0, paddingLeft: '1rem' }}>
+                      <li>Modificación directa de saldos</li>
+                      <li>Acceso a datos financieros</li>
+                      <li>Desequilibrio económico del servidor</li>
+                      <li>Impacto en experiencia de juego</li>
+                    </ul>
+                  </div>
+                )}
               </div>
 
+              {/* Descripción desplegable 2 - Sanciones */}
               <div style={{
                 background: 'rgba(245, 158, 11, 0.1)',
                 border: '1px solid rgba(245, 158, 11, 0.3)',
-                borderRadius: '12px',
-                padding: '1rem',
-                marginBottom: '1.5rem'
+                borderRadius: '8px',
+                marginBottom: '1rem',
+                overflow: 'hidden'
               }}>
-                <h3 style={{
-                  color: '#f59e0b',
-                  marginBottom: '0.8rem',
-                  fontSize: '1.2rem'
-                }}>
-                  🚨 SANCIONES INMEDIATAS:
-                </h3>
-                <p style={{
-                  margin: 0,
-                  fontSize: '0.95rem',
-                  fontWeight: '600'
-                }}>
-                  El uso de esta función sin motivos obligatorios y documentados resultará en:
-                </p>
-                <ul style={{
-                  margin: '0.5rem 0 0 0',
-                  paddingLeft: '1.2rem',
-                  fontSize: '0.9rem'
-                }}>
-                  <li>Revocación inmediata de permisos de administrador</li>
-                  <li>Sanción temporal o permanente del servidor</li>
-                  <li>Investigación de todas las acciones realizadas</li>
-                  <li>Posible expulsión del staff</li>
-                </ul>
+                <button
+                  onClick={() => setShowSanctions(!showSanctions)}
+                  style={{
+                    width: '100%',
+                    background: 'none',
+                    border: 'none',
+                    color: '#f59e0b',
+                    padding: '0.8rem',
+                    fontSize: isMobile ? '0.9rem' : '1rem',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    textAlign: 'left'
+                  }}
+                >
+                  <span>🚨 Sanciones Inmediatas</span>
+                  <span style={{
+                    transform: showSanctions ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.3s ease',
+                    fontSize: '0.8rem'
+                  }}>
+                    ▼
+                  </span>
+                </button>
+                {showSanctions && (
+                  <div style={{
+                    padding: '0 0.8rem 0.8rem 0.8rem',
+                    fontSize: isMobile ? '0.8rem' : '0.85rem',
+                    lineHeight: '1.4'
+                  }}>
+                    <p style={{ margin: '0 0 0.5rem 0', fontWeight: '600' }}>
+                      Uso sin motivos documentados resultará en:
+                    </p>
+                    <ul style={{ margin: 0, paddingLeft: '1rem' }}>
+                      <li>Revocación de permisos de admin</li>
+                      <li>Sanción temporal o permanente</li>
+                      <li>Investigación de acciones</li>
+                      <li>Posible expulsión del staff</li>
+                    </ul>
+                  </div>
+                )}
               </div>
 
               <p style={{
-                fontSize: '1rem',
+                fontSize: isMobile ? '0.9rem' : '1rem',
                 textAlign: 'center',
                 fontWeight: '700',
-                color: '#f59e0b'
+                color: '#f59e0b',
+                margin: 0
               }}>
                 ¿Estás seguro de que necesitas usar esta función?
               </p>
             </div>
 
-            {/* Botones de acción */}
+            {/* Botones de acción responsive */}
             <div style={{
               display: 'flex',
-              gap: '1rem',
-              justifyContent: 'center'
+              gap: isMobile ? '0.8rem' : '1rem',
+              justifyContent: 'center',
+              flexDirection: isMobile ? 'column' : 'row'
             }}>
               <button
                 onClick={closeQuickBalanceWarning}
@@ -1639,13 +1810,14 @@ if (!user) {
                   background: 'linear-gradient(135deg, #6b7280, #4b5563)',
                   color: '#fff',
                   border: 'none',
-                  borderRadius: '12px',
-                  padding: '0.8rem 2rem',
-                  fontSize: '1rem',
+                  borderRadius: '8px',
+                  padding: isMobile ? '0.7rem 1.5rem' : '0.8rem 2rem',
+                  fontSize: isMobile ? '0.9rem' : '1rem',
                   fontWeight: '700',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
-                  boxShadow: '0 4px 12px rgba(107, 114, 128, 0.3)'
+                  boxShadow: '0 4px 12px rgba(107, 114, 128, 0.3)',
+                  width: isMobile ? '100%' : 'auto'
                 }}
                 onMouseEnter={(e) => {
                   e.target.style.transform = 'translateY(-2px)';
@@ -1665,14 +1837,15 @@ if (!user) {
                   background: 'linear-gradient(135deg, #ef4444, #dc2626)',
                   color: '#fff',
                   border: 'none',
-                  borderRadius: '12px',
-                  padding: '0.8rem 2rem',
-                  fontSize: '1rem',
+                  borderRadius: '8px',
+                  padding: isMobile ? '0.7rem 1.5rem' : '0.8rem 2rem',
+                  fontSize: isMobile ? '0.9rem' : '1rem',
                   fontWeight: '700',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
                   boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)',
-                  animation: 'dangerPulse 2s ease-in-out infinite'
+                  animation: 'dangerPulse 2s ease-in-out infinite',
+                  width: isMobile ? '100%' : 'auto'
                 }}
                 onMouseEnter={(e) => {
                   e.target.style.transform = 'translateY(-2px)';
@@ -1689,27 +1862,154 @@ if (!user) {
           </div>
         </div>
       )}
-      <div className="blackmarket-hack-tabs">
-        {[...ITEMS.map((cat, idx) => (
-          <button
-            key={idx}
-            className={`blackmarket-hack-tab${selected === idx ? ' active' : ''}`}
-            onClick={() => setSelected(idx)}
+      {/* Barra de búsqueda y filtros */}
+      <div className="search-filters-container">
+        <div className="search-bar">
+          <input
+            type="text"
+            placeholder="🔍 Buscar items..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="search-input"
+          />
+          <button 
+            className="filters-toggle"
+            onClick={() => setShowFilters(!showFilters)}
+            title="Mostrar/ocultar filtros"
           >
-            {cat.icon}
-            <span>{cat.category}</span>
+            ⚙️
           </button>
-        )),
-        <button
-          key={ITEMS.length}
-          className={`blackmarket-hack-tab${selected === ITEMS.length ? ' active' : ''}`}
-          onClick={() => setSelected(ITEMS.length)}
-        >
-          <FaChartLine />
-          <span>Bolsa Negra</span>
-        </button>
-        ]}
+        </div>
+        
+        {showFilters && (
+          <div className="filters-panel">
+            <div className="filter-group">
+              <label>Rareza:</label>
+              <select 
+                value={selectedRarity} 
+                onChange={(e) => setSelectedRarity(e.target.value)}
+                className="filter-select"
+              >
+                <option value="all">Todas</option>
+                <option value="common">Común</option>
+                <option value="uncommon">Poco común</option>
+                <option value="rare">Raro</option>
+                <option value="epic">Épico</option>
+                <option value="legendary">Legendario</option>
+              </select>
+            </div>
+            
+            <div className="filter-group">
+              <label>Precio: {priceRange.min}€ - {priceRange.max}€</label>
+              <div className="price-range">
+                <input
+                  type="range"
+                  min="0"
+                  max="1000000"
+                  step="1000"
+                  value={priceRange.min}
+                  onChange={(e) => setPriceRange(prev => ({ ...prev, min: parseInt(e.target.value) }))}
+                  className="range-slider"
+                />
+                <input
+                  type="range"
+                  min="0"
+                  max="1000000"
+                  step="1000"
+                  value={priceRange.max}
+                  onChange={(e) => setPriceRange(prev => ({ ...prev, max: parseInt(e.target.value) }))}
+                  className="range-slider"
+                />
+              </div>
+            </div>
+            
+            <div className="filter-group">
+              <label>Stock:</label>
+              <select 
+                value={stockFilter} 
+                onChange={(e) => setStockFilter(e.target.value)}
+                className="filter-select"
+              >
+                <option value="all">Todos</option>
+                <option value="in_stock">En stock</option>
+                <option value="low_stock">Stock bajo</option>
+                <option value="out_of_stock">Agotado</option>
+              </select>
+            </div>
+            
+            <div className="filter-group">
+              <label>Ordenar por:</label>
+              <select 
+                value={sortBy} 
+                onChange={(e) => setSortBy(e.target.value)}
+                className="filter-select"
+              >
+                <option value="name">Nombre</option>
+                <option value="price_low">Precio (menor a mayor)</option>
+                <option value="price_high">Precio (mayor a menor)</option>
+                <option value="rarity">Rareza</option>
+                <option value="stock">Stock</option>
+              </select>
+            </div>
+            
+            <button 
+              className="clear-filters-btn"
+              onClick={clearFilters}
+            >
+              🗑️ Limpiar filtros
+            </button>
+          </div>
+        )}
       </div>
+
+      {/* Tabs solo visibles en desktop y tablet */}
+      {!isMobile && (
+        <div className="blackmarket-hack-tabs">
+          {[...ITEMS.map((cat, idx) => (
+            <button
+              key={idx}
+              className={`blackmarket-hack-tab${selected === idx ? ' active' : ''}`}
+              onClick={() => setSelected(idx)}
+            >
+              {cat.icon}
+              <span>{cat.category}</span>
+            </button>
+          )),
+          <button
+            key={ITEMS.length}
+            className={`blackmarket-hack-tab${selected === ITEMS.length ? ' active' : ''}`}
+            onClick={() => setSelected(ITEMS.length)}
+          >
+            <FaChartLine />
+            <span>Bolsa Negra</span>
+          </button>
+          ]}
+        </div>
+      )}
+      {/* Indicador de categoría actual en móvil */}
+      {isMobile && (
+        <div className="mobile-category-indicator">
+          <div className="current-category">
+            {selected < ITEMS.length ? (
+              <>
+                {ITEMS[selected].icon}
+                <span>{ITEMS[selected].category}</span>
+              </>
+            ) : (
+              <>
+                <FaChartLine />
+                <span>Bolsa Negra</span>
+              </>
+            )}
+          </div>
+          <div className="category-stats">
+            {selected < ITEMS.length && (
+              <span>{ITEMS[selected].options.length} items disponibles</span>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Render Bolsa Negra minigame if selected */}
       {selected === ITEMS.length ? (
         <div style={{
@@ -1722,7 +2022,15 @@ if (!user) {
         </div>
       ) : (
         <div className="blackmarket-hack-list">
-          {ITEMS[selected].options.map((item, i) => {
+          {/* Contador de resultados */}
+          <div className="results-counter">
+            {getFilteredItems().length} de {ITEMS[selected].options.length} items
+            {(searchQuery || selectedRarity !== 'all' || stockFilter !== 'all' || priceRange.min > 0 || priceRange.max < 1000000) && (
+              <span className="filtered-indicator"> (filtrados)</span>
+            )}
+          </div>
+          
+          {getFilteredItems().map((item, i) => {
             const apiDef = item.itemId ? catalog[item.itemId] : null;
             const displayName = apiDef?.name || item.name;
             const displayPrice = typeof apiDef?.price === 'number' ? apiDef.price : item.price;
@@ -2046,12 +2354,12 @@ if (!user) {
                   <input
                     type="text"
                     placeholder="Buscar por nombre de usuario..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && searchUsers(searchQuery)}
+                    value={adminSearchQuery}
+                    onChange={(e) => setAdminSearchQuery(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && searchUsers(adminSearchQuery)}
                   />
                   <button 
-                    onClick={() => searchUsers(searchQuery)}
+                    onClick={() => searchUsers(adminSearchQuery)}
                     disabled={adminLoading}
                   >
                     {adminLoading ? '🔍' : 'Buscar'}
@@ -2134,8 +2442,36 @@ if (!user) {
                                 min="1" 
                                 id={`remove-${idx}`}
                               />
-                              <button disabled style={{opacity:0.6, cursor:'not-allowed'}}>
-                                Retirar (Próximamente)
+                              <button 
+                                onClick={async () => {
+                                  const amount = parseInt(document.getElementById(`remove-${idx}`).value);
+                                  if (!amount || amount <= 0) {
+                                    setAdminMessage('❌ Cantidad inválida');
+                                    return;
+                                  }
+                                  await removeItemFromUser(item.item_id || item.itemId, amount);
+                                }}
+                                style={{
+                                  background: '#ef4444',
+                                  color: '#fff',
+                                  border: 'none',
+                                  borderRadius: '6px',
+                                  padding: '0.5rem 1rem',
+                                  cursor: 'pointer',
+                                  fontSize: '0.85rem',
+                                  fontWeight: '600',
+                                  transition: 'all 0.3s ease'
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.target.style.background = '#dc2626';
+                                  e.target.style.transform = 'scale(1.05)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.target.style.background = '#ef4444';
+                                  e.target.style.transform = 'scale(1)';
+                                }}
+                              >
+                                Retirar
                               </button>
                             </div>
                           </div>
@@ -2159,8 +2495,37 @@ if (!user) {
                         ))}
                       </select>
                       <input type="number" placeholder="Cantidad" min="1" id="add-item-amount" />
-                      <button disabled style={{opacity:0.6, cursor:'not-allowed'}}>
-                        Agregar Item (Próximamente)
+                      <button 
+                        onClick={async () => {
+                          const itemId = document.getElementById('add-item-select').value;
+                          const amount = parseInt(document.getElementById('add-item-amount').value);
+                          if (!itemId || !amount || amount <= 0) {
+                            setAdminMessage('❌ Selecciona un item y cantidad válida');
+                            return;
+                          }
+                          await addItemToUser(itemId, amount);
+                        }}
+                        style={{
+                          background: '#22c55e',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '6px',
+                          padding: '0.5rem 1rem',
+                          cursor: 'pointer',
+                          fontSize: '0.85rem',
+                          fontWeight: '600',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.background = '#16a34a';
+                          e.target.style.transform = 'scale(1.05)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.background = '#22c55e';
+                          e.target.style.transform = 'scale(1)';
+                        }}
+                      >
+                        Agregar Item
                       </button>
                     </div>
                   </div>
@@ -2208,7 +2573,7 @@ if (!user) {
             
             <div className="mobile-menu-content">
               <div className="mobile-menu-section">
-                <h4>Navegación</h4>
+                <h4>🏪 Categorías</h4>
                 <div className="mobile-menu-tabs">
                   {ITEMS.map((cat, idx) => (
                     <button
@@ -2221,6 +2586,7 @@ if (!user) {
                     >
                       {cat.icon}
                       <span>{cat.category}</span>
+                      {selected === idx && <span className="active-indicator">✓</span>}
                     </button>
                   ))}
                   <button
@@ -2232,7 +2598,28 @@ if (!user) {
                   >
                     <FaChartLine />
                     <span>Bolsa Negra</span>
+                    {selected === ITEMS.length && <span className="active-indicator">✓</span>}
                   </button>
+                </div>
+              </div>
+              
+              <div className="mobile-menu-section">
+                <h4>🎨 Temas</h4>
+                <div className="mobile-menu-themes">
+                  {Object.entries(THEMES).map(([key, theme]) => (
+                    <button
+                      key={key}
+                      className={`mobile-menu-theme ${currentTheme === key ? 'active' : ''}`}
+                      onClick={() => {
+                        changeTheme(key);
+                        closeMobileMenu();
+                      }}
+                    >
+                      <span className="theme-icon">{theme.icon}</span>
+                      <span className="theme-name">{theme.name}</span>
+                      {currentTheme === key && <span className="active-indicator">✓</span>}
+                    </button>
+                  ))}
                 </div>
               </div>
               

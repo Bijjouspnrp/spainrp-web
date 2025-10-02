@@ -1490,6 +1490,45 @@
   flex: 1;
 }
 
+.mobile-menu-tab .active-indicator {
+  color: #00ff99;
+  font-weight: bold;
+  font-size: 0.9rem;
+  margin-left: 0.5rem;
+}
+
+/* Indicador de categoría actual en móvil */
+.mobile-category-indicator {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  border: 1px solid #00ff99;
+  border-radius: 12px;
+  padding: 1rem;
+  margin: 1rem 0.75rem;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 255, 153, 0.2);
+}
+
+.current-category {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  color: #00ff99;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.current-category svg {
+  font-size: 1.3rem;
+}
+
+.category-stats {
+  color: #888;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
 .mobile-menu-actions {
   display: flex;
   flex-direction: column;
@@ -1517,6 +1556,57 @@
   background: rgba(255, 107, 107, 0.2);
   border-color: #ff6b6b;
   transform: translateX(5px);
+}
+
+/* Selector de temas en móvil */
+.mobile-menu-themes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mobile-menu-theme {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: var(--theme-text);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.mobile-menu-theme:hover {
+  background: var(--theme-surface);
+  border-color: var(--theme-border);
+  transform: translateX(4px);
+}
+
+.mobile-menu-theme.active {
+  background: var(--theme-surface);
+  border-color: var(--theme-border);
+  color: var(--theme-primary);
+}
+
+.theme-icon {
+  font-size: 1.2rem;
+  width: 24px;
+  text-align: center;
+}
+
+.theme-name {
+  flex: 1;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.mobile-menu-theme .active-indicator {
+  color: var(--theme-primary);
+  font-weight: bold;
+  font-size: 0.9rem;
 }
 
 /* Tabs responsive */
@@ -1552,22 +1642,470 @@
   gap: 1rem;
 }
 
-/* Responsive design mejorado */
-@media (max-width: 768px) {
+/* =============================================================================
+   SISTEMA DE TEMAS Y BÚSQUEDA
+   ============================================================================= */
+
+/* Variables CSS para temas */
+:root {
+  --theme-primary: #00ff99;
+  --theme-secondary: #0ea5e9;
+  --theme-accent: #f59e0b;
+  --theme-background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%);
+  --theme-surface: rgba(0, 255, 153, 0.05);
+  --theme-text: #ffffff;
+  --theme-border: #00ff99;
+}
+
+/* Transiciones suaves para cambio de temas */
+.blackmarket-hack-bg {
+  transition: all 0.5s ease-in-out;
+}
+
+.blackmarket-hack-item {
+  transition: all 0.3s ease;
+}
+
+.blackmarket-hack-tab {
+  transition: all 0.3s ease;
+}
+
+.blackmarket-hack-buy {
+  transition: all 0.3s ease;
+}
+
+/* Tema Hacking (por defecto) */
+.theme-hacking {
+  --theme-primary: #00ff99;
+  --theme-secondary: #0ea5e9;
+  --theme-accent: #f59e0b;
+  --theme-background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%);
+  --theme-surface: rgba(0, 255, 153, 0.05);
+  --theme-text: #ffffff;
+  --theme-border: #00ff99;
+}
+
+/* Tema Oscuridad */
+.theme-darkness {
+  --theme-primary: #8b5cf6;
+  --theme-secondary: #a855f7;
+  --theme-accent: #ec4899;
+  --theme-background: linear-gradient(135deg, #000000 0%, #1a0a1a 50%, #000000 100%);
+  --theme-surface: rgba(139, 92, 246, 0.1);
+  --theme-text: #e5e7eb;
+  --theme-border: #8b5cf6;
+}
+
+/* Tema Terror */
+.theme-terror {
+  --theme-primary: #ef4444;
+  --theme-secondary: #dc2626;
+  --theme-accent: #f59e0b;
+  --theme-background: linear-gradient(135deg, #1a0000 0%, #2d0000 50%, #0a0000 100%);
+  --theme-surface: rgba(239, 68, 68, 0.1);
+  --theme-text: #fca5a5;
+  --theme-border: #ef4444;
+}
+
+/* Selector de tema */
+.theme-selector {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.theme-btn {
+  background: var(--theme-surface);
+  border: 2px solid var(--theme-border);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: var(--theme-text);
+}
+
+.theme-btn:hover {
+  background: var(--theme-primary);
+  color: #000;
+  transform: scale(1.1);
+  box-shadow: 0 0 20px var(--theme-primary);
+}
+
+/* Barra de búsqueda y filtros */
+.search-filters-container {
+  margin: 1rem 0;
+  padding: 0 1rem;
+}
+
+.search-bar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  align-items: center;
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--theme-border);
+  border-radius: 8px;
+  background: var(--theme-surface);
+  color: var(--theme-text);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--theme-primary);
+  box-shadow: 0 0 10px var(--theme-primary);
+}
+
+.search-input::placeholder {
+  color: var(--theme-text);
+  opacity: 0.7;
+}
+
+.filters-toggle {
+  background: var(--theme-surface);
+  border: 2px solid var(--theme-border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  color: var(--theme-text);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1.1rem;
+}
+
+.filters-toggle:hover {
+  background: var(--theme-primary);
+  color: #000;
+  transform: scale(1.05);
+}
+
+.filters-panel {
+  background: var(--theme-surface);
+  border: 1px solid var(--theme-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-group label {
+  color: var(--theme-text);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.filter-select {
+  padding: 0.5rem;
+  border: 1px solid var(--theme-border);
+  border-radius: 6px;
+  background: var(--theme-background);
+  color: var(--theme-text);
+  font-size: 0.9rem;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--theme-primary);
+}
+
+.price-range {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.range-slider {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--theme-surface);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--theme-primary);
+  cursor: pointer;
+  border: 2px solid var(--theme-border);
+}
+
+.range-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--theme-primary);
+  cursor: pointer;
+  border: 2px solid var(--theme-border);
+}
+
+.clear-filters-btn {
+  background: var(--theme-accent);
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  color: #000;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  grid-column: 1 / -1;
+  justify-self: center;
+  margin-top: 0.5rem;
+}
+
+.clear-filters-btn:hover {
+  background: var(--theme-primary);
+  transform: scale(1.05);
+}
+
+/* Contador de resultados */
+.results-counter {
+  text-align: center;
+  color: var(--theme-text);
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background: var(--theme-surface);
+  border-radius: 8px;
+  border: 1px solid var(--theme-border);
+}
+
+.filtered-indicator {
+  color: var(--theme-accent);
+  font-weight: 600;
+}
+
+/* =============================================================================
+   RESPONSIVE DESIGN COMPLETO - MÓVIL PRIMERO
+   ============================================================================= */
+
+/* Móvil pequeño (320px - 480px) */
+@media (max-width: 480px) {
+  .blackmarket-hack-bg {
+    padding: 0;
+    min-height: 100vh;
+  }
+  
+  .blackmarket-hack-header {
+    padding: 0.5rem 0.75rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+    position: relative;
+    z-index: 1000;
+  }
+  
+  .theme-selector {
+    right: 10px;
+  }
+  
+  .theme-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+  
+  .search-filters-container {
+    margin: 0.5rem 0;
+    padding: 0 0.5rem;
+  }
+  
+  .search-bar {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .search-input {
+    font-size: 0.9rem;
+    padding: 0.6rem 0.8rem;
+  }
+  
+  .filters-panel {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+    gap: 0.8rem;
+  }
+  
+  .filter-group label {
+    font-size: 0.8rem;
+  }
+  
+  .filter-select {
+    font-size: 0.8rem;
+    padding: 0.4rem;
+  }
+  
+  .results-counter {
+    font-size: 0.8rem;
+    padding: 0.4rem;
+    margin-bottom: 0.8rem;
+  }
+  
+  .blackmarket-hack-tabs {
+    display: none; /* Ocultar tabs en móvil */
+  }
+  
+  .blackmarket-hack-list {
+    padding: 0 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .blackmarket-hack-item {
+    padding: 0.8rem;
+    margin-bottom: 0.8rem;
+    border-radius: 8px;
+  }
+  
+  .item-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+  
+  .item-info {
+    width: 100%;
+  }
+  
+  .blackmarket-hack-item-name {
+    font-size: 1rem;
+  }
+  
+  .blackmarket-hack-item-price {
+    font-size: 1rem;
+    margin-left: 0;
+    margin-top: 0.25rem;
+  }
+  
+  .item-stock {
+    align-self: flex-end;
+    margin-top: 0.25rem;
+  }
+  
+  .effects-list {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .effect-tag {
+    width: fit-content;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.4rem;
+  }
+  
+  .description-toggle {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.8rem;
+  }
+  
+  .item-description.expanded {
+    padding: 0.6rem;
+  }
+  
+  .blackmarket-hack-buy {
+    padding: 0.7rem 1rem;
+    font-size: 0.85rem;
+  }
+  
+  /* Ocultar FABs en móvil pequeño */
+  .inventory-fab,
+  .admin-fab,
+  .quick-balance-fab {
+    display: none;
+  }
+}
+
+/* Móvil mediano (481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
   .blackmarket-hack-bg {
     padding: 0;
   }
   
   .blackmarket-hack-header {
     padding: 0.75rem 1rem;
-    margin-top: 1rem;
-    margin-bottom: 1rem;
+    margin-top: 0.75rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.4rem;
+  }
+  
+  .theme-selector {
+    right: 15px;
+  }
+  
+  .theme-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 1.1rem;
+  }
+  
+  .search-filters-container {
+    margin: 0.75rem 0;
+    padding: 0 0.75rem;
+  }
+  
+  .search-bar {
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+  
+  .filters-panel {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 1.2rem;
+    gap: 1rem;
+  }
+  
+  .results-counter {
+    font-size: 0.85rem;
+  }
+  
+  .blackmarket-hack-tabs {
+    display: none; /* Ocultar tabs en móvil */
+  }
+  
+  .blackmarket-hack-list {
+    padding: 0 0.75rem;
+    margin-bottom: 1.5rem;
   }
   
   .blackmarket-hack-item {
     padding: 1rem;
     margin-bottom: 1rem;
-    border-radius: 8px;
+    border-radius: 10px;
   }
   
   .item-header {
@@ -1581,18 +2119,30 @@
     width: 100%;
   }
   
+  .blackmarket-hack-item-name {
+    font-size: 1.1rem;
+  }
+  
+  .blackmarket-hack-item-price {
+    font-size: 1.1rem;
+    margin-left: 0;
+    margin-top: 0.25rem;
+  }
+  
   .item-stock {
     align-self: flex-end;
     margin-top: 0.5rem;
   }
   
   .effects-list {
-    flex-direction: column;
-    gap: 0.3rem;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.4rem;
   }
   
   .effect-tag {
-    width: fit-content;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
   }
   
   .description-toggle {
@@ -1603,14 +2153,284 @@
     padding: 0.8rem;
   }
   
-  .blackmarket-hack-tabs {
-    margin-bottom: 1rem;
-    padding: 0 0.5rem;
+  .blackmarket-hack-buy {
+    padding: 0.8rem 1.2rem;
+    font-size: 0.9rem;
   }
   
-  .blackmarket-hack-tab {
-    padding: 0.5rem 0.8rem;
+  /* Mostrar FABs en móvil mediano */
+  .inventory-fab,
+  .admin-fab,
+  .quick-balance-fab {
+    display: flex;
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+  
+  .inventory-fab {
+    left: 12px;
+  }
+  
+  .admin-fab {
+    top: 12px;
+    right: 12px;
+  }
+  
+  .quick-balance-fab {
+    top: 64px;
+    right: 12px;
+  }
+}
+
+/* Tablet (769px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .blackmarket-hack-bg {
+    padding: 0 1rem;
+  }
+  
+  .blackmarket-hack-header {
+    padding: 1rem 1.5rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 1.6rem;
+  }
+  
+  .blackmarket-hack-tabs {
+    display: flex; /* Mostrar tabs en tablet */
+    margin-bottom: 1.5rem;
+    padding: 0 1rem;
+  }
+  
+  .blackmarket-hack-list {
+    max-width: 600px;
+    padding: 0 1rem;
+  }
+  
+  .blackmarket-hack-item {
+    padding: 1.1rem;
+    margin-bottom: 1.1rem;
+  }
+  
+  .item-header {
+    flex-direction: row;
+    align-items: center;
+    gap: 1.2rem;
+  }
+  
+  .blackmarket-hack-item-name {
+    font-size: 1.2rem;
+  }
+  
+  .blackmarket-hack-item-price {
+    font-size: 1.2rem;
+    margin-left: 1rem;
+    margin-top: 0;
+  }
+  
+  .item-stock {
+    align-self: center;
+    margin-top: 0;
+  }
+  
+  .effects-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .effect-tag {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+  }
+  
+  .description-toggle {
+    padding: 0.8rem 1rem;
+  }
+  
+  .item-description.expanded {
+    padding: 1rem;
+  }
+  
+  .blackmarket-hack-buy {
+    padding: 0.9rem 1.4rem;
+    font-size: 0.95rem;
+  }
+  
+  /* FABs normales en tablet */
+  .inventory-fab,
+  .admin-fab,
+  .quick-balance-fab {
+    display: flex;
+    width: 52px;
+    height: 52px;
+    font-size: 20px;
+  }
+}
+
+/* Desktop pequeño (1025px - 1440px) */
+@media (min-width: 1025px) and (max-width: 1440px) {
+  .blackmarket-hack-bg {
+    padding: 0 2rem;
+  }
+  
+  .blackmarket-hack-header {
+    padding: 1.5rem 2rem;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    font-size: 1.8rem;
+  }
+  
+  .blackmarket-hack-tabs {
+    display: flex;
+    margin-bottom: 2rem;
+    padding: 0 2rem;
+  }
+  
+  .blackmarket-hack-list {
+    max-width: 700px;
+    padding: 0 2rem;
+  }
+  
+  .blackmarket-hack-item {
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+  
+  .item-header {
+    flex-direction: row;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  
+  .blackmarket-hack-item-name {
+    font-size: 1.3rem;
+  }
+  
+  .blackmarket-hack-item-price {
+    font-size: 1.3rem;
+    margin-left: 1.5rem;
+  }
+  
+  .item-stock {
+    align-self: center;
+  }
+  
+  .effects-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+  
+  .effect-tag {
     font-size: 0.85rem;
+    padding: 0.35rem 0.7rem;
+  }
+  
+  .description-toggle {
+    padding: 1rem 1.2rem;
+  }
+  
+  .item-description.expanded {
+    padding: 1.2rem;
+  }
+  
+  .blackmarket-hack-buy {
+    padding: 1rem 1.6rem;
+    font-size: 1rem;
+  }
+  
+  /* FABs normales en desktop pequeño */
+  .inventory-fab,
+  .admin-fab,
+  .quick-balance-fab {
+    display: flex;
+    width: 56px;
+    height: 56px;
+    font-size: 22px;
+  }
+}
+
+/* Desktop grande (1441px+) */
+@media (min-width: 1441px) {
+  .blackmarket-hack-bg {
+    padding: 0 3rem;
+  }
+  
+  .blackmarket-hack-header {
+    padding: 2rem 3rem;
+    margin-top: 2.5rem;
+    margin-bottom: 2.5rem;
+    font-size: 2rem;
+  }
+  
+  .blackmarket-hack-tabs {
+    display: flex;
+    margin-bottom: 2.5rem;
+    padding: 0 3rem;
+  }
+  
+  .blackmarket-hack-list {
+    max-width: 800px;
+    padding: 0 3rem;
+  }
+  
+  .blackmarket-hack-item {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .item-header {
+    flex-direction: row;
+    align-items: center;
+    gap: 2rem;
+  }
+  
+  .blackmarket-hack-item-name {
+    font-size: 1.4rem;
+  }
+  
+  .blackmarket-hack-item-price {
+    font-size: 1.4rem;
+    margin-left: 2rem;
+  }
+  
+  .item-stock {
+    align-self: center;
+  }
+  
+  .effects-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+  
+  .effect-tag {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.8rem;
+  }
+  
+  .description-toggle {
+    padding: 1.2rem 1.5rem;
+  }
+  
+  .item-description.expanded {
+    padding: 1.5rem;
+  }
+  
+  .blackmarket-hack-buy {
+    padding: 1.2rem 2rem;
+    font-size: 1.1rem;
+  }
+  
+  /* FABs grandes en desktop grande */
+  .inventory-fab,
+  .admin-fab,
+  .quick-balance-fab {
+    display: flex;
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
   }
 }
 

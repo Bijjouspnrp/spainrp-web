@@ -660,7 +660,50 @@ const Navbar = () => {
 
       <div className="navbar-container" style={containerStyles}>
         {/* Logo y marca */}
-        <div className="navbar-brand" style={brandStyles}>
+        <a 
+          href="/#home" 
+          className="navbar-brand" 
+          style={{
+            ...brandStyles,
+            textDecoration: 'none',
+            color: 'inherit',
+            cursor: 'pointer',
+            transition: 'transform 0.2s ease'
+          }}
+          onClick={(e) => {
+            e.preventDefault();
+            closeMenu();
+            closeDropdown();
+            
+            // Si no estamos en la página principal, navegar primero
+            if (location.pathname !== '/') {
+              navigate('/');
+              // Esperar a que se cargue la página y luego hacer scroll
+              setTimeout(() => {
+                const homeElement = document.getElementById('home');
+                if (homeElement) {
+                  smoothScrollWithOffset(homeElement);
+                } else {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+              }, 100);
+            } else {
+              // Si ya estamos en la página principal, hacer scroll directo
+              const homeElement = document.getElementById('home');
+              if (homeElement) {
+                smoothScrollWithOffset(homeElement);
+              } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.02)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)';
+          }}
+        >
           <img
             src="/assets/spainrplogo.png"
             alt="SpainRP Logo"
@@ -669,7 +712,7 @@ const Navbar = () => {
           <span style={brandTextStyles}>
             SpainRP | Oficial
           </span>
-        </div>
+        </a>
 
         {/* Menú de navegación */}
         <div 
