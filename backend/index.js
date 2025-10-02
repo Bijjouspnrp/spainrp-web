@@ -3529,6 +3529,52 @@ app.post('/api/proxy/admin/cobrar-nomina', express.json(), async (req, res) => {
 
 // ===== ENDPOINTS PARA USUARIOS NORMALES (NO ADMIN) =====
 
+// Endpoint de prueba para verificar conectividad con API de economía
+app.get('/api/proxy/test-economia', async (req, res) => {
+  try {
+    console.log(`[BANCO] [test-economia] Testing connection to economia API`);
+    
+    const economiaUrl = `${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/test`;
+    console.log(`[BANCO] [test-economia] Calling: ${economiaUrl}`);
+    
+    const response = await fetch(economiaUrl);
+    console.log(`[BANCO] [test-economia] Response status: ${response.status}`);
+    console.log(`[BANCO] [test-economia] Response headers:`, Object.fromEntries(response.headers.entries()));
+    
+    const contentType = response.headers.get('content-type');
+    console.log(`[BANCO] [test-economia] Content-Type: ${contentType}`);
+    
+    if (!contentType || !contentType.includes('application/json')) {
+      const textResponse = await response.text();
+      console.log(`[BANCO] [test-economia] Non-JSON response:`, textResponse.substring(0, 500));
+      return res.json({
+        success: false,
+        error: 'API de economía no responde con JSON',
+        status: response.status,
+        contentType: contentType,
+        response: textResponse.substring(0, 500)
+      });
+    }
+    
+    const data = await response.json();
+    console.log(`[BANCO] [test-economia] Response data:`, data);
+    
+    res.json({
+      success: true,
+      economiaUrl: economiaUrl,
+      status: response.status,
+      data: data
+    });
+  } catch (error) {
+    console.error('[BANCO] [test-economia] Error:', error);
+    res.json({
+      success: false,
+      error: error.message,
+      stack: error.stack
+    });
+  }
+});
+
 // Consultar saldo propio (GET)
 app.get('/api/proxy/balance/:userId', async (req, res) => {
   try {
@@ -3537,6 +3583,7 @@ app.get('/api/proxy/balance/:userId', async (req, res) => {
     console.log(`[BANCO] [balance-user] Headers:`, req.headers);
     console.log(`[BANCO] [balance-user] Query:`, req.query);
     
+    // Usar el endpoint correcto de la API de economía
     const economiaUrl = `${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/balance/${encodeURIComponent(userId)}`;
     console.log(`[BANCO] [balance-user] Calling economia API: ${economiaUrl}`);
     console.log(`[BANCO] [balance-user] ECONOMIA_API_URL env var:`, process.env.ECONOMIA_API_URL);
