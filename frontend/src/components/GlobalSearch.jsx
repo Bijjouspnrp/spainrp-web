@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { FaSearch, FaTimes, FaHistory, FaTrendingUp, FaClock } from 'react-icons/fa';
+import { FaSearch, FaTimes, FaHistory, FaChartLine, FaClock } from 'react-icons/fa';
 import { apiUrl } from '../utils/api';
 import './GlobalSearch.css';
 
@@ -402,7 +402,7 @@ const GlobalSearch = () => {
                 {!query && trending.length > 0 && (
                   <div className="search-section">
                     <div className="search-section-header">
-                      <FaTrendingUp />
+                      <FaChartLine />
                       <span>Tendencias</span>
                     </div>
                     {trending.map((item, index) => (
