@@ -451,7 +451,7 @@ const BancoCentralRP = () => {
                   onChange={e => setTransferData({...transferData, toId: e.target.value})}
                   placeholder="ID de Discord del destinatario"
                 />
-              </div>
+            </div>
               <div className="banco-form-group">
                 <label>Cantidad</label>
             <input
@@ -476,7 +476,7 @@ const BancoCentralRP = () => {
               <button className="banco-btn-secondary" onClick={() => setShowTransfer(false)}>
                 Cancelar
               </button>
-              <button 
+              <button
                 className="banco-btn-primary" 
                 onClick={handleTransfer}
                 disabled={loadingAction || !transferData.toId || !transferData.amount}
@@ -547,9 +547,9 @@ const BancoCentralRP = () => {
               >
                 {loadingAction ? 'Cobrando...' : 'Cobrar Nómina'}
               </button>
-            </div>
           </div>
         </div>
+      </div>
       )}
 
       {/* Message Toast */}

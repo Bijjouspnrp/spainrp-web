@@ -1658,7 +1658,7 @@
 }
 
 /* Transiciones suaves para cambio de temas */
-.blackmarket-hack-bg {
+  .blackmarket-hack-bg {
   transition: all 0.5s ease-in-out;
 }
 
@@ -1752,7 +1752,7 @@
 
 .search-input {
   flex: 1;
-  padding: 0.75rem 1rem;
+    padding: 0.75rem 1rem;
   border: 2px solid var(--theme-border);
   border-radius: 8px;
   background: var(--theme-surface);
@@ -1794,7 +1794,7 @@
   border: 1px solid var(--theme-border);
   border-radius: 12px;
   padding: 1.5rem;
-  margin-top: 1rem;
+    margin-top: 1rem;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
@@ -1898,7 +1898,7 @@
   text-align: center;
   color: var(--theme-text);
   font-size: 0.9rem;
-  margin-bottom: 1rem;
+    margin-bottom: 1rem;
   padding: 0.5rem;
   background: var(--theme-surface);
   border-radius: 8px;

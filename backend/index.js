@@ -3529,93 +3529,14 @@ app.post('/api/proxy/admin/cobrar-nomina', express.json(), async (req, res) => {
 
 // ===== ENDPOINTS PARA USUARIOS NORMALES (NO ADMIN) =====
 
-// Endpoint de prueba para verificar conectividad con API de economía
-app.get('/api/proxy/test-economia', async (req, res) => {
-  try {
-    console.log(`[BANCO] [test-economia] Testing connection to economia API`);
-    
-    const economiaUrl = `${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/test`;
-    console.log(`[BANCO] [test-economia] Calling: ${economiaUrl}`);
-    
-    const response = await fetch(economiaUrl);
-    console.log(`[BANCO] [test-economia] Response status: ${response.status}`);
-    console.log(`[BANCO] [test-economia] Response headers:`, Object.fromEntries(response.headers.entries()));
-    
-    const contentType = response.headers.get('content-type');
-    console.log(`[BANCO] [test-economia] Content-Type: ${contentType}`);
-    
-    if (!contentType || !contentType.includes('application/json')) {
-      const textResponse = await response.text();
-      console.log(`[BANCO] [test-economia] Non-JSON response:`, textResponse.substring(0, 500));
-      return res.json({
-        success: false,
-        error: 'API de economía no responde con JSON',
-        status: response.status,
-        contentType: contentType,
-        response: textResponse.substring(0, 500)
-      });
-    }
-    
-    const data = await response.json();
-    console.log(`[BANCO] [test-economia] Response data:`, data);
-    
-    res.json({
-      success: true,
-      economiaUrl: economiaUrl,
-      status: response.status,
-      data: data
-    });
-  } catch (error) {
-    console.error('[BANCO] [test-economia] Error:', error);
-    res.json({
-      success: false,
-      error: error.message,
-      stack: error.stack
-    });
-  }
-});
-
 // Consultar saldo propio (GET)
 app.get('/api/proxy/balance/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     console.log(`[BANCO] [balance-user] GET request for userId: ${userId}`);
-    console.log(`[BANCO] [balance-user] Headers:`, req.headers);
-    console.log(`[BANCO] [balance-user] Query:`, req.query);
     
-    // Usar el endpoint correcto de la API de economía
-    const economiaUrl = `${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/balance/${encodeURIComponent(userId)}`;
-    console.log(`[BANCO] [balance-user] Calling economia API: ${economiaUrl}`);
-    console.log(`[BANCO] [balance-user] ECONOMIA_API_URL env var:`, process.env.ECONOMIA_API_URL);
-    
-    const response = await fetch(economiaUrl);
-    console.log(`[BANCO] [balance-user] Economia API response status: ${response.status}`);
-    console.log(`[BANCO] [balance-user] Economia API response headers:`, Object.fromEntries(response.headers.entries()));
-    
-    // Verificar si la respuesta es JSON
-    const contentType = response.headers.get('content-type');
-    console.log(`[BANCO] [balance-user] Content-Type: ${contentType}`);
-    
-    if (!contentType || !contentType.includes('application/json')) {
-      const textResponse = await response.text();
-      console.error(`[BANCO] [balance-user] Non-JSON response received:`, textResponse.substring(0, 500));
-      return res.status(502).json({ 
-        error: 'API de economía no disponible', 
-        details: 'La API devolvió HTML en lugar de JSON',
-        url: economiaUrl,
-        status: response.status
-      });
-    }
-    
-    const data = await response.json();
-    console.log(`[BANCO] [balance-user] Economia API response data:`, data);
-    
-    if (!response.ok) {
-      console.error(`[BANCO] [balance-user] Economia API error: ${response.status} - ${data.error || 'Unknown error'}`);
-      return res.status(response.status).json(data);
-    }
-    
-    console.log(`[BANCO] [balance-user] Sending response to frontend:`, data);
+    const data = await proxyGetUserBalance(userId);
+    console.log(`[BANCO] [balance-user] Response:`, data);
     res.json(data);
   } catch (error) {
     console.error('[BANCO] [balance-user] Exception:', error);
@@ -3638,19 +3559,14 @@ app.get('/api/proxy/balance/:userId', async (req, res) => {
 app.post('/api/proxy/balance', express.json(), async (req, res) => {
   try {
     const { userId } = req.body;
-    console.log(`[PROXY] [balance-user] POST request for userId: ${userId}`);
+    console.log(`[BANCO] [balance-user] POST request for userId: ${userId}`);
     
     if (!userId) {
       return res.status(400).json({ error: 'userId requerido' });
     }
     
-    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/balance`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId })
-    });
-    const data = await response.json();
-    console.log(`[PROXY] [balance-user] Response:`, data);
+    const data = await proxyGetUserBalance(userId);
+    console.log(`[BANCO] [balance-user] Response:`, data);
     res.json(data);
   } catch (error) {
     console.error('[BANCO] [balance-user] Exception:', error);
@@ -3713,22 +3629,17 @@ app.post('/api/proxy/inventory', express.json(), async (req, res) => {
 app.post('/api/proxy/trabajar', express.json(), async (req, res) => {
   try {
     const { userId, username } = req.body;
-    console.log(`[PROXY] [trabajar-user] POST request:`, { userId, username });
+    console.log(`[BANCO] [trabajar-user] POST request:`, { userId, username });
     
     if (!userId) {
       return res.status(400).json({ error: 'userId requerido' });
     }
     
-    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/trabajar`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, username })
-    });
-    const data = await response.json();
-    console.log(`[PROXY] [trabajar-user] Response:`, data);
+    const data = await proxyWork(userId, username);
+    console.log(`[BANCO] [trabajar-user] Response:`, data);
     res.json(data);
   } catch (error) {
-    console.error('[PROXY] [trabajar-user] Exception:', error);
+    console.error('[BANCO] [trabajar-user] Exception:', error);
     res.status(500).json({ error: 'Error al realizar trabajo', details: String(error) });
   }
 });
@@ -3737,22 +3648,17 @@ app.post('/api/proxy/trabajar', express.json(), async (req, res) => {
 app.post('/api/proxy/cobrar-nomina', express.json(), async (req, res) => {
   try {
     const { userId, roles } = req.body;
-    console.log(`[PROXY] [cobrar-nomina-user] POST request:`, { userId, roles });
+    console.log(`[BANCO] [cobrar-nomina-user] POST request:`, { userId, roles });
     
     if (!userId || !Array.isArray(roles)) {
       return res.status(400).json({ error: 'userId y roles array requeridos' });
     }
     
-    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/cobrar-nomina`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, roles })
-    });
-    const data = await response.json();
-    console.log(`[PROXY] [cobrar-nomina-user] Response:`, data);
+    const data = await proxyCollectSalary(userId, roles);
+    console.log(`[BANCO] [cobrar-nomina-user] Response:`, data);
     res.json(data);
   } catch (error) {
-    console.error('[PROXY] [cobrar-nomina-user] Exception:', error);
+    console.error('[BANCO] [cobrar-nomina-user] Exception:', error);
     res.status(500).json({ error: 'Error al cobrar nómina', details: String(error) });
   }
 });
@@ -3761,22 +3667,17 @@ app.post('/api/proxy/cobrar-nomina', express.json(), async (req, res) => {
 app.post('/api/proxy/transfer', express.json(), async (req, res) => {
   try {
     const { fromId, toId, amount, origen } = req.body;
-    console.log(`[PROXY] [transfer-user] POST request:`, { fromId, toId, amount, origen });
+    console.log(`[BANCO] [transfer-user] POST request:`, { fromId, toId, amount, origen });
     
     if (!fromId || !toId || !amount || amount <= 0) {
       return res.status(400).json({ error: 'fromId, toId y amount válidos requeridos' });
     }
     
-    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/transfer`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fromId, toId, amount, origen: origen || 'banco' })
-    });
-    const data = await response.json();
-    console.log(`[PROXY] [transfer-user] Response:`, data);
+    const data = await proxyTransferMoney(fromId, toId, amount, origen || 'banco');
+    console.log(`[BANCO] [transfer-user] Response:`, data);
     res.json(data);
   } catch (error) {
-    console.error('[PROXY] [transfer-user] Exception:', error);
+    console.error('[BANCO] [transfer-user] Exception:', error);
     res.status(500).json({ error: 'Error al transferir dinero', details: String(error) });
   }
 });
