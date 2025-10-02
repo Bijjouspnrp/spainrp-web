@@ -9,9 +9,9 @@ class IntelligentCache {
       deletes: 0,
       evictions: 0
     };
-    this.maxSize = 1000; // Máximo 1000 items en cache
-    this.defaultTTL = 300000; // 5 minutos por defecto
-    this.cleanupInterval = 60000; // Limpiar cada minuto
+    this.maxSize = 200; // Reducir a 200 items para ahorrar memoria
+    this.defaultTTL = 600000; // 10 minutos por defecto para menos requests
+    this.cleanupInterval = 300000; // Limpiar cada 5 minutos
     
     this.startCleanup();
   }

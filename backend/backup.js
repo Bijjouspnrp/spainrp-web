@@ -8,9 +8,9 @@ class BackupSystem {
   constructor() {
     this.backupDir = path.join(__dirname, 'backups');
     this.dbPath = path.join(__dirname, 'spainrp.db');
-    this.maxBackups = 30; // Mantener 30 backups
-    this.backupInterval = '0 */6 * * *'; // Cada 6 horas
-    this.fullBackupInterval = '0 2 * * *'; // Diario a las 2 AM
+      this.maxBackups = 5; // Mantener solo 5 backups para ahorrar espacio
+      this.backupInterval = '0 */12 * * *'; // Cada 12 horas en lugar de 6
+      this.fullBackupInterval = '0 3 */3 * *'; // Cada 3 días en lugar de diario
     
     this.ensureBackupDir();
     this.startScheduledBackups();

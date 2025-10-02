@@ -29,6 +29,7 @@ const cache = require('./cache');
 const security = require('./security');
 const backup = require('./backup');
 const health = require('./health');
+const cleanup = require('./cleanup');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const slowDown = require('express-slow-down');
@@ -181,10 +182,10 @@ app.use(security.securityMiddleware());
 // Middleware de analytics para tracking
 app.use(analytics.trackVisit.bind(analytics));
 
-// Middleware de cache para rutas específicas
-app.use('/api/widget', cache.middleware(300000)); // 5 minutos
-app.use('/api/membercount', cache.middleware(300000)); // 5 minutos
-app.use('/api/discord/roles', cache.middleware(600000)); // 10 minutos
+// Middleware de cache para rutas específicas - TTL optimizado para Render
+app.use('/api/widget', cache.middleware(900000)); // 15 minutos
+app.use('/api/membercount', cache.middleware(900000)); // 15 minutos
+app.use('/api/discord/roles', cache.middleware(1800000)); // 30 minutos
 
 // Health check endpoint
 app.use(health.healthMiddleware());
@@ -2300,6 +2301,47 @@ app.post('/api/health/alerts/clear', (req, res) => {
   } catch (error) {
     console.error('[HEALTH] Error clearing alerts:', error);
     res.status(500).json({ error: 'Error limpiando alertas' });
+  }
+});
+
+// Rutas de Limpieza y Optimización
+app.get('/api/cleanup/stats', (req, res) => {
+  try {
+    const stats = cleanup.getSpaceStats();
+    res.json(stats);
+  } catch (error) {
+    console.error('[CLEANUP] Error getting space stats:', error);
+    res.status(500).json({ error: 'Error obteniendo estadísticas de espacio' });
+  }
+});
+
+app.post('/api/cleanup/run', (req, res) => {
+  try {
+    cleanup.runFullCleanup();
+    res.json({ success: true, message: 'Limpieza ejecutada correctamente' });
+  } catch (error) {
+    console.error('[CLEANUP] Error running cleanup:', error);
+    res.status(500).json({ error: 'Error ejecutando limpieza' });
+  }
+});
+
+app.post('/api/cleanup/logs', (req, res) => {
+  try {
+    cleanup.cleanupLogs();
+    res.json({ success: true, message: 'Logs limpiados correctamente' });
+  } catch (error) {
+    console.error('[CLEANUP] Error cleaning logs:', error);
+    res.status(500).json({ error: 'Error limpiando logs' });
+  }
+});
+
+app.post('/api/cleanup/backups', (req, res) => {
+  try {
+    cleanup.cleanupBackups();
+    res.json({ success: true, message: 'Backups antiguos eliminados' });
+  } catch (error) {
+    console.error('[CLEANUP] Error cleaning backups:', error);
+    res.status(500).json({ error: 'Error limpiando backups' });
   }
 });
 

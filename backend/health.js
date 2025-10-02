@@ -8,7 +8,7 @@ class HealthCheckSystem {
     this.checks = new Map();
     this.results = new Map();
     this.alerts = [];
-    this.checkInterval = 30000; // 30 segundos
+    this.checkInterval = 120000; // 2 minutos para reducir carga
     this.alertThresholds = {
       responseTime: 5000, // 5 segundos
       memoryUsage: 80, // 80%

@@ -127,10 +127,10 @@ class AnalyticsSystem {
       const responseTime = Date.now() - startTime;
       this.metrics.performance.serverResponseTimes.push(responseTime);
       
-      // Mantener solo los últimos 1000 tiempos
-      if (this.metrics.performance.serverResponseTimes.length > 1000) {
-        this.metrics.performance.serverResponseTimes = this.metrics.performance.serverResponseTimes.slice(-1000);
-      }
+        // Mantener solo los últimos 100 tiempos para ahorrar memoria
+        if (this.metrics.performance.serverResponseTimes.length > 100) {
+          this.metrics.performance.serverResponseTimes = this.metrics.performance.serverResponseTimes.slice(-100);
+        }
     });
     
     next();

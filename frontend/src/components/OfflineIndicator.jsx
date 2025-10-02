@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaWifi, FaTimesCircle, FaSync, FaExclamationTriangle } from 'react-icons/fa';
+import { FaTimesCircle, FaSync, FaExclamationTriangle } from 'react-icons/fa';
 import useOffline from '../hooks/useOffline';
 import './OfflineIndicator.css';
 
