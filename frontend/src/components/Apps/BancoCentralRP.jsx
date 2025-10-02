@@ -44,13 +44,21 @@ const BancoCentralRP = () => {
 
   const loadBalance = async (userId) => {
     try {
-      const response = await authFetch(`/api/proxy/admin/balance/${userId}`);
+      console.log('[Banco] Cargando saldo para usuario:', userId);
+      const response = await authFetch(`${apiUrl()}/api/proxy/balance/${userId}`);
       const data = await response.json();
-      if (data.success) {
+      console.log('[Banco] Respuesta del saldo:', data);
+      
+      if (data.success && data.balance) {
         setBalance(data.balance);
+      } else {
+        console.warn('[Banco] No se pudo cargar el saldo:', data);
+        // Establecer saldo por defecto si no hay datos
+        setBalance({ cash: 0, bank: 0 });
       }
     } catch (error) {
-      console.error('Error loading balance:', error);
+      console.error('[Banco] Error cargando saldo:', error);
+      setBalance({ cash: 0, bank: 0 });
     }
   };
 
@@ -74,11 +82,29 @@ const BancoCentralRP = () => {
     if (!user) return;
     setLoadingAction(true);
     try {
-      // Simular depósito por ahora
-      const newBalance = { ...balance, bank: balance.bank + 500 };
-      setBalance(newBalance);
-      showMessage('Depósito realizado correctamente');
+      const amount = 500; // Cantidad fija por ahora
+      console.log('[Banco] Realizando depósito:', { userId: user.id, amount });
+      
+      const response = await authFetch(`${apiUrl()}/api/proxy/deposit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          amount: amount
+        })
+      });
+      
+      const data = await response.json();
+      console.log('[Banco] Respuesta de depósito:', data);
+      
+      if (data.success) {
+        showMessage(`Depósito de €${amount} realizado correctamente`);
+        await loadBalance(user.id);
+      } else {
+        showMessage(data.error || 'Error al realizar el depósito', 'error');
+      }
     } catch (error) {
+      console.error('[Banco] Error en depósito:', error);
       showMessage('Error al realizar el depósito', 'error');
     } finally {
       setLoadingAction(false);
@@ -89,11 +115,29 @@ const BancoCentralRP = () => {
     if (!user) return;
     setLoadingAction(true);
     try {
-      // Simular retiro por ahora
-      const newBalance = { ...balance, bank: Math.max(0, balance.bank - 500) };
-      setBalance(newBalance);
-      showMessage('Retiro realizado correctamente');
+      const amount = 500; // Cantidad fija por ahora
+      console.log('[Banco] Realizando retiro:', { userId: user.id, amount });
+      
+      const response = await authFetch(`${apiUrl()}/api/proxy/withdraw`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          amount: amount
+        })
+      });
+      
+      const data = await response.json();
+      console.log('[Banco] Respuesta de retiro:', data);
+      
+      if (data.success) {
+        showMessage(`Retiro de €${amount} realizado correctamente`);
+        await loadBalance(user.id);
+      } else {
+        showMessage(data.error || 'Error al realizar el retiro', 'error');
+      }
     } catch (error) {
+      console.error('[Banco] Error en retiro:', error);
       showMessage('Error al realizar el retiro', 'error');
     } finally {
       setLoadingAction(false);
@@ -104,7 +148,13 @@ const BancoCentralRP = () => {
     if (!user || !transferData.toId || !transferData.amount) return;
     setLoadingAction(true);
     try {
-      const response = await authFetch('/api/proxy/admin/transfer', {
+      console.log('[Banco] Realizando transferencia:', {
+        fromId: user.id,
+        toId: transferData.toId,
+        amount: parseInt(transferData.amount)
+      });
+      
+      const response = await authFetch(`${apiUrl()}/api/proxy/transfer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -116,6 +166,8 @@ const BancoCentralRP = () => {
       });
       
       const data = await response.json();
+      console.log('[Banco] Respuesta de transferencia:', data);
+      
       if (data.success) {
         showMessage(`Transferencia de €${transferData.amount} realizada`);
         setTransferData({ toId: '', amount: '', note: '' });
@@ -125,6 +177,7 @@ const BancoCentralRP = () => {
         showMessage(data.error || 'Error en la transferencia', 'error');
       }
     } catch (error) {
+      console.error('[Banco] Error en transferencia:', error);
       showMessage('Error al realizar la transferencia', 'error');
     } finally {
       setLoadingAction(false);
@@ -135,7 +188,9 @@ const BancoCentralRP = () => {
     if (!user) return;
     setLoadingAction(true);
     try {
-      const response = await authFetch('/api/proxy/admin/trabajar', {
+      console.log('[Banco] Realizando trabajo para usuario:', user.id);
+      
+      const response = await authFetch(`${apiUrl()}/api/proxy/trabajar`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -145,6 +200,8 @@ const BancoCentralRP = () => {
       });
       
       const data = await response.json();
+      console.log('[Banco] Respuesta de trabajo:', data);
+      
       if (data.success) {
         showMessage(`Trabajo completado. Ganaste €${data.reward}`);
         setWorkCooldown(90 * 60); // 90 minutos en segundos
@@ -158,6 +215,7 @@ const BancoCentralRP = () => {
         }
       }
     } catch (error) {
+      console.error('[Banco] Error en trabajo:', error);
       showMessage('Error al realizar el trabajo', 'error');
     } finally {
       setLoadingAction(false);
@@ -168,9 +226,11 @@ const BancoCentralRP = () => {
     if (!user) return;
     setLoadingAction(true);
     try {
-      // Simular roles por ahora
+      // Simular roles por ahora - en producción esto vendría del Discord
       const roles = ['1384340649205301359']; // Rol de admin
-      const response = await authFetch('/api/proxy/admin/cobrar-nomina', {
+      console.log('[Banco] Cobrando nómina para usuario:', user.id, 'con roles:', roles);
+      
+      const response = await authFetch(`${apiUrl()}/api/proxy/cobrar-nomina`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -180,6 +240,8 @@ const BancoCentralRP = () => {
       });
       
       const data = await response.json();
+      console.log('[Banco] Respuesta de nómina:', data);
+      
       if (data.success) {
         showMessage(`Nómina cobrada: €${data.neto} (neto de €${data.salarioTotal})`);
         setSalaryCooldown(48 * 60 * 60); // 48 horas en segundos
@@ -193,6 +255,7 @@ const BancoCentralRP = () => {
         }
       }
     } catch (error) {
+      console.error('[Banco] Error en nómina:', error);
       showMessage('Error al cobrar nómina', 'error');
     } finally {
       setLoadingAction(false);

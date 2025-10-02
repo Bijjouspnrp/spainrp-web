@@ -3527,6 +3527,222 @@ app.post('/api/proxy/admin/cobrar-nomina', express.json(), async (req, res) => {
   }
 });
 
+// ===== ENDPOINTS PARA USUARIOS NORMALES (NO ADMIN) =====
+
+// Consultar saldo propio (GET)
+app.get('/api/proxy/balance/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    console.log(`[PROXY] [balance-user] GET request for userId: ${userId}`);
+    
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/balance/${encodeURIComponent(userId)}`);
+    const data = await response.json();
+    console.log(`[PROXY] [balance-user] Response:`, data);
+    res.json(data);
+  } catch (error) {
+    console.error('[PROXY] [balance-user] Exception:', error);
+    res.status(500).json({ error: 'Error al consultar saldo', details: String(error) });
+  }
+});
+
+// Consultar saldo propio (POST)
+app.post('/api/proxy/balance', express.json(), async (req, res) => {
+  try {
+    const { userId } = req.body;
+    console.log(`[PROXY] [balance-user] POST request for userId: ${userId}`);
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'userId requerido' });
+    }
+    
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/balance`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId })
+    });
+    const data = await response.json();
+    console.log(`[PROXY] [balance-user] Response:`, data);
+    res.json(data);
+  } catch (error) {
+    console.error('[PROXY] [balance-user] Exception:', error);
+    res.status(500).json({ error: 'Error al consultar saldo', details: String(error) });
+  }
+});
+
+// Consultar inventario propio (GET)
+app.get('/api/proxy/inventory/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    console.log(`[PROXY] [inventory-user] GET request for userId: ${userId}`);
+    
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/inventory/${encodeURIComponent(userId)}`);
+    const data = await response.json();
+    console.log(`[PROXY] [inventory-user] Response:`, data);
+    res.json(data);
+  } catch (error) {
+    console.error('[PROXY] [inventory-user] Exception:', error);
+    res.status(500).json({ error: 'Error al consultar inventario', details: String(error) });
+  }
+});
+
+// Consultar inventario propio (POST)
+app.post('/api/proxy/inventory', express.json(), async (req, res) => {
+  try {
+    const { userId } = req.body;
+    console.log(`[PROXY] [inventory-user] POST request for userId: ${userId}`);
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'userId requerido' });
+    }
+    
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/inventory`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId })
+    });
+    const data = await response.json();
+    console.log(`[PROXY] [inventory-user] Response:`, data);
+    res.json(data);
+  } catch (error) {
+    console.error('[PROXY] [inventory-user] Exception:', error);
+    res.status(500).json({ error: 'Error al consultar inventario', details: String(error) });
+  }
+});
+
+// Trabajar (usuarios normales)
+app.post('/api/proxy/trabajar', express.json(), async (req, res) => {
+  try {
+    const { userId, username } = req.body;
+    console.log(`[PROXY] [trabajar-user] POST request:`, { userId, username });
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'userId requerido' });
+    }
+    
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/trabajar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, username })
+    });
+    const data = await response.json();
+    console.log(`[PROXY] [trabajar-user] Response:`, data);
+    res.json(data);
+  } catch (error) {
+    console.error('[PROXY] [trabajar-user] Exception:', error);
+    res.status(500).json({ error: 'Error al realizar trabajo', details: String(error) });
+  }
+});
+
+// Cobrar nómina (usuarios normales)
+app.post('/api/proxy/cobrar-nomina', express.json(), async (req, res) => {
+  try {
+    const { userId, roles } = req.body;
+    console.log(`[PROXY] [cobrar-nomina-user] POST request:`, { userId, roles });
+    
+    if (!userId || !Array.isArray(roles)) {
+      return res.status(400).json({ error: 'userId y roles array requeridos' });
+    }
+    
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/cobrar-nomina`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, roles })
+    });
+    const data = await response.json();
+    console.log(`[PROXY] [cobrar-nomina-user] Response:`, data);
+    res.json(data);
+  } catch (error) {
+    console.error('[PROXY] [cobrar-nomina-user] Exception:', error);
+    res.status(500).json({ error: 'Error al cobrar nómina', details: String(error) });
+  }
+});
+
+// Transferir dinero (usuarios normales)
+app.post('/api/proxy/transfer', express.json(), async (req, res) => {
+  try {
+    const { fromId, toId, amount, origen } = req.body;
+    console.log(`[PROXY] [transfer-user] POST request:`, { fromId, toId, amount, origen });
+    
+    if (!fromId || !toId || !amount || amount <= 0) {
+      return res.status(400).json({ error: 'fromId, toId y amount válidos requeridos' });
+    }
+    
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/transfer`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fromId, toId, amount, origen: origen || 'banco' })
+    });
+    const data = await response.json();
+    console.log(`[PROXY] [transfer-user] Response:`, data);
+    res.json(data);
+  } catch (error) {
+    console.error('[PROXY] [transfer-user] Exception:', error);
+    res.status(500).json({ error: 'Error al transferir dinero', details: String(error) });
+  }
+});
+
+// Depositar dinero (usuarios normales)
+app.post('/api/proxy/deposit', express.json(), async (req, res) => {
+  try {
+    const { userId, amount } = req.body;
+    console.log(`[PROXY] [deposit-user] POST request:`, { userId, amount });
+    
+    if (!userId || !amount || amount <= 0) {
+      return res.status(400).json({ error: 'userId y amount válidos requeridos' });
+    }
+    
+    // Simular depósito moviendo dinero de efectivo a banco
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/transfer`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fromId: userId,
+        toId: userId,
+        amount: parseInt(amount),
+        origen: 'cash_to_bank'
+      })
+    });
+    
+    const data = await response.json();
+    console.log(`[PROXY] [deposit-user] Response:`, data);
+    res.json(data);
+  } catch (error) {
+    console.error('[PROXY] [deposit-user] Exception:', error);
+    res.status(500).json({ error: 'Error al depositar dinero', details: String(error) });
+  }
+});
+
+// Retirar dinero (usuarios normales)
+app.post('/api/proxy/withdraw', express.json(), async (req, res) => {
+  try {
+    const { userId, amount } = req.body;
+    console.log(`[PROXY] [withdraw-user] POST request:`, { userId, amount });
+    
+    if (!userId || !amount || amount <= 0) {
+      return res.status(400).json({ error: 'userId y amount válidos requeridos' });
+    }
+    
+    // Simular retiro moviendo dinero de banco a efectivo
+    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/transfer`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fromId: userId,
+        toId: userId,
+        amount: parseInt(amount),
+        origen: 'bank_to_cash'
+      })
+    });
+    
+    const data = await response.json();
+    console.log(`[PROXY] [withdraw-user] Response:`, data);
+    res.json(data);
+  } catch (error) {
+    console.error('[PROXY] [withdraw-user] Exception:', error);
+    res.status(500).json({ error: 'Error al retirar dinero', details: String(error) });
+  }
+});
+
 
 // Utilidad para validar admin en tiempo real usando discordClient local
 async function isAdminUser(userId) {
