@@ -1832,8 +1832,18 @@ app.get('/api/proxy/discord/hasrole/:userId/:roleId', async (req, res) => {
       return res.status(404).json({ error: 'Servidor no encontrado', hasRole: false });
     }
     
-    await guild.members.fetch();
-    const member = guild.members.cache.get(userId);
+    // Usar cache directamente para evitar timeout en servidores grandes
+    let member = guild.members.cache.get(userId);
+    if (!member) {
+      // Solo hacer fetch si no está en cache
+      try {
+        await guild.members.fetch(userId);
+        member = guild.members.cache.get(userId);
+      } catch (fetchError) {
+        console.warn(`[DISCORD PROXY] ⚠️ No se pudo hacer fetch del usuario ${userId}:`, fetchError.message);
+      }
+    }
+    
     if (!member) {
       console.log(`[DISCORD PROXY] ❌ Usuario no encontrado: ${userId}`);
       return res.json({ hasRole: false, isMember: false });
@@ -1882,8 +1892,18 @@ app.get('/api/proxy/admin/isadmin/:userId', async (req, res) => {
       return res.status(404).json({ error: 'Servidor no encontrado', isAdmin: false });
     }
     
-    await guild.members.fetch();
-    const member = guild.members.cache.get(userId);
+    // Usar cache directamente para evitar timeout en servidores grandes
+    let member = guild.members.cache.get(userId);
+    if (!member) {
+      // Solo hacer fetch si no está en cache
+      try {
+        await guild.members.fetch(userId);
+        member = guild.members.cache.get(userId);
+      } catch (fetchError) {
+        console.warn(`[ADMIN PROXY] ⚠️ No se pudo hacer fetch del usuario ${userId}:`, fetchError.message);
+      }
+    }
+    
     if (!member) {
       console.log(`[ADMIN PROXY] ❌ Usuario no encontrado: ${userId}`);
       return res.json({ isAdmin: false, isMember: false });
@@ -2263,8 +2283,18 @@ app.get('/api/proxy/discord/ismember/:userId', async (req, res) => {
       return res.status(404).json({ error: 'Servidor no encontrado', isMember: false });
     }
     
-    await guild.members.fetch();
-    const member = guild.members.cache.get(userId);
+    // Usar cache directamente para evitar timeout en servidores grandes
+    let member = guild.members.cache.get(userId);
+    if (!member) {
+      // Solo hacer fetch si no está en cache
+      try {
+        await guild.members.fetch(userId);
+        member = guild.members.cache.get(userId);
+      } catch (fetchError) {
+        console.warn(`[DISCORD PROXY] ⚠️ No se pudo hacer fetch del usuario ${userId}:`, fetchError.message);
+      }
+    }
+    
     const payload = { isMember: Boolean(member) };
     
     console.log(`[DISCORD PROXY] ✅ Result for ${userId}:`, payload);
