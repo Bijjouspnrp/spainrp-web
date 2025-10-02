@@ -157,6 +157,9 @@ const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userInfo, setUserInfo] = useState(null);
   
   // Toast feedback global
   const [toast, setToast] = useState({ message: '', type: 'success' });
@@ -164,6 +167,47 @@ const AdminPanel = () => {
     setToast({ message, type });
     setTimeout(() => setToast({ message: '', type }), 3000);
   };
+
+  // Verificar autenticación al cargar
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const token = localStorage.getItem('spainrp_token');
+        
+        if (!token) {
+          console.log('[ADMIN] No token found');
+          setIsAuthenticated(false);
+          setAuthLoading(false);
+          return;
+        }
+
+        const response = await fetch(apiUrl('/auth/me'), {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('[ADMIN] Auth successful:', data);
+          setUserInfo(data.user);
+          setIsAuthenticated(true);
+        } else {
+          console.log('[ADMIN] Auth failed:', response.status);
+          setIsAuthenticated(false);
+          localStorage.removeItem('spainrp_token');
+        }
+      } catch (error) {
+        console.error('[ADMIN] Auth error:', error);
+        setIsAuthenticated(false);
+      } finally {
+        setAuthLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
 
   // Hook para detectar tamaño de pantalla
   useEffect(() => {
@@ -672,6 +716,43 @@ const AdminPanel = () => {
       setSidebarOpen(false);
     }
   };
+
+  // Mostrar loading mientras verifica autenticación
+  if (authLoading) {
+    return (
+      <div className="admin-panel-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <div style={{ textAlign: 'center', color: '#fff' }}>
+          <FaCog className="spinning" style={{ fontSize: '2rem', marginBottom: '1rem' }} />
+          <div>Verificando autenticación...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Mostrar error si no está autenticado
+  if (!isAuthenticated) {
+    return (
+      <div className="admin-panel-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <div style={{ textAlign: 'center', color: '#fff', background: 'rgba(255,0,0,0.1)', padding: '2rem', borderRadius: '10px' }}>
+          <FaExclamationTriangle style={{ fontSize: '2rem', marginBottom: '1rem', color: '#ff6b6b' }} />
+          <h2>Acceso Denegado</h2>
+          <p>No tienes permisos para acceder al panel de administración.</p>
+          <p style={{ fontSize: '0.9rem', opacity: 0.8 }}>Usuario: {userInfo?.username || 'No identificado'}</p>
+          <a href="/auth/login" style={{ 
+            display: 'inline-block', 
+            marginTop: '1rem', 
+            padding: '10px 20px', 
+            background: '#7289da', 
+            color: '#fff', 
+            textDecoration: 'none', 
+            borderRadius: '5px' 
+          }}>
+            Iniciar Sesión
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="admin-panel-container">
@@ -2043,16 +2124,59 @@ function AnalyticsTab() {
   const fetchMetrics = async () => {
     setLoading(true);
     try {
+      const token = localStorage.getItem('spainrp_token');
+      
+      if (!token) {
+        console.error('[ANALYTICS] No token found');
+        setLoading(false);
+        return;
+      }
+
       const response = await fetch(apiUrl('/api/analytics/metrics'), {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('spainrp_token')}`
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
         }
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
       const data = await response.json();
-      setMetrics(data);
+      console.log('[ANALYTICS] Datos recibidos:', data);
+      
+      // Validar que los datos tengan la estructura esperada
+      const safeMetrics = {
+        visitors: data.visitors || { total: 0, unique: 0, online: 0 },
+        performance: data.performance || { 
+          avgResponseTime: 0, 
+          serverResponseTimes: [],
+          errorRate: 0 
+        },
+        content: data.content || { 
+          popularPages: [], 
+          popularSearches: [],
+          totalPageViews: 0 
+        },
+        security: data.security || { 
+          blockedIPs: [], 
+          suspiciousActivity: [],
+          totalBlocked: 0 
+        },
+        system: data.system || { 
+          cacheHitRate: 0, 
+          memoryUsage: 0,
+          uptime: 0 
+        }
+      };
+      
+      setMetrics(safeMetrics);
       setLastUpdate(new Date());
     } catch (error) {
-      console.error('Error fetching metrics:', error);
+      console.error('[ANALYTICS] Error fetching metrics:', error);
+      // Mostrar mensaje de error al usuario
+      alert(`Error cargando analytics: ${error.message}`);
     }
     setLoading(false);
   };
@@ -2069,6 +2193,29 @@ function AnalyticsTab() {
   useEffect(() => {
     fetchMetrics();
   }, []);
+
+  // Mostrar loading si está cargando
+  if (loading && !metrics.visitors) {
+    return (
+      <div className="tab-content">
+        <div className="tab-header">
+          <h2><FaChartLine /> Analytics y Métricas</h2>
+          <p>Cargando datos de analytics...</p>
+        </div>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          height: '200px',
+          fontSize: '18px',
+          color: '#666'
+        }}>
+          <FaCog className="spinning" style={{ marginRight: '10px' }} />
+          Obteniendo métricas del servidor...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="tab-content">
