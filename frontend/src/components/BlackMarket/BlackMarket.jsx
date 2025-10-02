@@ -709,6 +709,15 @@ export default function BlackMarket() {
 
   React.useEffect(() => {
     console.log('[BlackMarket] Fetch /auth/me...');
+    
+    // Timeout para evitar carga infinita
+    const timeoutId = setTimeout(() => {
+      console.warn('[BlackMarket] ⚠️ Timeout en verificación de roles');
+      setLoading(false);
+      setRoleChecking(false);
+      setAuthorized(false);
+    }, 10000); // 10 segundos timeout
+
     authFetch('/auth/me')
       .then(res => res.ok ? res.json() : null)
       .then(async data => {
@@ -719,41 +728,81 @@ export default function BlackMarket() {
             setRoleChecking(true);
             
             try {
-              // Verificar membresía directa contra el bot API (vía proxy)
+              // Verificar membresía con timeout individual
               const REQUIRED_ROLE_ID = '1384340799013257307';
-              const memberRes = await fetch(`https://spainrp-web.onrender.com/api/proxy/discord/ismember/${encodeURIComponent(data.user.id)}`);
+              console.log('[BlackMarket] 🔍 Verificando membresía...');
+              
+              const memberRes = await Promise.race([
+                fetch(`https://spainrp-web.onrender.com/api/proxy/discord/ismember/${encodeURIComponent(data.user.id)}`),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
+              ]);
+              
               const member = await memberRes.json();
               let ok = Boolean(member?.isMember);
               
+              console.log('[BlackMarket] 📊 Resultado membresía:', { 
+                isMember: member?.isMember, 
+                userId: data.user.id,
+                username: data.user.username 
+              });
+              
               if (ok) {
-                const roleRes = await fetch(`https://spainrp-web.onrender.com/api/proxy/discord/hasrole/${encodeURIComponent(data.user.id)}/${REQUIRED_ROLE_ID}`);
+                console.log('[BlackMarket] 🔍 Verificando rol criminal...');
+                const roleRes = await Promise.race([
+                  fetch(`https://spainrp-web.onrender.com/api/proxy/discord/hasrole/${encodeURIComponent(data.user.id)}/${REQUIRED_ROLE_ID}`),
+                  new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
+                ]);
+                
                 const role = await roleRes.json();
                 ok = Boolean(role?.hasRole);
+                
+                console.log('[BlackMarket] 📊 Resultado rol:', { 
+                  hasRole: role?.hasRole, 
+                  roleId: REQUIRED_ROLE_ID 
+                });
+                
                 if (ok) {
                   setRoleToast('Rol criminal detectado ✅ Acceso concedido.');
                   setTimeout(() => setRoleToast(''), 2500);
+                } else {
+                  setRoleToast('❌ No tienes el rol Criminal requerido');
+                  setTimeout(() => setRoleToast(''), 3000);
                 }
+              } else {
+                setRoleToast('❌ No eres miembro del servidor Discord');
+                setTimeout(() => setRoleToast(''), 3000);
               }
+              
               setAuthorized(ok);
               console.log('[BlackMarket] membership/role check:', { isMember: member?.isMember, hasRole: ok });
               
-              // Cargar saldo del usuario (vía proxy)
-              try {
-                const saldoRes = await fetch(`https://spainrp-web.onrender.com/api/proxy/blackmarket/saldo/${encodeURIComponent(data.user.id)}`);
-                const saldoData = await saldoRes.json();
-                if (saldoRes.ok && saldoData) {
-                  setUserBalanceState(saldoData.saldo || 0);
-                  console.log('[BlackMarket] saldo cargado:', saldoData);
-                }
-              } catch (e) {
-                console.warn('[BlackMarket] error cargando saldo:', e);
-              }
-
-              // Verificar si es administrador total
+              // Cargar saldo del usuario solo si está autorizado
               if (ok) {
                 try {
+                  console.log('[BlackMarket] 💰 Cargando saldo...');
+                  const saldoRes = await Promise.race([
+                    fetch(`https://spainrp-web.onrender.com/api/proxy/blackmarket/saldo/${encodeURIComponent(data.user.id)}`),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
+                  ]);
+                  
+                  const saldoData = await saldoRes.json();
+                  if (saldoRes.ok && saldoData) {
+                    setUserBalanceState(saldoData.saldo || 0);
+                    console.log('[BlackMarket] saldo cargado:', saldoData);
+                  }
+                } catch (e) {
+                  console.warn('[BlackMarket] error cargando saldo:', e);
+                }
+
+                // Verificar si es administrador total
+                try {
                   setAdminChecking(true);
-                  const adminRes = await fetch(`https://spainrp-web.onrender.com/api/proxy/admin/isadmin/${encodeURIComponent(data.user.id)}`);
+                  console.log('[BlackMarket] 🔍 Verificando permisos de admin...');
+                  const adminRes = await Promise.race([
+                    fetch(`https://spainrp-web.onrender.com/api/proxy/admin/isadmin/${encodeURIComponent(data.user.id)}`),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
+                  ]);
+                  
                   const adminData = await adminRes.json();
                   setIsAdmin(Boolean(adminData?.isAdmin));
                   console.log('[BlackMarket] admin check:', adminData);
@@ -767,6 +816,8 @@ export default function BlackMarket() {
             } catch (e) {
               console.warn('[BlackMarket] user-info error', e);
               setAuthorized(false);
+              setRoleToast('❌ Error verificando permisos. Intenta recargar la página.');
+              setTimeout(() => setRoleToast(''), 4000);
             } finally {
               setRoleChecking(false);
             }
@@ -774,20 +825,28 @@ export default function BlackMarket() {
             console.log('[BlackMarket] No user data available');
             setAuthorized(false);
             setRoleChecking(false);
+            setRoleToast('❌ No se pudo obtener información del usuario');
+            setTimeout(() => setRoleToast(''), 3000);
           }
         } catch (e) {
           console.error('[BlackMarket] Error processing auth data:', e);
           setAuthorized(false);
           setRoleChecking(false);
+          setRoleToast('❌ Error procesando datos de autenticación');
+          setTimeout(() => setRoleToast(''), 3000);
         } finally {
+          clearTimeout(timeoutId);
           setLoading(false);
         }
       })
       .catch((e) => { 
         console.error('[BlackMarket] /auth/me error:', e); 
+        clearTimeout(timeoutId);
         setLoading(false);
         setRoleChecking(false);
         setAuthorized(false);
+        setRoleToast('❌ Error de conexión. Verifica tu conexión a internet.');
+        setTimeout(() => setRoleToast(''), 4000);
       });
   }, []);
 
@@ -795,17 +854,25 @@ export default function BlackMarket() {
   React.useEffect(() => {
     (async () => {
       try {
-        console.log('[BlackMarket] Fetch catálogo...');
-        const resp = await fetch('https://spainrp-web.onrender.com/api/proxy/blackmarket/items');
+        console.log('[BlackMarket] 📦 Fetch catálogo...');
+        const resp = await Promise.race([
+          fetch('https://spainrp-web.onrender.com/api/proxy/blackmarket/items'),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000))
+        ]);
+        
         const data = await resp.json();
         if (resp.ok && data && typeof data === 'object') {
           setCatalog(data);
-          console.log('[BlackMarket] Catálogo cargado:', Object.keys(data).length, 'items');
+          console.log('[BlackMarket] ✅ Catálogo cargado:', Object.keys(data).length, 'items');
         } else {
-          console.warn('[BlackMarket] Error catálogo:', data);
+          console.warn('[BlackMarket] ❌ Error catálogo:', data);
+          setRoleToast('⚠️ Error cargando catálogo de items');
+          setTimeout(() => setRoleToast(''), 3000);
         }
       } catch (e) {
-        console.error('[BlackMarket] Error cargando catálogo:', e);
+        console.error('[BlackMarket] ❌ Error cargando catálogo:', e);
+        setRoleToast('⚠️ Error de conexión cargando items');
+        setTimeout(() => setRoleToast(''), 3000);
       } finally {
         setCatalogLoaded(true);
       }
@@ -1130,7 +1197,9 @@ if (loading || roleChecking) {
             marginBottom: 24
           }}
         />
-        <div style={{ color: '#fff', opacity: 0.85, fontSize: '1.05rem' }}>Verificando acceso y permisos</div>
+        <div style={{ color: '#fff', opacity: 0.85, fontSize: '1.05rem' }}>
+          {roleChecking ? 'Verificando permisos de Discord...' : 'Cargando BlackMarket...'}
+        </div>
       </div>
 
       <div className="blackmarket-hack-footer">
@@ -1186,12 +1255,32 @@ if (!user) {
       </div>
         <div style={{textAlign:'center',marginTop:'120px',color:'#fff', maxWidth: 720, padding: '0 16px'}}>
           <h2 style={{color:'#FFD700', marginBottom: 8}}>Acceso restringido</h2>
-          <div style={{opacity:0.95}}>Debes ser miembro del servidor y tener el rol <b>Criminal</b> para entrar.</div>
+          <div style={{opacity:0.95, marginBottom: 16}}>
+            Debes ser miembro del servidor Discord y tener el rol <b style={{color:'#FFD700'}}>Criminal</b> para acceder al BlackMarket.
+          </div>
+          {roleToast && (
+            <div style={{
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              borderRadius: '8px',
+              padding: '12px',
+              margin: '16px 0',
+              color: '#ef4444',
+              fontSize: '0.95rem'
+            }}>
+              {roleToast}
+            </div>
+          )}
           <div style={{marginTop: 20, display:'flex', gap: 12, justifyContent:'center', flexWrap:'wrap'}}>
-            <a href="#discord" style={{background:'#7289da',color:'#fff',borderRadius:8,padding:'0.7rem 1.5rem',fontWeight:700,textDecoration:'none',fontSize:'1.05rem',border:'none',cursor:'pointer'}}>Unirme al Discord</a>
+            <a href="https://discord.gg/spainrp" target="_blank" rel="noopener noreferrer" style={{background:'#7289da',color:'#fff',borderRadius:8,padding:'0.7rem 1.5rem',fontWeight:700,textDecoration:'none',fontSize:'1.05rem',border:'none',cursor:'pointer'}}>
+              Unirme al Discord
+            </a>
             <a href="https://discord.com/channels/1212556680911650866/1384341523474284574/1388083940337778688" target="_blank" rel="noopener noreferrer" style={{background:'#00ff99',color:'#111',borderRadius:8,padding:'0.7rem 1.5rem',fontWeight:800,textDecoration:'none',fontSize:'1.05rem',border:'none',cursor:'pointer', boxShadow:'0 0 12px #00ff9933'}}>
               Obtener rol Criminal
             </a>
+          </div>
+          <div style={{marginTop: 16, fontSize: '0.9rem', opacity: 0.7}}>
+            Si ya tienes el rol, espera unos minutos y recarga la página.
           </div>
         </div>
         <div className="blackmarket-hack-footer">
