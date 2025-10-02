@@ -3,6 +3,71 @@ import { apiUrl, authFetch } from '../../utils/api';
 import DiscordUserBar from '../DiscordUserBar';
 import './BancoCentralRP.css';
 
+// Iconos como componentes
+const WalletIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/>
+    <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/>
+    <circle cx="18" cy="12" r="2"/>
+  </svg>
+);
+
+const CreditCardIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+    <line x1="1" y1="10" x2="23" y2="10"/>
+  </svg>
+);
+
+const ArrowUpIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <line x1="12" y1="19" x2="12" y2="5"/>
+    <polyline points="5,12 12,5 19,12"/>
+  </svg>
+);
+
+const ArrowDownIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <line x1="12" y1="5" x2="12" y2="19"/>
+    <polyline points="19,12 12,19 5,12"/>
+  </svg>
+);
+
+const ArrowRightIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <line x1="5" y1="12" x2="19" y2="12"/>
+    <polyline points="12,5 19,12 12,19"/>
+  </svg>
+);
+
+const BriefcaseIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+  </svg>
+);
+
+const DollarSignIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <line x1="12" y1="1" x2="12" y2="23"/>
+    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+  </svg>
+);
+
+const ClockIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="12" cy="12" r="10"/>
+    <polyline points="12,6 12,12 16,14"/>
+  </svg>
+);
+
+const XIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <line x1="18" y1="6" x2="6" y2="18"/>
+    <line x1="6" y1="6" x2="18" y2="18"/>
+  </svg>
+);
+
 const BancoCentralRP = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -11,12 +76,16 @@ const BancoCentralRP = () => {
   const [showTransfer, setShowTransfer] = useState(false);
   const [showWork, setShowWork] = useState(false);
   const [showSalary, setShowSalary] = useState(false);
+  const [showDeposit, setShowDeposit] = useState(false);
+  const [showWithdraw, setShowWithdraw] = useState(false);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('success');
   const [loadingAction, setLoadingAction] = useState(false);
   
   // Estados para formularios
   const [transferData, setTransferData] = useState({ toId: '', amount: '', note: '' });
+  const [depositAmount, setDepositAmount] = useState('');
+  const [withdrawAmount, setWithdrawAmount] = useState('');
   const [workCooldown, setWorkCooldown] = useState(0);
   const [salaryCooldown, setSalaryCooldown] = useState(0);
 
@@ -45,13 +114,8 @@ const BancoCentralRP = () => {
   const loadBalance = async (userId) => {
     try {
       console.log('[BANCO-FRONTEND] 🏦 Cargando saldo para usuario:', userId);
-      console.log('[BANCO-FRONTEND] 🔗 URL de la API:', `/api/proxy/balance/${userId}`);
       
       const response = await authFetch(`/api/proxy/balance/${userId}`);
-      console.log('[BANCO-FRONTEND] 📡 Response status:', response.status);
-      console.log('[BANCO-FRONTEND] 📡 Response headers:', Object.fromEntries(response.headers.entries()));
-      console.log('[BANCO-FRONTEND] 📡 Response ok:', response.ok);
-      
       const data = await response.json();
       console.log('[BANCO-FRONTEND] 📊 Datos recibidos:', data);
       
@@ -60,26 +124,63 @@ const BancoCentralRP = () => {
         setBalance(data.balance);
       } else {
         console.warn('[BANCO-FRONTEND] ⚠️ No se pudo cargar el saldo:', data);
-        console.warn('[BANCO-FRONTEND] ⚠️ Estableciendo saldo por defecto');
-        // Establecer saldo por defecto si no hay datos
         setBalance({ cash: 0, bank: 0 });
       }
     } catch (error) {
       console.error('[BANCO-FRONTEND] ❌ Error cargando saldo:', error);
-      console.error('[BANCO-FRONTEND] ❌ Error stack:', error.stack);
-      console.error('[BANCO-FRONTEND] ❌ Estableciendo saldo por defecto');
       setBalance({ cash: 0, bank: 0 });
     }
   };
 
   const loadTransactions = async (userId) => {
-    // Simular transacciones por ahora
+    // Por ahora simulamos transacciones, pero aquí se conectaría con la API real
     const mockTransactions = [
-      { id: 1, type: 'deposit', amount: 500, description: 'Depósito inicial', date: new Date().toISOString() },
-      { id: 2, type: 'work', amount: 300, description: 'Trabajo realizado', date: new Date(Date.now() - 86400000).toISOString() },
-      { id: 3, type: 'transfer', amount: -100, description: 'Transferencia a Juan', date: new Date(Date.now() - 172800000).toISOString() }
+      { 
+        id: 1, 
+        type: 'deposit', 
+        amount: 500, 
+        description: 'Depósito inicial', 
+        date: new Date().toISOString(),
+        icon: '💰'
+      },
+      { 
+        id: 2, 
+        type: 'work', 
+        amount: 300, 
+        description: 'Trabajo realizado', 
+        date: new Date(Date.now() - 86400000).toISOString(),
+        icon: '💼'
+      },
+      { 
+        id: 3, 
+        type: 'transfer', 
+        amount: -100, 
+        description: 'Transferencia a Juan', 
+        date: new Date(Date.now() - 172800000).toISOString(),
+        icon: '↔️'
+      }
     ];
     setTransactions(mockTransactions);
+  };
+
+  const addTransaction = (transaction) => {
+    const newTransaction = {
+      ...transaction,
+      id: Date.now(),
+      icon: getTransactionIcon(transaction.type)
+    };
+    setTransactions(prev => [newTransaction, ...prev.slice(0, 9)]); // Mantener solo 10 transacciones
+  };
+
+  const getTransactionIcon = (type) => {
+    switch (type) {
+      case 'deposit': return '💰';
+      case 'withdraw': return '💸';
+      case 'work': return '💼';
+      case 'salary': return '💳';
+      case 'transfer': return '↔️';
+      default: return '💵';
+    }
   };
 
   const showMessage = (msg, type = 'success') => {
@@ -89,113 +190,141 @@ const BancoCentralRP = () => {
   };
 
   const handleDeposit = async () => {
-    if (!user) return;
+    if (!user || !depositAmount || depositAmount <= 0) {
+      showMessage('Ingresa una cantidad válida', 'error');
+      return;
+    }
+    
     setLoadingAction(true);
     try {
-      const amount = 500; // Cantidad fija por ahora
+      const amount = parseInt(depositAmount);
       console.log('[BANCO-FRONTEND] 💰 Realizando depósito:', { userId: user.id, amount });
-      console.log('[BANCO-FRONTEND] 🔗 URL de depósito:', `/api/proxy/deposit`);
       
       const response = await authFetch(`/api/proxy/deposit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user.id,
-          amount: amount
-        })
+        body: JSON.stringify({ userId: user.id, amount })
       });
       
-      console.log('[BANCO-FRONTEND] 📡 Response status:', response.status);
-      console.log('[BANCO-FRONTEND] 📡 Response ok:', response.ok);
-      
       const data = await response.json();
-      console.log('[BANCO-FRONTEND] 📊 Respuesta de depósito:', data);
+      console.log('[BANCO-FRONTEND] 📊 Datos recibidos:', data);
       
       if (data.success) {
         console.log('[BANCO-FRONTEND] ✅ Depósito exitoso');
-        showMessage(`Depósito de €${amount} realizado correctamente`);
         await loadBalance(user.id);
+        addTransaction({
+          type: 'deposit',
+          amount: amount,
+          description: 'Depósito a cuenta bancaria',
+          date: new Date().toISOString()
+        });
+        showMessage(`Depósito de ${formatCurrency(amount)} realizado correctamente`, 'success');
+        setDepositAmount('');
+        setShowDeposit(false);
       } else {
-        console.warn('[BANCO-FRONTEND] ⚠️ Error en depósito:', data.error);
-        showMessage(data.error || 'Error al realizar el depósito', 'error');
+        console.error('[BANCO-FRONTEND] ❌ Error en depósito:', data.error);
+        showMessage(data.error || 'Error al realizar depósito', 'error');
       }
     } catch (error) {
       console.error('[BANCO-FRONTEND] ❌ Error en depósito:', error);
-      console.error('[BANCO-FRONTEND] ❌ Error stack:', error.stack);
-      showMessage('Error al realizar el depósito', 'error');
+      showMessage('Error al realizar depósito', 'error');
     } finally {
       setLoadingAction(false);
     }
   };
 
   const handleWithdraw = async () => {
-    if (!user) return;
+    if (!user || !withdrawAmount || withdrawAmount <= 0) {
+      showMessage('Ingresa una cantidad válida', 'error');
+      return;
+    }
+    
     setLoadingAction(true);
     try {
-      const amount = 500; // Cantidad fija por ahora
-      console.log('[Banco] Realizando retiro:', { userId: user.id, amount });
+      const amount = parseInt(withdrawAmount);
+      console.log('[BANCO-FRONTEND] 💸 Realizando retiro:', { userId: user.id, amount });
       
       const response = await authFetch(`/api/proxy/withdraw`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user.id,
-          amount: amount
-        })
+        body: JSON.stringify({ userId: user.id, amount })
       });
       
       const data = await response.json();
-      console.log('[Banco] Respuesta de retiro:', data);
+      console.log('[BANCO-FRONTEND] 📊 Datos recibidos:', data);
       
       if (data.success) {
-        showMessage(`Retiro de €${amount} realizado correctamente`);
+        console.log('[BANCO-FRONTEND] ✅ Retiro exitoso');
         await loadBalance(user.id);
+        addTransaction({
+          type: 'withdraw',
+          amount: -amount,
+          description: 'Retiro de cuenta bancaria',
+          date: new Date().toISOString()
+        });
+        showMessage(`Retiro de ${formatCurrency(amount)} realizado correctamente`, 'success');
+        setWithdrawAmount('');
+        setShowWithdraw(false);
       } else {
-        showMessage(data.error || 'Error al realizar el retiro', 'error');
+        console.error('[BANCO-FRONTEND] ❌ Error en retiro:', data.error);
+        showMessage(data.error || 'Error al realizar retiro', 'error');
       }
     } catch (error) {
-      console.error('[Banco] Error en retiro:', error);
-      showMessage('Error al realizar el retiro', 'error');
+      console.error('[BANCO-FRONTEND] ❌ Error en retiro:', error);
+      showMessage('Error al realizar retiro', 'error');
     } finally {
       setLoadingAction(false);
     }
   };
 
   const handleTransfer = async () => {
-    if (!user || !transferData.toId || !transferData.amount) return;
+    if (!user || !transferData.toId || !transferData.amount || transferData.amount <= 0) {
+      showMessage('Completa todos los campos correctamente', 'error');
+      return;
+    }
+    
     setLoadingAction(true);
     try {
-      console.log('[Banco] Realizando transferencia:', {
-        fromId: user.id,
-        toId: transferData.toId,
-        amount: parseInt(transferData.amount)
+      const amount = parseInt(transferData.amount);
+      console.log('[BANCO-FRONTEND] ↔️ Realizando transferencia:', { 
+        fromId: user.id, 
+        toId: transferData.toId, 
+        amount 
       });
       
       const response = await authFetch(`/api/proxy/transfer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fromId: user.id,
-          toId: transferData.toId,
-          amount: parseInt(transferData.amount),
+        body: JSON.stringify({ 
+          fromId: user.id, 
+          toId: transferData.toId, 
+          amount,
           origen: 'banco'
         })
       });
       
       const data = await response.json();
-      console.log('[Banco] Respuesta de transferencia:', data);
+      console.log('[BANCO-FRONTEND] 📊 Datos recibidos:', data);
       
       if (data.success) {
-        showMessage(`Transferencia de €${transferData.amount} realizada`);
+        console.log('[BANCO-FRONTEND] ✅ Transferencia exitosa');
+        await loadBalance(user.id);
+        addTransaction({
+          type: 'transfer',
+          amount: -amount,
+          description: `Transferencia a ${transferData.toId}`,
+          date: new Date().toISOString()
+        });
+        showMessage(`Transferencia de ${formatCurrency(amount)} realizada correctamente`, 'success');
         setTransferData({ toId: '', amount: '', note: '' });
         setShowTransfer(false);
-        await loadBalance(user.id);
       } else {
-        showMessage(data.error || 'Error en la transferencia', 'error');
+        console.error('[BANCO-FRONTEND] ❌ Error en transferencia:', data.error);
+        showMessage(data.error || 'Error al realizar transferencia', 'error');
       }
     } catch (error) {
-      console.error('[Banco] Error en transferencia:', error);
-      showMessage('Error al realizar la transferencia', 'error');
+      console.error('[BANCO-FRONTEND] ❌ Error en transferencia:', error);
+      showMessage('Error al realizar transferencia', 'error');
     } finally {
       setLoadingAction(false);
     }
@@ -203,37 +332,44 @@ const BancoCentralRP = () => {
 
   const handleWork = async () => {
     if (!user) return;
+    
     setLoadingAction(true);
     try {
-      console.log('[Banco] Realizando trabajo para usuario:', user.id);
+      console.log('[BANCO-FRONTEND] 💼 Realizando trabajo:', { userId: user.id, username: user.username });
       
       const response = await authFetch(`/api/proxy/trabajar`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user.id,
-          username: user.username
-        })
+        body: JSON.stringify({ userId: user.id, username: user.username })
       });
       
       const data = await response.json();
-      console.log('[Banco] Respuesta de trabajo:', data);
+      console.log('[BANCO-FRONTEND] 📊 Datos recibidos:', data);
       
       if (data.success) {
-        showMessage(`Trabajo completado. Ganaste €${data.reward}`);
-        setWorkCooldown(90 * 60); // 90 minutos en segundos
+        console.log('[BANCO-FRONTEND] ✅ Trabajo exitoso');
         await loadBalance(user.id);
+        addTransaction({
+          type: 'work',
+          amount: data.reward || 300,
+          description: 'Trabajo realizado',
+          date: new Date().toISOString()
+        });
+        showMessage(`Trabajo completado. Ganaste ${formatCurrency(data.reward || 300)}`, 'success');
+        setWorkCooldown(90 * 60); // 90 minutos en segundos
+        setShowWork(false);
       } else {
+        console.error('[BANCO-FRONTEND] ❌ Error en trabajo:', data.error);
         if (data.error === 'Cooldown') {
-          setWorkCooldown(data.left);
-          showMessage(`Debes esperar ${Math.ceil(data.left / 60)} minutos`, 'error');
+          const minutes = Math.ceil(data.left / 60);
+          showMessage(`Debes esperar ${minutes} minutos para trabajar de nuevo`, 'error');
         } else {
-          showMessage(data.error || 'Error al trabajar', 'error');
+          showMessage(data.error || 'Error al realizar trabajo', 'error');
         }
       }
     } catch (error) {
-      console.error('[Banco] Error en trabajo:', error);
-      showMessage('Error al realizar el trabajo', 'error');
+      console.error('[BANCO-FRONTEND] ❌ Error en trabajo:', error);
+      showMessage('Error al realizar trabajo', 'error');
     } finally {
       setLoadingAction(false);
     }
@@ -241,49 +377,71 @@ const BancoCentralRP = () => {
 
   const handleSalary = async () => {
     if (!user) return;
+    
     setLoadingAction(true);
     try {
-      // Simular roles por ahora - en producción esto vendría del Discord
-      const roles = ['1384340649205301359']; // Rol de admin
-      console.log('[Banco] Cobrando nómina para usuario:', user.id, 'con roles:', roles);
+      // Simular roles del usuario (en producción vendría del backend)
+      const roles = ['123456789012345678']; // ID de rol de ejemplo
+      
+      console.log('[BANCO-FRONTEND] 💳 Cobrando nómina:', { userId: user.id, roles });
       
       const response = await authFetch(`/api/proxy/cobrar-nomina`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user.id,
-          roles: roles
-        })
+        body: JSON.stringify({ userId: user.id, roles })
       });
       
       const data = await response.json();
-      console.log('[Banco] Respuesta de nómina:', data);
+      console.log('[BANCO-FRONTEND] 📊 Datos recibidos:', data);
       
       if (data.success) {
-        showMessage(`Nómina cobrada: €${data.neto} (neto de €${data.salarioTotal})`);
-        setSalaryCooldown(48 * 60 * 60); // 48 horas en segundos
+        console.log('[BANCO-FRONTEND] ✅ Nómina exitosa');
         await loadBalance(user.id);
+        addTransaction({
+          type: 'salary',
+          amount: data.neto || 1000,
+          description: 'Nómina cobrada',
+          date: new Date().toISOString()
+        });
+        showMessage(`Nómina cobrada. Recibiste ${formatCurrency(data.neto || 1000)}`, 'success');
+        setSalaryCooldown(48 * 60 * 60); // 48 horas en segundos
+        setShowSalary(false);
       } else {
+        console.error('[BANCO-FRONTEND] ❌ Error en nómina:', data.error);
         if (data.error === 'Cooldown') {
-          setSalaryCooldown(data.restante);
-          showMessage(`Debes esperar ${Math.ceil(data.restante / (60 * 60 * 24))} días`, 'error');
+          const hours = Math.ceil(data.restante / (60 * 60 * 1000));
+          showMessage(`Debes esperar ${hours} horas para cobrar nómina de nuevo`, 'error');
         } else {
           showMessage(data.error || 'Error al cobrar nómina', 'error');
         }
       }
     } catch (error) {
-      console.error('[Banco] Error en nómina:', error);
+      console.error('[BANCO-FRONTEND] ❌ Error en nómina:', error);
       showMessage('Error al cobrar nómina', 'error');
     } finally {
       setLoadingAction(false);
     }
   };
 
+  // Cooldown timers
+  useEffect(() => {
+    if (workCooldown > 0) {
+      const timer = setTimeout(() => setWorkCooldown(workCooldown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [workCooldown]);
+
+  useEffect(() => {
+    if (salaryCooldown > 0) {
+      const timer = setTimeout(() => setSalaryCooldown(salaryCooldown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [salaryCooldown]);
+
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('es-ES', {
       style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 0
+      currency: 'EUR'
     }).format(amount);
   };
 
@@ -297,29 +455,26 @@ const BancoCentralRP = () => {
     });
   };
 
+  const formatTime = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    } else if (minutes > 0) {
+      return `${minutes}m ${secs}s`;
+    } else {
+      return `${secs}s`;
+    }
+  };
+
   if (loading) {
     return (
       <div className="banco-container">
-        <div className="banco-loading">
-          <div className="loading-spinner"></div>
-          <p>Cargando tu cuenta...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="banco-container">
-        <DiscordUserBar />
-        <div className="banco-login">
-          <div className="banco-card">
-            <h1>Banco Central RP</h1>
-            <p>Inicia sesión para acceder a tu cuenta bancaria</p>
-            <a href="/auth/login" className="banco-btn-primary">
-              Iniciar Sesión
-            </a>
-        </div>
+        <div className="loading-spinner">
+          <div className="spinner"></div>
+          <p>Cargando banco...</p>
         </div>
       </div>
     );
@@ -331,186 +486,297 @@ const BancoCentralRP = () => {
       
       {/* Header */}
       <div className="banco-header">
-        <div className="banco-header-content">
+        <div className="banco-title">
+          <CreditCardIcon />
           <h1>Banco Central RP</h1>
-          <div className="banco-user-info">
-            <span className="banco-username">{user.username}</span>
-            <div className="banco-status-indicator"></div>
-          </div>
+        </div>
+        <div className="banco-subtitle">
+          Gestiona tu dinero de forma segura
         </div>
       </div>
 
-      {/* Balance Card */}
-      <div className="banco-balance-card">
-        <div className="banco-balance-header">
-          <h2>Saldo Total</h2>
-          <div className="banco-balance-amount">
-            {formatCurrency(balance.cash + balance.bank)}
+      {/* Balance Cards */}
+      <div className="balance-section">
+        <div className="balance-card total">
+          <div className="balance-icon">
+            <WalletIcon />
+          </div>
+          <div className="balance-info">
+            <h3>Saldo Total</h3>
+            <p className="balance-amount">{formatCurrency(balance.cash + balance.bank)}</p>
           </div>
         </div>
-        <div className="banco-balance-breakdown">
-          <div className="banco-balance-item">
-            <span className="banco-balance-label">Efectivo</span>
-            <span className="banco-balance-value">{formatCurrency(balance.cash)}</span>
+        
+        <div className="balance-cards">
+          <div className="balance-card cash">
+            <div className="balance-icon">
+              <DollarSignIcon />
+            </div>
+            <div className="balance-info">
+              <h4>Efectivo</h4>
+              <p>{formatCurrency(balance.cash)}</p>
+            </div>
           </div>
-          <div className="banco-balance-item">
-            <span className="banco-balance-label">Banco</span>
-            <span className="banco-balance-value">{formatCurrency(balance.bank)}</span>
+          
+          <div className="balance-card bank">
+            <div className="balance-icon">
+              <CreditCardIcon />
+            </div>
+            <div className="balance-info">
+              <h4>Banco</h4>
+              <p>{formatCurrency(balance.bank)}</p>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="banco-actions">
-        <button 
-          className="banco-action-btn banco-action-primary"
-          onClick={handleDeposit}
-          disabled={loadingAction}
-        >
-          <span className="banco-action-icon">💰</span>
-          <span>Depositar</span>
-        </button>
-        
-        <button 
-          className="banco-action-btn banco-action-secondary"
-          onClick={handleWithdraw}
-          disabled={loadingAction}
-        >
-          <span className="banco-action-icon">💸</span>
-          <span>Retirar</span>
-        </button>
-        
-        <button 
-          className="banco-action-btn banco-action-outline"
-          onClick={() => setShowTransfer(true)}
-        >
-          <span className="banco-action-icon">↔️</span>
-          <span>Transferir</span>
-        </button>
-        
-        <button 
-          className="banco-action-btn banco-action-outline"
-          onClick={() => setShowWork(true)}
-          disabled={workCooldown > 0 || loadingAction}
-        >
-          <span className="banco-action-icon">💼</span>
-          <span>
-            {workCooldown > 0 ? `Esperar ${Math.ceil(workCooldown / 60)}m` : 'Trabajar'}
-          </span>
-        </button>
-        
-        <button 
-          className="banco-action-btn banco-action-outline"
-          onClick={() => setShowSalary(true)}
-          disabled={salaryCooldown > 0 || loadingAction}
-        >
-          <span className="banco-action-icon">💳</span>
-          <span>
-            {salaryCooldown > 0 ? `Esperar ${Math.ceil(salaryCooldown / (60 * 60 * 24))}d` : 'Nómina'}
-          </span>
-        </button>
-      </div>
-
-      {/* Transactions */}
-      <div className="banco-transactions">
-        <h3>Últimas Transacciones</h3>
-        <div className="banco-transactions-list">
-          {transactions.map(transaction => (
-            <div key={transaction.id} className="banco-transaction">
-              <div className="banco-transaction-icon">
-                {transaction.type === 'deposit' ? '💰' : 
-                 transaction.type === 'work' ? '💼' : 
-                 transaction.type === 'transfer' ? '↔️' : '💳'}
-              </div>
-              <div className="banco-transaction-details">
-                <div className="banco-transaction-description">{transaction.description}</div>
-                <div className="banco-transaction-date">{formatDate(transaction.date)}</div>
-              </div>
-              <div className={`banco-transaction-amount ${transaction.amount > 0 ? 'positive' : 'negative'}`}>
-                {transaction.amount > 0 ? '+' : ''}{formatCurrency(transaction.amount)}
-              </div>
-            </div>
-          ))}
+      <div className="actions-section">
+        <h2>Acciones Rápidas</h2>
+        <div className="actions-grid">
+          <button 
+            className="action-btn deposit" 
+            onClick={() => setShowDeposit(true)}
+            disabled={loadingAction}
+          >
+            <ArrowUpIcon />
+            <span>Depositar</span>
+          </button>
+          
+          <button 
+            className="action-btn withdraw" 
+            onClick={() => setShowWithdraw(true)}
+            disabled={loadingAction}
+          >
+            <ArrowDownIcon />
+            <span>Retirar</span>
+          </button>
+          
+          <button 
+            className="action-btn transfer" 
+            onClick={() => setShowTransfer(true)}
+            disabled={loadingAction}
+          >
+            <ArrowRightIcon />
+            <span>Transferir</span>
+          </button>
+          
+          <button 
+            className="action-btn work" 
+            onClick={() => setShowWork(true)}
+            disabled={loadingAction || workCooldown > 0}
+          >
+            <BriefcaseIcon />
+            <span>
+              {workCooldown > 0 ? `Esperar ${formatTime(workCooldown)}` : 'Trabajar'}
+            </span>
+          </button>
+          
+          <button 
+            className="action-btn salary" 
+            onClick={() => setShowSalary(true)}
+            disabled={loadingAction || salaryCooldown > 0}
+          >
+            <DollarSignIcon />
+            <span>
+              {salaryCooldown > 0 ? `Esperar ${formatTime(salaryCooldown)}` : 'Nómina'}
+            </span>
+          </button>
         </div>
       </div>
 
-      {/* Transfer Modal */}
-      {showTransfer && (
-        <div className="banco-modal-overlay" onClick={() => setShowTransfer(false)}>
-          <div className="banco-modal" onClick={e => e.stopPropagation()}>
-            <div className="banco-modal-header">
-              <h3>Transferir Dinero</h3>
-              <button className="banco-modal-close" onClick={() => setShowTransfer(false)}>×</button>
+      {/* Transactions */}
+      <div className="transactions-section">
+        <h2>Últimas Transacciones</h2>
+        <div className="transactions-list">
+          {transactions.length === 0 ? (
+            <div className="no-transactions">
+              <p>No hay transacciones recientes</p>
             </div>
-            <div className="banco-modal-body">
-              <div className="banco-form-group">
-                <label>ID del Destinatario</label>
+          ) : (
+            transactions.map(transaction => (
+              <div key={transaction.id} className="transaction-item">
+                <div className="transaction-icon">
+                  {transaction.icon}
+                </div>
+                <div className="transaction-info">
+                  <h4>{transaction.description}</h4>
+                  <p className="transaction-date">{formatDate(transaction.date)}</p>
+                </div>
+                <div className={`transaction-amount ${transaction.amount > 0 ? 'positive' : 'negative'}`}>
+                  {transaction.amount > 0 ? '+' : ''}{formatCurrency(transaction.amount)}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Modals */}
+      {showDeposit && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-header">
+              <h3>Depositar Dinero</h3>
+              <button onClick={() => setShowDeposit(false)} className="close-btn">
+                <XIcon />
+              </button>
+            </div>
+            <div className="modal-body">
+              <p>Ingresa la cantidad que deseas depositar de efectivo a tu cuenta bancaria.</p>
+              <div className="input-group">
+                <label>Cantidad (€)</label>
                 <input
-                  type="text"
-                  value={transferData.toId}
-                  onChange={e => setTransferData({...transferData, toId: e.target.value})}
-                  placeholder="ID de Discord del destinatario"
-                />
-            </div>
-              <div className="banco-form-group">
-                <label>Cantidad</label>
-            <input
-              type="number"
-                  value={transferData.amount}
-                  onChange={e => setTransferData({...transferData, amount: e.target.value})}
+                  type="number"
+                  value={depositAmount}
+                  onChange={(e) => setDepositAmount(e.target.value)}
                   placeholder="0"
                   min="1"
+                  max={balance.cash}
                 />
               </div>
-              <div className="banco-form-group">
-                <label>Nota (opcional)</label>
-                <input
-                  type="text"
-                  value={transferData.note}
-                  onChange={e => setTransferData({...transferData, note: e.target.value})}
-                  placeholder="Descripción de la transferencia"
-                />
+              <div className="balance-info">
+                <p>Efectivo disponible: {formatCurrency(balance.cash)}</p>
               </div>
             </div>
-            <div className="banco-modal-footer">
-              <button className="banco-btn-secondary" onClick={() => setShowTransfer(false)}>
+            <div className="modal-footer">
+              <button onClick={() => setShowDeposit(false)} className="btn-secondary">
                 Cancelar
               </button>
-              <button
-                className="banco-btn-primary" 
-                onClick={handleTransfer}
-                disabled={loadingAction || !transferData.toId || !transferData.amount}
+              <button 
+                onClick={handleDeposit} 
+                className="btn-primary"
+                disabled={loadingAction || !depositAmount || depositAmount <= 0}
               >
-                {loadingAction ? 'Transferiendo...' : 'Transferir'}
+                {loadingAction ? 'Procesando...' : 'Depositar'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Work Modal */}
-      {showWork && (
-        <div className="banco-modal-overlay" onClick={() => setShowWork(false)}>
-          <div className="banco-modal" onClick={e => e.stopPropagation()}>
-            <div className="banco-modal-header">
-              <h3>Realizar Trabajo</h3>
-              <button className="banco-modal-close" onClick={() => setShowWork(false)}>×</button>
+      {showWithdraw && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-header">
+              <h3>Retirar Dinero</h3>
+              <button onClick={() => setShowWithdraw(false)} className="close-btn">
+                <XIcon />
+              </button>
             </div>
-            <div className="banco-modal-body">
-              <p>¿Estás seguro de que quieres realizar un trabajo? Ganarás entre €300-500.</p>
-              {workCooldown > 0 && (
-                <p className="banco-cooldown-warning">
-                  Debes esperar {Math.ceil(workCooldown / 60)} minutos antes de trabajar nuevamente.
-                </p>
-              )}
+            <div className="modal-body">
+              <p>Ingresa la cantidad que deseas retirar de tu cuenta bancaria a efectivo.</p>
+              <div className="input-group">
+                <label>Cantidad (€)</label>
+                <input
+                  type="number"
+                  value={withdrawAmount}
+                  onChange={(e) => setWithdrawAmount(e.target.value)}
+                  placeholder="0"
+                  min="1"
+                  max={balance.bank}
+                />
+              </div>
+              <div className="balance-info">
+                <p>Saldo bancario disponible: {formatCurrency(balance.bank)}</p>
+              </div>
             </div>
-            <div className="banco-modal-footer">
-              <button className="banco-btn-secondary" onClick={() => setShowWork(false)}>
+            <div className="modal-footer">
+              <button onClick={() => setShowWithdraw(false)} className="btn-secondary">
                 Cancelar
               </button>
-              <button
-                className="banco-btn-primary" 
-                onClick={handleWork}
+              <button 
+                onClick={handleWithdraw} 
+                className="btn-primary"
+                disabled={loadingAction || !withdrawAmount || withdrawAmount <= 0}
+              >
+                {loadingAction ? 'Procesando...' : 'Retirar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showTransfer && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-header">
+              <h3>Transferir Dinero</h3>
+              <button onClick={() => setShowTransfer(false)} className="close-btn">
+                <XIcon />
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="input-group">
+                <label>ID del Destinatario</label>
+                <input
+                  type="text"
+                  value={transferData.toId}
+                  onChange={(e) => setTransferData({...transferData, toId: e.target.value})}
+                  placeholder="ID de Discord del destinatario"
+                />
+              </div>
+              <div className="input-group">
+                <label>Cantidad (€)</label>
+                <input
+                  type="number"
+                  value={transferData.amount}
+                  onChange={(e) => setTransferData({...transferData, amount: e.target.value})}
+                  placeholder="0"
+                  min="1"
+                />
+              </div>
+              <div className="input-group">
+                <label>Nota (opcional)</label>
+                <input
+                  type="text"
+                  value={transferData.note}
+                  onChange={(e) => setTransferData({...transferData, note: e.target.value})}
+                  placeholder="Descripción de la transferencia"
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button onClick={() => setShowTransfer(false)} className="btn-secondary">
+                Cancelar
+              </button>
+              <button 
+                onClick={handleTransfer} 
+                className="btn-primary"
+                disabled={loadingAction || !transferData.toId || !transferData.amount}
+              >
+                {loadingAction ? 'Procesando...' : 'Transferir'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showWork && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-header">
+              <h3>Trabajar</h3>
+              <button onClick={() => setShowWork(false)} className="close-btn">
+                <XIcon />
+              </button>
+            </div>
+            <div className="modal-body">
+              <p>Realiza trabajo para ganar dinero. Tienes un cooldown de 90 minutos entre trabajos.</p>
+              {workCooldown > 0 && (
+                <div className="cooldown-info">
+                  <ClockIcon />
+                  <span>Debes esperar {formatTime(workCooldown)} para trabajar de nuevo</span>
+                </div>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button onClick={() => setShowWork(false)} className="btn-secondary">
+                Cancelar
+              </button>
+              <button 
+                onClick={handleWork} 
+                className="btn-primary"
                 disabled={loadingAction || workCooldown > 0}
               >
                 {loadingAction ? 'Trabajando...' : 'Trabajar'}
@@ -520,43 +786,45 @@ const BancoCentralRP = () => {
         </div>
       )}
 
-      {/* Salary Modal */}
       {showSalary && (
-        <div className="banco-modal-overlay" onClick={() => setShowSalary(false)}>
-          <div className="banco-modal" onClick={e => e.stopPropagation()}>
-            <div className="banco-modal-header">
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-header">
               <h3>Cobrar Nómina</h3>
-              <button className="banco-modal-close" onClick={() => setShowSalary(false)}>×</button>
+              <button onClick={() => setShowSalary(false)} className="close-btn">
+                <XIcon />
+              </button>
             </div>
-            <div className="banco-modal-body">
-              <p>¿Estás seguro de que quieres cobrar tu nómina? El salario se calculará según tus roles.</p>
+            <div className="modal-body">
+              <p>Cobra tu nómina según tus roles en el servidor. Tienes un cooldown de 48 horas entre cobros.</p>
               {salaryCooldown > 0 && (
-                <p className="banco-cooldown-warning">
-                  Debes esperar {Math.ceil(salaryCooldown / (60 * 60 * 24))} días antes de cobrar nuevamente.
-                </p>
+                <div className="cooldown-info">
+                  <ClockIcon />
+                  <span>Debes esperar {formatTime(salaryCooldown)} para cobrar nómina de nuevo</span>
+                </div>
               )}
             </div>
-            <div className="banco-modal-footer">
-              <button className="banco-btn-secondary" onClick={() => setShowSalary(false)}>
+            <div className="modal-footer">
+              <button onClick={() => setShowSalary(false)} className="btn-secondary">
                 Cancelar
               </button>
-              <button
-                className="banco-btn-primary" 
-                onClick={handleSalary}
+              <button 
+                onClick={handleSalary} 
+                className="btn-primary"
                 disabled={loadingAction || salaryCooldown > 0}
               >
-                {loadingAction ? 'Cobrando...' : 'Cobrar Nómina'}
+                {loadingAction ? 'Procesando...' : 'Cobrar Nómina'}
               </button>
+            </div>
           </div>
         </div>
-      </div>
       )}
 
       {/* Message Toast */}
       {message && (
-        <div className={`banco-toast ${messageType}`}>
+        <div className={`message-toast ${messageType}`}>
           {message}
-      </div>
+        </div>
       )}
     </div>
   );
