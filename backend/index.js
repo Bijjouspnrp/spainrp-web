@@ -3699,11 +3699,15 @@ app.get('/api/widget', async (req, res) => {
     const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
     const guild = discordClient.guilds.cache.get(guildId);
     if (!guild) return res.status(404).json({ error: 'Servidor no encontrado' });
-    await guild.members.fetch();
-    // Filtra miembros con estado online, idle, dnd
+    
+    // ✅ Usar miembros ya en cache (sin fetch que causa timeout)
+    // Filtra miembros con estado online, idle, dnd solo de los que ya están en cache
     const presence_count = guild.members.cache.filter(m => m.presence && ['online','idle','dnd'].includes(m.presence.status)).size;
+    
+    console.log(`[BOT API] ✅ Widget presence_count obtenido desde cache: ${presence_count}`);
     res.json({ presence_count });
   } catch (err) {
+    console.error('[BOT API] Error en widget:', err);
     res.status(500).json({ error: 'Error al obtener widget', details: err.message });
   }
 });
@@ -3773,8 +3777,13 @@ app.get('/api/membercount', async (req, res) => {
     const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
     const guild = discordClient.guilds.cache.get(guildId);
     if (!guild) return res.status(404).json({ error: 'Servidor no encontrado' });
-    await guild.members.fetch(); // Asegura que la caché esté poblada
-    res.json({ memberCount: guild.memberCount });
+    
+    // ✅ Usar guild.memberCount directamente (instantáneo, sin timeout)
+    // No usar guild.members.fetch() que causa GuildMembersTimeout en servidores grandes
+    const memberCount = guild.memberCount;
+    
+    console.log(`[BOT API] ✅ Membercount obtenido instantáneamente: ${memberCount}`);
+    res.json({ memberCount });
   } catch (err) {
     console.error('[BOT API] Error en membercount:', err);
     res.status(500).json({ error: 'Error interno en el bot', details: err.message });
