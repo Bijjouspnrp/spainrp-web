@@ -41,6 +41,7 @@ const TinderRP = () => {
   const [error, setError] = useState("");
   const [registering, setRegistering] = useState(false);
   const [fetchingAvatar, setFetchingAvatar] = useState(false);
+  const [loadingAvatars, setLoadingAvatars] = useState({});
   const [currentView, setCurrentView] = useState('discover'); // discover, matches, profile, myProfile
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
@@ -158,6 +159,15 @@ const TinderRP = () => {
           if (data && data.profiles) {
             console.log('Perfiles cargados:', data.profiles.length);
             setProfiles(data.profiles);
+            
+            // Inicializar estado de carga para todos los avatares
+            const loadingState = {};
+            data.profiles.forEach(profile => {
+              if (profile.roblox_user) {
+                loadingState[profile.roblox_user] = true;
+              }
+            });
+            setLoadingAvatars(loadingState);
           }
         } else {
           console.error('Error cargando perfiles:', res.status);
@@ -388,6 +398,10 @@ const TinderRP = () => {
         </p>
         <style>{`
           @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+          
+          .spin {
+            animation: spin 1s linear infinite;
+          }
         `}</style>
       </div>
     );
@@ -692,20 +706,61 @@ const TinderRP = () => {
                       overflow: 'hidden'
                     }}
                   >
-                    <div style={{ textAlign: 'center' }}>
-                      <img
-                        src={apiUrl(`/api/roblox/avatar/${profiles[active].roblox_user}`)}
-                        alt={profiles[active].nombre}
-                        style={{
-                          width: '200px',
-                          height: '200px',
-                          borderRadius: '50%',
-                          objectFit: 'cover',
-                          marginBottom: '20px',
-                          boxShadow: '0 8px 25px rgba(0,0,0,0.1)'
-                        }}
-                        onError={(e) => e.target.style.opacity = 0.3}
-                      />
+                    <div style={{ textAlign: 'center', position: 'relative' }}>
+                      <div style={{
+                        position: 'relative',
+                        display: 'inline-block',
+                        marginBottom: '20px'
+                      }}>
+                        <img
+                          src={apiUrl(`/api/roblox/avatar/${profiles[active].roblox_user}`)}
+                          alt={profiles[active].nombre}
+                          style={{
+                            width: '200px',
+                            height: '200px',
+                            borderRadius: '50%',
+                            objectFit: 'cover',
+                            boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+                            border: '4px solid white',
+                            transition: 'opacity 0.3s ease'
+                          }}
+                          onLoad={(e) => {
+                            console.log('Avatar cargado correctamente:', profiles[active].roblox_user);
+                            setLoadingAvatars(prev => ({ ...prev, [profiles[active].roblox_user]: false }));
+                          }}
+                          onError={(e) => {
+                            console.error('Error cargando avatar de Roblox:', profiles[active].roblox_user);
+                            setLoadingAvatars(prev => ({ ...prev, [profiles[active].roblox_user]: false }));
+                            e.target.style.opacity = 0.3;
+                            e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjBGMEYwIi8+CjxjaXJjbGUgY3g9IjEwMCIgY3k9IjcwIiByPSIyNSIgZmlsbD0iI0NDQ0NDQyIvPgo8cGF0aCBkPSJNNTAgMTQwQzUwIDEyMCA3MCAxMDAgMTAwIDEwMEMxMzAgMTAwIDE1MCAxMjAgMTUwIDE0MEg1MFoiIGZpbGw9IiNDQ0NDQ0MiLz4KPC9zdmc+Cg==';
+                          }}
+                        />
+                        {loadingAvatars[profiles[active].roblox_user] && (
+                          <div style={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            background: 'rgba(255,255,255,0.9)',
+                            borderRadius: '50%',
+                            width: '60px',
+                            height: '60px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
+                          }}>
+                            <div style={{
+                              width: '30px',
+                              height: '30px',
+                              border: '3px solid #ff6b6b',
+                              borderTop: '3px solid transparent',
+                              borderRadius: '50%',
+                              animation: 'spin 1s linear infinite'
+                            }}></div>
+                          </div>
+                        )}
+                      </div>
                       <h3 style={{
                         fontSize: '1.8rem',
                         fontWeight: '700',
