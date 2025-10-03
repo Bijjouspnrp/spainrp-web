@@ -748,6 +748,13 @@
   font-weight: 600;
 }
 
+.ranking-message {
+  font-size: 0.9rem;
+  color: #9ca3af;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .mdt-header-content {

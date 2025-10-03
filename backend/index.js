@@ -5433,12 +5433,29 @@ app.get('/api/proxy/admin/top-multas', async (req, res) => {
     const proxyUrl = 'http://37.27.21.91:5021/api/proxy/admin/top-multas';
     
     const response = await fetch(proxyUrl);
-    const data = await response.json();
     
+    // Verificar si la respuesta es HTML (error)
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('text/html')) {
+      console.warn('[MDT PROXY] El servidor proxy devolvió HTML en lugar de JSON');
+      return res.json({ 
+        success: true, 
+        top: [],
+        message: 'Ranking no disponible temporalmente'
+      });
+    }
+    
+    const data = await response.json();
     res.json(data);
   } catch (err) {
     console.error('[MDT PROXY] Error obteniendo ranking:', err);
-    res.status(500).json({ error: 'Error obteniendo ranking' });
+    // Devolver respuesta de respaldo en lugar de error
+    res.json({ 
+      success: true, 
+      top: [],
+      message: 'Ranking no disponible temporalmente',
+      error: err.message
+    });
   }
 });
 

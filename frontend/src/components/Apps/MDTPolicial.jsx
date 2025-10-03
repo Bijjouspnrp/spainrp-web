@@ -133,10 +133,26 @@ const MDTPolicial = () => {
       const topRes = await fetch(apiUrl('/api/proxy/admin/top-multas'));
       if (topRes.ok) {
         const topData = await topRes.json();
-        setPoliceData(prev => ({ ...prev, topMultas: topData.top || [] }));
+        setPoliceData(prev => ({ 
+          ...prev, 
+          topMultas: topData.top || [],
+          rankingMessage: topData.message || null
+        }));
+      } else {
+        console.warn('Error cargando ranking de multas:', topRes.status);
+        setPoliceData(prev => ({ 
+          ...prev, 
+          topMultas: [],
+          rankingMessage: 'Ranking no disponible temporalmente'
+        }));
       }
     } catch (err) {
       console.error('Error cargando datos policiales:', err);
+      setPoliceData(prev => ({ 
+        ...prev, 
+        topMultas: [],
+        rankingMessage: 'Error de conexión al cargar ranking'
+      }));
     }
   };
 
@@ -303,7 +319,7 @@ const PolicePanel = ({ data, onSearch, onRefresh }) => {
         {activeSection === 'search' && <SearchSection onSearch={onSearch} />}
         {activeSection === 'multar' && <MultarSection onRefresh={onRefresh} />}
         {activeSection === 'arrestar' && <ArrestarSection onRefresh={onRefresh} />}
-        {activeSection === 'ranking' && <RankingSection data={data.topMultas} />}
+        {activeSection === 'ranking' && <RankingSection data={data.topMultas} message={data.rankingMessage} />}
       </div>
     </div>
   );

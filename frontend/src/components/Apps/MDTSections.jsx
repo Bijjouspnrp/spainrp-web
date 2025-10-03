@@ -594,7 +594,7 @@ export const ArrestarSection = ({ onRefresh }) => {
 };
 
 // Sección Ranking (Policía)
-export const RankingSection = ({ data }) => {
+export const RankingSection = ({ data, message }) => {
   if (!data || data.length === 0) {
     return (
       <div className="mdt-section">
@@ -602,6 +602,12 @@ export const RankingSection = ({ data }) => {
         <div className="mdt-no-data">
           <FaExclamationTriangle />
           <p>No hay datos de multas disponibles</p>
+          {message && (
+            <p className="ranking-message">{message}</p>
+          )}
+          {!message && (
+            <p className="ranking-message">El ranking se actualiza automáticamente cuando hay multas registradas</p>
+          )}
         </div>
       </div>
     );
