@@ -240,7 +240,11 @@ export default defineConfig({
         entryFileNames: 'assets/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash].[ext]',
         // Configuración estándar para mejor compatibilidad
-        format: 'es'
+        format: 'es',
+        // Asegurar que los módulos se generen correctamente
+        generatedCode: {
+          constBindings: true
+        }
       }
     },
     // Optimizaciones adicionales - ESBuild es ~10x más rápido que Terser
