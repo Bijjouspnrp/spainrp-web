@@ -395,7 +395,220 @@ const Terms = () => {
         </InteractiveSection>
 
         <InteractiveSection
-          title="7. Edad mínima"
+          title="7. Uso de Apps y Herramientas"
+          icon={<FaAppStore />}
+          isExpanded={expandedSections['apps-tools']}
+          onToggle={() => toggleSection('apps-tools')}
+        >
+          <div style={{ paddingLeft: '30px' }}>
+            <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
+              SpainRP ofrece diversas aplicaciones y herramientas para mejorar tu experiencia en la comunidad. 
+              Al utilizar estas herramientas, aceptas cumplir con las normas específicas de cada una.
+            </p>
+
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>7.1 TinderRP - App de Citas</h3>
+            <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
+              • Debes ser mayor de 18 años para usar TinderRP<br/>
+              • Prohibido contenido inapropiado o ofensivo<br/>
+              • No compartir información personal real<br/>
+              • Respetar las decisiones de otros usuarios<br/>
+              • Reportar perfiles falsos o inapropiados
+            </p>
+
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>7.2 BlackMarket - Marketplace Virtual</h3>
+            <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
+              • Solo transacciones con moneda virtual del servidor<br/>
+              • Prohibido el intercambio por dinero real (RMT)<br/>
+              • Descripciones honestas de productos<br/>
+              • Respetar los precios de mercado establecidos<br/>
+              • Reportar estafas o productos falsos
+            </p>
+
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>7.3 StockMarket - Trading Virtual</h3>
+            <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
+              • No manipular precios artificialmente<br/>
+              • Prohibido el uso de bots para trading<br/>
+              • Respetar las reglas de mercado<br/>
+              • No compartir información privilegiada<br/>
+              • Asumir responsabilidad por pérdidas
+            </p>
+
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>7.4 Minijuegos y Entretenimiento</h3>
+            <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
+              • Juego limpio en todas las competencias<br/>
+              • Respetar a otros jugadores<br/>
+              • No explotar bugs o glitches<br/>
+              • Aceptar resultados de forma deportiva<br/>
+              • Reportar problemas técnicos
+            </p>
+
+            <div style={{
+              background: 'rgba(114, 137, 218, 0.1)',
+              border: '1px solid rgba(114, 137, 218, 0.3)',
+              borderRadius: '8px',
+              padding: '12px',
+              marginTop: '1rem'
+            }}>
+              <h4 style={{ color: '#7289da', margin: '0 0 8px 0', fontSize: '14px' }}>
+                🎮 Apps disponibles:
+              </h4>
+              <ul style={{ opacity: 0.8, margin: 0, fontSize: '13px', lineHeight: '1.5', paddingLeft: '16px' }}>
+                <li>TinderRP - Sistema de citas virtual</li>
+                <li>BlackMarket - Marketplace de productos</li>
+                <li>StockMarket - Trading de acciones virtuales</li>
+                <li>MinijuegosRP - Juegos y competencias</li>
+                <li>Panel de Usuario - Gestión de perfil</li>
+              </ul>
+            </div>
+          </div>
+        </InteractiveSection>
+
+        <InteractiveSection
+          title="8. Seguridad y Anti-Cheat"
+          icon={<FaShieldAlt />}
+          isExpanded={expandedSections['security-anticheat']}
+          onToggle={() => toggleSection('security-anticheat')}
+        >
+          <div style={{ paddingLeft: '30px' }}>
+            <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
+              Implementamos sistemas avanzados de seguridad para mantener un entorno justo y seguro para todos los usuarios. 
+              Cualquier intento de vulnerar estos sistemas resultará en sanciones inmediatas.
+            </p>
+
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>8.1 Sistemas de Detección</h3>
+            <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
+              • Monitoreo automático de patrones sospechosos<br/>
+              • Detección de bots y scripts no autorizados<br/>
+              • Análisis de comportamiento anómalo<br/>
+              • Verificación de identidad en transacciones<br/>
+              • Logs detallados de todas las actividades
+            </p>
+
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>8.2 Prohibiciones Estrictas</h3>
+            <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
+              • Uso de bots, macros o scripts automatizados<br/>
+              • Explotación de bugs o vulnerabilidades<br/>
+              • Manipulación de datos del cliente<br/>
+              • Intentos de acceso no autorizado<br/>
+              • Interferencia con sistemas de seguridad
+            </p>
+
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>8.3 Medidas de Seguridad de la Página</h3>
+            <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
+              • Cifrado SSL/TLS para todas las comunicaciones<br/>
+              • Autenticación de dos factores (2FA) disponible<br/>
+              • Tokens JWT seguros para sesiones<br/>
+              • Rate limiting para prevenir ataques<br/>
+              • Monitoreo continuo de seguridad
+            </p>
+
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>8.4 Sanciones por Violaciones</h3>
+            <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
+              • Primera infracción: Advertencia y suspensión temporal<br/>
+              • Segunda infracción: Suspensión prolongada<br/>
+              • Infracciones graves: Baneo permanente<br/>
+              • Apelación disponible en 48 horas<br/>
+              • No hay reembolsos por sanciones
+            </p>
+
+            <div style={{
+              background: 'rgba(231, 76, 60, 0.1)',
+              border: '1px solid rgba(231, 76, 60, 0.3)',
+              borderRadius: '8px',
+              padding: '12px',
+              marginTop: '1rem'
+            }}>
+              <h4 style={{ color: '#e74c3c', margin: '0 0 8px 0', fontSize: '14px' }}>
+                ⚠️ Reporta actividades sospechosas:
+              </h4>
+              <p style={{ opacity: 0.8, margin: 0, fontSize: '13px', lineHeight: '1.5' }}>
+                Si detectas comportamientos sospechosos, reporta inmediatamente a BijjouPro08 en Discord. 
+                Mantenemos la confidencialidad de los reportantes.
+              </p>
+            </div>
+          </div>
+        </InteractiveSection>
+
+        <InteractiveSection
+          title="9. Integración con Plataformas"
+          icon={<FaDiscord />}
+          isExpanded={expandedSections['platform-integration']}
+          onToggle={() => toggleSection('platform-integration')}
+        >
+          <div style={{ paddingLeft: '30px' }}>
+            <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
+              SpainRP se integra con múltiples plataformas para ofrecerte una experiencia completa. 
+              Cada integración tiene sus propios términos y condiciones que debes cumplir.
+            </p>
+
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>9.1 Discord Integration</h3>
+            <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
+              • Bot oficial con permisos de moderación<br/>
+              • Sincronización de roles y permisos<br/>
+              • Comandos automáticos y notificaciones<br/>
+              • Verificación de identidad mediante Discord<br/>
+              • Cumplimiento con Discord Terms of Service
+            </p>
+
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>9.2 Roblox/ERLC Integration</h3>
+            <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
+              • Verificación de cuentas de Roblox<br/>
+              • Sincronización de avatares y datos<br/>
+              • Sistema de roles vinculado al juego<br/>
+              • Cumplimiento con Roblox Terms of Service<br/>
+              • Prohibido el uso de exploits o hacks
+            </p>
+
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>9.3 APIs Externas</h3>
+            <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
+              • Servicios de hosting (Render.com)<br/>
+              • APIs de verificación de identidad<br/>
+              • Servicios de análisis y métricas<br/>
+              • CDN para contenido multimedia<br/>
+              • Servicios de backup y almacenamiento
+            </p>
+
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>9.4 Sincronización de Datos</h3>
+            <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
+              • Datos de perfil sincronizados entre plataformas<br/>
+              • Historial de actividad compartido<br/>
+              • Preferencias de usuario unificadas<br/>
+              • Sistema de notificaciones cruzadas<br/>
+              • Backup automático en múltiples servicios
+            </p>
+
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>9.5 Limitaciones de Terceros</h3>
+            <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
+              • No controlamos la disponibilidad de servicios externos<br/>
+              • Cambios en APIs pueden afectar funcionalidades<br/>
+              • Políticas de terceros pueden cambiar sin aviso<br/>
+              • No nos responsabilizamos por fallos externos<br/>
+              • Mantenemos alternativas cuando es posible
+            </p>
+
+            <div style={{
+              background: 'rgba(114, 137, 218, 0.1)',
+              border: '1px solid rgba(114, 137, 218, 0.3)',
+              borderRadius: '8px',
+              padding: '12px',
+              marginTop: '1rem'
+            }}>
+              <h4 style={{ color: '#7289da', margin: '0 0 8px 0', fontSize: '14px' }}>
+                🔗 Plataformas integradas:
+              </h4>
+              <ul style={{ opacity: 0.8, margin: 0, fontSize: '13px', lineHeight: '1.5', paddingLeft: '16px' }}>
+                <li>Discord - Comunicación y verificación</li>
+                <li>Roblox/ERLC - Juego principal</li>
+                <li>Render.com - Hosting y servicios</li>
+                <li>APIs de verificación - Seguridad</li>
+                <li>CDN - Entrega de contenido</li>
+              </ul>
+            </div>
+          </div>
+        </InteractiveSection>
+
+        <InteractiveSection
+          title="10. Edad mínima"
           icon={<FaUserShield />}
           isExpanded={expandedSections['age-requirement']}
           onToggle={() => toggleSection('age-requirement')}
@@ -423,7 +636,7 @@ const Terms = () => {
         </InteractiveSection>
 
         <InteractiveSection
-          title="8. Contenidos de usuario"
+          title="11. Contenidos de usuario"
           icon={<FaUserShield />}
           isExpanded={expandedSections['user-content']}
           onToggle={() => toggleSection('user-content')}
@@ -455,7 +668,7 @@ const Terms = () => {
         </InteractiveSection>
 
         <InteractiveSection
-          title="9. Propiedad intelectual"
+          title="12. Propiedad intelectual"
           icon={<FaLock />}
           isExpanded={expandedSections['intellectual-property']}
           onToggle={() => toggleSection('intellectual-property')}
@@ -486,13 +699,13 @@ const Terms = () => {
         </InteractiveSection>
 
         <InteractiveSection
-          title="10. Servicios de terceros y limitación de responsabilidad"
+          title="13. Servicios de terceros y limitación de responsabilidad"
           icon={<FaShieldAlt />}
           isExpanded={expandedSections['third-party-services']}
           onToggle={() => toggleSection('third-party-services')}
         >
           <div style={{ paddingLeft: '30px' }}>
-            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>10.1 Servicios integrados</h3>
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>13.1 Servicios integrados</h3>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
               Utilizamos los siguientes servicios de terceros:
               <br/>• <a href="https://discord.com/terms" target="_blank" rel="noopener noreferrer" style={{ color: '#7289da' }}>Discord Terms of Service</a>
@@ -501,7 +714,7 @@ const Terms = () => {
               <br/>• Servicios de hosting compartido (Render.com)
             </p>
 
-            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>10.2 Limitación de responsabilidad por servicios externos</h3>
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>13.2 Limitación de responsabilidad por servicios externos</h3>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
               <strong>NO NOS RESPONSABILIZAMOS</strong> por:
               <br/>• Caídas o interrupciones de las APIs de Discord
@@ -511,14 +724,14 @@ const Terms = () => {
               <br/>• Pérdida de datos debido a fallos de servicios externos
             </p>
 
-            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>10.3 Protección contra contenido ilegal</h3>
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>13.3 Protección contra contenido ilegal</h3>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
               Implementamos medidas para detectar y eliminar contenido ilegal, pero no podemos garantizar la detección 
               del 100% del contenido inapropiado. Los usuarios son responsables del contenido que publican. Reporta 
               contenido ilegal contactando a <strong>BijjouPro08</strong> inmediatamente.
             </p>
 
-            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>10.4 Prohibición de ingeniería inversa</h3>
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>13.4 Prohibición de ingeniería inversa</h3>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
               Está <strong>estrictamente prohibido</strong>:
               <br/>• Realizar ingeniería inversa de nuestro código fuente
@@ -528,7 +741,7 @@ const Terms = () => {
               <br/>• Cualquier intento de explotar vulnerabilidades del sistema
             </p>
 
-            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>10.5 Monitoreo y análisis</h3>
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>13.5 Monitoreo y análisis</h3>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
               Recopilamos datos de uso para mejorar nuestros servicios:
               <br/>• Métricas de rendimiento y errores
@@ -541,14 +754,14 @@ const Terms = () => {
         </InteractiveSection>
 
         <InteractiveSection
-          title="11. Política de datos y privacidad detallada"
+          title="14. Política de datos y privacidad detallada"
           icon={<FaLock />}
           isExpanded={expandedSections['privacy']}
           onToggle={() => toggleSection('privacy')}
           id="privacy"
         >
           <div style={{ paddingLeft: '30px' }}>
-            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>11.1 Retención de datos de Discord</h3>
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>14.1 Retención de datos de Discord</h3>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
               Guardamos los siguientes datos de tu cuenta de Discord por un período de <strong>2 años</strong> desde tu último acceso:
               <br/>• ID de usuario de Discord
@@ -558,19 +771,19 @@ const Terms = () => {
               <br/>• Datos de verificación de Roblox (si aplica)
             </p>
 
-            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>11.2 Derechos del usuario (GDPR)</h3>
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>14.2 Derechos del usuario (GDPR)</h3>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
               Tienes derecho a solicitar la eliminación de tus datos personales. Para hacerlo, contacta directamente con 
               <strong> BijjouPro08</strong> mediante Discord. Procesaremos tu solicitud en un plazo máximo de 30 días.
             </p>
 
-            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>11.3 Base legal para procesamiento</h3>
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>14.3 Base legal para procesamiento</h3>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
               Procesamos tus datos basándonos en tu <strong>consentimiento explícito</strong> al iniciar sesión y en nuestro 
               <strong>interés legítimo</strong> para proporcionar servicios de la comunidad y moderación.
             </p>
 
-            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>11.4 Datos que recopilamos</h3>
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>14.4 Datos que recopilamos</h3>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
               Nuestro bot de Discord puede leer:
               <br/>• Mensajes en canales específicos (para moderación)
@@ -580,7 +793,7 @@ const Terms = () => {
               <br/>• Datos de conexión y uso del servicio
             </p>
 
-            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>11.5 Backup y protección de datos</h3>
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>14.5 Backup y protección de datos</h3>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
               Implementamos las siguientes medidas de protección:
               <br/>• Cifrado de datos sensibles en reposo
@@ -589,7 +802,7 @@ const Terms = () => {
               <br/>• Monitoreo de accesos y cambios en los datos
             </p>
 
-            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>11.6 Brechas de seguridad</h3>
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>14.6 Brechas de seguridad</h3>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
               En caso de filtración de datos, notificaremos a los usuarios afectados en un plazo máximo de 72 horas 
               mediante Discord y publicaremos un aviso en nuestro sitio web. Reporta cualquier incidente de seguridad 
@@ -604,7 +817,7 @@ const Terms = () => {
         </InteractiveSection>
 
         <InteractiveSection
-          title="12. Disponibilidad y mantenimiento"
+          title="15. Disponibilidad y mantenimiento"
           icon={<FaInfoCircle />}
           isExpanded={expandedSections['availability']}
           onToggle={() => toggleSection('availability')}
@@ -633,7 +846,7 @@ const Terms = () => {
         </InteractiveSection>
 
         <InteractiveSection
-          title="13. Limitación de responsabilidad"
+          title="16. Limitación de responsabilidad"
           icon={<FaExclamationTriangle />}
           isExpanded={expandedSections['liability']}
           onToggle={() => toggleSection('liability')}
@@ -664,7 +877,7 @@ const Terms = () => {
         </InteractiveSection>
 
         <InteractiveSection
-          title="14. Modificaciones y notificación de cambios"
+          title="17. Modificaciones y notificación de cambios"
           icon={<FaInfoCircle />}
           isExpanded={expandedSections['modifications']}
           onToggle={() => toggleSection('modifications')}
@@ -675,7 +888,7 @@ const Terms = () => {
               publicarse en esta página.
             </p>
             
-            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>14.1 Notificación de cambios importantes</h3>
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>17.1 Notificación de cambios importantes</h3>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
               Para cambios significativos que afecten tus derechos o el uso del servicio, te notificaremos mediante:
               <br/>• Mensaje en el servidor de Discord
@@ -684,14 +897,14 @@ const Terms = () => {
               <br/>• Banner de notificación en el sitio web
             </p>
 
-            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>14.2 Aceptación de cambios</h3>
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>17.2 Aceptación de cambios</h3>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
               El uso continuado del servicio después de la publicación de cambios constituye tu aceptación de los nuevos términos.
               Si no estás de acuerdo con los cambios, debes dejar de usar el servicio y contactar a <strong>BijjouPro08</strong> 
               para solicitar la eliminación de tus datos.
             </p>
 
-            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>14.3 Historial de versiones</h3>
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>17.3 Historial de versiones</h3>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
               Mantenemos un registro de todas las modificaciones importantes en nuestros términos. Puedes solicitar el 
               historial completo contactando a <strong>BijjouPro08</strong>.
@@ -700,7 +913,7 @@ const Terms = () => {
         </InteractiveSection>
 
         <InteractiveSection
-          title="15. Contacto"
+          title="18. Contacto"
           icon={<FaUserShield />}
           isExpanded={expandedSections['contact']}
           onToggle={() => toggleSection('contact')}
