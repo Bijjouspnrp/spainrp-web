@@ -77,7 +77,9 @@ app.use(cors({
   ].filter(Boolean),
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Cookie', 'Accept', 'Origin']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Cookie', 'Accept', 'Origin'],
+  // Configuración adicional para WebSocket
+  optionsSuccessStatus: 200
 }));
 
 // Middleware adicional para manejar preflight OPTIONS
@@ -433,7 +435,7 @@ app.post('/api/admin/notify-balance-change', async (req, res) => {
 // --- SOCKET.IO para notificaciones en tiempo real ---
 const server = http.createServer(app);
 
-// Configurar Socket.IO - SOLO POLLING
+// Configurar Socket.IO - POLLING Y WEBSOCKET
 const io = new Server(server, {
   cors: {
     origin: [
@@ -445,22 +447,19 @@ const io = new Server(server, {
     credentials: true,
     methods: ['GET', 'POST']
   },
-  transports: ['polling'], // SOLO POLLING - NO WEBSOCKET
+  transports: ['polling', 'websocket'], // POLLING Y WEBSOCKET
   allowEIO3: true,
   pingTimeout: 60000,
   pingInterval: 25000,
-  allowUpgrades: false,
-  upgrade: false,
-  // Forzar solo polling - eliminar WebSocket completamente
+  allowUpgrades: true,
+  upgrade: true,
   serveClient: false,
-  connectTimeout: 45000,
-  transports: ['polling']
+  connectTimeout: 45000
 });
 
-// Rechazar explícitamente WebSocket
+// Permitir upgrade a WebSocket
 io.engine.on('upgrade', (req, socket, head) => {
-  console.log('[SOCKET.IO] ❌ Intento de upgrade a WebSocket rechazado');
-  socket.destroy();
+  console.log('[SOCKET.IO] ✅ Upgrade a WebSocket permitido');
 });
 
 // Manejar errores de Socket.IO

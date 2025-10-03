@@ -228,26 +228,64 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          router: ['react-router-dom'],
-          icons: ['react-icons'],
-          socket: ['socket.io-client']
+        manualChunks: (id) => {
+          // Chunks más específicos para mejor caching
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'react-vendor';
+            }
+            if (id.includes('react-router')) {
+              return 'router-vendor';
+            }
+            if (id.includes('react-icons')) {
+              return 'icons-vendor';
+            }
+            if (id.includes('socket.io')) {
+              return 'socket-vendor';
+            }
+            return 'vendor';
+          }
+          // Chunks para componentes específicos
+          if (id.includes('Panel')) {
+            return 'panel';
+          }
+          if (id.includes('AdminPanel')) {
+            return 'admin';
+          }
+          if (id.includes('BlackMarket')) {
+            return 'blackmarket';
+          }
+          if (id.includes('News')) {
+            return 'news';
+          }
         },
         // Optimizar nombres de chunks
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]'
+        assetFileNames: 'assets/[name]-[hash].[ext]',
+        // Configuración para módulos ES
+        format: 'es',
+        // Asegurar que los chunks sean compatibles
+        generatedCode: {
+          constBindings: true
+        }
       }
     },
     // Optimizaciones adicionales - ESBuild es ~10x más rápido que Terser
     minify: 'esbuild',
     esbuild: {
-      drop: ['console', 'debugger']
+      drop: ['console', 'debugger'],
+      // Configuración para módulos ES
+      format: 'esm'
     },
     // Tree shaking más agresivo
     treeshake: {
       moduleSideEffects: false
+    },
+    // Configuración para módulos ES
+    target: 'esnext',
+    modulePreload: {
+      polyfill: false
     }
   },
   // Configuración para el preview/producción
