@@ -661,6 +661,21 @@ body.admin-panel-active .navbar-discord {
     }
   }
   
+  /* Contenedor interno para scroll en móvil */
+  .navbar-menu.active .mobile-menu-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    padding: 0 16px;
+    max-height: 60vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(114, 137, 218, 0.3) transparent;
+  }
+  
   /* Enlaces en menú móvil activo */
   .navbar-menu.active .nav-link {
     width: 100%;

@@ -736,21 +736,15 @@ const Navbar = () => {
             maxWidth: '100%'
           }}
         >
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px',
-            width: '100%',
-            padding: '0 16px',
-            maxHeight: '60vh',
-            overflowY: 'auto',
-            overflowX: 'hidden',
-            scrollBehavior: 'smooth',
-            scrollbarWidth: 'thin',
-            scrollbarColor: 'rgba(114, 137, 218, 0.3) transparent'
-          }}>
-            {NAVIGATION_CONFIG.mainLinks.map(renderNavigationLink)}
-          </div>
+          {/* Enlaces de navegación - solo en desktop */}
+          {!isMobile && NAVIGATION_CONFIG.mainLinks.map(renderNavigationLink)}
+          
+          {/* Contenedor con scroll para móvil */}
+          {isMobile && isMenuOpen && (
+            <div className="mobile-menu-content">
+              {NAVIGATION_CONFIG.mainLinks.map(renderNavigationLink)}
+            </div>
+          )}
           
           {/* Dropdown de apps y servicios */}
           <div style={{ position: 'relative', zIndex: 1002 }}>
