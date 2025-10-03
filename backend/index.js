@@ -5470,6 +5470,65 @@ app.get('/api/proxy/admin/top-multas', async (req, res) => {
     }
     
     const data = await response.json();
+    
+    // Si tenemos datos del ranking, obtener información de Discord para cada usuario
+    if (data.success && data.top && Array.isArray(data.top)) {
+      try {
+        const enrichedTop = await Promise.all(data.top.map(async (user, index) => {
+          try {
+            // Obtener información del usuario de Discord
+            const guild = discordClient.guilds.cache.get(process.env.DISCORD_GUILD_ID);
+            if (guild) {
+              await guild.members.fetch();
+              const member = guild.members.cache.get(user.discordId);
+              
+              if (member) {
+                return {
+                  ...user,
+                  position: index + 1,
+                  username: member.user.username,
+                  discriminator: member.user.discriminator,
+                  avatar: member.user.avatar,
+                  displayAvatarURL: member.user.displayAvatarURL({ size: 64 }),
+                  totalMultas: user.total || user.totalMultas || 0,
+                  totalCantidad: user.totalCantidad || 0
+                };
+              }
+            }
+            
+            // Si no se encuentra en Discord, usar datos básicos
+            return {
+              ...user,
+              position: index + 1,
+              username: `Usuario ${user.discordId.slice(-4)}`,
+              discriminator: '0000',
+              avatar: null,
+              displayAvatarURL: null,
+              totalMultas: user.total || user.totalMultas || 0,
+              totalCantidad: user.totalCantidad || 0
+            };
+          } catch (memberErr) {
+            console.warn(`[MDT PROXY] Error obteniendo info de Discord para ${user.discordId}:`, memberErr.message);
+            return {
+              ...user,
+              position: index + 1,
+              username: `Usuario ${user.discordId.slice(-4)}`,
+              discriminator: '0000',
+              avatar: null,
+              displayAvatarURL: null,
+              totalMultas: user.total || user.totalMultas || 0,
+              totalCantidad: user.totalCantidad || 0
+            };
+          }
+        }));
+        
+        data.top = enrichedTop;
+      } catch (enrichErr) {
+        console.warn('[MDT PROXY] Error enriqueciendo datos del ranking:', enrichErr.message);
+        // Continuar con los datos originales si hay error
+      }
+    }
+    
     res.json(data);
   } catch (err) {
     console.error('[MDT PROXY] Error obteniendo ranking:', err);

@@ -914,16 +914,35 @@ export const RankingSection = ({ data, message }) => {
       <h3><FaTrophy /> Top Multas</h3>
       <div className="ranking-list">
         {data.map((user, index) => (
-          <div key={index} className={`ranking-item ${index < 3 ? 'top' : ''}`}>
+          <div key={user.discordId || index} className={`ranking-item ${index < 3 ? 'top' : ''}`}>
             <div className="ranking-position">
               {index === 0 && <FaTrophy className="gold" />}
               {index === 1 && <FaTrophy className="silver" />}
               {index === 2 && <FaTrophy className="bronze" />}
-              {index > 2 && <span className="position">#{index + 1}</span>}
+              {index > 2 && <span className="position">#{user.position || index + 1}</span>}
+            </div>
+            <div className="ranking-avatar">
+              {user.displayAvatarURL ? (
+                <img 
+                  src={user.displayAvatarURL} 
+                  alt={`Avatar de ${user.username}`}
+                  className="ranking-avatar-img"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'flex';
+                  }}
+                />
+              ) : null}
+              <div className="ranking-avatar-placeholder" style={{ display: user.displayAvatarURL ? 'none' : 'flex' }}>
+                <FaUser size={20} />
+              </div>
             </div>
             <div className="ranking-info">
-              <h4>{user.username}</h4>
-              <p>{user.totalMultas} multas - {user.totalCantidad}€</p>
+              <h4>{user.username || `Usuario ${user.discordId?.slice(-4) || 'N/A'}`}</h4>
+              <p className="ranking-discord-id">ID: {user.discordId}</p>
+              <p className="ranking-stats">
+                {user.totalMultas || user.total || 0} multas - {user.totalCantidad || 0}€
+              </p>
             </div>
           </div>
         ))}
