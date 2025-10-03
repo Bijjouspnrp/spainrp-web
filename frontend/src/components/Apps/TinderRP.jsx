@@ -915,48 +915,70 @@ const TinderRP = () => {
                 </button>
               </div>
             ) : (
-              <div style={{
-                background: 'white',
-                borderRadius: '20px',
-                padding: '20px',
-                boxShadow: '0 8px 25px rgba(0,0,0,0.1)'
-              }}>
+              <div 
+                className="fade-in"
+                style={{
+                  background: 'white',
+                  borderRadius: '25px',
+                  padding: '25px',
+                  boxShadow: '0 15px 35px rgba(0,0,0,0.1)',
+                  border: '1px solid rgba(255,107,107,0.1)'
+                }}
+              >
                 <h3 style={{
                   color: '#ff6b6b',
-                  marginBottom: '20px',
-                  fontSize: '1.3rem',
-                  fontWeight: '700'
+                  marginBottom: '25px',
+                  fontSize: '1.5rem',
+                  fontWeight: '800',
+                  textAlign: 'center',
+                  letterSpacing: '1px'
                 }}>
-                  Tus Matches ({matches.length})
+                  💕 Tus Matches ({matches.length})
                 </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   {matches.map((match, index) => (
                     <div
                       key={match.id || index}
+                      className="card-hover slide-in-left"
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        padding: '15px',
-                        background: '#f8f9fa',
-                        borderRadius: '15px',
+                        padding: '20px',
+                        background: 'linear-gradient(135deg, #f8f9fa, #ffffff)',
+                        borderRadius: '20px',
                         cursor: 'pointer',
-                        transition: 'all 0.2s ease'
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        border: '2px solid rgba(255,107,107,0.1)',
+                        position: 'relative',
+                        overflow: 'hidden'
                       }}
-                      onMouseOver={(e) => e.target.style.background = '#e9ecef'}
-                      onMouseOut={(e) => e.target.style.background = '#f8f9fa'}
+                      onMouseOver={(e) => {
+                        e.target.style.background = 'linear-gradient(135deg, #ffffff, #f8f9fa)';
+                        e.target.style.transform = 'translateY(-3px)';
+                        e.target.style.boxShadow = '0 10px 30px rgba(255,107,107,0.2)';
+                      }}
+                      onMouseOut={(e) => {
+                        e.target.style.background = 'linear-gradient(135deg, #f8f9fa, #ffffff)';
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = 'none';
+                      }}
                     >
                       <img
                         src={apiUrl(`/api/roblox/avatar/${match.roblox_user}`)}
                         alt={match.nombre}
                         style={{
-                          width: '50px',
-                          height: '50px',
+                          width: '60px',
+                          height: '60px',
                           borderRadius: '50%',
                           objectFit: 'cover',
                           marginRight: '15px',
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                          boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                          border: '3px solid white'
                         }}
-                        onError={(e) => e.target.style.opacity = 0.3}
+                        onError={(e) => {
+                          e.target.style.opacity = 0.3;
+                          e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSIjRjBGMEYwIi8+CjxjaXJjbGUgY3g9IjMwIiBjeT0iMjQiIHI9IjgiIGZpbGw9IiNDQ0NDQ0MiLz4KPHBhdGggZD0iTTE2IDQ0QzE2IDM4IDyIDMyIDMwIDMyQzUyIDMyIDQ0IDM4IDQ0IDQ0SDE2WiIgZmlsbD0iI0NDQ0NDQyIvPgo8L3N2Zz4K';
+                        }}
                       />
                       <div style={{ flex: 1 }}>
                         <h4 style={{
@@ -976,18 +998,32 @@ const TinderRP = () => {
                         </p>
                       </div>
                       <button
+                        className="button-hover"
                         style={{
-                          background: '#ff6b6b',
+                          background: 'linear-gradient(135deg, #ff6b6b, #ff8e8e)',
                           color: 'white',
                           border: 'none',
-                          borderRadius: '20px',
-                          padding: '8px 15px',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          cursor: 'pointer'
+                          borderRadius: '25px',
+                          padding: '12px 20px',
+                          fontSize: '14px',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 15px rgba(255,107,107,0.3)',
+                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px'
+                        }}
+                        onMouseOver={(e) => {
+                          e.target.style.transform = 'translateY(-2px)';
+                          e.target.style.boxShadow = '0 8px 25px rgba(255,107,107,0.4)';
+                        }}
+                        onMouseOut={(e) => {
+                          e.target.style.transform = 'translateY(0)';
+                          e.target.style.boxShadow = '0 4px 15px rgba(255,107,107,0.3)';
                         }}
                       >
-                        <FaComment style={{ marginRight: '5px' }} />
+                        <FaComment />
                         Chat
                       </button>
                     </div>
