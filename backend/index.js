@@ -5237,6 +5237,211 @@ app.post('/api/admin/multi-role', express.json(), async (req, res) => {
   }
 });
 
+// ===== ENDPOINTS MDT POLICIAL =====
+
+// Verificar si usuario tiene rol de policía
+app.get('/api/discord/rolecheck/:userId/:roleId', async (req, res) => {
+  try {
+    const { userId, roleId } = req.params;
+    
+    if (!discordClient || !discordClient.readyAt) {
+      return res.status(503).json({ error: 'Bot de Discord no disponible' });
+    }
+    
+    const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
+    const guild = discordClient.guilds.cache.get(guildId);
+    
+    if (!guild) {
+      return res.status(404).json({ error: 'Servidor no encontrado' });
+    }
+    
+    await guild.members.fetch();
+    const member = guild.members.cache.get(userId);
+    
+    if (!member) {
+      return res.json({ hasRole: false });
+    }
+    
+    const hasRole = member.roles.cache.has(roleId);
+    res.json({ hasRole });
+    
+  } catch (err) {
+    console.error('[MDT] Error verificando rol:', err);
+    res.status(500).json({ error: 'Error verificando rol' });
+  }
+});
+
+// Proxy para MDT Policial - Ver antecedentes por Discord ID
+app.get('/api/proxy/admin/antecedentes/:discordId', async (req, res) => {
+  try {
+    const { discordId } = req.params;
+    const proxyUrl = `http://37.27.21.91:5021/api/proxy/admin/antecedentes/${discordId}`;
+    
+    const response = await fetch(proxyUrl);
+    const data = await response.json();
+    
+    res.json(data);
+  } catch (err) {
+    console.error('[MDT PROXY] Error obteniendo antecedentes:', err);
+    res.status(500).json({ error: 'Error obteniendo antecedentes' });
+  }
+});
+
+// Proxy para MDT Policial - Ver antecedentes por DNI
+app.get('/api/proxy/admin/antecedentes/dni/:dni', async (req, res) => {
+  try {
+    const { dni } = req.params;
+    const proxyUrl = `http://37.27.21.91:5021/api/proxy/admin/antecedentes/dni/${dni}`;
+    
+    const response = await fetch(proxyUrl);
+    const data = await response.json();
+    
+    res.json(data);
+  } catch (err) {
+    console.error('[MDT PROXY] Error obteniendo antecedentes por DNI:', err);
+    res.status(500).json({ error: 'Error obteniendo antecedentes por DNI' });
+  }
+});
+
+// Proxy para MDT Policial - Ver datos de DNI por Discord ID
+app.get('/api/proxy/admin/dni/ver/:discordId', async (req, res) => {
+  try {
+    const { discordId } = req.params;
+    const proxyUrl = `http://37.27.21.91:5021/api/proxy/admin/dni/ver/${discordId}`;
+    
+    const response = await fetch(proxyUrl);
+    const data = await response.json();
+    
+    res.json(data);
+  } catch (err) {
+    console.error('[MDT PROXY] Error obteniendo DNI:', err);
+    res.status(500).json({ error: 'Error obteniendo DNI' });
+  }
+});
+
+// Proxy para MDT Policial - Marcar DNI como arrestado
+app.post('/api/proxy/admin/dni/arrestar/:discordId', async (req, res) => {
+  try {
+    const { discordId } = req.params;
+    const proxyUrl = `http://37.27.21.91:5021/api/proxy/admin/dni/arrestar/${discordId}`;
+    
+    const response = await fetch(proxyUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const data = await response.json();
+    
+    res.json(data);
+  } catch (err) {
+    console.error('[MDT PROXY] Error arrestando:', err);
+    res.status(500).json({ error: 'Error arrestando' });
+  }
+});
+
+// Proxy para MDT Policial - Ver inventario de usuario
+app.get('/api/proxy/admin/inventario/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const proxyUrl = `http://37.27.21.91:5021/api/proxy/admin/inventario/${userId}`;
+    
+    const response = await fetch(proxyUrl);
+    const data = await response.json();
+    
+    res.json(data);
+  } catch (err) {
+    console.error('[MDT PROXY] Error obteniendo inventario:', err);
+    res.status(500).json({ error: 'Error obteniendo inventario' });
+  }
+});
+
+// Proxy para MDT Policial - Poner multa
+app.post('/api/proxy/admin/multar', express.json(), async (req, res) => {
+  try {
+    const proxyUrl = 'http://37.27.21.91:5021/api/proxy/admin/multar';
+    
+    const response = await fetch(proxyUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body)
+    });
+    const data = await response.json();
+    
+    res.json(data);
+  } catch (err) {
+    console.error('[MDT PROXY] Error multando:', err);
+    res.status(500).json({ error: 'Error multando' });
+  }
+});
+
+// Proxy para MDT Policial - Pagar multa
+app.post('/api/proxy/admin/pagar-multa', express.json(), async (req, res) => {
+  try {
+    const proxyUrl = 'http://37.27.21.91:5021/api/proxy/admin/pagar-multa';
+    
+    const response = await fetch(proxyUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body)
+    });
+    const data = await response.json();
+    
+    res.json(data);
+  } catch (err) {
+    console.error('[MDT PROXY] Error pagando multa:', err);
+    res.status(500).json({ error: 'Error pagando multa' });
+  }
+});
+
+// Proxy para MDT Policial - Eliminar multa
+app.delete('/api/proxy/admin/borrar-multa', express.json(), async (req, res) => {
+  try {
+    const proxyUrl = 'http://37.27.21.91:5021/api/proxy/admin/borrar-multa';
+    
+    const response = await fetch(proxyUrl, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body)
+    });
+    const data = await response.json();
+    
+    res.json(data);
+  } catch (err) {
+    console.error('[MDT PROXY] Error eliminando multa:', err);
+    res.status(500).json({ error: 'Error eliminando multa' });
+  }
+});
+
+// Proxy para MDT Policial - Ver multas de usuario
+app.get('/api/proxy/admin/ver-multas/:discordId', async (req, res) => {
+  try {
+    const { discordId } = req.params;
+    const proxyUrl = `http://37.27.21.91:5021/api/proxy/admin/ver-multas/${discordId}`;
+    
+    const response = await fetch(proxyUrl);
+    const data = await response.json();
+    
+    res.json(data);
+  } catch (err) {
+    console.error('[MDT PROXY] Error obteniendo multas:', err);
+    res.status(500).json({ error: 'Error obteniendo multas' });
+  }
+});
+
+// Proxy para MDT Policial - Ranking de multas
+app.get('/api/proxy/admin/top-multas', async (req, res) => {
+  try {
+    const proxyUrl = 'http://37.27.21.91:5021/api/proxy/admin/top-multas';
+    
+    const response = await fetch(proxyUrl);
+    const data = await response.json();
+    
+    res.json(data);
+  } catch (err) {
+    console.error('[MDT PROXY] Error obteniendo ranking:', err);
+    res.status(500).json({ error: 'Error obteniendo ranking' });
+  }
+});
+
 // Endpoint para obtener datos de miembro y roles
 app.get('/api/member/:guildId/:userId', async (req, res) => {
   try {

@@ -34,6 +34,7 @@ const Support = lazy(() => import('./components/Support'));
 const ModeratorDashboard = lazy(() => import('./components/ModeratorDashboard'));
 const NotFound = lazy(() => import('./components/NotFound'));
 const SimuladorTienda = lazy(() => import('./components/Apps/SimuladorTienda'));
+const MDTPolicial = lazy(() => import('./components/Apps/MDTPolicial'));
 const GlobalSearch = lazy(() => import('./components/GlobalSearch'));
 
 // Componente de Login
@@ -925,6 +926,7 @@ function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading }) {
           <Route path="/apps/banco" element={<BancoCentralRP />} />
           <Route path="/apps/minijuegos" element={<MinijuegosRP />} />
           <Route path="/apps/tienda" element={<SimuladorTienda />} />
+          <Route path="/apps/mdt" element={<MDTPolicial />} />
           <Route path="/panel" element={<Panel />} />
           <Route path="/admin" element={<PrivateRoute><AdminPanel /></PrivateRoute>} />
           <Route path="/auth/login" element={<LoginPage />} />

@@ -3,7 +3,7 @@ import { apiUrl } from '../../utils/api';
 
 import React, { useEffect, useState } from "react";
 import DiscordUserBar from '../DiscordUserBar';
-import { FaHeart, FaPiggyBank, FaGamepad } from 'react-icons/fa';
+import { FaHeart, FaPiggyBank, FaGamepad, FaShieldAlt } from 'react-icons/fa';
 
 const appList = [
   {
@@ -26,6 +26,13 @@ const appList = [
     url: '/apps/minijuegos',
     color: '#7289da',
     desc: 'Juega minijuegos solo o con otros usuarios de Discord.'
+  },
+  {
+    name: 'MDT Policial',
+    icon: <FaShieldAlt style={{ color: '#1e40af' }} />,
+    url: '/apps/mdt',
+    color: '#1e40af',
+    desc: 'Sistema de gestión policial para multas, antecedentes y DNI.'
   }
 ];
 
