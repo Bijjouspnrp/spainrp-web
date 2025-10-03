@@ -922,10 +922,10 @@ function ModerationTab() {
     setLoading(true);
     setResult('');
     try {
-      const res = await fetch(apiUrl('/api/discord/ban'), {
+      const res = await fetch(apiUrl('/api/admin/moderate'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, reason })
+        body: JSON.stringify({ action: 'ban', userId, reason })
       });
       const data = await res.json();
       setResult(data.success ? `✅ ${data.message}` : `❌ ${data.error}`);
@@ -940,10 +940,10 @@ function ModerationTab() {
     setLoading(true);
     setResult('');
     try {
-      const res = await fetch(apiUrl('/api/discord/kick'), {
+      const res = await fetch(apiUrl('/api/admin/moderate'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId })
+        body: JSON.stringify({ action: 'kick', userId, reason })
       });
       const data = await res.json();
       setResult(data.success ? `✅ ${data.message}` : `❌ ${data.error}`);
@@ -958,10 +958,10 @@ function ModerationTab() {
     setLoading(true);
     setResult('');
     try {
-      const res = await fetch(apiUrl('/api/discord/mute'), {
+      const res = await fetch(apiUrl('/api/admin/moderate'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, time: muteTime, reason })
+        body: JSON.stringify({ action: 'mute', userId, time: muteTime, reason })
       });
       const data = await res.json();
       setResult(data.success ? `✅ ${data.message}` : `❌ ${data.error}`);
@@ -976,10 +976,10 @@ function ModerationTab() {
     setLoading(true);
     setResult('');
     try {
-      const res = await fetch(apiUrl('/api/discord/unban'), {
+      const res = await fetch(apiUrl('/api/admin/moderate'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId })
+        body: JSON.stringify({ action: 'unban', userId, reason })
       });
       const data = await res.json();
       setResult(data.success ? `✅ ${data.message}` : `❌ ${data.error}`);
@@ -995,7 +995,7 @@ function ModerationTab() {
     setResult('');
     const ids = massIds.split(',').map(id => id.trim()).filter(Boolean);
     try {
-      const res = await fetch(apiUrl('/api/discord/mass-action'), {
+      const res = await fetch(apiUrl('/api/admin/mass-action'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userIds: ids, action: massAction, reason: reason })
@@ -1415,7 +1415,7 @@ function RolesTab() {
     setRoleLoading(true);
     setRoleResult('');
     try {
-      const res = await fetch(apiUrl('/api/discord/role'), {
+      const res = await fetch(apiUrl('/api/admin/role'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: roleUserId, roleId, action: roleAction })
@@ -1433,13 +1433,13 @@ function RolesTab() {
     setTempRoleLoading(true);
     setTempRoleResult('');
     try {
-      const res = await fetch(apiUrl('/api/discord/temprole'), {
+      const res = await fetch(apiUrl('/api/admin/role'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: tempRoleUserId, roleId: tempRoleId, time: tempRoleTime })
+        body: JSON.stringify({ userId: tempRoleUserId, roleId: tempRoleId, action: 'add', time: tempRoleTime })
       });
       const data = await res.json();
-      setTempRoleResult(data.message ? `✅ ${data.message}` : `❌ ${data.error}`);
+      setTempRoleResult(data.success ? `✅ ${data.message}` : `❌ ${data.error}`);
     } catch (err) {
       setTempRoleResult('❌ Error en rol temporal');
     }
@@ -1451,17 +1451,17 @@ function RolesTab() {
     setMultiRoleLoading(true);
     setMultiRoleResult('');
     try {
-      const res = await fetch(apiUrl('/api/discord/multirole'), {
+      const res = await fetch(apiUrl('/api/admin/multi-role'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: multiRoleUserId, roleIds: multiRoles, action: multiRoleAction })
       });
       const data = await res.json();
-      if (data.results) {
+      if (data.success) {
         const results = data.results.map(r => 
           `${r.roleId}: ${r.success ? '✅' : `❌ ${r.error}`}`
         ).join('\n');
-        setMultiRoleResult(`Resultados:\n${results}`);
+        setMultiRoleResult(`✅ Gestión completada: ${data.successful}/${data.total} exitosos\n\nResultados:\n${results}`);
       } else {
         setMultiRoleResult(`❌ ${data.error}`);
       }

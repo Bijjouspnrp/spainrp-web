@@ -4826,6 +4826,417 @@ app.get('/api/discord/logs', async (req, res) => {
   res.json({ logs: staffLogs.slice(-50).reverse() }); // últimos 50 logs, ordenados recientes primero
 });
 
+// ===== ENDPOINTS ESPECÍFICOS PARA ADMINPANEL =====
+
+// Endpoint para moderación usando cliente Discord local
+app.post('/api/admin/moderate', express.json(), async (req, res) => {
+  try {
+    const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
+    const { action, userId, reason, time } = req.body;
+    
+    console.log(`[ADMIN MODERATE] Acción: ${action}, Usuario: ${userId}, Motivo: ${reason}`);
+    
+    if (!discordClient || !discordClient.readyAt) {
+      return res.status(503).json({ error: 'Bot de Discord no disponible' });
+    }
+    
+    const guild = discordClient.guilds.cache.get(guildId);
+    if (!guild) {
+      return res.status(404).json({ error: 'Servidor no encontrado' });
+    }
+    
+    await guild.members.fetch();
+    const member = guild.members.cache.get(userId);
+    
+    if (!member) {
+      return res.status(404).json({ error: 'Usuario no encontrado en el servidor' });
+    }
+    
+    let result;
+    
+    switch (action) {
+      case 'ban':
+        await member.ban({ 
+          reason: reason || 'Baneado desde panel admin',
+          deleteMessageDays: 7
+        });
+        result = `Usuario ${member.user.username} (${userId}) baneado exitosamente.`;
+        break;
+        
+      case 'kick':
+        await member.kick(reason || 'Kickeado desde panel admin');
+        result = `Usuario ${member.user.username} (${userId}) kickeado exitosamente.`;
+        break;
+        
+      case 'mute':
+        // Buscar rol de mute
+        let muteRole = guild.roles.cache.find(r => 
+          r.name.toLowerCase().includes('mute') || 
+          r.name.toLowerCase().includes('silenciado') ||
+          r.name.toLowerCase() === 'muted'
+        );
+        
+        if (!muteRole) {
+          muteRole = await guild.roles.create({
+            name: 'Muted',
+            color: '#888',
+            reason: 'Rol para silenciar usuarios',
+            permissions: []
+          });
+          
+          // Configurar permisos en todos los canales
+          for (const channel of guild.channels.cache.values()) {
+            if (channel.type === 0 || channel.type === 2) {
+              try {
+                await channel.permissionOverwrites.edit(muteRole, {
+                  SendMessages: false,
+                  Speak: false,
+                  Connect: false,
+                  AddReactions: false
+                });
+              } catch (e) {
+                console.warn(`[ADMIN MODERATE] No se pudo configurar permisos en canal ${channel.name}:`, e.message);
+              }
+            }
+          }
+        }
+        
+        if (member.roles.cache.has(muteRole.id)) {
+          return res.status(400).json({ error: 'El usuario ya está muteado' });
+        }
+        
+        await member.roles.add(muteRole.id, reason || 'Muteado desde panel admin');
+        
+        // Programar desmute si hay tiempo especificado
+        if (time && parseInt(time) > 0) {
+          setTimeout(async () => {
+            try {
+              await member.roles.remove(muteRole.id, 'Desmute automático');
+              console.log(`[ADMIN MODERATE] Desmute automático para ${userId}`);
+            } catch (e) {
+              console.error('[ADMIN MODERATE] Error en desmute automático:', e);
+            }
+          }, parseInt(time) * 60000);
+        }
+        
+        result = `Usuario ${member.user.username} (${userId}) muteado exitosamente.`;
+        break;
+        
+      case 'unban':
+        await guild.members.unban(userId, reason || 'Desbaneado desde panel admin');
+        result = `Usuario ${userId} desbaneado exitosamente.`;
+        break;
+        
+      default:
+        return res.status(400).json({ error: 'Acción no válida' });
+    }
+    
+    // Registrar en logs
+    staffLogs.push({
+      action: action.charAt(0).toUpperCase() + action.slice(1),
+      user: 'Admin Panel',
+      target: member ? member.user.username : userId,
+      reason: reason || 'Sin motivo especificado',
+      timestamp: new Date().toISOString()
+    });
+    
+    res.json({ 
+      success: true, 
+      message: result,
+      user: member ? {
+        id: member.user.id,
+        username: member.user.username,
+        discriminator: member.user.discriminator
+      } : { id: userId }
+    });
+    
+  } catch (err) {
+    console.error('[ADMIN MODERATE] Error:', err);
+    res.status(500).json({ 
+      error: 'Error al ejecutar acción de moderación', 
+      details: err.message 
+    });
+  }
+});
+
+// Endpoint para acciones masivas usando cliente Discord local
+app.post('/api/admin/mass-action', express.json(), async (req, res) => {
+  try {
+    const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
+    const { userIds, action, reason } = req.body;
+    
+    console.log(`[ADMIN MASS] Acción: ${action}, Usuarios: ${userIds.length}, Motivo: ${reason}`);
+    
+    if (!discordClient || !discordClient.readyAt) {
+      return res.status(503).json({ error: 'Bot de Discord no disponible' });
+    }
+    
+    const guild = discordClient.guilds.cache.get(guildId);
+    if (!guild) {
+      return res.status(404).json({ error: 'Servidor no encontrado' });
+    }
+    
+    await guild.members.fetch();
+    
+    const results = [];
+    const errors = [];
+    
+    for (const userId of userIds) {
+      try {
+        const member = guild.members.cache.get(userId);
+        
+        if (!member) {
+          errors.push({ userId, error: 'Usuario no encontrado en el servidor' });
+          continue;
+        }
+        
+        switch (action) {
+          case 'kick':
+            await member.kick(reason || 'Acción masiva desde panel admin');
+            results.push({ userId, username: member.user.username, action: 'kicked' });
+            break;
+            
+          case 'ban':
+            await member.ban({ 
+              reason: reason || 'Acción masiva desde panel admin',
+              deleteMessageDays: 7
+            });
+            results.push({ userId, username: member.user.username, action: 'banned' });
+            break;
+            
+          case 'mute':
+            let muteRole = guild.roles.cache.find(r => 
+              r.name.toLowerCase().includes('mute') || 
+              r.name.toLowerCase().includes('silenciado') ||
+              r.name.toLowerCase() === 'muted'
+            );
+            
+            if (!muteRole) {
+              muteRole = await guild.roles.create({
+                name: 'Muted',
+                color: '#888',
+                reason: 'Rol para silenciar usuarios',
+                permissions: []
+              });
+            }
+            
+            if (!member.roles.cache.has(muteRole.id)) {
+              await member.roles.add(muteRole.id, reason || 'Acción masiva desde panel admin');
+              results.push({ userId, username: member.user.username, action: 'muted' });
+            } else {
+              errors.push({ userId, error: 'Usuario ya está muteado' });
+            }
+            break;
+        }
+      } catch (err) {
+        console.error(`[ADMIN MASS] Error con usuario ${userId}:`, err);
+        errors.push({ userId, error: err.message });
+      }
+    }
+    
+    // Registrar en logs
+    staffLogs.push({
+      action: `Mass ${action.charAt(0).toUpperCase() + action.slice(1)}`,
+      user: 'Admin Panel',
+      target: `${results.length} usuarios`,
+      reason: reason || 'Acción masiva',
+      timestamp: new Date().toISOString()
+    });
+    
+    res.json({
+      success: true,
+      message: `Acción masiva completada: ${results.length} exitosos, ${errors.length} errores`,
+      results: results,
+      errors: errors,
+      total: userIds.length,
+      successful: results.length,
+      failed: errors.length
+    });
+    
+  } catch (err) {
+    console.error('[ADMIN MASS] Error:', err);
+    res.status(500).json({ 
+      error: 'Error en acción masiva', 
+      details: err.message 
+    });
+  }
+});
+
+// Endpoint para gestión de roles usando cliente Discord local
+app.post('/api/admin/role', express.json(), async (req, res) => {
+  try {
+    const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
+    const { userId, roleId, action, time } = req.body;
+    
+    console.log(`[ADMIN ROLE] Usuario: ${userId}, Rol: ${roleId}, Acción: ${action}`);
+    
+    if (!discordClient || !discordClient.readyAt) {
+      return res.status(503).json({ error: 'Bot de Discord no disponible' });
+    }
+    
+    const guild = discordClient.guilds.cache.get(guildId);
+    if (!guild) {
+      return res.status(404).json({ error: 'Servidor no encontrado' });
+    }
+    
+    await guild.members.fetch();
+    const member = guild.members.cache.get(userId);
+    
+    if (!member) {
+      return res.status(404).json({ error: 'Usuario no encontrado en el servidor' });
+    }
+    
+    const role = guild.roles.cache.get(roleId);
+    if (!role) {
+      return res.status(404).json({ error: 'Rol no encontrado' });
+    }
+    
+    let result;
+    
+    if (action === 'add') {
+      if (member.roles.cache.has(roleId)) {
+        return res.status(400).json({ error: 'El usuario ya tiene este rol' });
+      }
+      await member.roles.add(roleId);
+      result = `Rol ${role.name} añadido a ${member.user.username}`;
+    } else if (action === 'remove') {
+      if (!member.roles.cache.has(roleId)) {
+        return res.status(400).json({ error: 'El usuario no tiene este rol' });
+      }
+      await member.roles.remove(roleId);
+      result = `Rol ${role.name} removido de ${member.user.username}`;
+    } else {
+      return res.status(400).json({ error: 'Acción no válida' });
+    }
+    
+    // Programar remoción automática si es rol temporal
+    if (time && parseInt(time) > 0 && action === 'add') {
+      setTimeout(async () => {
+        try {
+          await member.roles.remove(roleId, 'Remoción automática de rol temporal');
+          console.log(`[ADMIN ROLE] Remoción automática de rol ${roleId} para ${userId}`);
+        } catch (e) {
+          console.error('[ADMIN ROLE] Error en remoción automática:', e);
+        }
+      }, parseInt(time) * 60000);
+    }
+    
+    // Registrar en logs
+    staffLogs.push({
+      action: `Role ${action.charAt(0).toUpperCase() + action.slice(1)}`,
+      user: 'Admin Panel',
+      target: `${member.user.username} - ${role.name}`,
+      reason: time ? `Temporal (${time} min)` : 'Manual',
+      timestamp: new Date().toISOString()
+    });
+    
+    res.json({ 
+      success: true, 
+      message: result,
+      user: {
+        id: member.user.id,
+        username: member.user.username,
+        discriminator: member.user.discriminator
+      },
+      role: {
+        id: role.id,
+        name: role.name
+      }
+    });
+    
+  } catch (err) {
+    console.error('[ADMIN ROLE] Error:', err);
+    res.status(500).json({ 
+      error: 'Error al gestionar rol', 
+      details: err.message 
+    });
+  }
+});
+
+// Endpoint para roles múltiples usando cliente Discord local
+app.post('/api/admin/multi-role', express.json(), async (req, res) => {
+  try {
+    const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
+    const { userId, roleIds, action } = req.body;
+    
+    console.log(`[ADMIN MULTI-ROLE] Usuario: ${userId}, Roles: ${roleIds.length}, Acción: ${action}`);
+    
+    if (!discordClient || !discordClient.readyAt) {
+      return res.status(503).json({ error: 'Bot de Discord no disponible' });
+    }
+    
+    const guild = discordClient.guilds.cache.get(guildId);
+    if (!guild) {
+      return res.status(404).json({ error: 'Servidor no encontrado' });
+    }
+    
+    await guild.members.fetch();
+    const member = guild.members.cache.get(userId);
+    
+    if (!member) {
+      return res.status(404).json({ error: 'Usuario no encontrado en el servidor' });
+    }
+    
+    const results = [];
+    const errors = [];
+    
+    for (const roleId of roleIds) {
+      try {
+        const role = guild.roles.cache.get(roleId);
+        if (!role) {
+          errors.push({ roleId, error: 'Rol no encontrado' });
+          continue;
+        }
+        
+        if (action === 'add') {
+          if (!member.roles.cache.has(roleId)) {
+            await member.roles.add(roleId);
+            results.push({ roleId, roleName: role.name, action: 'added' });
+          } else {
+            errors.push({ roleId, error: 'Usuario ya tiene este rol' });
+          }
+        } else if (action === 'remove') {
+          if (member.roles.cache.has(roleId)) {
+            await member.roles.remove(roleId);
+            results.push({ roleId, roleName: role.name, action: 'removed' });
+          } else {
+            errors.push({ roleId, error: 'Usuario no tiene este rol' });
+          }
+        }
+      } catch (err) {
+        console.error(`[ADMIN MULTI-ROLE] Error con rol ${roleId}:`, err);
+        errors.push({ roleId, error: err.message });
+      }
+    }
+    
+    // Registrar en logs
+    staffLogs.push({
+      action: `Multi-Role ${action.charAt(0).toUpperCase() + action.slice(1)}`,
+      user: 'Admin Panel',
+      target: `${member.user.username} - ${results.length} roles`,
+      reason: `${results.length} exitosos, ${errors.length} errores`,
+      timestamp: new Date().toISOString()
+    });
+    
+    res.json({
+      success: true,
+      message: `Gestión de roles múltiples completada: ${results.length} exitosos, ${errors.length} errores`,
+      results: results,
+      errors: errors,
+      total: roleIds.length,
+      successful: results.length,
+      failed: errors.length
+    });
+    
+  } catch (err) {
+    console.error('[ADMIN MULTI-ROLE] Error:', err);
+    res.status(500).json({ 
+      error: 'Error en gestión de roles múltiples', 
+      details: err.message 
+    });
+  }
+});
+
 // Endpoint para obtener datos de miembro y roles
 app.get('/api/member/:guildId/:userId', async (req, res) => {
   try {
