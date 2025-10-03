@@ -756,6 +756,141 @@
   font-style: italic;
 }
 
+/* Búsqueda mejorada */
+.dni-result {
+  border-left-color: #fbbf24;
+}
+
+.multas-result {
+  border-left-color: #dc2626;
+}
+
+.antecedentes-result {
+  border-left-color: #8b5cf6;
+}
+
+.inventario-result {
+  border-left-color: #10b981;
+}
+
+.summary-result {
+  border-left-color: #4a90e2;
+  background: rgba(74, 144, 226, 0.05);
+}
+
+.multa-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 0.8rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.multa-info {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.multa-amount {
+  font-weight: 700;
+  color: #fbbf24;
+  font-size: 1.1rem;
+}
+
+.multa-motivo {
+  color: #ffffff;
+  flex: 1;
+  min-width: 150px;
+}
+
+.antecedente-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 0.8rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.antecedente-tipo {
+  font-weight: 600;
+  color: #8b5cf6;
+  font-size: 0.9rem;
+}
+
+.antecedente-desc {
+  color: #ffffff;
+  font-size: 0.9rem;
+}
+
+.inventario-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 0.6rem;
+  margin-bottom: 0.4rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.item-name {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.item-quantity {
+  color: #10b981;
+  font-weight: 600;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+}
+
+.more-items {
+  text-align: center;
+  color: #9ca3af;
+  font-style: italic;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+}
+
+.summary-info {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.summary-field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.summary-field:last-child {
+  border-bottom: none;
+}
+
+.summary-field label {
+  color: #9ca3af;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.summary-field span {
+  color: #ffffff;
+  font-weight: 500;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .mdt-header-content {

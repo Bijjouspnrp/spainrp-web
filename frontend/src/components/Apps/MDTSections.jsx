@@ -312,25 +312,65 @@ export const SearchSection = ({ onSearch }) => {
     setResults(null);
 
     try {
-      let url;
-      if (searchType === 'discord') {
-        url = `/api/proxy/admin/antecedentes/${searchValue}`;
-      } else {
-        url = `/api/proxy/admin/antecedentes/dni/${searchValue}`;
-      }
-
-      const response = await fetch(apiUrl(url));
-      const data = await response.json();
-
-      if (response.ok) {
-        if (data.success && data.antecedentes && data.antecedentes.length > 0) {
-          setResults(data);
+      let discordId = searchValue;
+      
+      // Si buscan por DNI, primero obtener el Discord ID
+      if (searchType === 'dni') {
+        const dniResponse = await fetch(apiUrl(`/api/proxy/admin/dni/ver/${searchValue}`));
+        if (dniResponse.ok) {
+          const dniData = await dniResponse.json();
+          if (dniData.success && dniData.dni) {
+            discordId = dniData.dni.discordId;
+          } else {
+            setError('❌ No se encontró DNI con ese número');
+            setLoading(false);
+            return;
+          }
         } else {
-          setError('ℹ️ No se encontraron antecedentes para este usuario');
+          setError('❌ Error consultando DNI');
+          setLoading(false);
+          return;
         }
-      } else {
-        setError(`❌ Error en la búsqueda: ${data.error || 'Error desconocido'}`);
       }
+
+      // Consultar múltiples endpoints en paralelo
+      const [antecedentesRes, multasRes, dniRes, inventarioRes] = await Promise.all([
+        fetch(apiUrl(`/api/proxy/admin/antecedentes/${discordId}`)),
+        fetch(apiUrl(`/api/proxy/admin/ver-multas/${discordId}`)),
+        fetch(apiUrl(`/api/proxy/admin/dni/ver/${discordId}`)),
+        fetch(apiUrl(`/api/proxy/admin/inventario/${discordId}`))
+      ]);
+
+      const [antecedentesData, multasData, dniData, inventarioData] = await Promise.all([
+        antecedentesRes.json(),
+        multasRes.json(),
+        dniRes.json(),
+        inventarioRes.json()
+      ]);
+
+      // Compilar resultados
+      const searchResults = {
+        discordId: discordId,
+        searchValue: searchValue,
+        searchType: searchType,
+        dni: dniData.success ? dniData.dni : null,
+        antecedentes: antecedentesData.success ? antecedentesData.antecedentes : [],
+        multas: multasData.success ? multasData.multas : [],
+        inventario: inventarioData.success ? inventarioData.inventario : [],
+        hasData: false
+      };
+
+      // Verificar si hay algún dato
+      if (searchResults.dni || 
+          searchResults.antecedentes.length > 0 || 
+          searchResults.multas.length > 0 || 
+          searchResults.inventario.length > 0) {
+        searchResults.hasData = true;
+        setResults(searchResults);
+      } else {
+        setError('ℹ️ No se encontraron datos para este usuario');
+      }
+
     } catch (err) {
       console.error('Error en búsqueda:', err);
       setError('❌ Error de conexión en la búsqueda');
@@ -376,40 +416,138 @@ export const SearchSection = ({ onSearch }) => {
       {results && (
         <div className="search-results">
           <h4>Resultados de la búsqueda:</h4>
-          <div className="result-card">
+          
+          {/* Información del DNI */}
+          {results.dni && (
+            <div className="result-card dni-result">
+              <div className="result-header">
+                <h5><FaIdCard /> Datos del DNI</h5>
+                <span className="result-type">DNI</span>
+              </div>
+              <div className="dni-info">
+                <div className="dni-field">
+                  <label>Número DNI:</label>
+                  <span>{results.dni.numeroDNI}</span>
+                </div>
+                <div className="dni-field">
+                  <label>Nombre:</label>
+                  <span>{results.dni.nombre} {results.dni.apellidos}</span>
+                </div>
+                <div className="dni-field">
+                  <label>Fecha Nacimiento:</label>
+                  <span>{results.dni.fechaNacimiento}</span>
+                </div>
+                <div className="dni-field">
+                  <label>Nacionalidad:</label>
+                  <span>{results.dni.nacionalidad}</span>
+                </div>
+                <div className="dni-field">
+                  <label>Trabajo:</label>
+                  <span>{results.dni.trabajo || 'N/A'}</span>
+                </div>
+                <div className="dni-field">
+                  <label>Estado:</label>
+                  <span className={`dni-status ${results.dni.arrestado ? 'arrestado' : 'activo'}`}>
+                    {results.dni.arrestado ? 'ARRESTADO' : 'ACTIVO'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Multas */}
+          {results.multas && results.multas.length > 0 && (
+            <div className="result-card multas-result">
+              <div className="result-header">
+                <h5><FaMoneyBillWave /> Multas ({results.multas.length})</h5>
+                <span className="result-type">MULTAS</span>
+              </div>
+              <div className="multas-list">
+                {results.multas.slice(0, 3).map((multa, index) => (
+                  <div key={index} className="multa-item">
+                    <div className="multa-info">
+                      <span className="multa-amount">{multa.cantidad || multa.multa || 0}€</span>
+                      <span className="multa-motivo">{multa.motivo || multa.cargos || 'N/A'}</span>
+                      <span className={`multa-status ${multa.pagada ? 'pagada' : 'pendiente'}`}>
+                        {multa.pagada ? 'PAGADA' : 'PENDIENTE'}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+                {results.multas.length > 3 && (
+                  <div className="more-items">... y {results.multas.length - 3} multas más</div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Antecedentes */}
+          {results.antecedentes && results.antecedentes.length > 0 && (
+            <div className="result-card antecedentes-result">
+              <div className="result-header">
+                <h5><FaHistory /> Antecedentes ({results.antecedentes.length})</h5>
+                <span className="result-type">ANTECEDENTES</span>
+              </div>
+              <div className="antecedentes-list">
+                {results.antecedentes.slice(0, 3).map((antecedente, index) => (
+                  <div key={index} className="antecedente-item">
+                    <span className="antecedente-tipo">{antecedente.tipo || 'Antecedente'}</span>
+                    <span className="antecedente-desc">{antecedente.descripcion || 'Sin descripción'}</span>
+                  </div>
+                ))}
+                {results.antecedentes.length > 3 && (
+                  <div className="more-items">... y {results.antecedentes.length - 3} antecedentes más</div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Inventario */}
+          {results.inventario && results.inventario.length > 0 && (
+            <div className="result-card inventario-result">
+              <div className="result-header">
+                <h5><FaClipboardList /> Inventario ({results.inventario.length})</h5>
+                <span className="result-type">INVENTARIO</span>
+              </div>
+              <div className="inventario-list">
+                {results.inventario.slice(0, 5).map((item, index) => (
+                  <div key={index} className="inventario-item">
+                    <span className="item-name">{item.nombre || 'Objeto'}</span>
+                    <span className="item-quantity">x{item.cantidad || 1}</span>
+                  </div>
+                ))}
+                {results.inventario.length > 5 && (
+                  <div className="more-items">... y {results.inventario.length - 5} objetos más</div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Resumen */}
+          <div className="result-card summary-result">
             <div className="result-header">
-              <h5>Usuario encontrado</h5>
-              <span className="result-type">{searchType.toUpperCase()}</span>
+              <h5>Resumen de Búsqueda</h5>
+              <span className="status-success">✅ Usuario localizado</span>
             </div>
-            <div className="result-info">
-              <div className="result-field">
-                <label>ID consultado:</label>
-                <span>{searchValue}</span>
+            <div className="summary-info">
+              <div className="summary-field">
+                <label>Discord ID:</label>
+                <span>{results.discordId}</span>
               </div>
-              <div className="result-field">
-                <label>Antecedentes encontrados:</label>
-                <span>{results.antecedentes ? results.antecedentes.length : 0} registros</span>
+              <div className="summary-field">
+                <label>Búsqueda por:</label>
+                <span>{results.searchType.toUpperCase()}: {results.searchValue}</span>
               </div>
-              <div className="result-field">
-                <label>Estado:</label>
-                <span className="status-success">✅ Usuario localizado</span>
+              <div className="summary-field">
+                <label>Datos encontrados:</label>
+                <span>
+                  {results.dni ? 'DNI ' : ''}
+                  {results.multas.length > 0 ? `${results.multas.length} multas ` : ''}
+                  {results.antecedentes.length > 0 ? `${results.antecedentes.length} antecedentes ` : ''}
+                  {results.inventario.length > 0 ? `${results.inventario.length} objetos` : ''}
+                </span>
               </div>
             </div>
-            {results.antecedentes && results.antecedentes.length > 0 && (
-              <div className="antecedentes-details">
-                <h6>Detalles de antecedentes:</h6>
-                <ul>
-                  {results.antecedentes.slice(0, 3).map((antecedente, index) => (
-                    <li key={index}>
-                      <strong>{antecedente.tipo || 'Antecedente'}:</strong> {antecedente.descripcion || 'Sin descripción'}
-                    </li>
-                  ))}
-                  {results.antecedentes.length > 3 && (
-                    <li>... y {results.antecedentes.length - 3} más</li>
-                  )}
-                </ul>
-              </div>
-            )}
           </div>
         </div>
       )}
