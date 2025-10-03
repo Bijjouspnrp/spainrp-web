@@ -7,12 +7,15 @@ const Logs = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all');
+  const [levelFilter, setLevelFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('timestamp');
   const [sortOrder, setSortOrder] = useState('desc');
   const [expandedLogs, setExpandedLogs] = useState(new Set());
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState(null);
+  const [showStats, setShowStats] = useState(false);
+  const [stats, setStats] = useState(null);
 
   // Tipos de logs y sus colores
   const logTypes = {
@@ -21,7 +24,17 @@ const Logs = () => {
     auth: { label: 'Autenticación', color: '#f39c12', icon: <FaCheckCircle /> },
     admin: { label: 'Administración', color: '#9b59b6', icon: <FaInfoCircle /> },
     api: { label: 'API', color: '#2ecc71', icon: <FaInfoCircle /> },
-    system: { label: 'Sistema', color: '#95a5a6', icon: <FaInfoCircle /> }
+    system: { label: 'Sistema', color: '#95a5a6', icon: <FaInfoCircle /> },
+    security: { label: 'Seguridad', color: '#e67e22', icon: <FaExclamationTriangle /> },
+    database: { label: 'Base de Datos', color: '#3498db', icon: <FaInfoCircle /> },
+    payment: { label: 'Pagos', color: '#27ae60', icon: <FaCheckCircle /> },
+    discord: { label: 'Discord', color: '#5865f2', icon: <FaInfoCircle /> },
+    roblox: { label: 'Roblox', color: '#c4302b', icon: <FaInfoCircle /> },
+    tinder: { label: 'Tinder', color: '#fd5068', icon: <FaInfoCircle /> },
+    mdt: { label: 'MDT', color: '#1e3a8a', icon: <FaInfoCircle /> },
+    banco: { label: 'Banco', color: '#16a085', icon: <FaInfoCircle /> },
+    stock: { label: 'Bolsa', color: '#f1c40f', icon: <FaInfoCircle /> },
+    blackmarket: { label: 'Mercado Negro', color: '#2c3e50', icon: <FaInfoCircle /> }
   };
 
   // Cargar logs del servidor
@@ -62,6 +75,26 @@ const Logs = () => {
     }
   }, []);
 
+  // Cargar estadísticas
+  const fetchStats = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('spainrp_token');
+      const response = await fetch(apiUrl('/api/logs/stats'), {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setStats(data.stats);
+      }
+    } catch (err) {
+      console.error('Error cargando estadísticas:', err);
+    }
+  }, []);
+
   // Cargar logs al montar el componente
   useEffect(() => {
     fetchLogs();
@@ -95,6 +128,11 @@ const Logs = () => {
       filtered = filtered.filter(log => log.type === filter);
     }
 
+    // Filtrar por nivel
+    if (levelFilter !== 'all') {
+      filtered = filtered.filter(log => log.level === levelFilter);
+    }
+
     // Filtrar por término de búsqueda
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -102,7 +140,8 @@ const Logs = () => {
         log.message?.toLowerCase().includes(term) ||
         log.user?.toLowerCase().includes(term) ||
         log.ip?.toLowerCase().includes(term) ||
-        log.userAgent?.toLowerCase().includes(term)
+        log.userAgent?.toLowerCase().includes(term) ||
+        log.source?.toLowerCase().includes(term)
       );
     }
 
@@ -140,7 +179,7 @@ const Logs = () => {
     });
 
     return filtered;
-  }, [logs, filter, searchTerm, sortBy, sortOrder]);
+  }, [logs, filter, levelFilter, searchTerm, sortBy, sortOrder]);
 
   // Toggle expandir log
   const toggleLogExpansion = (logId) => {
@@ -384,6 +423,29 @@ const Logs = () => {
             </button>
 
             <button
+              onClick={() => {
+                setShowStats(!showStats);
+                if (!stats) fetchStats();
+              }}
+              style={{
+                background: showStats ? '#f39c12' : 'rgba(243, 156, 18, 0.2)',
+                color: showStats ? 'white' : '#f39c12',
+                border: '1px solid #f39c12',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '14px',
+                fontWeight: '600'
+              }}
+            >
+              <FaInfoCircle />
+              Estadísticas
+            </button>
+
+            <button
               onClick={clearLogs}
               style={{
                 background: 'rgba(231, 76, 60, 0.2)',
@@ -468,6 +530,32 @@ const Logs = () => {
               </select>
             </div>
 
+            {/* Filtro por nivel */}
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#7289da' }}>
+                <FaFilter style={{ marginRight: '8px' }} />
+                Nivel
+              </label>
+              <select
+                value={levelFilter}
+                onChange={(e) => setLevelFilter(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  borderRadius: '8px',
+                  color: 'white',
+                  fontSize: '14px'
+                }}
+              >
+                <option value="all">Todos los niveles</option>
+                <option value="info">Info</option>
+                <option value="warn">Warning</option>
+                <option value="error">Error</option>
+              </select>
+            </div>
+
             {/* Ordenar por */}
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#7289da' }}>
@@ -512,6 +600,83 @@ const Logs = () => {
             </div>
           </div>
         </div>
+
+        {/* Estadísticas */}
+        {showStats && stats && (
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.05)',
+            padding: '1.5rem',
+            borderRadius: '12px',
+            marginBottom: '2rem',
+            border: '1px solid rgba(243, 156, 18, 0.2)'
+          }}>
+            <h3 style={{ margin: '0 0 1rem 0', color: '#f39c12', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <FaInfoCircle />
+              Estadísticas del Sistema
+            </h3>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '1rem'
+            }}>
+              <div style={{
+                background: 'rgba(114, 137, 218, 0.1)',
+                padding: '1rem',
+                borderRadius: '8px',
+                border: '1px solid rgba(114, 137, 218, 0.2)'
+              }}>
+                <div style={{ color: '#7289da', fontSize: '2rem', fontWeight: 'bold' }}>
+                  {stats.total}
+                </div>
+                <div style={{ color: '#9ca3af', fontSize: '0.9rem' }}>
+                  Total de Logs
+                </div>
+              </div>
+              
+              <div style={{
+                background: 'rgba(46, 204, 113, 0.1)',
+                padding: '1rem',
+                borderRadius: '8px',
+                border: '1px solid rgba(46, 204, 113, 0.2)'
+              }}>
+                <div style={{ color: '#2ecc71', fontSize: '2rem', fontWeight: 'bold' }}>
+                  {stats.recentActivity?.last24h || 0}
+                </div>
+                <div style={{ color: '#9ca3af', fontSize: '0.9rem' }}>
+                  Últimas 24h
+                </div>
+              </div>
+              
+              <div style={{
+                background: 'rgba(231, 76, 60, 0.1)',
+                padding: '1rem',
+                borderRadius: '8px',
+                border: '1px solid rgba(231, 76, 60, 0.2)'
+              }}>
+                <div style={{ color: '#e74c3c', fontSize: '2rem', fontWeight: 'bold' }}>
+                  {stats.byType?.error || 0}
+                </div>
+                <div style={{ color: '#9ca3af', fontSize: '0.9rem' }}>
+                  Errores
+                </div>
+              </div>
+              
+              <div style={{
+                background: 'rgba(243, 156, 18, 0.1)',
+                padding: '1rem',
+                borderRadius: '8px',
+                border: '1px solid rgba(243, 156, 18, 0.2)'
+              }}>
+                <div style={{ color: '#f39c12', fontSize: '2rem', fontWeight: 'bold' }}>
+                  {Object.keys(stats.byType || {}).length}
+                </div>
+                <div style={{ color: '#9ca3af', fontSize: '0.9rem' }}>
+                  Tipos de Log
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Lista de logs */}
         <div style={{
@@ -600,6 +765,21 @@ const Logs = () => {
                             {logType.label}
                           </span>
                           
+                          {log.level && (
+                            <span style={{
+                              background: log.level === 'error' ? '#e74c3c' : 
+                                        log.level === 'warn' ? '#f39c12' : '#2ecc71',
+                              color: 'white',
+                              padding: '2px 6px',
+                              borderRadius: '8px',
+                              fontSize: '10px',
+                              fontWeight: '600',
+                              textTransform: 'uppercase'
+                            }}>
+                              {log.level}
+                            </span>
+                          )}
+                          
                           <span style={{
                             color: '#e5e7eb',
                             fontSize: '14px',
@@ -683,6 +863,31 @@ const Logs = () => {
                               <strong style={{ color: '#7289da' }}>IP:</strong>
                               <div style={{ fontFamily: 'monospace', fontSize: '12px', marginTop: '4px' }}>
                                 {log.ip}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {log.source && (
+                            <div>
+                              <strong style={{ color: '#7289da' }}>Fuente:</strong>
+                              <div style={{ fontFamily: 'monospace', fontSize: '12px', marginTop: '4px' }}>
+                                {log.source}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {log.level && (
+                            <div>
+                              <strong style={{ color: '#7289da' }}>Nivel:</strong>
+                              <div style={{ 
+                                fontFamily: 'monospace', 
+                                fontSize: '12px', 
+                                marginTop: '4px',
+                                color: log.level === 'error' ? '#e74c3c' : 
+                                       log.level === 'warn' ? '#f39c12' : '#2ecc71',
+                                fontWeight: 'bold'
+                              }}>
+                                {log.level.toUpperCase()}
                               </div>
                             </div>
                           )}
