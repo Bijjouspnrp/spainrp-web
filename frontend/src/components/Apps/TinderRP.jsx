@@ -94,20 +94,48 @@ const TinderRP = () => {
     const token = localStorage.getItem('spainrp_token');
     if (!token) return;
 
-    fetch(apiUrl('/api/tinder/me'), {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json'
-      }
-    })
-      .then(res => res.ok ? res.json() : null)
-      .then(data => { 
-        if (data && data.profile) {
-          setProfile(data.profile);
-          setForm(prev => ({ ...prev, ...data.profile }));
+    const loadProfile = async () => {
+      try {
+        const res = await fetch(apiUrl('/api/tinder/me'), {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.profile) {
+            console.log('Perfil cargado:', data.profile);
+            setProfile(data.profile);
+            
+            // Convertir intereses de string a array si es necesario
+            const intereses = data.profile.intereses ? 
+              (typeof data.profile.intereses === 'string' ? 
+                data.profile.intereses.split(',').map(i => i.trim()).filter(i => i) : 
+                data.profile.intereses) : [];
+            
+            setForm(prev => ({ 
+              ...prev, 
+              ...data.profile,
+              intereses: intereses,
+              roblox: data.profile.roblox_user || data.profile.roblox || ''
+            }));
+            
+            // Si hay avatar, cargarlo
+            if (data.profile.roblox_user) {
+              fetchRobloxAvatar(data.profile.roblox_user);
+            }
+          }
+        } else {
+          console.log('No hay perfil creado aún');
         }
-      })
-      .catch(err => console.error('Error cargando perfil:', err));
+      } catch (err) {
+        console.error('Error cargando perfil:', err);
+      }
+    };
+
+    loadProfile();
   }, [user]);
 
   // Cargar perfiles de otros con JWT
@@ -116,19 +144,30 @@ const TinderRP = () => {
     const token = localStorage.getItem('spainrp_token');
     if (!token) return;
 
-    fetch(apiUrl('/api/tinder/all'), {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json'
-      }
-    })
-      .then(res => res.ok ? res.json() : null)
-      .then(data => { 
-        if (data && data.profiles) {
-          setProfiles(data.profiles);
+    const loadProfiles = async () => {
+      try {
+        const res = await fetch(apiUrl('/api/tinder/all'), {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.profiles) {
+            console.log('Perfiles cargados:', data.profiles.length);
+            setProfiles(data.profiles);
+          }
+        } else {
+          console.error('Error cargando perfiles:', res.status);
         }
-      })
-      .catch(err => console.error('Error cargando perfiles:', err));
+      } catch (err) {
+        console.error('Error cargando perfiles:', err);
+      }
+    };
+
+    loadProfiles();
   }, [user, msg]);
 
   // Cargar matches con JWT
@@ -204,16 +243,38 @@ const TinderRP = () => {
           busco: form.busco
       })
     });
-      
+        
     if (res.ok) {
         setMsg('Perfil guardado exitosamente');
         setTimeout(() => setMsg(''), 3000);
+        
+        // Actualizar el perfil local
       setProfile({ ...form, img: avatar, roblox_user: form.roblox });
+        
+        // Recargar perfiles para que aparezca en la lista de otros usuarios
+        const profilesRes = await fetch(apiUrl('/api/tinder/all'), {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+        
+        if (profilesRes.ok) {
+          const profilesData = await profilesRes.json();
+          if (profilesData && profilesData.profiles) {
+            setProfiles(profilesData.profiles);
+            console.log('Perfiles recargados después de guardar:', profilesData.profiles.length);
+          }
+        }
+        
+        // Cambiar a vista de descubrir después de guardar
+        setCurrentView('discover');
     } else {
         const errorData = await res.json();
         setError(errorData.error || 'Error guardando perfil');
       }
     } catch (err) {
+      console.error('Error guardando perfil:', err);
       setError('Error de conexión');
     }
     setRegistering(false);
@@ -595,20 +656,59 @@ const TinderRP = () => {
                       </h3>
                       <p style={{
                         color: '#666',
-                        marginBottom: '15px',
+                        marginBottom: '10px',
                         fontSize: '1.1rem'
                       }}>
                         {profiles[active].edad} años
                       </p>
+                      {profiles[active].ubicacion && (
+                        <p style={{
+                          color: '#888',
+                          marginBottom: '10px',
+                          fontSize: '0.9rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '5px'
+                        }}>
+                          <FaMapMarkerAlt /> {profiles[active].ubicacion}
+                        </p>
+                      )}
                       {profiles[active].bio && (
                         <p style={{
                           color: '#555',
                           lineHeight: '1.5',
-                          marginBottom: '30px',
-                          fontSize: '1rem'
+                          marginBottom: '20px',
+                          fontSize: '1rem',
+                          fontStyle: 'italic'
                         }}>
-                          {profiles[active].bio}
+                          "{profiles[active].bio}"
                         </p>
+                      )}
+                      {profiles[active].intereses && (
+                        <div style={{
+                          display: 'flex',
+                          flexWrap: 'wrap',
+                          gap: '8px',
+                          justifyContent: 'center',
+                          marginBottom: '20px'
+                        }}>
+                          {profiles[active].intereses.split(',').map((interes, idx) => (
+                            <span
+                              key={idx}
+                              style={{
+                                background: '#ff6b6b',
+                                color: 'white',
+                                padding: '4px 12px',
+                                borderRadius: '15px',
+                                fontSize: '0.8rem',
+                                fontWeight: '500'
+                              }}
+                            >
+                              {interes.trim()}
+                            </span>
+                          ))}
+                        </div>
                       )}
               </div>
 
@@ -942,6 +1042,128 @@ const TinderRP = () => {
                     }}
                   />
                 )}
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{
+                  display: 'block',
+                  fontWeight: '600',
+                  color: '#333',
+                  marginBottom: '8px'
+                }}>
+                  Ubicación
+                </label>
+                <input
+                  type="text"
+                  value={form.ubicacion}
+                  onChange={e => setForm(f => ({ ...f, ubicacion: e.target.value }))}
+                  style={{
+                    width: '100%',
+                    padding: '12px 15px',
+                    borderRadius: '10px',
+                    border: '2px solid #e9ecef',
+                    fontSize: '16px',
+                    outline: 'none',
+                    transition: 'border-color 0.2s ease'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#ff6b6b'}
+                  onBlur={(e) => e.target.style.borderColor = '#e9ecef'}
+                  placeholder="¿De dónde eres?"
+                />
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{
+                  display: 'block',
+                  fontWeight: '600',
+                  color: '#333',
+                  marginBottom: '8px'
+                }}>
+                  Género
+                </label>
+                <select
+                  value={form.genero}
+                  onChange={e => setForm(f => ({ ...f, genero: e.target.value }))}
+                  style={{
+                    width: '100%',
+                    padding: '12px 15px',
+                    borderRadius: '10px',
+                    border: '2px solid #e9ecef',
+                    fontSize: '16px',
+                    outline: 'none',
+                    transition: 'border-color 0.2s ease',
+                    background: 'white'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#ff6b6b'}
+                  onBlur={(e) => e.target.style.borderColor = '#e9ecef'}
+                >
+                  <option value="">Selecciona tu género</option>
+                  <option value="hombre">Hombre</option>
+                  <option value="mujer">Mujer</option>
+                  <option value="no-binario">No binario</option>
+                  <option value="otro">Otro</option>
+                </select>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{
+                  display: 'block',
+                  fontWeight: '600',
+                  color: '#333',
+                  marginBottom: '8px'
+                }}>
+                  Busco
+                </label>
+                <select
+                  value={form.busco}
+                  onChange={e => setForm(f => ({ ...f, busco: e.target.value }))}
+                  style={{
+                    width: '100%',
+                    padding: '12px 15px',
+                    borderRadius: '10px',
+                    border: '2px solid #e9ecef',
+                    fontSize: '16px',
+                    outline: 'none',
+                    transition: 'border-color 0.2s ease',
+                    background: 'white'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#ff6b6b'}
+                  onBlur={(e) => e.target.style.borderColor = '#e9ecef'}
+                >
+                  <option value="">¿Qué buscas?</option>
+                  <option value="amistad">Amistad</option>
+                  <option value="relacion">Relación seria</option>
+                  <option value="aventura">Aventura</option>
+                  <option value="lo-que-sea">Lo que sea</option>
+                </select>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{
+                  display: 'block',
+                  fontWeight: '600',
+                  color: '#333',
+                  marginBottom: '8px'
+                }}>
+                  Intereses (separados por comas)
+                </label>
+                <input
+                  type="text"
+                  value={Array.isArray(form.intereses) ? form.intereses.join(', ') : (form.intereses || '')}
+                  onChange={e => setForm(f => ({ ...f, intereses: e.target.value.split(',').map(i => i.trim()).filter(i => i) }))}
+                  style={{
+                    width: '100%',
+                    padding: '12px 15px',
+                    borderRadius: '10px',
+                    border: '2px solid #e9ecef',
+                    fontSize: '16px',
+                    outline: 'none',
+                    transition: 'border-color 0.2s ease'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#ff6b6b'}
+                  onBlur={(e) => e.target.style.borderColor = '#e9ecef'}
+                  placeholder="Ej: Gaming, Música, Deportes, Viajes..."
+                />
               </div>
 
               <div style={{ marginBottom: '20px' }}>
