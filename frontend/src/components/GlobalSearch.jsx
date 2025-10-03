@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { FaSearch, FaClock, FaStar, FaFire, FaGamepad, FaStore, FaNewspaper, FaUsers, FaHome, FaDiscord, FaAppStore, FaShieldAlt, FaCog, FaQuestionCircle, FaBook, FaGavel, FaCookie, FaUserShield, FaLock, FaInfoCircle, FaExclamationTriangle, FaChevronRight, FaExternalLinkAlt, FaKeyboard } from 'react-icons/fa';
+import { FaSearch, FaNewspaper, FaHome, FaAppStore, FaShieldAlt, FaChevronRight, FaKeyboard } from 'react-icons/fa';
 
 // Configuración de enlaces y categorías
 const SEARCH_CATEGORIES = {
