@@ -1,27 +1,11 @@
-/* Banco Central RP - Diseño Ultra Moderno y Minimalista */
+/* Banco Central RP - Diseño Optimizado y Rápido */
 
 .banco-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+  background: #1a1a2e;
   padding: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: #ffffff;
-  position: relative;
-  overflow-x: hidden;
-}
-
-.banco-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: 
-    radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-    radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
-  pointer-events: none;
 }
 
 /* Loading Spinner */
@@ -37,14 +21,13 @@
 }
 
 .spinner {
-  width: 50px;
-  height: 50px;
-  border: 3px solid rgba(255, 255, 255, 0.1);
-  border-top: 3px solid #00d4ff;
+  width: 40px;
+  height: 40px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top: 2px solid #00d4ff;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 20px;
-  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
 }
 
 @keyframes spin {
@@ -69,25 +52,15 @@
 }
 
 .banco-title h1 {
-  font-size: 3rem;
-  font-weight: 800;
+  font-size: 2.5rem;
+  font-weight: 700;
   margin: 0;
-  background: linear-gradient(135deg, #00d4ff 0%, #ff6b9d 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: -0.02em;
+  color: #00d4ff;
+  letter-spacing: -0.01em;
 }
 
 .banco-title svg {
   color: #00d4ff;
-  filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.5));
-  animation: float 3s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
 }
 
 .banco-subtitle {
@@ -107,40 +80,16 @@
 }
 
 .balance-card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  border-radius: 24px;
-  padding: 30px;
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.balance-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: transform 0.2s ease;
 }
 
 .balance-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 
-    0 20px 60px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.balance-card:hover::before {
-  opacity: 1;
+  transform: translateY(-2px);
 }
 
 .balance-card.total {
@@ -151,21 +100,6 @@
   position: relative;
 }
 
-.balance-card.total::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-  animation: shimmer 3s ease-in-out infinite;
-}
-
-@keyframes shimmer {
-  0%, 100% { transform: rotate(0deg); }
-  50% { transform: rotate(180deg); }
-}
 
 .balance-cards {
   display: grid;
@@ -187,27 +121,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 70px;
-  height: 70px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 20px;
-  margin-bottom: 20px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
-}
-
-.balance-card:hover .balance-icon {
-  transform: scale(1.1) rotate(5deg);
-  background: rgba(255, 255, 255, 0.25);
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .balance-card.total .balance-icon {
-  width: 90px;
-  height: 90px;
-  margin: 0 auto 25px;
-  background: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+  width: 70px;
+  height: 70px;
+  margin: 0 auto 20px;
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .balance-info h3 {
@@ -254,15 +180,10 @@
 
 .actions-section h2 {
   color: white;
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin-bottom: 30px;
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 24px;
   text-align: center;
-  letter-spacing: -0.01em;
-  background: linear-gradient(135deg, #ffffff 0%, #a0a0a0 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .actions-grid {
@@ -275,49 +196,26 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 15px;
-  padding: 25px 20px;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(20px);
+  gap: 12px;
+  padding: 20px 16px;
+  background: rgba(255, 255, 255, 0.1);
   border: none;
-  border-radius: 20px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  font-size: 1rem;
+  transition: transform 0.2s ease;
+  font-size: 0.95rem;
   font-weight: 600;
   color: white;
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  position: relative;
-  overflow: hidden;
-}
-
-.action-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s ease;
-}
-
-.action-btn:hover:not(:disabled)::before {
-  left: 100%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .action-btn:hover:not(:disabled) {
-  transform: translateY(-8px) scale(1.05);
-  box-shadow: 
-    0 20px 60px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
 }
 
 .action-btn:active:not(:disabled) {
-  transform: translateY(-4px) scale(1.02);
+  transform: translateY(0);
 }
 
 .action-btn:disabled {
@@ -353,13 +251,8 @@
 }
 
 .action-btn svg {
-  width: 28px;
-  height: 28px;
-  transition: all 0.3s ease;
-}
-
-.action-btn:hover:not(:disabled) svg {
-  transform: scale(1.2) rotate(5deg);
+  width: 24px;
+  height: 24px;
 }
 
 /* Transactions Section */
@@ -372,39 +265,20 @@
 
 .transactions-section h2 {
   color: white;
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin-bottom: 30px;
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 24px;
   text-align: center;
-  letter-spacing: -0.01em;
-  background: linear-gradient(135deg, #ffffff 0%, #a0a0a0 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .transactions-list {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  border-radius: 24px;
-  padding: 25px;
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  max-height: 450px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  max-height: 400px;
   overflow-y: auto;
-  position: relative;
-}
-
-.transactions-list::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
 }
 
 .no-transactions {
@@ -430,31 +304,23 @@
 }
 
 .transaction-item:hover {
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 15px;
-  margin: 0 -10px;
-  padding-left: 30px;
-  padding-right: 30px;
-  transform: translateX(5px);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  margin: 0 -5px;
+  padding-left: 15px;
+  padding-right: 15px;
 }
 
 .transaction-icon {
-  font-size: 1.8rem;
-  width: 50px;
-  height: 50px;
+  font-size: 1.5rem;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 15px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
-}
-
-.transaction-item:hover .transaction-icon {
-  transform: scale(1.1) rotate(5deg);
-  background: rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .transaction-info {
@@ -477,29 +343,21 @@
 }
 
 .transaction-amount {
-  font-size: 1.2rem;
-  font-weight: 700;
-  padding: 8px 16px;
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .transaction-amount.positive {
   color: #00ff88;
   background: rgba(0, 255, 136, 0.1);
-  box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
 }
 
 .transaction-amount.negative {
   color: #ff4757;
   background: rgba(255, 71, 87, 0.1);
-  box-shadow: 0 0 20px rgba(255, 71, 87, 0.2);
-}
-
-.transaction-item:hover .transaction-amount {
-  transform: scale(1.05);
 }
 
 /* Modals */
@@ -509,65 +367,24 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(15px);
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: 20px;
-  animation: modalFadeIn 0.3s ease;
-}
-
-@keyframes modalFadeIn {
-  from {
-    opacity: 0;
-    backdrop-filter: blur(0px);
-  }
-  to {
-    opacity: 1;
-    backdrop-filter: blur(15px);
-  }
 }
 
 .modal {
   background: rgba(15, 15, 35, 0.95);
-  backdrop-filter: blur(20px);
-  border-radius: 24px;
-  box-shadow: 
-    0 25px 80px rgba(0, 0, 0, 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   max-width: 500px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   color: white;
-  position: relative;
-}
-
-.modal::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(255, 107, 157, 0.1) 100%);
-  border-radius: 24px;
-  pointer-events: none;
-}
-
-@keyframes modalSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-30px) scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
 }
 
 .modal-header {
@@ -582,32 +399,25 @@
 }
 
 .modal-header h3 {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1.3rem;
+  font-weight: 600;
   margin: 0;
-  color: #ffffff;
-  letter-spacing: -0.01em;
-  background: linear-gradient(135deg, #00d4ff 0%, #ff6b9d 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #00d4ff;
 }
 
 .close-btn {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   cursor: pointer;
-  padding: 10px;
-  border-radius: 12px;
+  padding: 8px;
+  border-radius: 8px;
   color: #a0a0a0;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
+  transition: background 0.2s ease;
 }
 
 .close-btn:hover {
   background: rgba(255, 255, 255, 0.2);
   color: #ffffff;
-  transform: scale(1.1);
 }
 
 .modal-body {
@@ -638,15 +448,14 @@
 
 .input-group input {
   width: 100%;
-  padding: 16px 20px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  border-radius: 15px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
   font-size: 1rem;
-  transition: all 0.3s ease;
+  transition: border-color 0.2s ease;
   box-sizing: border-box;
   color: #ffffff;
-  backdrop-filter: blur(10px);
 }
 
 .input-group input::placeholder {
@@ -656,17 +465,15 @@
 .input-group input:focus {
   outline: none;
   border-color: #00d4ff;
-  box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.2);
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .balance-info {
   background: rgba(0, 212, 255, 0.1);
-  padding: 16px 20px;
-  border-radius: 15px;
-  margin-top: 15px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-top: 12px;
   border: 1px solid rgba(0, 212, 255, 0.2);
-  backdrop-filter: blur(10px);
 }
 
 .balance-info p {
@@ -679,15 +486,14 @@
 .cooldown-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   background: rgba(255, 152, 0, 0.1);
-  padding: 16px 20px;
-  border-radius: 15px;
+  padding: 12px 16px;
+  border-radius: 8px;
   color: #ffa726;
   font-weight: 600;
-  margin-top: 15px;
+  margin-top: 12px;
   border: 1px solid rgba(255, 152, 0, 0.2);
-  backdrop-filter: blur(10px);
 }
 
 .modal-footer {
@@ -701,58 +507,37 @@
 
 .btn-secondary {
   flex: 1;
-  padding: 16px 24px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  border-radius: 15px;
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
   color: #a0a0a0;
   cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
+  transition: background 0.2s ease;
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.2);
   color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
 }
 
 .btn-primary {
   flex: 1;
-  padding: 16px 24px;
+  padding: 12px 20px;
   background: linear-gradient(135deg, #00d4ff 0%, #ff6b9d 100%);
   border: none;
-  border-radius: 15px;
+  border-radius: 8px;
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 600;
   color: white;
   cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.btn-primary::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s ease;
-}
-
-.btn-primary:hover:not(:disabled)::before {
-  left: 100%;
+  transition: transform 0.2s ease;
 }
 
 .btn-primary:hover:not(:disabled) {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
+  transform: translateY(-1px);
 }
 
 .btn-primary:disabled {
@@ -765,22 +550,17 @@
 /* Message Toast */
 .message-toast {
   position: fixed;
-  top: 30px;
-  right: 30px;
-  padding: 20px 25px;
-  border-radius: 15px;
+  top: 20px;
+  right: 20px;
+  padding: 16px 20px;
+  border-radius: 8px;
   color: white;
   font-weight: 600;
   z-index: 1001;
-  animation: toastSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  max-width: 350px;
-  box-shadow: 
-    0 10px 40px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 1rem;
-  letter-spacing: 0.3px;
+  max-width: 300px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 0.95rem;
 }
 
 .message-toast.success {
@@ -791,16 +571,6 @@
   background: linear-gradient(135deg, #ff4757 0%, #ff3742 100%);
 }
 
-@keyframes toastSlideIn {
-  from {
-    opacity: 0;
-    transform: translateX(100%) scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-}
 
 /* Responsive Design */
 @media (max-width: 768px) {
@@ -1031,41 +801,8 @@
   background: rgba(255, 255, 255, 0.4);
 }
 
-/* Performance optimizations */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* Critical CSS for above-the-fold content */
-.balance-section,
-.banco-header {
-  contain: layout style paint;
-}
-
-.balance-card {
-  will-change: transform;
-}
-
+/* Optimizaciones de rendimiento simplificadas */
+.balance-card,
 .action-btn {
   will-change: transform;
-}
-
-/* Optimized animations */
-.balance-card {
-  animation: balanceUpdate 0.3s ease;
-}
-
-@keyframes balanceUpdate {
-  from {
-    transform: scale(1.01);
-  }
-  to {
-    transform: scale(1);
-  }
 }
