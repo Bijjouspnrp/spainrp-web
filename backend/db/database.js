@@ -16,7 +16,17 @@ const getDatabase = () => {
         
         // Configurar optimizaciones de rendimiento
         db.run("PRAGMA busy_timeout=30000");
-        db.run("PRAGMA journal_mode=WAL");
+        
+        // Configurar modo WAL de forma segura
+        db.run("PRAGMA journal_mode=WAL", (err) => {
+          if (err) {
+            console.warn('[DATABASE] Warning: No se pudo cambiar a modo WAL:', err.message);
+            console.log('[DATABASE] Continuando con modo por defecto');
+          } else {
+            console.log('[DATABASE] Modo WAL activado correctamente');
+          }
+        });
+        
         db.run("PRAGMA synchronous=NORMAL");
         db.run("PRAGMA cache_size=1000");
         db.run("PRAGMA temp_store=MEMORY");

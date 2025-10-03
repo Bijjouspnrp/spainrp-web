@@ -16,14 +16,7 @@ function initializeDatabase() {
 
     // Configurar la base de datos - PRAGMA fuera de serialize()
     // Configuraciones de rendimiento (deben ir antes de serialize)
-    db.run('PRAGMA journal_mode=WAL', (err) => {
-      if (err) {
-        console.warn('[DB INIT] Warning: No se pudo cambiar a modo WAL:', err.message);
-      } else {
-        console.log('[DB INIT] Modo WAL activado');
-      }
-    });
-    
+    // Nota: El modo WAL se configura en database.js para evitar conflictos
     db.run('PRAGMA synchronous=NORMAL');
     db.run('PRAGMA cache_size=10000');
     db.run('PRAGMA temp_store=memory');
