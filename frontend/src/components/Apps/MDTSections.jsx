@@ -26,61 +26,84 @@ export const DNISection = ({ data }) => {
   return (
     <div className="mdt-section">
       <h3><FaIdCard /> Mi DNI</h3>
-      <div className="dni-card">
-        <div className="dni-header">
-          <h4>DNI {dni.numeroDNI}</h4>
-          <span className={`dni-status ${dni.arrestado ? 'arrestado' : 'activo'}`}>
-            {dni.arrestado ? 'ARRESTADO' : 'ACTIVO'}
-          </span>
+      <div className="dni-card-real">
+        <div className="dni-header-real">
+          <div className="dni-logo">
+            <span className="dni-logo-text">ESPAÑA</span>
+          </div>
+          <div className="dni-title">
+            <span className="dni-title-text">DOCUMENTO NACIONAL DE IDENTIDAD</span>
+          </div>
         </div>
-        <div className="dni-info">
-          <div className="dni-field">
-            <label>Nombre:</label>
-            <span>{dni.nombre}</span>
+        
+        <div className="dni-content">
+          <div className="dni-photo-section">
+            <div className="dni-photo-container">
+              {dni.robloxAvatar ? (
+                <img 
+                  src={dni.robloxAvatar} 
+                  alt="Foto DNI" 
+                  className="dni-photo"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'flex';
+                  }}
+                />
+              ) : null}
+              <div className="dni-photo-placeholder" style={{ display: dni.robloxAvatar ? 'none' : 'flex' }}>
+                <FaUser size={40} />
+              </div>
+            </div>
+            <div className="dni-number">
+              <span className="dni-number-text">{dni.numeroDNI}</span>
+            </div>
           </div>
-          <div className="dni-field">
-            <label>Apellidos:</label>
-            <span>{dni.apellidos}</span>
+          
+          <div className="dni-info-real">
+            <div className="dni-name-section">
+              <div className="dni-name">
+                <span className="dni-name-text">{dni.nombre} {dni.apellidos}</span>
+              </div>
+              <div className="dni-roblox">
+                <span className="dni-roblox-text">Roblox: {dni.robloxUser || 'N/A'}</span>
+              </div>
+            </div>
+            
+            <div className="dni-details">
+              <div className="dni-detail-row">
+                <span className="dni-detail-label">NACIMIENTO:</span>
+                <span className="dni-detail-value">{dni.fechaNacimiento}</span>
+              </div>
+              <div className="dni-detail-row">
+                <span className="dni-detail-label">SEXO:</span>
+                <span className="dni-detail-value">{dni.sexo}</span>
+              </div>
+              <div className="dni-detail-row">
+                <span className="dni-detail-label">NACIONALIDAD:</span>
+                <span className="dni-detail-value">{dni.nacionalidad}</span>
+              </div>
+              <div className="dni-detail-row">
+                <span className="dni-detail-label">PROFESIÓN:</span>
+                <span className="dni-detail-value">{dni.trabajo || 'N/A'}</span>
+              </div>
+            </div>
+            
+            <div className="dni-dates">
+              <div className="dni-date-row">
+                <span className="dni-date-label">EXPEDICIÓN:</span>
+                <span className="dni-date-value">{dni.fechaEmision}</span>
+              </div>
+              <div className="dni-date-row">
+                <span className="dni-date-label">VÁLIDO HASTA:</span>
+                <span className="dni-date-value">{dni.caducidad}</span>
+              </div>
+            </div>
           </div>
-          <div className="dni-field">
-            <label>Fecha de Nacimiento:</label>
-            <span>{dni.fechaNacimiento}</span>
-          </div>
-          <div className="dni-field">
-            <label>Sexo:</label>
-            <span>{dni.sexo}</span>
-          </div>
-          <div className="dni-field">
-            <label>Nacionalidad:</label>
-            <span>{dni.nacionalidad}</span>
-          </div>
-          <div className="dni-field">
-            <label>Dirección:</label>
-            <span>{dni.direccion || 'N/A'}</span>
-          </div>
-          <div className="dni-field">
-            <label>Trabajo:</label>
-            <span>{dni.trabajo || 'N/A'}</span>
-          </div>
-          <div className="dni-field">
-            <label>Altura:</label>
-            <span>{dni.altura || 'N/A'}</span>
-          </div>
-          <div className="dni-field">
-            <label>Color de Ojos:</label>
-            <span>{dni.colorOjos || 'N/A'}</span>
-          </div>
-          <div className="dni-field">
-            <label>Color de Pelo:</label>
-            <span>{dni.colorPelo || 'N/A'}</span>
-          </div>
-          <div className="dni-field">
-            <label>Fecha de Emisión:</label>
-            <span>{dni.fechaEmision}</span>
-          </div>
-          <div className="dni-field">
-            <label>Caducidad:</label>
-            <span>{dni.caducidad}</span>
+        </div>
+        
+        <div className="dni-footer">
+          <div className={`dni-status-real ${dni.arrestado ? 'arrestado' : 'activo'}`}>
+            {dni.arrestado ? 'ARRESTADO' : 'VÁLIDO'}
           </div>
         </div>
       </div>

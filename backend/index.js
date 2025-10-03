@@ -5312,6 +5312,21 @@ app.get('/api/proxy/admin/dni/ver/:discordId', async (req, res) => {
     const response = await fetch(proxyUrl);
     const data = await response.json();
     
+    // Si tenemos datos del DNI, obtener la foto de Roblox
+    if (data.success && data.dni && data.dni.robloxId) {
+      try {
+        const robloxResponse = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${data.dni.robloxId}&size=150x150&format=Png&isCircular=false`);
+        const robloxData = await robloxResponse.json();
+        
+        if (robloxData.data && robloxData.data[0] && robloxData.data[0].imageUrl) {
+          data.dni.robloxAvatar = robloxData.data[0].imageUrl;
+        }
+      } catch (robloxErr) {
+        console.warn('[MDT PROXY] Error obteniendo avatar de Roblox:', robloxErr.message);
+        // Continuar sin la foto si hay error
+      }
+    }
+    
     res.json(data);
   } catch (err) {
     console.error('[MDT PROXY] Error obteniendo DNI:', err);
