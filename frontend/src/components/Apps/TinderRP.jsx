@@ -58,7 +58,7 @@ const TinderRP = () => {
         const token = localStorage.getItem('spainrp_token');
         if (!token) {
           setUser(null);
-          setLoading(false);
+        setLoading(false);
           return;
         }
 
@@ -298,6 +298,8 @@ const TinderRP = () => {
       return; 
     }
     
+    if (profiles.length === 0) return;
+    
     const token = localStorage.getItem('spainrp_token');
     
     try {
@@ -310,10 +312,16 @@ const TinderRP = () => {
         },
       body: JSON.stringify({ other_id: other.discord_id })
     });
-      
+        
     if (res.ok) {
+        const data = await res.json();
+        if (data.already) {
+          setMsg(`Ya tienes match con ${other.nombre}! 💖`);
+        } else {
       setMsg(`¡Has hecho match con ${other.nombre}! 💖`);
+        }
         setTimeout(() => setMsg(''), 3000);
+        
         // Recargar matches
         const matchesRes = await fetch(apiUrl('/api/tinder/matches'), {
           headers: {
@@ -328,24 +336,55 @@ const TinderRP = () => {
       } else {
         const errorData = await res.json();
         setMsg(errorData.error || 'Error al hacer match');
-        setTimeout(() => setMsg(''), 2000);
+      setTimeout(() => setMsg(''), 2000);
       }
     } catch (err) {
+      console.error('Error en match:', err);
       setMsg('Error de conexión');
       setTimeout(() => setMsg(''), 2000);
     }
     
+    // Cambiar al siguiente perfil
     setActive((active + 1) % profiles.length);
+    
+    // Si no hay más perfiles, mostrar mensaje
+    if (profiles.length === 1) {
+      setTimeout(() => {
+        setMsg('No hay más perfiles disponibles');
+        setTimeout(() => setMsg(''), 3000);
+      }, 1000);
+    }
   };
 
   // Rechazar perfil
   const handleReject = () => {
+    if (profiles.length === 0) return;
+    
+    // Mostrar mensaje de rechazo
+    setMsg(`Has rechazado a ${profiles[active].nombre} ❌`);
+    setTimeout(() => setMsg(''), 2000);
+    
+    // Cambiar al siguiente perfil
     setActive((active + 1) % profiles.length);
+    
+    // Si no hay más perfiles, mostrar mensaje
+    if (profiles.length === 1) {
+      setTimeout(() => {
+        setMsg('No hay más perfiles disponibles');
+        setTimeout(() => setMsg(''), 3000);
+      }, 1000);
+    }
   };
 
   // Super like
   const handleSuperLike = async (other) => {
-    if (!profile) return;
+    if (!profile) {
+      setMsg('Completa tu perfil primero');
+      setTimeout(() => setMsg(''), 2000);
+      return;
+    }
+    
+    if (profiles.length === 0) return;
     
     const token = localStorage.getItem('spainrp_token');
     
@@ -361,18 +400,46 @@ const TinderRP = () => {
       });
       
       if (res.ok) {
-        setMsg(`¡Super like enviado a ${other.nombre}! ⭐`);
-        setTimeout(() => setMsg(''), 3000);
+        const data = await res.json();
+        if (data.already) {
+          setMsg(`Ya tienes match con ${other.nombre}! ⭐`);
     } else {
-        setMsg('Error enviando super like');
-        setTimeout(() => setMsg(''), 2000);
-      }
+          setMsg(`¡Super like enviado a ${other.nombre}! ⭐`);
+        }
+        setTimeout(() => setMsg(''), 3000);
+        
+        // Recargar matches
+        const matchesRes = await fetch(apiUrl('/api/tinder/matches'), {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+        if (matchesRes.ok) {
+          const matchesData = await matchesRes.json();
+          setMatches(matchesData.matches || []);
+        }
+      } else {
+        const errorData = await res.json();
+        setMsg(errorData.error || 'Error enviando super like');
+      setTimeout(() => setMsg(''), 2000);
+    }
     } catch (err) {
+      console.error('Error en super like:', err);
       setMsg('Error de conexión');
       setTimeout(() => setMsg(''), 2000);
     }
     
+    // Cambiar al siguiente perfil
     setActive((active + 1) % profiles.length);
+    
+    // Si no hay más perfiles, mostrar mensaje
+    if (profiles.length === 1) {
+      setTimeout(() => {
+        setMsg('No hay más perfiles disponibles');
+        setTimeout(() => setMsg(''), 3000);
+      }, 1000);
+    }
   };
 
   if (loading) {
@@ -580,8 +647,8 @@ const TinderRP = () => {
             <FaEdit style={{ marginRight: '6px' }} />
             {profile ? 'Editar' : 'Crear'}
           </button>
-        </div>
-      </div>
+              </div>
+              </div>
 
       {/* Contenido principal */}
       <div style={{ 
@@ -620,7 +687,7 @@ const TinderRP = () => {
               animation: 'shimmer 2s infinite'
             }}></div>
             {msg}
-          </div>
+                </div>
         )}
 
         {/* Vista de Descubrir */}
@@ -662,35 +729,77 @@ const TinderRP = () => {
             ) : (
               <div>
                 {profiles.length === 0 ? (
-                  <div style={{
-                    background: 'white',
-                    borderRadius: '20px',
-                    padding: '40px 30px',
-                    textAlign: 'center',
-                    boxShadow: '0 8px 25px rgba(0,0,0,0.1)'
-                  }}>
-                    <div style={{ fontSize: '4rem', marginBottom: '20px' }}>💔</div>
-                    <h3 style={{ color: '#ff6b6b', marginBottom: '15px' }}>
+                  <div 
+                    className="fade-in"
+                    style={{
+                      background: 'white',
+                      borderRadius: '25px',
+                      padding: '50px 30px',
+                      textAlign: 'center',
+                      boxShadow: '0 15px 35px rgba(0,0,0,0.1)',
+                      border: '1px solid rgba(255,107,107,0.1)'
+                    }}
+                  >
+                    <div style={{ fontSize: '5rem', marginBottom: '25px' }}>💔</div>
+                    <h3 style={{ 
+                      color: '#ff6b6b', 
+                      marginBottom: '20px',
+                      fontSize: '1.8rem',
+                      fontWeight: '800'
+                    }}>
                       No hay más perfiles
                     </h3>
-                    <p style={{ color: '#666', marginBottom: '20px' }}>
-                      Vuelve más tarde para ver nuevos perfiles
+                    <p style={{ 
+                      color: '#666', 
+                      marginBottom: '30px',
+                      fontSize: '1.1rem',
+                      lineHeight: '1.6'
+                    }}>
+                      Has visto todos los perfiles disponibles.<br/>
+                      ¡Vuelve más tarde para ver nuevos usuarios!
                     </p>
-                    <button
-                      onClick={() => window.location.reload()}
-                      style={{
-                        background: '#ff6b6b',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '20px',
-                        padding: '10px 25px',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Actualizar
-                    </button>
+                    <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+                      <button
+                        onClick={() => window.location.reload()}
+                        className="button-hover"
+                        style={{
+                          background: 'linear-gradient(135deg, #ff6b6b, #ff8e8e)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '25px',
+                          padding: '15px 30px',
+                          fontSize: '16px',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          boxShadow: '0 8px 25px rgba(255,107,107,0.3)',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'}
+                        onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
+                      >
+                        🔄 Actualizar
+                      </button>
+                      <button
+                        onClick={() => setCurrentView('matches')}
+                        className="button-hover"
+                        style={{
+                          background: 'linear-gradient(135deg, #3742fa, #5352ed)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '25px',
+                          padding: '15px 30px',
+                          fontSize: '16px',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          boxShadow: '0 8px 25px rgba(55,66,250,0.3)',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'}
+                        onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
+                      >
+                        💕 Ver Matches
+                      </button>
+              </div>
                   </div>
                 ) : (
                   <div 
@@ -758,8 +867,8 @@ const TinderRP = () => {
                               borderRadius: '50%',
                               animation: 'spin 1s linear infinite'
                             }}></div>
-                          </div>
-                        )}
+          </div>
+        )}
                       </div>
                       <h3 style={{
                         fontSize: '1.8rem',
@@ -835,7 +944,15 @@ const TinderRP = () => {
                       marginTop: '35px'
                     }}>
                       <button
-                        onClick={handleReject}
+                        onClick={() => {
+                          handleReject();
+                          // Efecto visual de rechazo
+                          const button = event.target;
+                          button.style.transform = 'scale(0.9) rotate(-10deg)';
+                          setTimeout(() => {
+                            button.style.transform = 'scale(1) rotate(0deg)';
+                          }, 150);
+                        }}
                         className="button-hover"
                         style={{
                           background: 'linear-gradient(135deg, #ff4757, #ff6b7a)',
@@ -866,7 +983,17 @@ const TinderRP = () => {
                         <FaTimes />
                       </button>
                       <button
-                        onClick={() => handleSuperLike(profiles[active])}
+                        onClick={(e) => {
+                          handleSuperLike(profiles[active]);
+                          // Efecto visual de super like
+                          const button = e.target;
+                          button.style.transform = 'scale(1.2) rotate(10deg)';
+                          button.style.boxShadow = '0 15px 40px rgba(55,66,250,0.8)';
+                          setTimeout(() => {
+                            button.style.transform = 'scale(1) rotate(0deg)';
+                            button.style.boxShadow = '0 8px 25px rgba(55,66,250,0.4)';
+                          }, 200);
+                        }}
                         className="button-hover pulse"
                         style={{
                           background: 'linear-gradient(135deg, #3742fa, #5352ed)',
@@ -897,7 +1024,17 @@ const TinderRP = () => {
                         <FaStar />
                       </button>
                       <button
-                        onClick={() => handleMatch(profiles[active])}
+                        onClick={(e) => {
+                          handleMatch(profiles[active]);
+                          // Efecto visual de like
+                          const button = e.target;
+                          button.style.transform = 'scale(1.2) rotate(-10deg)';
+                          button.style.boxShadow = '0 15px 40px rgba(46,213,115,0.8)';
+                          setTimeout(() => {
+                            button.style.transform = 'scale(1) rotate(0deg)';
+                            button.style.boxShadow = '0 8px 25px rgba(46,213,115,0.4)';
+                          }, 200);
+                        }}
                         className="button-hover bounce"
                         style={{
                           background: 'linear-gradient(135deg, #2ed573, #7bed9f)',
@@ -927,7 +1064,7 @@ const TinderRP = () => {
                       >
                         <FaHeart />
                       </button>
-                </div>
+            </div>
               </div>
                 )}
               </div>
@@ -1248,8 +1385,8 @@ const TinderRP = () => {
                       </span>
                     ))}
                   </div>
-                </div>
-              )}
+          </div>
+        )}
 
               <div style={{
                 display: 'grid',
@@ -1280,7 +1417,7 @@ const TinderRP = () => {
                     }}>
                       {profile.genero}
                     </p>
-                  </div>
+          </div>
                 )}
 
                 {profile.busco && (
@@ -1307,9 +1444,9 @@ const TinderRP = () => {
                     }}>
                       {profile.busco}
                     </p>
-                  </div>
+        </div>
                 )}
-              </div>
+      </div>
             </div>
 
             {/* Botones de acción */}
