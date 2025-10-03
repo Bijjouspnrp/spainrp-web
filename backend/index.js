@@ -19,6 +19,7 @@ const tinderRoutes = require('./routes/tinder');
 const robloxRoutes = require('./routes/roblox');
 const adminRecordsRoutes = require('./routes/adminRecords');
 const notificationRoutes = require('./routes/notifications');
+const logsRoutes = require('./routes/logs');
 const session = require('express-session');
 const passport = require('passport');
 const multer = require('multer');
@@ -132,6 +133,7 @@ app.use('/api/tinder', tinderRoutes);
 app.use('/api/roblox', robloxRoutes);
 app.use('/api/admin-records', adminRecordsRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/logs', logsRoutes);
 
 // Ruta para página de cookies
 app.get('/cookies', (req, res) => {

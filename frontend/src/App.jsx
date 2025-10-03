@@ -26,7 +26,7 @@ const MinijuegosRP = lazy(() => import('./components/Apps/MinijuegosRP'));
 const AppsMenu = lazy(() => import('./components/Apps/AppsMenu'));
 const Panel = lazy(() => import('./components/Panel'));
 const AdminPanel = lazy(() => import('./components/AdminPanel'));
-const AdvancedLogs = lazy(() => import('./components/AdvancedLogs'));
+const Logs = lazy(() => import('./components/Logs'));
 const Cookies = lazy(() => import('./components/Cookies'));
 const CookieConsentBanner = lazy(() => import('./components/CookieConsentBanner'));
 const Terms = lazy(() => import('./components/Terms'));
@@ -929,7 +929,7 @@ function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading }) {
           <Route path="/admin" element={<PrivateRoute><AdminPanel /></PrivateRoute>} />
           <Route path="/auth/login" element={<LoginPage />} />
           <Route path="/logout" element={<LogoutPage />} />
-          <Route path="/logs" element={<PrivateRoute><AdvancedLogs /></PrivateRoute>} />
+          <Route path="/logs" element={<PrivateRoute><Logs /></PrivateRoute>} />
           <Route path="/404" element={<NotFound />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
