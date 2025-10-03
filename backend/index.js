@@ -5345,7 +5345,7 @@ app.post('/api/calendar/claim', verifyToken, async (req, res) => {
       return res.status(401).json({ error: 'Usuario no autenticado correctamente' });
     }
 
-    const { getQuery, runQuery } = require('./db/database');
+    const { getQuery, runQuery, allQuery } = require('./db/database');
     
     // Verificar si el día ya fue reclamado
     const existingClaim = await getQuery(

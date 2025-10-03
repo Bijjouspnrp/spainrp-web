@@ -149,16 +149,17 @@
   text-align: center;
   font-weight: 700;
   font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: white;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   padding: 0.5rem 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 /* Días individuales */
 .calendar-day {
   aspect-ratio: 1;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.2);
   border-radius: 16px;
   display: flex;
   flex-direction: column;
@@ -171,6 +172,8 @@
   border: 2px solid transparent;
   min-height: 60px;
   overflow: hidden;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .calendar-day::before {
@@ -186,10 +189,12 @@
 }
 
 .calendar-day:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.35);
   transform: translateY(-4px) scale(1.05);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
   border-color: rgba(255, 255, 255, 0.4);
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .calendar-day:hover::before {
@@ -242,16 +247,18 @@
 }
 
 .calendar-day.locked {
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
   cursor: not-allowed;
   border-color: rgba(255, 255, 255, 0.1);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .calendar-day.locked:hover {
   transform: none;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.1);
   box-shadow: none;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 /* Iconos y contenido de los días */
@@ -269,6 +276,8 @@
   font-size: 0.875rem;
   font-weight: 700;
   line-height: 1;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .calendar-reward-label {
@@ -285,7 +294,10 @@
   font-size: 0.625rem;
   font-weight: 700;
   color: white;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.3);
+  padding: 2px 6px;
+  border-radius: 8px;
 }
 
 /* Información de racha */
