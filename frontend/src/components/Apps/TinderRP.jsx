@@ -41,7 +41,7 @@ const TinderRP = () => {
   const [error, setError] = useState("");
   const [registering, setRegistering] = useState(false);
   const [fetchingAvatar, setFetchingAvatar] = useState(false);
-  const [currentView, setCurrentView] = useState('discover'); // discover, matches, profile
+  const [currentView, setCurrentView] = useState('discover'); // discover, matches, profile, myProfile
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     edadMin: 18,
@@ -479,22 +479,26 @@ const TinderRP = () => {
         }}>
           TinderRP
         </h1>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           <button
             onClick={() => setCurrentView('discover')}
             style={{
               background: currentView === 'discover' ? 'white' : 'rgba(255,255,255,0.2)',
               color: currentView === 'discover' ? '#ff6b6b' : 'white',
               border: 'none',
-              borderRadius: '20px',
-              padding: '8px 16px',
-              fontSize: '14px',
-              fontWeight: '600',
+              borderRadius: '25px',
+              padding: '10px 18px',
+              fontSize: '13px',
+              fontWeight: '700',
               cursor: 'pointer',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.3s ease',
+              boxShadow: currentView === 'discover' ? '0 4px 15px rgba(255,255,255,0.3)' : 'none',
+              transform: currentView === 'discover' ? 'translateY(-2px)' : 'translateY(0)'
             }}
+            onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'}
+            onMouseOut={(e) => e.target.style.transform = currentView === 'discover' ? 'translateY(-2px)' : 'translateY(0)'}
           >
-            <FaRocket style={{ marginRight: '5px' }} />
+            <FaRocket style={{ marginRight: '6px' }} />
             Descubrir
           </button>
           <button
@@ -503,53 +507,104 @@ const TinderRP = () => {
               background: currentView === 'matches' ? 'white' : 'rgba(255,255,255,0.2)',
               color: currentView === 'matches' ? '#ff6b6b' : 'white',
               border: 'none',
-              borderRadius: '20px',
-              padding: '8px 16px',
-              fontSize: '14px',
-              fontWeight: '600',
+              borderRadius: '25px',
+              padding: '10px 18px',
+              fontSize: '13px',
+              fontWeight: '700',
               cursor: 'pointer',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.3s ease',
+              boxShadow: currentView === 'matches' ? '0 4px 15px rgba(255,255,255,0.3)' : 'none',
+              transform: currentView === 'matches' ? 'translateY(-2px)' : 'translateY(0)'
             }}
+            onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'}
+            onMouseOut={(e) => e.target.style.transform = currentView === 'matches' ? 'translateY(-2px)' : 'translateY(0)'}
           >
-            <FaHeart style={{ marginRight: '5px' }} />
+            <FaHeart style={{ marginRight: '6px' }} />
             Matches ({matches.length})
           </button>
+          {profile && (
+            <button
+              onClick={() => setCurrentView('myProfile')}
+              style={{
+                background: currentView === 'myProfile' ? 'white' : 'rgba(255,255,255,0.2)',
+                color: currentView === 'myProfile' ? '#ff6b6b' : 'white',
+                border: 'none',
+                borderRadius: '25px',
+                padding: '10px 18px',
+                fontSize: '13px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                boxShadow: currentView === 'myProfile' ? '0 4px 15px rgba(255,255,255,0.3)' : 'none',
+                transform: currentView === 'myProfile' ? 'translateY(-2px)' : 'translateY(0)'
+              }}
+              onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'}
+              onMouseOut={(e) => e.target.style.transform = currentView === 'myProfile' ? 'translateY(-2px)' : 'translateY(0)'}
+            >
+              <FaUser style={{ marginRight: '6px' }} />
+              Mi Perfil
+            </button>
+          )}
           <button
             onClick={() => setCurrentView('profile')}
             style={{
               background: currentView === 'profile' ? 'white' : 'rgba(255,255,255,0.2)',
               color: currentView === 'profile' ? '#ff6b6b' : 'white',
               border: 'none',
-              borderRadius: '20px',
-              padding: '8px 16px',
-              fontSize: '14px',
-              fontWeight: '600',
+              borderRadius: '25px',
+              padding: '10px 18px',
+              fontSize: '13px',
+              fontWeight: '700',
               cursor: 'pointer',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.3s ease',
+              boxShadow: currentView === 'profile' ? '0 4px 15px rgba(255,255,255,0.3)' : 'none',
+              transform: currentView === 'profile' ? 'translateY(-2px)' : 'translateY(0)'
             }}
+            onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'}
+            onMouseOut={(e) => e.target.style.transform = currentView === 'profile' ? 'translateY(-2px)' : 'translateY(0)'}
           >
-            <FaUser style={{ marginRight: '5px' }} />
-            Perfil
+            <FaEdit style={{ marginRight: '6px' }} />
+            {profile ? 'Editar' : 'Crear'}
           </button>
         </div>
       </div>
 
       {/* Contenido principal */}
-      <div style={{ padding: '20px', maxWidth: '400px', margin: '0 auto' }}>
+      <div style={{ 
+        padding: '20px', 
+        maxWidth: '450px', 
+        margin: '0 auto',
+        minHeight: 'calc(100vh - 120px)'
+      }}>
         
         {/* Mensaje de estado */}
         {msg && (
-          <div style={{
-            background: 'white',
-            color: '#ff6b6b',
-            borderRadius: '15px',
-            padding: '15px',
-            marginBottom: '20px',
-            textAlign: 'center',
-            fontWeight: '600',
-            boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-            animation: 'slideDown 0.3s ease'
-          }}>
+          <div 
+            className="fade-in"
+            style={{
+              background: 'linear-gradient(135deg, #ffffff, #f8f9fa)',
+              color: '#ff6b6b',
+              borderRadius: '20px',
+              padding: '20px',
+              marginBottom: '25px',
+              textAlign: 'center',
+              fontWeight: '700',
+              boxShadow: '0 8px 25px rgba(255,107,107,0.2)',
+              border: '2px solid rgba(255,107,107,0.1)',
+              fontSize: '16px',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+          >
+            <div style={{
+              position: 'absolute',
+              top: '0',
+              left: '0',
+              right: '0',
+              height: '3px',
+              background: 'linear-gradient(90deg, #ff6b6b, #ff8e8e, #ff6b6b)',
+              animation: 'shimmer 2s infinite'
+            }}></div>
             {msg}
           </div>
         )}
@@ -624,14 +679,19 @@ const TinderRP = () => {
                     </button>
                   </div>
                 ) : (
-                  <div style={{
-                    background: 'white',
-                    borderRadius: '20px',
-                    padding: '20px',
-                    boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
-                    position: 'relative',
-                    minHeight: '500px'
-                  }}>
+                  <div 
+                    className="card-hover fade-in"
+                    style={{
+                      background: 'white',
+                      borderRadius: '25px',
+                      padding: '25px',
+                      boxShadow: '0 15px 35px rgba(0,0,0,0.1)',
+                      position: 'relative',
+                      minHeight: '550px',
+                      border: '1px solid rgba(255,107,107,0.1)',
+                      overflow: 'hidden'
+                    }}
+                  >
                     <div style={{ textAlign: 'center' }}>
                       <img
                         src={apiUrl(`/api/roblox/avatar/${profiles[active].roblox_user}`)}
@@ -716,62 +776,98 @@ const TinderRP = () => {
                     <div style={{
                       display: 'flex',
                       justifyContent: 'center',
-                      gap: '20px',
-                      marginTop: '30px'
+                      gap: '25px',
+                      marginTop: '35px'
                     }}>
                       <button
                         onClick={handleReject}
+                        className="button-hover"
                         style={{
-                          background: '#ff4757',
+                          background: 'linear-gradient(135deg, #ff4757, #ff6b7a)',
                           color: 'white',
                           border: 'none',
                           borderRadius: '50%',
-                          width: '60px',
-                          height: '60px',
-                          fontSize: '1.5rem',
+                          width: '65px',
+                          height: '65px',
+                          fontSize: '1.6rem',
                           cursor: 'pointer',
-                          boxShadow: '0 4px 15px rgba(255,71,87,0.3)',
+                          boxShadow: '0 8px 25px rgba(255,71,87,0.4)',
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'center'
+                          justifyContent: 'center',
+                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                          position: 'relative',
+                          overflow: 'hidden'
+                        }}
+                        onMouseOver={(e) => {
+                          e.target.style.transform = 'scale(1.1) rotate(-5deg)';
+                          e.target.style.boxShadow = '0 12px 35px rgba(255,71,87,0.6)';
+                        }}
+                        onMouseOut={(e) => {
+                          e.target.style.transform = 'scale(1) rotate(0deg)';
+                          e.target.style.boxShadow = '0 8px 25px rgba(255,71,87,0.4)';
                         }}
                       >
                         <FaTimes />
                       </button>
                       <button
                         onClick={() => handleSuperLike(profiles[active])}
+                        className="button-hover pulse"
                         style={{
-                          background: '#3742fa',
+                          background: 'linear-gradient(135deg, #3742fa, #5352ed)',
                           color: 'white',
                           border: 'none',
                           borderRadius: '50%',
-                          width: '60px',
-                          height: '60px',
-                          fontSize: '1.5rem',
+                          width: '70px',
+                          height: '70px',
+                          fontSize: '1.8rem',
                           cursor: 'pointer',
-                          boxShadow: '0 4px 15px rgba(55,66,250,0.3)',
+                          boxShadow: '0 8px 25px rgba(55,66,250,0.4)',
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'center'
+                          justifyContent: 'center',
+                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                          position: 'relative',
+                          overflow: 'hidden'
+                        }}
+                        onMouseOver={(e) => {
+                          e.target.style.transform = 'scale(1.15) rotate(5deg)';
+                          e.target.style.boxShadow = '0 12px 35px rgba(55,66,250,0.6)';
+                        }}
+                        onMouseOut={(e) => {
+                          e.target.style.transform = 'scale(1) rotate(0deg)';
+                          e.target.style.boxShadow = '0 8px 25px rgba(55,66,250,0.4)';
                         }}
                       >
                         <FaStar />
                       </button>
                       <button
                         onClick={() => handleMatch(profiles[active])}
+                        className="button-hover bounce"
                         style={{
-                          background: '#2ed573',
+                          background: 'linear-gradient(135deg, #2ed573, #7bed9f)',
                           color: 'white',
                           border: 'none',
                           borderRadius: '50%',
-                          width: '60px',
-                          height: '60px',
-                          fontSize: '1.5rem',
+                          width: '65px',
+                          height: '65px',
+                          fontSize: '1.6rem',
                           cursor: 'pointer',
-                          boxShadow: '0 4px 15px rgba(46,213,115,0.3)',
+                          boxShadow: '0 8px 25px rgba(46,213,115,0.4)',
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'center'
+                          justifyContent: 'center',
+                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                          position: 'relative',
+                          overflow: 'hidden'
+                        }}
+                        onMouseOver={(e) => {
+                          e.target.style.transform = 'scale(1.1) rotate(-5deg)';
+                          e.target.style.boxShadow = '0 12px 35px rgba(46,213,115,0.6)';
+                        }}
+                        onMouseOut={(e) => {
+                          e.target.style.transform = 'scale(1) rotate(0deg)';
+                          e.target.style.boxShadow = '0 8px 25px rgba(46,213,115,0.4)';
                         }}
                       >
                         <FaHeart />
@@ -899,6 +995,280 @@ const TinderRP = () => {
             </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Vista de Mi Perfil */}
+        {currentView === 'myProfile' && profile && (
+          <div style={{
+            background: 'white',
+            borderRadius: '25px',
+            padding: '30px',
+            boxShadow: '0 15px 35px rgba(0,0,0,0.1)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            {/* Header del perfil */}
+            <div style={{
+              textAlign: 'center',
+              marginBottom: '30px',
+              position: 'relative'
+            }}>
+              <div style={{
+                position: 'relative',
+                display: 'inline-block',
+                marginBottom: '20px'
+              }}>
+                <img
+                  src={avatar || apiUrl(`/api/roblox/avatar/${profile.roblox_user}`)}
+                  alt={profile.nombre}
+                  style={{
+                    width: '150px',
+                    height: '150px',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+                    border: '4px solid white'
+                  }}
+                  onError={(e) => {
+                    e.target.style.opacity = 0.3;
+                    e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjRjBGMEYwIi8+CjxjaXJjbGUgY3g9Ijc1IiBjeT0iNjAiIHI9IjIwIiBmaWxsPSIjQ0NDQ0NDIi8+CjxwYXRoIGQ9Ik00MCAxMTBDNDAgOTUgNTUgODAgNzUgODBDOTUgODAgMTEwIDk1IDExMCAxMTBIMzBaIiBmaWxsPSIjQ0NDQ0NDIi8+Cjwvc3ZnPgo=';
+                  }}
+                />
+                <div style={{
+                  position: 'absolute',
+                  bottom: '10px',
+                  right: '10px',
+                  background: '#2ed573',
+                  color: 'white',
+                  borderRadius: '50%',
+                  width: '30px',
+                  height: '30px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  boxShadow: '0 2px 10px rgba(46,213,115,0.3)'
+                }}>
+                  ✓
+                </div>
+              </div>
+              
+              <h2 style={{
+                fontSize: '2rem',
+                fontWeight: '800',
+                color: '#333',
+                marginBottom: '8px',
+                letterSpacing: '1px'
+              }}>
+                {profile.nombre}
+              </h2>
+              
+              <p style={{
+                color: '#666',
+                fontSize: '1.2rem',
+                marginBottom: '15px',
+                fontWeight: '500'
+              }}>
+                {profile.edad} años
+              </p>
+              
+              {profile.ubicacion && (
+                <p style={{
+                  color: '#888',
+                  fontSize: '1rem',
+                  marginBottom: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}>
+                  <FaMapMarkerAlt style={{ color: '#ff6b6b' }} />
+                  {profile.ubicacion}
+                </p>
+              )}
+            </div>
+
+            {/* Información del perfil */}
+            <div style={{ marginBottom: '30px' }}>
+              {profile.bio && (
+                <div style={{
+                  background: '#f8f9fa',
+                  borderRadius: '15px',
+                  padding: '20px',
+                  marginBottom: '20px',
+                  borderLeft: '4px solid #ff6b6b'
+                }}>
+                  <h4 style={{
+                    color: '#333',
+                    marginBottom: '10px',
+                    fontSize: '1.1rem',
+                    fontWeight: '600'
+                  }}>
+                    Sobre mí
+                  </h4>
+                  <p style={{
+                    color: '#555',
+                    lineHeight: '1.6',
+                    fontSize: '1rem',
+                    fontStyle: 'italic'
+                  }}>
+                    "{profile.bio}"
+                  </p>
+                </div>
+              )}
+
+              {profile.intereses && (
+                <div style={{
+                  background: '#f8f9fa',
+                  borderRadius: '15px',
+                  padding: '20px',
+                  marginBottom: '20px',
+                  borderLeft: '4px solid #3742fa'
+                }}>
+                  <h4 style={{
+                    color: '#333',
+                    marginBottom: '15px',
+                    fontSize: '1.1rem',
+                    fontWeight: '600'
+                  }}>
+                    Intereses
+                  </h4>
+                  <div style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '10px'
+                  }}>
+                    {profile.intereses.split(',').map((interes, idx) => (
+                      <span
+                        key={idx}
+                        style={{
+                          background: 'linear-gradient(135deg, #ff6b6b, #ff8e8e)',
+                          color: 'white',
+                          padding: '8px 16px',
+                          borderRadius: '20px',
+                          fontSize: '0.9rem',
+                          fontWeight: '600',
+                          boxShadow: '0 2px 8px rgba(255,107,107,0.3)'
+                        }}
+                      >
+                        {interes.trim()}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '15px'
+              }}>
+                {profile.genero && (
+                  <div style={{
+                    background: '#f8f9fa',
+                    borderRadius: '15px',
+                    padding: '15px',
+                    textAlign: 'center',
+                    borderLeft: '4px solid #2ed573'
+                  }}>
+                    <h5 style={{
+                      color: '#333',
+                      marginBottom: '5px',
+                      fontSize: '0.9rem',
+                      fontWeight: '600'
+                    }}>
+                      Género
+                    </h5>
+                    <p style={{
+                      color: '#555',
+                      fontSize: '1rem',
+                      fontWeight: '500',
+                      textTransform: 'capitalize'
+                    }}>
+                      {profile.genero}
+                    </p>
+                  </div>
+                )}
+
+                {profile.busco && (
+                  <div style={{
+                    background: '#f8f9fa',
+                    borderRadius: '15px',
+                    padding: '15px',
+                    textAlign: 'center',
+                    borderLeft: '4px solid #ffa502'
+                  }}>
+                    <h5 style={{
+                      color: '#333',
+                      marginBottom: '5px',
+                      fontSize: '0.9rem',
+                      fontWeight: '600'
+                    }}>
+                      Busco
+                    </h5>
+                    <p style={{
+                      color: '#555',
+                      fontSize: '1rem',
+                      fontWeight: '500',
+                      textTransform: 'capitalize'
+                    }}>
+                      {profile.busco}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Botones de acción */}
+            <div style={{
+              display: 'flex',
+              gap: '15px'
+            }}>
+              <button
+                onClick={() => setCurrentView('profile')}
+                style={{
+                  flex: 1,
+                  background: 'linear-gradient(135deg, #ff6b6b, #ff8e8e)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '25px',
+                  padding: '15px',
+                  fontSize: '16px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  boxShadow: '0 8px 25px rgba(255,107,107,0.3)',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'}
+                onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
+              >
+                <FaEdit style={{ marginRight: '8px' }} />
+                Editar Perfil
+              </button>
+              <button
+                onClick={() => setCurrentView('discover')}
+                style={{
+                  flex: 1,
+                  background: 'linear-gradient(135deg, #3742fa, #5352ed)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '25px',
+                  padding: '15px',
+                  fontSize: '16px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  boxShadow: '0 8px 25px rgba(55,66,250,0.3)',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'}
+                onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
+              >
+                <FaRocket style={{ marginRight: '8px' }} />
+                Descubrir
+              </button>
+            </div>
           </div>
         )}
 
@@ -1249,6 +1619,82 @@ const TinderRP = () => {
         @keyframes slideDown {
           from { transform: translateY(-20px); opacity: 0; }
           to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        
+        @keyframes slideInLeft {
+          from { transform: translateX(-30px); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideInRight {
+          from { transform: translateX(30px); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes bounce {
+          0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+          40% { transform: translateY(-10px); }
+          60% { transform: translateY(-5px); }
+        }
+        
+        @keyframes pulse {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+          100% { transform: scale(1); }
+        }
+        
+        @keyframes shimmer {
+          0% { background-position: -200px 0; }
+          100% { background-position: calc(200px + 100%) 0; }
+        }
+        
+        .card-hover {
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .card-hover:hover {
+          transform: translateY(-5px) scale(1.02);
+          box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .button-hover {
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .button-hover:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        
+        .fade-in {
+          animation: fadeIn 0.6s ease-out;
+        }
+        
+        .slide-in-left {
+          animation: slideInLeft 0.6s ease-out;
+        }
+        
+        .slide-in-right {
+          animation: slideInRight 0.6s ease-out;
+        }
+        
+        .bounce {
+          animation: bounce 1s infinite;
+        }
+        
+        .pulse {
+          animation: pulse 2s infinite;
+        }
+        
+        .shimmer {
+          background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+          background-size: 200px 100%;
+          animation: shimmer 1.5s infinite;
         }
       `}</style>
     </div>
