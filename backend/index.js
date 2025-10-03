@@ -433,7 +433,7 @@ app.post('/api/admin/notify-balance-change', async (req, res) => {
 // --- SOCKET.IO para notificaciones en tiempo real ---
 const server = http.createServer(app);
 
-// Configurar Socket.IO
+// Configurar Socket.IO - SOLO POLLING
 const io = new Server(server, {
   cors: {
     origin: [
@@ -445,12 +445,22 @@ const io = new Server(server, {
     credentials: true,
     methods: ['GET', 'POST']
   },
-  transports: ['polling'], // Solo polling para compatibilidad con Render
-  allowEIO3: true, // Compatibilidad con versiones anteriores
+  transports: ['polling'], // SOLO POLLING - NO WEBSOCKET
+  allowEIO3: true,
   pingTimeout: 60000,
   pingInterval: 25000,
-  allowUpgrades: false, // Deshabilitar completamente el upgrade a WebSocket
-  upgrade: false // Deshabilitar upgrade
+  allowUpgrades: false,
+  upgrade: false,
+  // Forzar solo polling - eliminar WebSocket completamente
+  serveClient: false,
+  connectTimeout: 45000,
+  transports: ['polling']
+});
+
+// Rechazar explícitamente WebSocket
+io.engine.on('upgrade', (req, socket, head) => {
+  console.log('[SOCKET.IO] ❌ Intento de upgrade a WebSocket rechazado');
+  socket.destroy();
 });
 
 // Manejar errores de Socket.IO
@@ -458,6 +468,12 @@ io.engine.on('connection_error', (err) => {
   console.error('[SOCKET.IO] Error de conexión:', err.message);
   console.error('[SOCKET.IO] Código:', err.code);
   console.error('[SOCKET.IO] Context:', err.context);
+  
+  // Si es un error de WebSocket, ignorarlo
+  if (err.context && err.context.transport === 'websocket') {
+    console.log('[SOCKET.IO] Ignorando error de WebSocket (solo polling permitido)');
+    return;
+  }
 });
 
 // Manejar conexiones WebSocket - CONSOLIDADO
