@@ -443,7 +443,9 @@ const io = new Server(server, {
       process.env.PUBLIC_BASE_URL || 'https://spainrp-oficial.onrender.com'
     ].filter(Boolean),
     credentials: true
-  }
+  },
+  transports: ['polling'], // Solo polling para compatibilidad con Render
+  allowEIO3: true // Compatibilidad con versiones anteriores
 });
 
 // Manejar conexiones WebSocket - CONSOLIDADO
