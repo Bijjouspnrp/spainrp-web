@@ -158,11 +158,12 @@ const TinderRP = () => {
     setAvatar(null);
     setError("");
     try {
-      const res = await fetch(`/api/roblox/avatar/${encodeURIComponent(roblox)}`);
+      const res = await fetch(apiUrl(`/api/roblox/avatar/${encodeURIComponent(roblox)}`));
       const data = await res.json();
       if (data.img) setAvatar(data.img);
       else setError('No se encontró el usuario de Roblox');
-    } catch {
+    } catch (err) {
+      console.error('Error buscando avatar de Roblox:', err);
       setError('Error buscando avatar de Roblox');
     }
     setFetchingAvatar(false);
@@ -572,7 +573,7 @@ const TinderRP = () => {
                   }}>
                     <div style={{ textAlign: 'center' }}>
                       <img
-                        src={`/api/roblox/avatar/${profiles[active].roblox_user}`}
+                        src={apiUrl(`/api/roblox/avatar/${profiles[active].roblox_user}`)}
                         alt={profiles[active].nombre}
                         style={{
                           width: '200px',
@@ -749,7 +750,7 @@ const TinderRP = () => {
                       onMouseOut={(e) => e.target.style.background = '#f8f9fa'}
                     >
                       <img
-                        src={`/api/roblox/avatar/${match.roblox_user}`}
+                        src={apiUrl(`/api/roblox/avatar/${match.roblox_user}`)}
                         alt={match.nombre}
                         style={{
                           width: '50px',
