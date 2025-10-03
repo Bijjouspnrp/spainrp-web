@@ -299,6 +299,68 @@ export const SearchSection = ({ onSearch }) => {
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searchingSuggestions, setSearchingSuggestions] = useState(false);
+
+  // Función para buscar sugerencias
+  const searchSuggestions = async (query) => {
+    if (query.length < 2) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    setSearchingSuggestions(true);
+    try {
+      const response = await fetch(apiUrl(`/api/proxy/admin/dni/search?q=${encodeURIComponent(query)}`));
+      const data = await response.json();
+      
+      if (data.success) {
+        const allSuggestions = [
+          ...(data.dniPorNombre || []).map(dni => ({
+            type: 'dni',
+            value: dni.numeroDNI,
+            label: `${dni.nombre} ${dni.apellidos} (DNI: ${dni.numeroDNI})`,
+            discordId: dni.discordId
+          })),
+          ...(data.discordUsers || []).map(user => ({
+            type: 'discord',
+            value: user.id,
+            label: `${user.username} (Discord: ${user.id})`,
+            discordId: user.id
+          }))
+        ];
+        setSuggestions(allSuggestions);
+        setShowSuggestions(true);
+      }
+    } catch (err) {
+      console.error('Error buscando sugerencias:', err);
+    } finally {
+      setSearchingSuggestions(false);
+    }
+  };
+
+  // Manejar cambio en el input
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setSearchValue(value);
+    setError('');
+    
+    if (searchType === 'nombre') {
+      searchSuggestions(value);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  // Seleccionar sugerencia
+  const selectSuggestion = (suggestion) => {
+    setSearchValue(suggestion.value);
+    setShowSuggestions(false);
+    setSuggestions([]);
+  };
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -314,22 +376,47 @@ export const SearchSection = ({ onSearch }) => {
     try {
       let discordId = searchValue;
       
-      // Si buscan por DNI, primero obtener el Discord ID
-      if (searchType === 'dni') {
-        const dniResponse = await fetch(apiUrl(`/api/proxy/admin/dni/ver/${searchValue}`));
-        if (dniResponse.ok) {
-          const dniData = await dniResponse.json();
-          if (dniData.success && dniData.dni) {
-            discordId = dniData.dni.discordId;
+      // Si buscan por DNI o nombre, primero obtener el Discord ID
+      if (searchType === 'dni' || searchType === 'nombre') {
+        let dniResponse;
+        
+        if (searchType === 'dni') {
+          dniResponse = await fetch(apiUrl(`/api/proxy/admin/dni/ver/${searchValue}`));
+        } else {
+          // Para búsqueda por nombre, usar el endpoint de búsqueda
+          const searchResponse = await fetch(apiUrl(`/api/proxy/admin/dni/search?q=${encodeURIComponent(searchValue)}`));
+          const searchData = await searchResponse.json();
+          
+          if (searchData.success && searchData.dniPorNombre && searchData.dniPorNombre.length > 0) {
+            // Usar el primer resultado encontrado
+            const firstResult = searchData.dniPorNombre[0];
+            discordId = firstResult.discordId;
+          } else if (searchData.success && searchData.discordUsers && searchData.discordUsers.length > 0) {
+            // Usar el primer usuario de Discord encontrado
+            const firstUser = searchData.discordUsers[0];
+            discordId = firstUser.id;
           } else {
-            setError('❌ No se encontró DNI con ese número');
+            setError('❌ No se encontró ningún ciudadano con ese nombre');
             setLoading(false);
             return;
           }
-        } else {
-          setError('❌ Error consultando DNI');
-          setLoading(false);
-          return;
+        }
+        
+        if (searchType === 'dni' && dniResponse) {
+          if (dniResponse.ok) {
+            const dniData = await dniResponse.json();
+            if (dniData.success && dniData.dni) {
+              discordId = dniData.dni.discordId;
+            } else {
+              setError('❌ No se encontró DNI con ese número');
+              setLoading(false);
+              return;
+            }
+          } else {
+            setError('❌ Error consultando DNI');
+            setLoading(false);
+            return;
+          }
         }
       }
 
@@ -387,20 +474,54 @@ export const SearchSection = ({ onSearch }) => {
         <div className="search-inputs">
           <select 
             value={searchType} 
-            onChange={(e) => setSearchType(e.target.value)}
+            onChange={(e) => {
+              setSearchType(e.target.value);
+              setSearchValue('');
+              setSuggestions([]);
+              setShowSuggestions(false);
+            }}
             className="mdt-select"
           >
             <option value="discord">Discord ID</option>
             <option value="dni">DNI</option>
+            <option value="nombre">Nombre</option>
           </select>
-          <input
-            type="text"
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            placeholder={searchType === 'discord' ? 'Discord ID' : 'Número de DNI'}
-            className="mdt-input"
-            required
-          />
+          <div className="search-input-container">
+            <input
+              type="text"
+              value={searchValue}
+              onChange={handleInputChange}
+              placeholder={
+                searchType === 'discord' ? 'Discord ID' : 
+                searchType === 'dni' ? 'Número de DNI' : 
+                'Nombre de la persona'
+              }
+              className="mdt-input"
+              required
+              autoComplete="off"
+            />
+            {searchingSuggestions && (
+              <div className="search-loading">
+                <div className="search-spinner"></div>
+              </div>
+            )}
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="suggestions-dropdown">
+                {suggestions.map((suggestion, index) => (
+                  <div
+                    key={index}
+                    className="suggestion-item"
+                    onClick={() => selectSuggestion(suggestion)}
+                  >
+                    <span className="suggestion-type">
+                      {suggestion.type === 'dni' ? '🆔' : '👤'}
+                    </span>
+                    <span className="suggestion-label">{suggestion.label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           <button type="submit" className="mdt-btn mdt-btn-primary" disabled={loading}>
             {loading ? 'Buscando...' : 'Buscar'}
           </button>

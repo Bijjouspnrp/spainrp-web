@@ -5468,6 +5468,49 @@ app.get('/api/proxy/admin/top-multas', async (req, res) => {
   }
 });
 
+// Proxy para MDT Policial - Búsqueda de ciudadanos por nombre/DNI
+app.get('/api/proxy/admin/dni/search', async (req, res) => {
+  try {
+    const query = req.query.q;
+    if (!query || query.trim().length < 2) {
+      return res.status(400).json({ error: 'Parámetro q requerido (mínimo 2 caracteres)' });
+    }
+
+    const proxyUrl = `http://37.27.21.91:5021/api/proxy/admin/dni/search?q=${encodeURIComponent(query)}`;
+    
+    console.log('[MDT PROXY] Buscando ciudadanos:', query);
+    
+    const response = await fetch(proxyUrl);
+    
+    // Verificar si la respuesta es HTML (error)
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('text/html')) {
+      console.warn('[MDT PROXY] El servidor proxy devolvió HTML en lugar de JSON');
+      return res.json({ 
+        success: true, 
+        query: query,
+        dniPorNombre: [],
+        discordUsers: [],
+        message: 'Búsqueda no disponible temporalmente'
+      });
+    }
+    
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    console.error('[MDT PROXY] Error buscando ciudadanos:', err);
+    // Devolver respuesta de respaldo en lugar de error
+    res.json({ 
+      success: true, 
+      query: req.query.q || '',
+      dniPorNombre: [],
+      discordUsers: [],
+      message: 'Error de conexión en la búsqueda',
+      error: err.message
+    });
+  }
+});
+
 // Endpoint para obtener datos de miembro y roles
 app.get('/api/member/:guildId/:userId', async (req, res) => {
   try {
