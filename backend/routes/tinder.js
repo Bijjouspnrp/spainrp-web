@@ -10,7 +10,7 @@ const { verifyToken } = require('../middleware/jwt');
 const db = getDatabase();
 db.run(`CREATE TABLE IF NOT EXISTS tinder_profiles (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  discord_id TEXT NOT NULL,
+  discord_id TEXT NOT NULL UNIQUE,
   roblox_user TEXT NOT NULL,
   nombre TEXT NOT NULL,
   edad INTEGER NOT NULL,
@@ -26,7 +26,8 @@ db.run(`CREATE TABLE IF NOT EXISTS tinder_matches (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user1_id INTEGER NOT NULL,
   user2_id INTEGER NOT NULL,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(user1_id, user2_id)
 )`);
 
 // Aplicar middleware JWT a todas las rutas
