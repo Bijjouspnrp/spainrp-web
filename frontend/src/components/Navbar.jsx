@@ -311,16 +311,20 @@ const Navbar = () => {
     setShowDropdown(prev => !prev);
   }, []);
 
-  // Efecto para bloquear scroll cuando el menú móvil está abierto
+  // Efecto para mejorar el scroll cuando el menú móvil está abierto
   useEffect(() => {
     if (isMenuOpen) {
-      document.body.style.overflow = 'hidden';
+      // Permitir scroll pero con mejor UX
+      document.body.style.overflow = 'auto';
+      document.body.style.paddingRight = '0px'; // Evitar saltos de layout
     } else {
       document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
     }
 
     return () => {
       document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
     };
   }, [isMenuOpen]);
 
@@ -641,7 +645,7 @@ const Navbar = () => {
       className={`navbar-discord ${scrolled ? 'scrolled' : ''} ${dark ? 'dark' : ''}`}
       style={navbarStyles}
     >
-      {/* Overlay para el menú móvil */}
+      {/* Overlay para el menú móvil - mejorado para permitir scroll */}
       {isMenuOpen && (
         <div
           style={{
@@ -650,8 +654,12 @@ const Navbar = () => {
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'rgba(0, 0, 0, 0.32)',
-            zIndex: 99
+            background: 'rgba(0, 0, 0, 0.2)',
+            zIndex: 99,
+            backdropFilter: 'blur(2px)',
+            WebkitBackdropFilter: 'blur(2px)',
+            transition: 'opacity 0.3s ease, backdrop-filter 0.3s ease',
+            pointerEvents: 'auto'
           }}
           onClick={closeMenu}
           aria-hidden="true"
@@ -728,7 +736,21 @@ const Navbar = () => {
             maxWidth: '100%'
           }}
         >
-          {NAVIGATION_CONFIG.mainLinks.map(renderNavigationLink)}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+            width: '100%',
+            padding: '0 16px',
+            maxHeight: '60vh',
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            scrollBehavior: 'smooth',
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'rgba(114, 137, 218, 0.3) transparent'
+          }}>
+            {NAVIGATION_CONFIG.mainLinks.map(renderNavigationLink)}
+          </div>
           
           {/* Dropdown de apps y servicios */}
           <div style={{ position: 'relative', zIndex: 1002 }}>
@@ -794,6 +816,46 @@ const Navbar = () => {
               }}
             >
               <FaDiscord size={14} /> Unirse
+            </a>
+          )}
+
+          {/* Botón de Panel en móvil si el usuario está logueado */}
+          {isMenuOpen && user && (
+            <a
+              href="/panel"
+              onClick={() => closeMenu()}
+              style={{
+                marginTop: 12,
+                marginBottom: 8,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '8px 16px',
+                background: 'linear-gradient(135deg, #7289da, #5865f2)',
+                color: '#fff',
+                borderRadius: 8,
+                fontWeight: 700,
+                fontSize: 15,
+                border: 'none',
+                textDecoration: 'none',
+                cursor: 'pointer',
+                boxShadow: '0 4px 15px rgba(114, 137, 218, 0.3)',
+                transition: 'all 0.3s ease',
+                position: 'relative',
+                overflow: 'hidden'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = 'linear-gradient(135deg, #5865f2, #7289da)';
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 6px 20px rgba(114, 137, 218, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'linear-gradient(135deg, #7289da, #5865f2)';
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 4px 15px rgba(114, 137, 218, 0.3)';
+              }}
+            >
+              <FaUserCircle size={16} /> Panel de Usuario
             </a>
           )}
 
@@ -873,7 +935,7 @@ const Navbar = () => {
                 alignItems: 'center',
                 gap: 8,
                 padding: '8px 16px',
-                background: '#e74c3c',
+                background: 'linear-gradient(135deg, #e74c3c, #c0392b)',
                 color: '#fff',
                 borderRadius: 8,
                 fontWeight: 700,
@@ -881,17 +943,20 @@ const Navbar = () => {
                 border: 'none',
                 cursor: 'pointer',
                 textDecoration: 'none',
-                transition: 'all 0.2s ease'
+                transition: 'all 0.3s ease',
+                boxShadow: '0 4px 15px rgba(231, 76, 60, 0.3)',
+                position: 'relative',
+                overflow: 'hidden'
               }}
               onMouseEnter={(e) => {
-                e.target.style.background = '#c0392b';
-                e.target.style.transform = 'translateY(-1px)';
-                e.target.style.boxShadow = '0 4px 12px rgba(231, 76, 60, 0.4)';
+                e.target.style.background = 'linear-gradient(135deg, #c0392b, #a93226)';
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 6px 20px rgba(231, 76, 60, 0.4)';
               }}
               onMouseLeave={(e) => {
-                e.target.style.background = '#e74c3c';
+                e.target.style.background = 'linear-gradient(135deg, #e74c3c, #c0392b)';
                 e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = 'none';
+                e.target.style.boxShadow = '0 4px 15px rgba(231, 76, 60, 0.3)';
               }}
             >
               <FaTimes /> Cerrar Sesión

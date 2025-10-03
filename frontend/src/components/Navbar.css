@@ -452,11 +452,11 @@
 @keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(-30px); /* Como el original */
+    transform: translateY(-20px) scale(0.95); /* Más suave */
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -472,8 +472,14 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { 
+    opacity: 0; 
+    backdrop-filter: blur(0px);
+  }
+  to { 
+    opacity: 1; 
+    backdrop-filter: blur(2px);
+  }
 }
 
 @keyframes borderPulse {
@@ -623,14 +629,36 @@ body.admin-panel-active .navbar-discord {
     transform: translateY(0);
     opacity: 1;
     visibility: visible;
-    animation: slideDown 0.5s ease; /* Como original */
+    animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Más suave */
     align-items: center;
-    max-height: 80vh;
+    max-height: 85vh; /* Más espacio para scroll */
     overflow-y: auto;
+    overflow-x: hidden;
     
-    /* Mejoras adicionales para suavidad */
+    /* Mejoras adicionales para suavidad y scroll */
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch; /* iOS smooth scroll */
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(114, 137, 218, 0.3) transparent;
+    
+    /* Estilos de scrollbar para webkit */
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: rgba(114, 137, 218, 0.3);
+      border-radius: 2px;
+    }
+    
+    &::-webkit-scrollbar-thumb:hover {
+      background: rgba(114, 137, 218, 0.5);
+    }
   }
   
   /* Enlaces en menú móvil activo */
