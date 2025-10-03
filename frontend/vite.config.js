@@ -240,13 +240,10 @@ export default defineConfig({
         assetFileNames: 'assets/[name]-[hash].[ext]'
       }
     },
-    // Optimizaciones adicionales
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true
-      }
+    // Optimizaciones adicionales - ESBuild es ~10x más rápido que Terser
+    minify: 'esbuild',
+    esbuild: {
+      drop: ['console', 'debugger']
     },
     // Tree shaking más agresivo
     treeshake: {
