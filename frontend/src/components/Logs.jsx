@@ -75,7 +75,64 @@ const Logs = () => {
     }
   }, []);
 
-  // Cargar estadísticas
+  // Calcular estadísticas en tiempo real
+  const calculateStats = useCallback(() => {
+    if (!logs || logs.length === 0) {
+      return {
+        total: 0,
+        byType: {},
+        recentActivity: {
+          last24h: 0,
+          last7d: 0,
+          last30d: 0
+        },
+        byLevel: {
+          info: 0,
+          warn: 0,
+          error: 0
+        }
+      };
+    }
+
+    const now = new Date();
+    const stats = {
+      total: logs.length,
+      byType: {},
+      recentActivity: {
+        last24h: 0,
+        last7d: 0,
+        last30d: 0
+      },
+      byLevel: {
+        info: 0,
+        warn: 0,
+        error: 0
+      }
+    };
+
+    logs.forEach(log => {
+      // Contar por tipo
+      stats.byType[log.type] = (stats.byType[log.type] || 0) + 1;
+
+      // Contar por nivel
+      if (log.level) {
+        stats.byLevel[log.level] = (stats.byLevel[log.level] || 0) + 1;
+      }
+
+      // Actividad reciente
+      const logDate = new Date(log.timestamp);
+      const diffMs = now - logDate;
+      const diffDays = diffMs / (1000 * 60 * 60 * 24);
+
+      if (diffDays <= 1) stats.recentActivity.last24h++;
+      if (diffDays <= 7) stats.recentActivity.last7d++;
+      if (diffDays <= 30) stats.recentActivity.last30d++;
+    });
+
+    return stats;
+  }, [logs]);
+
+  // Cargar estadísticas del servidor (fallback)
   const fetchStats = useCallback(async () => {
     try {
       const token = localStorage.getItem('spainrp_token');
@@ -423,10 +480,7 @@ const Logs = () => {
             </button>
 
             <button
-              onClick={() => {
-                setShowStats(!showStats);
-                if (!stats) fetchStats();
-              }}
+              onClick={() => setShowStats(!showStats)}
               style={{
                 background: showStats ? '#f39c12' : 'rgba(243, 156, 18, 0.2)',
                 color: showStats ? 'white' : '#f39c12',
@@ -602,7 +656,7 @@ const Logs = () => {
         </div>
 
         {/* Estadísticas */}
-        {showStats && stats && (
+        {showStats && (
           <div style={{
             background: 'rgba(255, 255, 255, 0.05)',
             padding: '1.5rem',
@@ -614,67 +668,100 @@ const Logs = () => {
               <FaInfoCircle />
               Estadísticas del Sistema
             </h3>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '1rem'
-            }}>
-              <div style={{
-                background: 'rgba(114, 137, 218, 0.1)',
-                padding: '1rem',
-                borderRadius: '8px',
-                border: '1px solid rgba(114, 137, 218, 0.2)'
-              }}>
-                <div style={{ color: '#7289da', fontSize: '2rem', fontWeight: 'bold' }}>
-                  {stats.total}
+            {(() => {
+              const currentStats = calculateStats();
+              return (
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                  gap: '1rem'
+                }}>
+                  <div style={{
+                    background: 'rgba(114, 137, 218, 0.1)',
+                    padding: '1rem',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(114, 137, 218, 0.2)'
+                  }}>
+                    <div style={{ color: '#7289da', fontSize: '2rem', fontWeight: 'bold' }}>
+                      {currentStats.total}
+                    </div>
+                    <div style={{ color: '#9ca3af', fontSize: '0.9rem' }}>
+                      Total de Logs
+                    </div>
+                  </div>
+                  
+                  <div style={{
+                    background: 'rgba(46, 204, 113, 0.1)',
+                    padding: '1rem',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(46, 204, 113, 0.2)'
+                  }}>
+                    <div style={{ color: '#2ecc71', fontSize: '2rem', fontWeight: 'bold' }}>
+                      {currentStats.recentActivity.last24h}
+                    </div>
+                    <div style={{ color: '#9ca3af', fontSize: '0.9rem' }}>
+                      Últimas 24h
+                    </div>
+                  </div>
+                  
+                  <div style={{
+                    background: 'rgba(231, 76, 60, 0.1)',
+                    padding: '1rem',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(231, 76, 60, 0.2)'
+                  }}>
+                    <div style={{ color: '#e74c3c', fontSize: '2rem', fontWeight: 'bold' }}>
+                      {currentStats.byLevel.error}
+                    </div>
+                    <div style={{ color: '#9ca3af', fontSize: '0.9rem' }}>
+                      Errores
+                    </div>
+                  </div>
+                  
+                  <div style={{
+                    background: 'rgba(243, 156, 18, 0.1)',
+                    padding: '1rem',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(243, 156, 18, 0.2)'
+                  }}>
+                    <div style={{ color: '#f39c12', fontSize: '2rem', fontWeight: 'bold' }}>
+                      {Object.keys(currentStats.byType).length}
+                    </div>
+                    <div style={{ color: '#9ca3af', fontSize: '0.9rem' }}>
+                      Tipos de Log
+                    </div>
+                  </div>
+
+                  <div style={{
+                    background: 'rgba(155, 89, 182, 0.1)',
+                    padding: '1rem',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(155, 89, 182, 0.2)'
+                  }}>
+                    <div style={{ color: '#9b59b6', fontSize: '2rem', fontWeight: 'bold' }}>
+                      {currentStats.byLevel.warn}
+                    </div>
+                    <div style={{ color: '#9ca3af', fontSize: '0.9rem' }}>
+                      Warnings
+                    </div>
+                  </div>
+
+                  <div style={{
+                    background: 'rgba(52, 152, 219, 0.1)',
+                    padding: '1rem',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(52, 152, 219, 0.2)'
+                  }}>
+                    <div style={{ color: '#3498db', fontSize: '2rem', fontWeight: 'bold' }}>
+                      {currentStats.byLevel.info}
+                    </div>
+                    <div style={{ color: '#9ca3af', fontSize: '0.9rem' }}>
+                      Info
+                    </div>
+                  </div>
                 </div>
-                <div style={{ color: '#9ca3af', fontSize: '0.9rem' }}>
-                  Total de Logs
-                </div>
-              </div>
-              
-              <div style={{
-                background: 'rgba(46, 204, 113, 0.1)',
-                padding: '1rem',
-                borderRadius: '8px',
-                border: '1px solid rgba(46, 204, 113, 0.2)'
-              }}>
-                <div style={{ color: '#2ecc71', fontSize: '2rem', fontWeight: 'bold' }}>
-                  {stats.recentActivity?.last24h || 0}
-                </div>
-                <div style={{ color: '#9ca3af', fontSize: '0.9rem' }}>
-                  Últimas 24h
-                </div>
-              </div>
-              
-              <div style={{
-                background: 'rgba(231, 76, 60, 0.1)',
-                padding: '1rem',
-                borderRadius: '8px',
-                border: '1px solid rgba(231, 76, 60, 0.2)'
-              }}>
-                <div style={{ color: '#e74c3c', fontSize: '2rem', fontWeight: 'bold' }}>
-                  {stats.byType?.error || 0}
-                </div>
-                <div style={{ color: '#9ca3af', fontSize: '0.9rem' }}>
-                  Errores
-                </div>
-              </div>
-              
-              <div style={{
-                background: 'rgba(243, 156, 18, 0.1)',
-                padding: '1rem',
-                borderRadius: '8px',
-                border: '1px solid rgba(243, 156, 18, 0.2)'
-              }}>
-                <div style={{ color: '#f39c12', fontSize: '2rem', fontWeight: 'bold' }}>
-                  {Object.keys(stats.byType || {}).length}
-                </div>
-                <div style={{ color: '#9ca3af', fontSize: '0.9rem' }}>
-                  Tipos de Log
-                </div>
-              </div>
-            </div>
+              );
+            })()}
           </div>
         )}
 

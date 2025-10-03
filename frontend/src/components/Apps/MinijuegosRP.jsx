@@ -542,63 +542,150 @@ const PiedraPapelTijera = () => {
 };
 
 const MinijuegosRP = () => {
-  const [juegoActivo, setJuegoActivo] = useState(null);
-
   return (
     <div className="minijuegos-bg">
       <DiscordUserBar />
-      <div style={{ maxWidth: 500, margin: '0 auto', padding: '2.5rem 1rem' }}>
+      <div style={{ maxWidth: 600, margin: '0 auto', padding: '2.5rem 1rem' }}>
         <h1 className="comic-title" style={{ color: "#FFD700", fontSize: "2.5rem", textAlign: 'center', fontWeight: 900, letterSpacing: 2, textShadow: '2px 2px 0 #23272a, 0 0 16px #7289da', marginBottom: '2.2rem' }}>
           ⚡ MINIJUEGOS RP ⚡
         </h1>
-        {!juegoActivo && (
-          <div style={{background:'#fff', borderRadius:24, padding:'2.2rem', boxShadow:'0 8px 32px #7289da33, 0 2px 0 #FFD700 inset', border:'3px solid #FFD700', position:'relative', overflow:'hidden'}}>
-            <strong className="comic-title" style={{fontSize:'1.3rem', color:'#23272a', textShadow:'1px 1px 0 #FFD700'}}>Elige un minijuego:</strong>
-            <ul style={{listStyle:'none', padding:0, marginTop:'1.5rem', fontSize:17}}>
-              {minijuegos.map(j => (
-                <li key={j.nombre} style={{marginBottom:'1.5rem', display:'flex', flexDirection:'column', alignItems:'flex-start', position:'relative'}}>
-                  <span className="comic-title" style={{fontWeight:'bold', color:'#7289da', fontSize:'1.25rem', textShadow:'1px 1px 0 #FFD700'}}>
-                    {j.icon} {j.nombre} {j.online && <span style={{fontSize:13, color:'#FFD700', marginLeft:8, textShadow:'1px 1px 0 #23272a'}}>⚡ Online</span>}
-                  </span>
-                  <span style={{fontSize:15, color:'#888', marginBottom:8, fontWeight:500}}>{j.desc}</span>
-                  {j.nombre === 'Simulador de Tienda' ? (
-                    <a
-                      className="comic-title"
-                      href="/apps/tienda"
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{display:'inline-block',background:'#00cdbc', color:'#fff', textDecoration:'none', border:'none', borderRadius:12, padding:'0.7rem 1.5rem', fontWeight:900, fontSize:'1.1rem', cursor:'pointer', boxShadow:'0 2px 12px #7289da33', letterSpacing:1, textShadow:'1px 1px 0 #23272a'}}
-                    >Abrir pantalla completa</a>
-                  ) : (
-                    <button
-                      className="comic-title"
-                      style={{background:'#FFD700', color:'#23272a', border:'none', borderRadius:12, padding:'0.7rem 1.5rem', fontWeight:900, fontSize:'1.1rem', cursor:'pointer', boxShadow:'0 2px 12px #7289da33', letterSpacing:1, textShadow:'1px 1px 0 #23272a'}}
-                      onClick={() => setJuegoActivo(j.nombre)}
-                    >Jugar</button>
-                  )}
-                </li>
-              ))}
+        
+        {/* Aviso de Mantenimiento */}
+        <div style={{
+          background: 'linear-gradient(135deg, #f39c12 0%, #e67e22 100%)',
+          borderRadius: 24,
+          padding: '3rem 2rem',
+          boxShadow: '0 8px 32px rgba(243, 156, 18, 0.3), 0 2px 0 #fff inset',
+          border: '3px solid #f39c12',
+          position: 'relative',
+          overflow: 'hidden',
+          textAlign: 'center'
+        }}>
+          {/* Icono de mantenimiento */}
+          <div style={{
+            fontSize: '4rem',
+            marginBottom: '1.5rem',
+            animation: 'pulse 2s infinite'
+          }}>
+            🔧
+          </div>
+          
+          <h2 className="comic-title" style={{
+            color: '#fff',
+            fontSize: '2rem',
+            marginBottom: '1rem',
+            textShadow: '2px 2px 0 #23272a'
+          }}>
+            EN MANTENIMIENTO
+          </h2>
+          
+          <p style={{
+            color: '#fff',
+            fontSize: '1.2rem',
+            marginBottom: '1.5rem',
+            fontWeight: 600,
+            textShadow: '1px 1px 0 #23272a'
+          }}>
+            Los minijuegos están siendo desarrollados y mejorados
+          </p>
+          
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.2)',
+            borderRadius: 16,
+            padding: '1.5rem',
+            marginBottom: '2rem',
+            border: '2px solid rgba(255, 255, 255, 0.3)'
+          }}>
+            <h3 className="comic-title" style={{
+              color: '#fff',
+              fontSize: '1.3rem',
+              marginBottom: '1rem',
+              textShadow: '1px 1px 0 #23272a'
+            }}>
+              🎮 Próximamente Disponible:
+            </h3>
+            <ul style={{
+              listStyle: 'none',
+              padding: 0,
+              margin: 0,
+              color: '#fff',
+              fontSize: '1rem',
+              lineHeight: 1.8
+            }}>
+              <li>🏪 Simulador de Tienda</li>
+              <li>✊ Piedra, Papel o Tijera Online</li>
+              <li>🏎️ Carrera de Coches RP</li>
+              <li>🏃 Parkour Urbano</li>
+              <li>🧠 Trivia RP</li>
+              <li>🔢 Adivina el número</li>
             </ul>
           </div>
-        )}
-        {juegoActivo === 'Simulador de Tienda' && (
-          <>
-            <button className="comic-title" style={{marginBottom:'1.5rem',background:'#FFD700',color:'#23272a',border:'none',borderRadius:12,padding:'0.7rem 1.5rem',fontWeight:900,fontSize:'1.1rem',cursor:'pointer',boxShadow:'0 2px 12px #7289da33',letterSpacing:1,textShadow:'1px 1px 0 #23272a'}} onClick={() => setJuegoActivo(null)}>← Volver</button>
-            <SimuladorTienda />
-          </>
-        )}
-        {juegoActivo === 'Piedra, Papel o Tijera' && (
-          <>
-            <button className="comic-title" style={{marginBottom:'1.5rem',background:'#FFD700',color:'#23272a',border:'none',borderRadius:12,padding:'0.7rem 1.5rem',fontWeight:900,fontSize:'1.1rem',cursor:'pointer',boxShadow:'0 2px 12px #7289da33',letterSpacing:1,textShadow:'1px 1px 0 #23272a'}} onClick={() => setJuegoActivo(null)}>← Volver</button>
-            <PiedraPapelTijera />
-          </>
-        )}
-        {/* Aquí puedes añadir más minijuegos con else if o switch */}
+          
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.1)',
+            borderRadius: 12,
+            padding: '1rem',
+            border: '1px solid rgba(255, 255, 255, 0.2)'
+          }}>
+            <p style={{
+              color: '#fff',
+              fontSize: '0.9rem',
+              margin: 0,
+              fontStyle: 'italic',
+              textShadow: '1px 1px 0 #23272a'
+            }}>
+              Estamos trabajando duro para traerte la mejor experiencia de gaming en SpainRP
+            </p>
+          </div>
+        </div>
+        
+        {/* Botón de regreso */}
+        <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+          <a
+            href="/apps"
+            className="comic-title"
+            style={{
+              display: 'inline-block',
+              background: '#7289da',
+              color: '#fff',
+              textDecoration: 'none',
+              border: 'none',
+              borderRadius: 12,
+              padding: '0.8rem 2rem',
+              fontWeight: 900,
+              fontSize: '1.1rem',
+              cursor: 'pointer',
+              boxShadow: '0 4px 16px rgba(114, 137, 218, 0.3)',
+              letterSpacing: 1,
+              textShadow: '1px 1px 0 #23272a',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseOver={(e) => {
+              e.target.style.background = '#5a6fd8';
+              e.target.style.transform = 'translateY(-2px)';
+            }}
+            onMouseOut={(e) => {
+              e.target.style.background = '#7289da';
+              e.target.style.transform = 'translateY(0)';
+            }}
+          >
+            ← Volver a Apps
+          </a>
+        </div>
       </div>
+      
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Bangers&display=swap');
         .comic-title { font-family: 'Bangers', Impact, sans-serif; letter-spacing: 2px; }
-        .minijuegos-bg { background: linear-gradient(135deg,#23272a 60%,#7289da 100%); min-height: 100vh; }
+        .minijuegos-bg { 
+          background: linear-gradient(135deg, #23272a 60%, #7289da 100%); 
+          min-height: 100vh; 
+        }
+        @keyframes pulse {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.1); }
+          100% { transform: scale(1); }
+        }
       `}</style>
     </div>
   );

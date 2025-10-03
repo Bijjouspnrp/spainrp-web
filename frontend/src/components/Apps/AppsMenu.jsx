@@ -11,21 +11,22 @@ const appList = [
     icon: <FaHeart style={{ color: '#ff5e62' }} />,
     url: '/apps/tinder',
     color: '#ff5e62',
-    desc: 'Conoce gente y rolea en el mundo SpainRP.'
+    desc: 'Conoce gente de SpainRP (IC).'
   },
   {
     name: 'Banco Central RP',
     icon: <FaPiggyBank style={{ color: '#00cdbc' }} />,
     url: '/apps/banco',
     color: '#00cdbc',
-    desc: 'Gestiona tu dinero RP, deposita y retira fondos.'
+    desc: 'Gestiona tu dinero, deposita y retira fondos. Conectado con la economia de Discord'
   },
   {
     name: 'Minijuegos RP',
-    icon: <FaGamepad style={{ color: '#7289da' }} />,
+    icon: <FaGamepad style={{ color: '#6b7280' }} />,
     url: '/apps/minijuegos',
-    color: '#7289da',
-    desc: 'Juega minijuegos solo o con otros usuarios de Discord.'
+    color: '#6b7280',
+    desc: 'En mantenimiento - Próximamente disponible',
+    disabled: true
   },
   {
     name: 'MDT Policial',
@@ -77,7 +78,14 @@ const AppsMenu = () => {
               <ul className="apps-menu-ul">
                 {appList.map(app => (
                   <li key={app.name} className="apps-menu-li">
-                    <a href={app.url} target="_blank" rel="noopener noreferrer" className="apps-menu-link" style={{'--app-color': app.color}}>
+                    <a 
+                      href={app.disabled ? '#' : app.url} 
+                      target={app.disabled ? '_self' : '_blank'} 
+                      rel="noopener noreferrer" 
+                      className={`apps-menu-link ${app.disabled ? 'disabled' : ''}`} 
+                      style={{'--app-color': app.color}}
+                      onClick={app.disabled ? (e) => e.preventDefault() : undefined}
+                    >
                       <span className="apps-menu-icon" style={{display:'flex',alignItems:'center',fontSize:'2.1rem'}}>{app.icon}</span>
                       <span className="apps-menu-info">
                         <span className="apps-menu-name">{app.name}</span>
@@ -187,6 +195,13 @@ const AppsMenu = () => {
           background: var(--app-color, #7289da);
           color: #fff;
           box-shadow: 0 4px 16px var(--app-color, #7289da33);
+        }
+        .apps-menu-link.disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+          pointer-events: none;
+          background: #2d2d2d;
+          border-color: #6b7280;
         }
         .apps-menu-icon {
           font-size: 2.1rem;
