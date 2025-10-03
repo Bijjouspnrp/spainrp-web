@@ -117,11 +117,14 @@ const Support = () => {
     const newSocket = io(process.env.REACT_APP_API_URL || 'https://spainrp-oficial.onrender.com', {
       transports: ['polling'], // Solo polling para compatibilidad con Render
       upgrade: false, // Deshabilitar upgrade a WebSocket
-      timeout: 10000,
+      timeout: 15000,
       reconnection: true,
-      reconnectionAttempts: 3,
-      reconnectionDelay: 2000,
-      forceNew: true
+      reconnectionAttempts: 5,
+      reconnectionDelay: 3000,
+      reconnectionDelayMax: 10000,
+      maxReconnectionAttempts: 5,
+      forceNew: true,
+      autoConnect: true
     });
 
     // Eventos de conexión
@@ -294,11 +297,14 @@ const Support = () => {
       const newSocket = io(process.env.REACT_APP_API_URL || 'https://spainrp-oficial.onrender.com', {
         transports: ['polling'], // Solo polling para compatibilidad con Render
         upgrade: false, // Deshabilitar upgrade a WebSocket
-        timeout: 10000,
+        timeout: 15000,
         reconnection: true,
-        reconnectionAttempts: 3,
-        reconnectionDelay: 2000,
-        forceNew: true
+        reconnectionAttempts: 5,
+        reconnectionDelay: 3000,
+        reconnectionDelayMax: 10000,
+        maxReconnectionAttempts: 5,
+        forceNew: true,
+        autoConnect: true
       });
       
       newSocket.on('connect', () => {

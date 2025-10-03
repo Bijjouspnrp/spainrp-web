@@ -442,10 +442,20 @@ const io = new Server(server, {
       'http://127.0.0.1:5173',
       process.env.PUBLIC_BASE_URL || 'https://spainrp-oficial.onrender.com'
     ].filter(Boolean),
-    credentials: true
+    credentials: true,
+    methods: ['GET', 'POST']
   },
   transports: ['polling'], // Solo polling para compatibilidad con Render
-  allowEIO3: true // Compatibilidad con versiones anteriores
+  allowEIO3: true, // Compatibilidad con versiones anteriores
+  pingTimeout: 60000,
+  pingInterval: 25000
+});
+
+// Manejar errores de Socket.IO
+io.engine.on('connection_error', (err) => {
+  console.error('[SOCKET.IO] Error de conexión:', err.message);
+  console.error('[SOCKET.IO] Código:', err.code);
+  console.error('[SOCKET.IO] Context:', err.context);
 });
 
 // Manejar conexiones WebSocket - CONSOLIDADO
