@@ -99,14 +99,21 @@ const DiscordSection = () => {
     limpio = limpio.toLowerCase();
     // Quitar tildes y diacríticos
     limpio = limpio.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    // Reemplazar letras Unicode estilizadas por normales (ejemplo básico)
-    const unicodeMap = {
-      '𝗮': 'a', '𝗯': 'b', '𝗰': 'c', '𝗱': 'd', '𝗲': 'e', '𝗳': 'f', '𝗴': 'g', '𝗵': 'h', '𝗶': 'i', '𝗷': 'j', '𝗸': 'k', '𝗹': 'l', '𝗺': 'm', '𝗻': 'n', '𝗼': 'o', '𝗽': 'p', '𝗾': 'q', '𝗿': 'r', '𝘀': 's', '𝘁': 't', '𝘂': 'u', '𝘃': 'v', '𝘄': 'w', '𝘅': 'x', '��': 'y', '𝘇': 'z',
-      '𝐚': 'a', '𝐛': 'b', '𝐜': 'c', '𝐝': 'd', '𝐞': 'e', '𝐟': 'f', '𝐠': 'g', '𝐡': 'h', '𝐢': 'i', '𝐣': 'j', '𝐤': 'k', '𝐥': 'l', '𝐦': 'm', '𝐧': 'n', '𝐨': 'o', '𝐩': 'p', '𝐪': 'q', '𝐫': 'r', '𝐬': 's', '𝐭': 't', '𝐮': 'u', '𝐯': 'v', '𝐰': 'w', '𝐱': 'x', '𝐲': 'y', '𝐳': 'z',
-      '𝑎': 'a', '𝑏': 'b', '𝑐': 'c', '𝑑': 'd', '𝑒': 'e', '𝑓': 'f', '𝑔': 'g', '𝑖': 'i', '𝑗': 'j', '𝑘': 'k', '𝑙': 'l', '𝑚': 'm', '𝑛': 'n', '𝑜': 'o', '𝑝': 'p', '𝑞': 'q', '𝑟': 'r', '𝑠': 's', '𝑡': 't', '𝑢': 'u', '𝑣': 'v', '𝑤': 'w', '𝑥': 'x', '��': 'y', '𝑧': 'z',
-      // Agrega más si lo necesitas
-    };
-    limpio = limpio.replace(/[\u{1D400}-\u{1D7FF}]/gu, c => unicodeMap[c] || c);
+    // Reemplazar letras Unicode estilizadas por normales (simplificado)
+    limpio = limpio.replace(/[\u{1D400}-\u{1D7FF}]/gu, c => {
+      // Mapeo simplificado para caracteres Unicode estilizados
+      const charCode = c.codePointAt(0);
+      if (charCode >= 0x1D400 && charCode <= 0x1D419) {
+        return String.fromCharCode(charCode - 0x1D400 + 97); // a-z
+      }
+      if (charCode >= 0x1D41A && charCode <= 0x1D433) {
+        return String.fromCharCode(charCode - 0x1D41A + 97); // a-z bold
+      }
+      if (charCode >= 0x1D434 && charCode <= 0x1D44D) {
+        return String.fromCharCode(charCode - 0x1D434 + 97); // a-z italic
+      }
+      return c;
+    });
     return limpio;
   }
 
@@ -290,4 +297,4 @@ const DiscordSection = () => {
   );
 };
 
-export default DiscordSection; 
+export default DiscordSection;

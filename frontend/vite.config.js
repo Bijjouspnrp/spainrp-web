@@ -232,8 +232,7 @@ export default defineConfig({
           vendor: ['react', 'react-dom'],
           router: ['react-router-dom'],
           icons: ['react-icons'],
-          socket: ['socket.io-client'],
-          utils: ['react', 'react-dom', 'react-router-dom']
+          socket: ['socket.io-client']
         },
         // Optimizar nombres de chunks
         chunkFileNames: 'assets/[name]-[hash].js',
