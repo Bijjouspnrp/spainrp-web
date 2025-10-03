@@ -5378,10 +5378,19 @@ app.post('/api/proxy/admin/pagar-multa', express.json(), async (req, res) => {
   try {
     const proxyUrl = 'http://37.27.21.91:5021/api/proxy/admin/pagar-multa';
     
+    // Mapear userId a discordId si es necesario
+    const body = { ...req.body };
+    if (body.userId && !body.discordId) {
+      body.discordId = body.userId;
+      delete body.userId;
+    }
+    
+    console.log('[MDT PROXY] Pagando multa:', body);
+    
     const response = await fetch(proxyUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(req.body)
+      body: JSON.stringify(body)
     });
     const data = await response.json();
     
