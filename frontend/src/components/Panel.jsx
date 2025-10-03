@@ -307,83 +307,59 @@ const Panel = () => {
 
   const renderOverview = () => (
     <div className="overview-section">
-      <AnimatedCard delay={0} className="welcome-card">
-        <div className="welcome-header">
-          <img 
-            src={user?.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : '/assets/spainrplogo.png'} 
-            alt="Avatar" 
-            className="user-avatar"
-          />
-          <div className="welcome-text">
-            <h1>¡Bienvenido, {user?.username}!</h1>
-            <p>Panel de control de SpainRP</p>
+      {/* Welcome Header Moderno */}
+      <AnimatedCard delay={0} className="welcome-card-modern">
+        <div className="welcome-header-modern">
+          <div className="welcome-avatar-section">
+            <img 
+              src={user?.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : '/assets/spainrplogo.png'} 
+              alt="Avatar" 
+              className="welcome-avatar-modern"
+            />
+            <div className="welcome-status-indicator"></div>
+          </div>
+          <div className="welcome-content">
+            <h1 className="welcome-title">¡Hola, {user?.username}!</h1>
+            <p className="welcome-subtitle">Panel de control de SpainRP</p>
+            <div className="welcome-badges">
+              {isAdmin && (
+                <span className="welcome-badge admin">
+                  <FaCrown /> Staff
+                </span>
+              )}
+              {robloxVerified && (
+                <span className="welcome-badge roblox">
+                  <img src={robloxProfile?.avatarUrl} alt="Roblox" className="badge-avatar" />
+                  Roblox
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </AnimatedCard>
 
-      <div className="stats-grid">
-        {allZero && (
-          <AnimatedCard delay={0.1} style={{
-            background: '#fffbe6',
-            color: '#856404',
-            border: '1px solid #ffeeba',
-            borderRadius: 10,
-            padding: '16px 24px',
-            marginBottom: 18,
-            textAlign: 'center',
-            fontWeight: 500,
-            fontSize: 16,
-            gridColumn: 'span 2'
-          }}>
-            <span role="img" aria-label="info" style={{marginRight:8}}>ℹ️</span>
-            No tienes registros, arrestos ni multas pendientes actualmente.<br/>
-            Si esperabas ver datos, contacta con el staff o recarga más tarde.
-          </AnimatedCard>
-        )}
-
-        {/* Gráfico de estadísticas */}
-        <AnimatedCard delay={0.2} style={{gridColumn:'span 2'}}>
-          <StatsChart 
-            type="bar" 
-            data={chartData.records} 
-            title="Estadísticas de Registros"
-            className="records-chart"
-          />
-        </AnimatedCard>
-
-        {/* DNI digital */}
-        <AnimatedCard delay={0.3} className="stat-card" style={{gridColumn:'span 2',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'1.2rem 0'}}>
-          <div className="stat-icon" style={{marginBottom:8}}>
-            <FaIdCard />
+      {/* Stats Grid Moderno */}
+      <div className="stats-grid-modern">
+        {/* DNI Card */}
+        <AnimatedCard delay={0.1} className="dni-card-modern">
+          <div className="dni-card-header">
+            <div className="dni-icon">
+              <FaIdCard />
+            </div>
+            <h3>DNI Digital</h3>
           </div>
-          <div className="stat-content" style={{width:'100%',textAlign:'center'}}>
-            <h3 style={{marginBottom:8}}>DNI digital</h3>
-            {/* ...existing code DNI... */}
+          <div className="dni-card-content">
             {dniExists === true ? (
-              <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
-                {/* Flip Card */}
+              <div className="dni-display">
                 <div 
-                  className={`dni-flip-card${dniFlipped ? ' flipped' : ''}`}
+                  className={`dni-flip-card-modern${dniFlipped ? ' flipped' : ''}`}
                   onClick={() => setDniFlipped(f => !f)}
                   title="Haz click para girar el DNI"
                 >
                   <div className="dni-flip-inner">
-                    {/* Anverso */}
                     <div className="dni-flip-front">
-                      <img 
-                        src={dniImgUrl} 
-                        alt="DNI SpainRP" 
-                        style={{
-                          width:'100%',
-                          height:'100%',
-                          objectFit:'cover',
-                          borderRadius:12,
-                          boxShadow:'0 2px 12px #23272a44',
-                          background:'#fff'
-                        }} 
-                      />
+                      <img src={dniImgUrl} alt="DNI SpainRP" />
                     </div>
-                    {/* Reverso: datos básicos mejorados */}
                     <div className="dni-flip-back">
                       <div className="dni-info">
                         <h4>DNI SpainRP</h4>
@@ -394,152 +370,107 @@ const Panel = () => {
                     </div>
                   </div>
                 </div>
-                
-                {/* Botones de acción mejorados */}
-                <div className="dni-actions">
-                  <button
-                    className="dni-action-btn primary"
-                    onClick={e => {
-                      e.stopPropagation();
-                      setShowDNIShare(true);
-                    }}
-                  >
-                    <FaShare />
-                    Compartir
+                <div className="dni-actions-modern">
+                  <button className="dni-action-modern primary" onClick={() => setShowDNIShare(true)}>
+                    <FaShare /> Compartir
                   </button>
-                  
-                  <button
-                    className="dni-action-btn secondary"
-                    onClick={e => {
-                      e.stopPropagation();
-                      const link = document.createElement('a');
-                      link.href = dniImgUrl;
-                      link.download = `DNI_SpainRP_${user?.username || 'usuario'}.png`;
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                    }}
-                  >
-                    <FaDownload />
-                    Descargar
-                  </button>
-                  
-                  <button
-                    className="dni-action-btn secondary"
-                    onClick={e => {
-                      e.stopPropagation();
-                      const printWindow = window.open('', '_blank');
-                      printWindow.document.write(`
-                        <html>
-                          <head>
-                            <title>DNI SpainRP - ${user?.username}</title>
-                            <style>
-                              body { margin: 0; padding: 20px; text-align: center; }
-                              img { max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
-                              .info { margin-top: 20px; font-family: Arial, sans-serif; }
-                              .info h2 { color: #7289da; margin-bottom: 10px; }
-                              .info p { color: #666; margin: 5px 0; }
-                            </style>
-                          </head>
-                          <body>
-                            <img src="${dniImgUrl}" alt="DNI SpainRP" />
-                            <div class="info">
-                              <h2>DNI SpainRP</h2>
-                              <p><strong>Usuario:</strong> ${user?.username}</p>
-                              <p><strong>ID:</strong> ${user?.id}</p>
-                              <p><strong>Fecha:</strong> ${new Date().toLocaleDateString()}</p>
-                            </div>
-                          </body>
-                        </html>
-                      `);
-                      printWindow.document.close();
-                      printWindow.print();
-                    }}
-                  >
-                    <FaPrint />
-                    Imprimir
-                  </button>
-                  
-                  <button
-                    className="dni-action-btn danger"
-                    onClick={e => {
-                      e.stopPropagation();
-                      setShowReport(true);
-                    }}
-                  >
-                    <FaCopy />
-                    Reportar
+                  <button className="dni-action-modern secondary" onClick={() => {
+                    const link = document.createElement('a');
+                    link.href = dniImgUrl;
+                    link.download = `DNI_SpainRP_${user?.username || 'usuario'}.png`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}>
+                    <FaDownload /> Descargar
                   </button>
                 </div>
               </div>
             ) : dniExists === false ? (
-              <div style={{
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 120,
-                animation: 'fadeIn 0.7s',
-                color: '#888',
-                border: '1px dashed #bbb',
-                borderRadius: 12,
-                padding: 24,
-                background: 'rgba(255,255,255,0.7)',
-                boxShadow: '0 2px 12px #23272a11',
-                margin: '12px 0'
-              }}>
-                <img src={'/assets/spainrplogo.png'} alt="SpainRP" style={{width: 64, opacity: 0.7, marginBottom: 12, filter: 'grayscale(1)'}} />
-                <div style={{fontSize: 17, fontWeight: 500, marginBottom: 6, color: '#555'}}>No tienes DNI generado</div>
-                <div style={{fontSize: 14, marginBottom: 10}}>
-                  Para obtener tu DNI digital, usa el comando <b>/dni_crear</b> en el servidor de Discord.<br/>
-                  Una vez creado, vuelve aquí y recarga la página.<br/>
+              <div className="dni-placeholder">
+                <div className="dni-placeholder-icon">
+                  <FaIdCard />
                 </div>
-                <button
-                  className="btn-secondary"
-                  style={{margin:'6px auto 0 auto',padding:'3px 12px',fontSize:13,display:'block',borderRadius:8,minWidth:120,background:'#f8d7da',color:'#721c24',border:'none'}}
-                  onClick={e => {
-                    e.stopPropagation();
-                    setShowReport(true);
-                  }}
-                >
-                  ¿Crees que es un error? Reportar problema
+                <h4>No tienes DNI generado</h4>
+                <p>Usa el comando <code>/dni_crear</code> en Discord</p>
+                <button className="btn-secondary" onClick={() => setShowReport(true)}>
+                  Reportar problema
                 </button>
-                {/* Animación fadeIn definida en CSS global, no aquí para evitar parpadeos */}
               </div>
             ) : (
-              <div style={{height:120,display:'flex',alignItems:'center',justifyContent:'center',color:'#bbb',fontSize:15}}>Comprobando DNI...</div>
+              <div className="dni-loading">
+                <div className="spinner"></div>
+                <p>Comprobando DNI...</p>
+              </div>
             )}
-            <div style={{marginTop:8,fontSize:13,color:'#888'}}>Puedes usar este DNI en el servidor y exportarlo como imagen.<br/>Haz click en el DNI para girar y ver el reverso.</div>
-            {/* ...fin DNI... */}
           </div>
         </AnimatedCard>
 
-        {/* Estadísticas ordenadas */}
-        <div className="stat-row" style={{display:'flex',gap:24,marginTop:16,flexWrap:'wrap'}}>
-          <AnimatedCard delay={0.4} className="stat-card" style={{flex:1,minWidth:180}}>
-            <div className="stat-icon"><FaFolderOpen /></div>
-            <div className="stat-content">
-              <h3>Antecedentes</h3>
-              <div style={{fontSize:15,fontWeight:600}}>Tus registros: <span style={{color:'#007bff'}}>{userRecords.antecedentes}</span></div>
-              <div style={{fontSize:14,color:'#888',marginTop:2}}>Total global: <span style={{color:'#333'}}>{statsTotals.antecedentes}</span></div>
+        {/* Stats Cards */}
+        <AnimatedCard delay={0.2} className="stat-card-modern">
+          <div className="stat-header">
+            <div className="stat-icon-modern antecedentes">
+              <FaFolderOpen />
             </div>
-          </AnimatedCard>
-          <AnimatedCard delay={0.5} className="stat-card" style={{flex:1,minWidth:180}}>
-            <div className="stat-icon"><FaGavel /></div>
-            <div className="stat-content">
-              <h3>Arrestos</h3>
-              <div style={{fontSize:15,fontWeight:600}}>Global: <span style={{color:'#333'}}>{statsTotals.arrestos}</span></div>
+            <h3>Antecedentes</h3>
+          </div>
+          <div className="stat-content-modern">
+            <div className="stat-value-modern">{userRecords.antecedentes}</div>
+            <div className="stat-label-modern">Tus registros</div>
+            <div className="stat-global">Global: {statsTotals.antecedentes}</div>
+          </div>
+        </AnimatedCard>
+
+        <AnimatedCard delay={0.3} className="stat-card-modern">
+          <div className="stat-header">
+            <div className="stat-icon-modern arrestos">
+              <FaGavel />
             </div>
-          </AnimatedCard>
-          <AnimatedCard delay={0.6} className="stat-card" style={{flex:1,minWidth:180}}>
-            <div className="stat-icon"><FaCoins /></div>
-            <div className="stat-content">
-              <h3>Multas</h3>
-              <div style={{fontSize:15,fontWeight:600}}>Tus pendientes: <span style={{color:'#d9534f'}}>{userRecords.multasPendientes}</span></div>
-              <div style={{fontSize:14,color:'#888',marginTop:2}}>Total usuario: <span style={{color:'#333'}}>{userRecords.multasTotal}</span> | Global: <span style={{color:'#333'}}>{statsTotals.multasPendientes}</span></div>
+            <h3>Arrestos</h3>
+          </div>
+          <div className="stat-content-modern">
+            <div className="stat-value-modern">0</div>
+            <div className="stat-label-modern">Tus arrestos</div>
+            <div className="stat-global">Global: {statsTotals.arrestos}</div>
+          </div>
+        </AnimatedCard>
+
+        <AnimatedCard delay={0.4} className="stat-card-modern">
+          <div className="stat-header">
+            <div className="stat-icon-modern multas">
+              <FaCoins />
             </div>
-          </AnimatedCard>
-        </div>
+            <h3>Multas</h3>
+          </div>
+          <div className="stat-content-modern">
+            <div className="stat-value-modern">{userRecords.multasPendientes}</div>
+            <div className="stat-label-modern">Pendientes</div>
+            <div className="stat-global">Total: {userRecords.multasTotal} | Global: {statsTotals.multasPendientes}</div>
+          </div>
+        </AnimatedCard>
+
+        {/* Gráfico de estadísticas */}
+        <AnimatedCard delay={0.5} className="chart-card-modern">
+          <div className="chart-header">
+            <h3>Estadísticas de Registros</h3>
+          </div>
+          <div className="chart-content">
+            <StatsChart 
+              type="bar" 
+              data={chartData.records} 
+              title=""
+              className="records-chart-modern"
+            />
+          </div>
+        </AnimatedCard>
       </div>
 
-      <div className="calendar-section">
-        <h2><FaCalendarCheck /> Registro Diario</h2>
+      {/* Calendar Section Moderna */}
+      <div className="calendar-section-modern">
+        <div className="calendar-header-modern">
+          <h2><FaCalendarCheck /> Registro Diario</h2>
+          <p>Mantén tu racha diaria para obtener recompensas</p>
+        </div>
         <DailyCalendar />
       </div>
     </div>

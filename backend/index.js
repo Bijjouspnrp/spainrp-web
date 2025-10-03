@@ -5237,6 +5237,53 @@ app.post('/api/admin/multi-role', express.json(), async (req, res) => {
   }
 });
 
+// ===== ENDPOINTS DE CALENDARIO =====
+// Obtener progreso del calendario
+app.get('/api/calendar', verifyToken, async (req, res) => {
+  try {
+    const { year, month } = req.query;
+    const userId = req.user.userId;
+    
+    // Por ahora devolvemos datos de ejemplo
+    // En el futuro esto se conectaría con una base de datos real
+    const claimedDays = [1, 2, 3, 5, 7, 10, 12, 15, 18, 20, 22, 25, 28, 30];
+    const streak = 5; // Racha actual
+    
+    res.json({
+      success: true,
+      claimedDays,
+      streak,
+      progress: Math.round((claimedDays.length / 31) * 100)
+    });
+  } catch (err) {
+    console.error('[CALENDAR] Error obteniendo progreso:', err);
+    res.status(500).json({ error: 'Error obteniendo progreso del calendario' });
+  }
+});
+
+// Reclamar día del calendario
+app.post('/api/calendar/claim', verifyToken, async (req, res) => {
+  try {
+    const { year, month, day } = req.body;
+    const userId = req.user.userId;
+    
+    // Por ahora simulamos el guardado
+    // En el futuro esto se conectaría con una base de datos real
+    const claimedDays = [1, 2, 3, 5, 7, 10, 12, 15, 18, 20, 22, 25, 28, 30, day];
+    const streak = 6; // Racha actualizada
+    
+    res.json({
+      success: true,
+      claimedDays,
+      streak,
+      progress: Math.round((claimedDays.length / 31) * 100)
+    });
+  } catch (err) {
+    console.error('[CALENDAR] Error reclamando día:', err);
+    res.status(500).json({ error: 'Error reclamando día del calendario' });
+  }
+});
+
 // ===== ENDPOINTS MDT POLICIAL =====
 
 // Verificar si usuario tiene rol de policía

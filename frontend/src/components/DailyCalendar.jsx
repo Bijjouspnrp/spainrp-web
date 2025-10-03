@@ -52,7 +52,12 @@ export default function DailyCalendar() {
   // Cargar progreso desde backend
   useEffect(() => {
     setLoading(true);
-    fetch(`/api/calendar?year=${year}&month=${month+1}`)
+    fetch(apiUrl(`/api/calendar?year=${year}&month=${month+1}`), {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('spainrp_token')}`,
+        'Content-Type': 'application/json'
+      }
+    })
       .then(res => res.json())
       .then(data => {
         setClaimedDays(data.claimedDays || []);
@@ -75,7 +80,10 @@ export default function DailyCalendar() {
     setLoading(true);
     fetch(apiUrl('/api/calendar/claim'), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Authorization': `Bearer ${localStorage.getItem('spainrp_token')}`,
+        'Content-Type': 'application/json' 
+      },
       body: JSON.stringify({ year, month: month+1, day })
     })
       .then(res => res.json())
