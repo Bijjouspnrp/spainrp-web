@@ -5279,7 +5279,7 @@ app.get('/api/calendar/init', async (req, res) => {
 app.get('/api/calendar', verifyToken, async (req, res) => {
   try {
     const { year, month } = req.query;
-    const userId = req.user.userId;
+    const userId = req.user?.id;
     
     if (!year || !month) {
       return res.status(400).json({ error: 'Año y mes son requeridos' });
@@ -5330,10 +5330,19 @@ app.get('/api/calendar', verifyToken, async (req, res) => {
 app.post('/api/calendar/claim', verifyToken, async (req, res) => {
   try {
     const { year, month, day } = req.body;
-    const userId = req.user.userId;
+    const userId = req.user?.id;
+    
+    console.log('[CALENDAR] Request body:', { year, month, day });
+    console.log('[CALENDAR] User from JWT:', req.user);
+    console.log('[CALENDAR] Extracted userId:', userId);
     
     if (!year || !month || !day) {
       return res.status(400).json({ error: 'Año, mes y día son requeridos' });
+    }
+    
+    if (!userId) {
+      console.error('[CALENDAR] Error: userId is undefined');
+      return res.status(401).json({ error: 'Usuario no autenticado correctamente' });
     }
 
     const { getQuery, runQuery } = require('./db/database');
