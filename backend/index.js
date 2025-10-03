@@ -2138,7 +2138,86 @@ app.use((req, res, next) => {
 });
 
 app.get('/', (req, res) => {
-  res.send('Backend SpainRP funcionando');
+  const uptime = process.uptime();
+  const uptimeFormatted = Math.floor(uptime / 3600) + 'h ' + Math.floor((uptime % 3600) / 60) + 'm ' + Math.floor(uptime % 60) + 's';
+  
+  res.json({
+    status: 'online',
+    message: 'Backend SpainRP funcionando correctamente',
+    version: '2.0.0',
+    uptime: uptimeFormatted,
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    features: [
+      'Discord Bot Integration',
+      'JWT Authentication',
+      'TinderRP App',
+      'Roblox API Integration',
+      'Admin Panel',
+      'WebSocket Support',
+      'Database Management',
+      'File Upload System'
+    ],
+    endpoints: {
+      auth: '/auth/*',
+      api: '/api/*',
+      tinder: '/api/tinder/*',
+      roblox: '/api/roblox/*',
+      admin: '/api/admin/*',
+      websocket: '/socket.io/'
+    },
+    health: {
+      memory: process.memoryUsage(),
+      platform: process.platform,
+      nodeVersion: process.version,
+      pid: process.pid
+    }
+  });
+});
+
+// Endpoint de salud para monitoreo
+app.get('/health', (req, res) => {
+  const uptime = process.uptime();
+  const memoryUsage = process.memoryUsage();
+  
+  res.json({
+    status: 'healthy',
+    uptime: Math.floor(uptime),
+    memory: {
+      used: Math.round(memoryUsage.heapUsed / 1024 / 1024) + ' MB',
+      total: Math.round(memoryUsage.heapTotal / 1024 / 1024) + ' MB',
+      external: Math.round(memoryUsage.external / 1024 / 1024) + ' MB'
+    },
+    timestamp: new Date().toISOString(),
+    version: '2.0.0'
+  });
+});
+
+// Endpoint de información del sistema
+app.get('/info', (req, res) => {
+  res.json({
+    name: 'SpainRP Backend API',
+    description: 'Backend API para el servidor de roleplay SpainRP',
+    version: '2.0.0',
+    author: 'SpainRP Development Team',
+    repository: 'https://github.com/Bijjouspnrp/spainrp-web',
+    documentation: 'https://spainrp-oficial.onrender.com/docs',
+    support: 'https://discord.gg/spainrp',
+    features: {
+      authentication: 'JWT + Discord OAuth2',
+      database: 'SQLite + MongoDB',
+      realtime: 'Socket.IO WebSockets',
+      integrations: ['Discord Bot', 'Roblox API', 'SendGrid Email'],
+      apps: ['TinderRP', 'Admin Panel', 'Stock Market', 'Black Market']
+    },
+    stats: {
+      uptime: process.uptime(),
+      nodeVersion: process.version,
+      platform: process.platform,
+      arch: process.arch,
+      pid: process.pid
+    }
+  });
 });
 
 // Endpoint para obtener miembros de Discord usando el bot
