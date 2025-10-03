@@ -681,6 +681,73 @@
   font-size: 0.9rem;
 }
 
+/* Mensajes de feedback */
+.result-message {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.result-message.success {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid #10b981;
+  color: #10b981;
+}
+
+.result-message.error {
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid #dc2626;
+  color: #dc2626;
+}
+
+.search-error {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid #dc2626;
+  border-radius: 8px;
+  color: #dc2626;
+  text-align: center;
+}
+
+.search-error p {
+  margin: 0;
+  font-weight: 600;
+}
+
+.antecedentes-details {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border-left: 4px solid #8b5cf6;
+}
+
+.antecedentes-details h6 {
+  margin: 0 0 0.5rem 0;
+  color: #8b5cf6;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.antecedentes-details ul {
+  margin: 0;
+  padding-left: 1.5rem;
+  color: #ffffff;
+}
+
+.antecedentes-details li {
+  margin-bottom: 0.3rem;
+  font-size: 0.9rem;
+}
+
+.status-success {
+  color: #10b981;
+  font-weight: 600;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .mdt-header-content {

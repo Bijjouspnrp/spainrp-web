@@ -9,7 +9,7 @@ import { apiUrl } from '../../utils/api';
 
 // Sección DNI
 export const DNISection = ({ data }) => {
-  if (!data) {
+  if (!data || !data.dni) {
     return (
       <div className="mdt-section">
         <h3><FaIdCard /> Mi DNI</h3>
@@ -21,36 +21,66 @@ export const DNISection = ({ data }) => {
     );
   }
 
+  const dni = data.dni;
+
   return (
     <div className="mdt-section">
       <h3><FaIdCard /> Mi DNI</h3>
       <div className="dni-card">
         <div className="dni-header">
-          <h4>DNI {data.numero}</h4>
-          <span className={`dni-status ${data.arrestado ? 'arrestado' : 'activo'}`}>
-            {data.arrestado ? 'ARRESTADO' : 'ACTIVO'}
+          <h4>DNI {dni.numeroDNI}</h4>
+          <span className={`dni-status ${dni.arrestado ? 'arrestado' : 'activo'}`}>
+            {dni.arrestado ? 'ARRESTADO' : 'ACTIVO'}
           </span>
         </div>
         <div className="dni-info">
           <div className="dni-field">
             <label>Nombre:</label>
-            <span>{data.nombre}</span>
+            <span>{dni.nombre}</span>
           </div>
           <div className="dni-field">
             <label>Apellidos:</label>
-            <span>{data.apellidos}</span>
+            <span>{dni.apellidos}</span>
           </div>
           <div className="dni-field">
             <label>Fecha de Nacimiento:</label>
-            <span>{data.fechaNacimiento}</span>
+            <span>{dni.fechaNacimiento}</span>
+          </div>
+          <div className="dni-field">
+            <label>Sexo:</label>
+            <span>{dni.sexo}</span>
           </div>
           <div className="dni-field">
             <label>Nacionalidad:</label>
-            <span>{data.nacionalidad}</span>
+            <span>{dni.nacionalidad}</span>
           </div>
           <div className="dni-field">
             <label>Dirección:</label>
-            <span>{data.direccion}</span>
+            <span>{dni.direccion || 'N/A'}</span>
+          </div>
+          <div className="dni-field">
+            <label>Trabajo:</label>
+            <span>{dni.trabajo || 'N/A'}</span>
+          </div>
+          <div className="dni-field">
+            <label>Altura:</label>
+            <span>{dni.altura || 'N/A'}</span>
+          </div>
+          <div className="dni-field">
+            <label>Color de Ojos:</label>
+            <span>{dni.colorOjos || 'N/A'}</span>
+          </div>
+          <div className="dni-field">
+            <label>Color de Pelo:</label>
+            <span>{dni.colorPelo || 'N/A'}</span>
+          </div>
+          <div className="dni-field">
+            <label>Fecha de Emisión:</label>
+            <span>{dni.fechaEmision}</span>
+          </div>
+          <div className="dni-field">
+            <label>Caducidad:</label>
+            <span>{dni.caducidad}</span>
           </div>
         </div>
       </div>
@@ -227,12 +257,19 @@ export const SearchSection = ({ onSearch }) => {
   const [searchValue, setSearchValue] = useState('');
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSearch = async (e) => {
     e.preventDefault();
-    if (!searchValue.trim()) return;
+    if (!searchValue.trim()) {
+      setError('❌ Debes ingresar un valor para buscar');
+      return;
+    }
 
     setLoading(true);
+    setError('');
+    setResults(null);
+
     try {
       let url;
       if (searchType === 'discord') {
@@ -242,12 +279,20 @@ export const SearchSection = ({ onSearch }) => {
       }
 
       const response = await fetch(apiUrl(url));
+      const data = await response.json();
+
       if (response.ok) {
-        const data = await response.json();
-        setResults(data);
+        if (data.success && data.antecedentes && data.antecedentes.length > 0) {
+          setResults(data);
+        } else {
+          setError('ℹ️ No se encontraron antecedentes para este usuario');
+        }
+      } else {
+        setError(`❌ Error en la búsqueda: ${data.error || 'Error desconocido'}`);
       }
     } catch (err) {
       console.error('Error en búsqueda:', err);
+      setError('❌ Error de conexión en la búsqueda');
     } finally {
       setLoading(false);
     }
@@ -281,28 +326,49 @@ export const SearchSection = ({ onSearch }) => {
         </div>
       </form>
 
+      {error && (
+        <div className="search-error">
+          <p>{error}</p>
+        </div>
+      )}
+
       {results && (
         <div className="search-results">
           <h4>Resultados de la búsqueda:</h4>
           <div className="result-card">
             <div className="result-header">
-              <h5>{results.nombre || 'Usuario encontrado'}</h5>
+              <h5>Usuario encontrado</h5>
               <span className="result-type">{searchType.toUpperCase()}</span>
             </div>
             <div className="result-info">
-              {results.antecedentes && (
-                <div className="result-field">
-                  <label>Antecedentes:</label>
-                  <span>{results.antecedentes.length} registros</span>
-                </div>
-              )}
-              {results.dni && (
-                <div className="result-field">
-                  <label>DNI:</label>
-                  <span>{results.dni.numero}</span>
-                </div>
-              )}
+              <div className="result-field">
+                <label>ID consultado:</label>
+                <span>{searchValue}</span>
+              </div>
+              <div className="result-field">
+                <label>Antecedentes encontrados:</label>
+                <span>{results.antecedentes ? results.antecedentes.length : 0} registros</span>
+              </div>
+              <div className="result-field">
+                <label>Estado:</label>
+                <span className="status-success">✅ Usuario localizado</span>
+              </div>
             </div>
+            {results.antecedentes && results.antecedentes.length > 0 && (
+              <div className="antecedentes-details">
+                <h6>Detalles de antecedentes:</h6>
+                <ul>
+                  {results.antecedentes.slice(0, 3).map((antecedente, index) => (
+                    <li key={index}>
+                      <strong>{antecedente.tipo || 'Antecedente'}:</strong> {antecedente.descripcion || 'Sin descripción'}
+                    </li>
+                  ))}
+                  {results.antecedentes.length > 3 && (
+                    <li>... y {results.antecedentes.length - 3} más</li>
+                  )}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -319,28 +385,51 @@ export const MultarSection = ({ onRefresh }) => {
     descripcion: ''
   });
   const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setResult('');
+
+    // Validar datos
+    if (!formData.discordId.trim() || !formData.motivo.trim() || !formData.cantidad) {
+      setResult('❌ Todos los campos son obligatorios');
+      setLoading(false);
+      return;
+    }
+
+    const cantidad = parseFloat(formData.cantidad);
+    if (isNaN(cantidad) || cantidad <= 0) {
+      setResult('❌ La cantidad debe ser un número válido mayor a 0');
+      setLoading(false);
+      return;
+    }
 
     try {
       const response = await fetch(apiUrl('/api/proxy/admin/multar'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          discordId: formData.discordId.trim(),
+          motivo: formData.motivo.trim(),
+          cantidad: cantidad,
+          agente: 'MDT Policial' // Agregar agente requerido
+        })
       });
 
-      if (response.ok) {
-        alert('Multa aplicada correctamente');
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setResult('✅ Multa aplicada correctamente');
         setFormData({ discordId: '', motivo: '', cantidad: '', descripcion: '' });
         onRefresh();
       } else {
-        alert('Error aplicando multa');
+        setResult(`❌ Error: ${data.error || 'Error aplicando multa'}`);
       }
     } catch (err) {
       console.error('Error multando:', err);
-      alert('Error aplicando multa');
+      setResult('❌ Error de conexión al aplicar multa');
     } finally {
       setLoading(false);
     }
@@ -399,6 +488,12 @@ export const MultarSection = ({ onRefresh }) => {
           {loading ? 'Aplicando...' : 'Aplicar Multa'}
         </button>
       </form>
+
+      {result && (
+        <div className={`result-message ${result.startsWith('✅') ? 'success' : 'error'}`}>
+          {result}
+        </div>
+      )}
     </div>
   );
 };
@@ -407,27 +502,35 @@ export const MultarSection = ({ onRefresh }) => {
 export const ArrestarSection = ({ onRefresh }) => {
   const [discordId, setDiscordId] = useState('');
   const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState('');
 
   const handleArrest = async (e) => {
     e.preventDefault();
-    if (!discordId.trim()) return;
+    if (!discordId.trim()) {
+      setResult('❌ Debes ingresar un Discord ID');
+      return;
+    }
 
     setLoading(true);
+    setResult('');
+
     try {
       const response = await fetch(apiUrl(`/api/proxy/admin/dni/arrestar/${discordId}`), {
         method: 'POST'
       });
 
-      if (response.ok) {
-        alert('DNI marcado como arrestado');
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setResult('✅ DNI marcado como arrestado correctamente');
         setDiscordId('');
         onRefresh();
       } else {
-        alert('Error marcando como arrestado');
+        setResult(`❌ Error: ${data.error || 'Error marcando como arrestado'}`);
       }
     } catch (err) {
       console.error('Error arrestando:', err);
-      alert('Error marcando como arrestado');
+      setResult('❌ Error de conexión al marcar como arrestado');
     } finally {
       setLoading(false);
     }
@@ -453,6 +556,12 @@ export const ArrestarSection = ({ onRefresh }) => {
           {loading ? 'Procesando...' : 'Marcar como Arrestado'}
         </button>
       </form>
+
+      {result && (
+        <div className={`result-message ${result.startsWith('✅') ? 'success' : 'error'}`}>
+          {result}
+        </div>
+      )}
     </div>
   );
 };
