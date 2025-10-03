@@ -448,7 +448,9 @@ const io = new Server(server, {
   transports: ['polling'], // Solo polling para compatibilidad con Render
   allowEIO3: true, // Compatibilidad con versiones anteriores
   pingTimeout: 60000,
-  pingInterval: 25000
+  pingInterval: 25000,
+  allowUpgrades: false, // Deshabilitar completamente el upgrade a WebSocket
+  upgrade: false // Deshabilitar upgrade
 });
 
 // Manejar errores de Socket.IO
