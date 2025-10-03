@@ -155,7 +155,14 @@ export const MultasSection = ({ data, userId, onRefresh }) => {
               </div>
               <div className="multa-field">
                 <label>Fecha:</label>
-                <span>{multa.fecha ? new Date(multa.fecha).toLocaleDateString() : 'N/A'}</span>
+                <span>{multa.fecha ? (() => {
+                  try {
+                    const date = new Date(multa.fecha);
+                    return isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString();
+                  } catch {
+                    return 'N/A';
+                  }
+                })() : 'N/A'}</span>
               </div>
               {multa.descripcion && (
                 <div className="multa-field">
@@ -221,7 +228,14 @@ export const AntecedentesSection = ({ data }) => {
             <div className="antecedente-header">
               <h4>{antecedente.tipo}</h4>
               <span className="antecedente-fecha">
-                {new Date(antecedente.fecha).toLocaleDateString()}
+                {antecedente.fecha ? (() => {
+                  try {
+                    const date = new Date(antecedente.fecha);
+                    return isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString();
+                  } catch {
+                    return 'N/A';
+                  }
+                })() : 'N/A'}
               </span>
             </div>
             <div className="antecedente-info">
