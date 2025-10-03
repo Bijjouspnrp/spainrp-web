@@ -30,7 +30,7 @@ router.use(authenticateJWT);
 // Inicializar tabla de notificaciones si no existe
 db.run(`CREATE TABLE IF NOT EXISTS notifications (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT,
+    userId TEXT,
     title TEXT NOT NULL,
     message TEXT NOT NULL,
     type TEXT DEFAULT 'info',
@@ -50,7 +50,7 @@ router.get('/', async (req, res) => {
 
     const notifications = await new Promise((resolve, reject) => {
       db.all(
-        'SELECT * FROM notifications WHERE user_id = ? OR user_id IS NULL ORDER BY created_at DESC LIMIT 50',
+        'SELECT * FROM notifications WHERE userId = ? OR userId IS NULL ORDER BY createdAt DESC LIMIT 50',
         [userId],
         (err, rows) => {
           if (err) reject(err);
@@ -61,7 +61,7 @@ router.get('/', async (req, res) => {
 
     const unreadCount = await new Promise((resolve, reject) => {
       db.get(
-        'SELECT COUNT(*) as count FROM notifications WHERE (user_id = ? OR user_id IS NULL) AND read = 0',
+        'SELECT COUNT(*) as count FROM notifications WHERE (userId = ? OR userId IS NULL) AND read = 0',
         [userId],
         (err, row) => {
           if (err) reject(err);
@@ -94,7 +94,7 @@ router.post('/:id/read', async (req, res) => {
 
     await new Promise((resolve, reject) => {
       db.run(
-        'UPDATE notifications SET read = 1 WHERE id = ? AND (user_id = ? OR user_id IS NULL)',
+        'UPDATE notifications SET read = 1 WHERE id = ? AND (userId = ? OR userId IS NULL)',
         [id, userId],
         function(err) {
           if (err) reject(err);
@@ -122,7 +122,7 @@ router.post('/read-all', async (req, res) => {
 
     await new Promise((resolve, reject) => {
       db.run(
-        'UPDATE notifications SET read = 1 WHERE user_id = ? OR user_id IS NULL',
+        'UPDATE notifications SET read = 1 WHERE userId = ? OR userId IS NULL',
         [userId],
         function(err) {
           if (err) reject(err);
@@ -150,7 +150,7 @@ router.delete('/clear', async (req, res) => {
 
     await new Promise((resolve, reject) => {
       db.run(
-        'DELETE FROM notifications WHERE user_id = ?',
+        'DELETE FROM notifications WHERE userId = ?',
         [userId],
         function(err) {
           if (err) reject(err);
@@ -206,7 +206,7 @@ router.post('/send', async (req, res) => {
     // Crear notificación (solo una vez)
     const notificationId = await new Promise((resolve, reject) => {
       db.run(
-        'INSERT INTO notifications (user_id, title, message, type, priority) VALUES (?, ?, ?, ?, ?)',
+        'INSERT INTO notifications (userId, title, message, type, priority) VALUES (?, ?, ?, ?, ?)',
         [finalUserId, title, message, type || 'info', priority || 'normal'],
         function(err) {
           if (err) reject(err);

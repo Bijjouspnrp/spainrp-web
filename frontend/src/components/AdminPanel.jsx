@@ -1768,25 +1768,25 @@ function LogsTab() {
             <div className="logs-list">
               {bannedList.length > 0 ? (
                 <div className="banned-grid">
-                  {bannedList.map((ban, i) => (
+                  {bannedList.filter(ban => ban && ban.user).map((ban, i) => (
                     <div key={i} className="banned-card">
                       <div className="banned-avatar">
                         <img 
-                          src={ban.avatar || `https://cdn.discordapp.com/embed/avatars/${ban.user.discriminator % 5}.png`} 
-                          alt={ban.user.username}
+                          src={ban.avatar || `https://cdn.discordapp.com/embed/avatars/${ban.user?.discriminator % 5 || 0}.png`} 
+                          alt={ban.user?.username || 'Usuario desconocido'}
                           onError={(e) => {
-                            e.target.src = `https://cdn.discordapp.com/embed/avatars/${ban.user.discriminator % 5}.png`;
+                            e.target.src = `https://cdn.discordapp.com/embed/avatars/${ban.user?.discriminator % 5 || 0}.png`;
                           }}
                         />
                       </div>
                       <div className="banned-info">
-                        <h4>{ban.user.username}#{ban.user.discriminator}</h4>
-                        <p className="banned-id">ID: {ban.user.id}</p>
+                        <h4>{ban.user?.username || 'Usuario desconocido'}#{ban.user?.discriminator || '0000'}</h4>
+                        <p className="banned-id">ID: {ban.user?.id || 'N/A'}</p>
                         <p className="banned-reason">
                           <strong>Motivo:</strong> {ban.reason || 'Sin motivo especificado'}
                         </p>
                         <p className="banned-date">
-                          <strong>Baneado:</strong> {new Date(ban.bannedAt).toLocaleString()}
+                          <strong>Baneado:</strong> {ban.bannedAt ? new Date(ban.bannedAt).toLocaleString() : 'Fecha desconocida'}
                         </p>
                         <div className="banned-actions">
                           <button 

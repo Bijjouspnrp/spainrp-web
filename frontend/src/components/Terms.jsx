@@ -615,9 +615,9 @@ const Terms = () => {
         >
           <div style={{ paddingLeft: '30px' }}>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
-              Debes cumplir con las políticas de Discord (mínimo 13 años o la edad mínima legal aplicable en tu país) para
-              usar los servicios y participar en la comunidad.
-            </p>
+            Debes cumplir con las políticas de Discord (mínimo 13 años o la edad mínima legal aplicable en tu país) para
+            usar los servicios y participar en la comunidad.
+          </p>
             <div style={{
               background: 'rgba(114, 137, 218, 0.1)',
               border: '1px solid rgba(114, 137, 218, 0.3)',
@@ -632,7 +632,7 @@ const Terms = () => {
                 Al unirte al servidor de Discord, confirmas que cumples con los requisitos de edad mínima establecidos.
               </p>
             </div>
-          </div>
+        </div>
         </InteractiveSection>
 
         <InteractiveSection
@@ -643,10 +643,10 @@ const Terms = () => {
         >
           <div style={{ paddingLeft: '30px' }}>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
-              Eres responsable del contenido que publiques o compartas. Al publicar, otorgas a SpainRP una licencia
-              no exclusiva, mundial y libre de regalías para mostrar dicho contenido en el contexto de la comunidad.
-              No publiques materiales que infrinjan derechos de terceros o la legislación vigente.
-            </p>
+            Eres responsable del contenido que publiques o compartas. Al publicar, otorgas a SpainRP una licencia
+            no exclusiva, mundial y libre de regalías para mostrar dicho contenido en el contexto de la comunidad.
+            No publiques materiales que infrinjan derechos de terceros o la legislación vigente.
+          </p>
             <div style={{
               background: 'rgba(114, 137, 218, 0.1)',
               border: '1px solid rgba(114, 137, 218, 0.3)',
@@ -664,7 +664,7 @@ const Terms = () => {
                 <li>Contenido original del usuario</li>
               </ul>
             </div>
-          </div>
+        </div>
         </InteractiveSection>
 
         <InteractiveSection
@@ -675,9 +675,9 @@ const Terms = () => {
         >
           <div style={{ paddingLeft: '30px' }}>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
-              Todo el contenido, marcas, logotipos y materiales del sitio son propiedad de SpainRP o de sus respectivos
-              titulares y están protegidos por leyes de propiedad intelectual.
-            </p>
+            Todo el contenido, marcas, logotipos y materiales del sitio son propiedad de SpainRP o de sus respectivos
+            titulares y están protegidos por leyes de propiedad intelectual.
+          </p>
             <div style={{
               background: 'rgba(255, 193, 7, 0.1)',
               border: '1px solid rgba(255, 193, 7, 0.3)',
@@ -695,7 +695,7 @@ const Terms = () => {
                 <li>Contenido original del sitio</li>
               </ul>
             </div>
-          </div>
+        </div>
         </InteractiveSection>
 
         <InteractiveSection
@@ -707,50 +707,50 @@ const Terms = () => {
           <div style={{ paddingLeft: '30px' }}>
             <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>13.1 Servicios integrados</h3>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
-              Utilizamos los siguientes servicios de terceros:
-              <br/>• <a href="https://discord.com/terms" target="_blank" rel="noopener noreferrer" style={{ color: '#7289da' }}>Discord Terms of Service</a>
-              <br/>• <a href="https://www.roblox.com/terms" target="_blank" rel="noopener noreferrer" style={{ color: '#7289da' }}>ERLC (Emergency Response: Liberty County) Terms</a>
-              <br/>• APIs externas para funcionalidades del sitio
-              <br/>• Servicios de hosting compartido (Render.com)
-            </p>
+            Utilizamos los siguientes servicios de terceros:
+            <br/>• <a href="https://discord.com/terms" target="_blank" rel="noopener noreferrer" style={{ color: '#7289da' }}>Discord Terms of Service</a>
+            <br/>• <a href="https://www.roblox.com/terms" target="_blank" rel="noopener noreferrer" style={{ color: '#7289da' }}>ERLC (Emergency Response: Liberty County) Terms</a>
+            <br/>• APIs externas para funcionalidades del sitio
+            <br/>• Servicios de hosting compartido (Render.com)
+          </p>
 
             <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>13.2 Limitación de responsabilidad por servicios externos</h3>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
-              <strong>NO NOS RESPONSABILIZAMOS</strong> por:
-              <br/>• Caídas o interrupciones de las APIs de Discord
-              <br/>• Fallos en los servicios de ERLC o Roblox
-              <br/>• Indisponibilidad del host del bot externo compartido
-              <br/>• Cambios en las políticas de terceros que afecten nuestro servicio
-              <br/>• Pérdida de datos debido a fallos de servicios externos
-            </p>
+            <strong>NO NOS RESPONSABILIZAMOS</strong> por:
+            <br/>• Caídas o interrupciones de las APIs de Discord
+            <br/>• Fallos en los servicios de ERLC o Roblox
+            <br/>• Indisponibilidad del host del bot externo compartido
+            <br/>• Cambios en las políticas de terceros que afecten nuestro servicio
+            <br/>• Pérdida de datos debido a fallos de servicios externos
+          </p>
 
             <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>13.3 Protección contra contenido ilegal</h3>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
-              Implementamos medidas para detectar y eliminar contenido ilegal, pero no podemos garantizar la detección 
-              del 100% del contenido inapropiado. Los usuarios son responsables del contenido que publican. Reporta 
-              contenido ilegal contactando a <strong>BijjouPro08</strong> inmediatamente.
-            </p>
+            Implementamos medidas para detectar y eliminar contenido ilegal, pero no podemos garantizar la detección 
+            del 100% del contenido inapropiado. Los usuarios son responsables del contenido que publican. Reporta 
+            contenido ilegal contactando a <strong>BijjouPro08</strong> inmediatamente.
+          </p>
 
             <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>13.4 Prohibición de ingeniería inversa</h3>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
-              Está <strong>estrictamente prohibido</strong>:
-              <br/>• Realizar ingeniería inversa de nuestro código fuente
-              <br/>• Intentar extraer o replicar nuestros algoritmos
-              <br/>• Crear bots o scripts que imiten nuestra funcionalidad
-              <br/>• Intentar acceder a APIs no públicas
-              <br/>• Cualquier intento de explotar vulnerabilidades del sistema
-            </p>
+            Está <strong>estrictamente prohibido</strong>:
+            <br/>• Realizar ingeniería inversa de nuestro código fuente
+            <br/>• Intentar extraer o replicar nuestros algoritmos
+            <br/>• Crear bots o scripts que imiten nuestra funcionalidad
+            <br/>• Intentar acceder a APIs no públicas
+            <br/>• Cualquier intento de explotar vulnerabilidades del sistema
+          </p>
 
             <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>13.5 Monitoreo y análisis</h3>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
-              Recopilamos datos de uso para mejorar nuestros servicios:
-              <br/>• Métricas de rendimiento y errores
-              <br/>• Patrones de uso del sitio web
-              <br/>• Datos de conexión y sesiones
-              <br/>• Estadísticas de moderación y actividad
-              <br/>• Información de debugging para resolver problemas
-            </p>
-          </div>
+            Recopilamos datos de uso para mejorar nuestros servicios:
+            <br/>• Métricas de rendimiento y errores
+            <br/>• Patrones de uso del sitio web
+            <br/>• Datos de conexión y sesiones
+            <br/>• Estadísticas de moderación y actividad
+            <br/>• Información de debugging para resolver problemas
+          </p>
+        </div>
         </InteractiveSection>
 
         <InteractiveSection
@@ -763,57 +763,57 @@ const Terms = () => {
           <div style={{ paddingLeft: '30px' }}>
             <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>14.1 Retención de datos de Discord</h3>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
-              Guardamos los siguientes datos de tu cuenta de Discord por un período de <strong>2 años</strong> desde tu último acceso:
-              <br/>• ID de usuario de Discord
-              <br/>• Nombre de usuario y avatar
-              <br/>• Roles y permisos en el servidor
-              <br/>• Historial de actividad en el panel
-              <br/>• Datos de verificación de Roblox (si aplica)
-            </p>
+            Guardamos los siguientes datos de tu cuenta de Discord por un período de <strong>2 años</strong> desde tu último acceso:
+            <br/>• ID de usuario de Discord
+            <br/>• Nombre de usuario y avatar
+            <br/>• Roles y permisos en el servidor
+            <br/>• Historial de actividad en el panel
+            <br/>• Datos de verificación de Roblox (si aplica)
+          </p>
 
             <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>14.2 Derechos del usuario (GDPR)</h3>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
-              Tienes derecho a solicitar la eliminación de tus datos personales. Para hacerlo, contacta directamente con 
-              <strong> BijjouPro08</strong> mediante Discord. Procesaremos tu solicitud en un plazo máximo de 30 días.
-            </p>
+            Tienes derecho a solicitar la eliminación de tus datos personales. Para hacerlo, contacta directamente con 
+            <strong> BijjouPro08</strong> mediante Discord. Procesaremos tu solicitud en un plazo máximo de 30 días.
+          </p>
 
             <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>14.3 Base legal para procesamiento</h3>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
-              Procesamos tus datos basándonos en tu <strong>consentimiento explícito</strong> al iniciar sesión y en nuestro 
-              <strong>interés legítimo</strong> para proporcionar servicios de la comunidad y moderación.
-            </p>
+            Procesamos tus datos basándonos en tu <strong>consentimiento explícito</strong> al iniciar sesión y en nuestro 
+            <strong>interés legítimo</strong> para proporcionar servicios de la comunidad y moderación.
+          </p>
 
             <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>14.4 Datos que recopilamos</h3>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
-              Nuestro bot de Discord puede leer:
-              <br/>• Mensajes en canales específicos (para moderación)
-              <br/>• Información de perfil público
-              <br/>• Actividad de roles y permisos
-              <br/>• Comandos ejecutados y respuestas
-              <br/>• Datos de conexión y uso del servicio
-            </p>
+            Nuestro bot de Discord puede leer:
+            <br/>• Mensajes en canales específicos (para moderación)
+            <br/>• Información de perfil público
+            <br/>• Actividad de roles y permisos
+            <br/>• Comandos ejecutados y respuestas
+            <br/>• Datos de conexión y uso del servicio
+          </p>
 
             <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>14.5 Backup y protección de datos</h3>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
-              Implementamos las siguientes medidas de protección:
-              <br/>• Cifrado de datos sensibles en reposo
-              <br/>• Backups automáticos diarios con retención de 30 días
-              <br/>• Acceso restringido solo a administradores autorizados
-              <br/>• Monitoreo de accesos y cambios en los datos
-            </p>
+            Implementamos las siguientes medidas de protección:
+            <br/>• Cifrado de datos sensibles en reposo
+            <br/>• Backups automáticos diarios con retención de 30 días
+            <br/>• Acceso restringido solo a administradores autorizados
+            <br/>• Monitoreo de accesos y cambios en los datos
+          </p>
 
             <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>14.6 Brechas de seguridad</h3>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
-              En caso de filtración de datos, notificaremos a los usuarios afectados en un plazo máximo de 72 horas 
-              mediante Discord y publicaremos un aviso en nuestro sitio web. Reporta cualquier incidente de seguridad 
-              contactando a <strong>BijjouPro08</strong> inmediatamente.
-            </p>
+            En caso de filtración de datos, notificaremos a los usuarios afectados en un plazo máximo de 72 horas 
+            mediante Discord y publicaremos un aviso en nuestro sitio web. Reporta cualquier incidente de seguridad 
+            contactando a <strong>BijjouPro08</strong> inmediatamente.
+          </p>
 
-            <p style={{ opacity: 0.85, marginTop: '1rem' }}>
-              Puedes gestionar tus preferencias de cookies en la página de <a href="/cookies" style={{ color: '#7289da' }}>Política de
-              Cookies</a>.
-            </p>
-          </div>
+          <p style={{ opacity: 0.85, marginTop: '1rem' }}>
+            Puedes gestionar tus preferencias de cookies en la página de <a href="/cookies" style={{ color: '#7289da' }}>Política de
+            Cookies</a>.
+          </p>
+        </div>
         </InteractiveSection>
 
         <InteractiveSection
@@ -824,10 +824,10 @@ const Terms = () => {
         >
           <div style={{ paddingLeft: '30px' }}>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
-              Podríamos interrumpir temporalmente el servicio por mantenimiento, actualizaciones o incidencias ajenas
-              (incluyendo servicios de terceros como Discord o la plataforma ERLC). Intentaremos minimizar el impacto cuando
-              sea posible.
-            </p>
+            Podríamos interrumpir temporalmente el servicio por mantenimiento, actualizaciones o incidencias ajenas
+            (incluyendo servicios de terceros como Discord o la plataforma ERLC). Intentaremos minimizar el impacto cuando
+            sea posible.
+          </p>
             <div style={{
               background: 'rgba(114, 137, 218, 0.1)',
               border: '1px solid rgba(114, 137, 218, 0.3)',
@@ -842,7 +842,7 @@ const Terms = () => {
                 Los mantenimientos se anuncian con 24 horas de antelación en el servidor de Discord.
               </p>
             </div>
-          </div>
+        </div>
         </InteractiveSection>
 
         <InteractiveSection
@@ -853,9 +853,9 @@ const Terms = () => {
         >
           <div style={{ paddingLeft: '30px' }}>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
-              El sitio se ofrece "tal cual" y "según disponibilidad". En la medida permitida por la ley, no asumimos
-              responsabilidad por daños indirectos, incidentales o consecuentes derivados del uso del sitio.
-            </p>
+            El sitio se ofrece "tal cual" y "según disponibilidad". En la medida permitida por la ley, no asumimos
+            responsabilidad por daños indirectos, incidentales o consecuentes derivados del uso del sitio.
+          </p>
             <div style={{
               background: 'rgba(231, 76, 60, 0.1)',
               border: '1px solid rgba(231, 76, 60, 0.3)',
@@ -873,7 +873,7 @@ const Terms = () => {
                 <li>Limitaciones según la ley aplicable</li>
               </ul>
             </div>
-          </div>
+        </div>
         </InteractiveSection>
 
         <InteractiveSection
@@ -884,32 +884,32 @@ const Terms = () => {
         >
           <div style={{ paddingLeft: '30px' }}>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
-              Nos reservamos el derecho de actualizar estos términos en cualquier momento. Los cambios entrarán en vigor al
-              publicarse en esta página.
-            </p>
-            
+            Nos reservamos el derecho de actualizar estos términos en cualquier momento. Los cambios entrarán en vigor al
+            publicarse en esta página.
+          </p>
+          
             <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>17.1 Notificación de cambios importantes</h3>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
-              Para cambios significativos que afecten tus derechos o el uso del servicio, te notificaremos mediante:
-              <br/>• Mensaje en el servidor de Discord
-              <br/>• Aviso destacado en el panel de usuario
-              <br/>• Email (si proporcionaste uno)
-              <br/>• Banner de notificación en el sitio web
-            </p>
+            Para cambios significativos que afecten tus derechos o el uso del servicio, te notificaremos mediante:
+            <br/>• Mensaje en el servidor de Discord
+            <br/>• Aviso destacado en el panel de usuario
+            <br/>• Email (si proporcionaste uno)
+            <br/>• Banner de notificación en el sitio web
+          </p>
 
             <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>17.2 Aceptación de cambios</h3>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
-              El uso continuado del servicio después de la publicación de cambios constituye tu aceptación de los nuevos términos.
-              Si no estás de acuerdo con los cambios, debes dejar de usar el servicio y contactar a <strong>BijjouPro08</strong> 
-              para solicitar la eliminación de tus datos.
-            </p>
+            El uso continuado del servicio después de la publicación de cambios constituye tu aceptación de los nuevos términos.
+            Si no estás de acuerdo con los cambios, debes dejar de usar el servicio y contactar a <strong>BijjouPro08</strong> 
+            para solicitar la eliminación de tus datos.
+          </p>
 
             <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>17.3 Historial de versiones</h3>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
-              Mantenemos un registro de todas las modificaciones importantes en nuestros términos. Puedes solicitar el 
-              historial completo contactando a <strong>BijjouPro08</strong>.
-            </p>
-          </div>
+            Mantenemos un registro de todas las modificaciones importantes en nuestros términos. Puedes solicitar el 
+            historial completo contactando a <strong>BijjouPro08</strong>.
+          </p>
+        </div>
         </InteractiveSection>
 
         <InteractiveSection
@@ -920,8 +920,8 @@ const Terms = () => {
         >
           <div style={{ paddingLeft: '30px' }}>
             <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
-              Si tienes preguntas acerca de estos términos, contáctanos a través de nuestro servidor de Discord.
-            </p>
+            Si tienes preguntas acerca de estos términos, contáctanos a través de nuestro servidor de Discord.
+          </p>
             <div style={{
               background: 'rgba(114, 137, 218, 0.1)',
               border: '1px solid rgba(114, 137, 218, 0.3)',
@@ -938,7 +938,7 @@ const Terms = () => {
                 <li>Respuesta en 24-48 horas</li>
                 <li>Idioma: Español</li>
               </ul>
-            </div>
+        </div>
           </div>
         </InteractiveSection>
       </div>

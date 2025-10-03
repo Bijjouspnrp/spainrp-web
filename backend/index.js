@@ -5238,6 +5238,43 @@ app.post('/api/admin/multi-role', express.json(), async (req, res) => {
 });
 
 // ===== ENDPOINTS DE CALENDARIO =====
+// Verificar y crear tablas del calendario si no existen
+app.get('/api/calendar/init', async (req, res) => {
+  try {
+    const { runQuery } = require('./db/database');
+    
+    // Crear tabla calendar_claims si no existe
+    await runQuery(`
+      CREATE TABLE IF NOT EXISTS calendar_claims (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userId TEXT NOT NULL,
+        year INTEGER NOT NULL,
+        month INTEGER NOT NULL,
+        day INTEGER NOT NULL,
+        claimedAt TEXT NOT NULL,
+        reward TEXT,
+        UNIQUE(userId, year, month, day)
+      )
+    `);
+    
+    // Crear tabla calendar_streaks si no existe
+    await runQuery(`
+      CREATE TABLE IF NOT EXISTS calendar_streaks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userId TEXT UNIQUE NOT NULL,
+        currentStreak INTEGER DEFAULT 0,
+        longestStreak INTEGER DEFAULT 0,
+        lastClaimedDate TEXT,
+        totalClaims INTEGER DEFAULT 0
+      )
+    `);
+    
+    res.json({ success: true, message: 'Tablas del calendario inicializadas correctamente' });
+  } catch (err) {
+    console.error('[CALENDAR INIT] Error:', err);
+    res.status(500).json({ error: 'Error inicializando tablas del calendario' });
+  }
+});
 // Obtener progreso del calendario
 app.get('/api/calendar', verifyToken, async (req, res) => {
   try {
@@ -5337,6 +5374,7 @@ app.post('/api/calendar/claim', verifyToken, async (req, res) => {
     const reward = rewards[Math.floor(Math.random() * rewards.length)];
     
     // Insertar reclamación
+    console.log('[CALENDAR] Insertando reclamación:', { userId, year: parseInt(year), month: parseInt(month), day: parseInt(day), claimedAt, reward });
     await runQuery(
       'INSERT INTO calendar_claims (userId, year, month, day, claimedAt, reward) VALUES (?, ?, ?, ?, ?, ?)',
       [userId, parseInt(year), parseInt(month), parseInt(day), claimedAt, reward]
