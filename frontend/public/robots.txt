@@ -1,0 +1,23 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://spainrp-oficial.onrender.com/sitemap.xml
+
+# Disallow admin and private areas
+Disallow: /admin
+Disallow: /logs
+Disallow: /api/
+Disallow: /auth/
+
+# Allow important pages
+Allow: /panel
+Allow: /apps
+Allow: /news
+Allow: /blackmarket
+Allow: /rules
+Allow: /support
+Allow: /terms
+
+# Crawl delay (optional)
+Crawl-delay: 1
