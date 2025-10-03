@@ -5244,16 +5244,44 @@ app.get('/api/calendar', verifyToken, async (req, res) => {
     const { year, month } = req.query;
     const userId = req.user.userId;
     
-    // Por ahora devolvemos datos de ejemplo
-    // En el futuro esto se conectaría con una base de datos real
-    const claimedDays = [1, 2, 3, 5, 7, 10, 12, 15, 18, 20, 22, 25, 28, 30];
-    const streak = 5; // Racha actual
+    if (!year || !month) {
+      return res.status(400).json({ error: 'Año y mes son requeridos' });
+    }
+
+    const { getQuery, allQuery } = require('./db/database');
+    
+    // Obtener días reclamados del mes
+    const claimedDaysQuery = `
+      SELECT day FROM calendar_claims 
+      WHERE userId = ? AND year = ? AND month = ?
+      ORDER BY day ASC
+    `;
+    const claimedDaysRows = await allQuery(claimedDaysQuery, [userId, parseInt(year), parseInt(month)]);
+    const claimedDays = claimedDaysRows.map(row => row.day);
+    
+    // Obtener información de racha
+    const streakQuery = `
+      SELECT currentStreak, longestStreak, totalClaims, lastClaimedDate 
+      FROM calendar_streaks 
+      WHERE userId = ?
+    `;
+    const streakData = await getQuery(streakQuery, [userId]);
+    
+    const currentStreak = streakData ? streakData.currentStreak : 0;
+    const longestStreak = streakData ? streakData.longestStreak : 0;
+    const totalClaims = streakData ? streakData.totalClaims : 0;
+    
+    // Calcular progreso del mes
+    const daysInMonth = new Date(parseInt(year), parseInt(month), 0).getDate();
+    const progress = Math.round((claimedDays.length / daysInMonth) * 100);
     
     res.json({
       success: true,
       claimedDays,
-      streak,
-      progress: Math.round((claimedDays.length / 31) * 100)
+      streak: currentStreak,
+      longestStreak,
+      totalClaims,
+      progress
     });
   } catch (err) {
     console.error('[CALENDAR] Error obteniendo progreso:', err);
@@ -5267,16 +5295,116 @@ app.post('/api/calendar/claim', verifyToken, async (req, res) => {
     const { year, month, day } = req.body;
     const userId = req.user.userId;
     
-    // Por ahora simulamos el guardado
-    // En el futuro esto se conectaría con una base de datos real
-    const claimedDays = [1, 2, 3, 5, 7, 10, 12, 15, 18, 20, 22, 25, 28, 30, day];
-    const streak = 6; // Racha actualizada
+    if (!year || !month || !day) {
+      return res.status(400).json({ error: 'Año, mes y día son requeridos' });
+    }
+
+    const { getQuery, runQuery } = require('./db/database');
+    
+    // Verificar si el día ya fue reclamado
+    const existingClaim = await getQuery(
+      'SELECT id FROM calendar_claims WHERE userId = ? AND year = ? AND month = ? AND day = ?',
+      [userId, parseInt(year), parseInt(month), parseInt(day)]
+    );
+    
+    if (existingClaim) {
+      return res.status(400).json({ error: 'Este día ya fue reclamado' });
+    }
+    
+    // Verificar que sea el día actual
+    const today = new Date();
+    const isToday = today.getFullYear() === parseInt(year) && 
+                   today.getMonth() + 1 === parseInt(month) && 
+                   today.getDate() === parseInt(day);
+    
+    if (!isToday) {
+      return res.status(400).json({ error: 'Solo puedes reclamar el día actual' });
+    }
+    
+    const claimedAt = new Date().toISOString();
+    
+    // Generar recompensa aleatoria
+    const rewards = [
+      'Monedas extra',
+      'Badge especial',
+      'Acceso VIP',
+      'Rol Discord',
+      'Minijuego desbloqueado',
+      'Sorteo mensual',
+      'Multiplicador de XP',
+      'Caja misteriosa'
+    ];
+    const reward = rewards[Math.floor(Math.random() * rewards.length)];
+    
+    // Insertar reclamación
+    await runQuery(
+      'INSERT INTO calendar_claims (userId, year, month, day, claimedAt, reward) VALUES (?, ?, ?, ?, ?, ?)',
+      [userId, parseInt(year), parseInt(month), parseInt(day), claimedAt, reward]
+    );
+    
+    // Actualizar o crear racha
+    const streakData = await getQuery(
+      'SELECT * FROM calendar_streaks WHERE userId = ?',
+      [userId]
+    );
+    
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    const todayStr = today.toISOString().split('T')[0];
+    
+    let newStreak = 1;
+    let newLongestStreak = 1;
+    let newTotalClaims = 1;
+    
+    if (streakData) {
+      newTotalClaims = streakData.totalClaims + 1;
+      
+      // Verificar si la racha continúa
+      if (streakData.lastClaimedDate === yesterdayStr) {
+        newStreak = streakData.currentStreak + 1;
+        newLongestStreak = Math.max(streakData.longestStreak, newStreak);
+      } else if (streakData.lastClaimedDate !== todayStr) {
+        newStreak = 1; // Racha rota
+        newLongestStreak = streakData.longestStreak;
+      } else {
+        newStreak = streakData.currentStreak;
+        newLongestStreak = streakData.longestStreak;
+      }
+      
+      await runQuery(
+        'UPDATE calendar_streaks SET currentStreak = ?, longestStreak = ?, lastClaimedDate = ?, totalClaims = ? WHERE userId = ?',
+        [newStreak, newLongestStreak, todayStr, newTotalClaims, userId]
+      );
+    } else {
+      await runQuery(
+        'INSERT INTO calendar_streaks (userId, currentStreak, longestStreak, lastClaimedDate, totalClaims) VALUES (?, ?, ?, ?, ?)',
+        [userId, newStreak, newLongestStreak, todayStr, newTotalClaims]
+      );
+    }
+    
+    // Obtener días reclamados actualizados
+    const claimedDaysQuery = `
+      SELECT day FROM calendar_claims 
+      WHERE userId = ? AND year = ? AND month = ?
+      ORDER BY day ASC
+    `;
+    const claimedDaysRows = await allQuery(claimedDaysQuery, [userId, parseInt(year), parseInt(month)]);
+    const claimedDays = claimedDaysRows.map(row => row.day);
+    
+    // Calcular progreso actualizado
+    const daysInMonth = new Date(parseInt(year), parseInt(month), 0).getDate();
+    const progress = Math.round((claimedDays.length / daysInMonth) * 100);
     
     res.json({
       success: true,
       claimedDays,
-      streak,
-      progress: Math.round((claimedDays.length / 31) * 100)
+      streak: newStreak,
+      longestStreak: newLongestStreak,
+      totalClaims: newTotalClaims,
+      progress,
+      reward,
+      message: `¡Día reclamado! Recompensa: ${reward}`
     });
   } catch (err) {
     console.error('[CALENDAR] Error reclamando día:', err);

@@ -222,6 +222,30 @@ const initializeTables = (database) => {
         createdAt TEXT,
         UNIQUE(newsId, userId, emoji)
       )`
+    },
+    {
+      name: 'calendar_claims',
+      sql: `CREATE TABLE IF NOT EXISTS calendar_claims (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userId TEXT NOT NULL,
+        year INTEGER NOT NULL,
+        month INTEGER NOT NULL,
+        day INTEGER NOT NULL,
+        claimedAt TEXT NOT NULL,
+        reward TEXT,
+        UNIQUE(userId, year, month, day)
+      )`
+    },
+    {
+      name: 'calendar_streaks',
+      sql: `CREATE TABLE IF NOT EXISTS calendar_streaks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userId TEXT UNIQUE NOT NULL,
+        currentStreak INTEGER DEFAULT 0,
+        longestStreak INTEGER DEFAULT 0,
+        lastClaimedDate TEXT,
+        totalClaims INTEGER DEFAULT 0
+      )`
     }
   ];
 

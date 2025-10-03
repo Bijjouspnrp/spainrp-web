@@ -35,6 +35,8 @@ export default function DailyCalendar() {
   const [claimedDays, setClaimedDays] = useState([]);
   const [showReward, setShowReward] = useState(null);
   const [streak, setStreak] = useState(0);
+  const [longestStreak, setLongestStreak] = useState(0);
+  const [totalClaims, setTotalClaims] = useState(0);
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
 
@@ -62,12 +64,16 @@ export default function DailyCalendar() {
       .then(data => {
         setClaimedDays(data.claimedDays || []);
         setStreak(data.streak || 0);
+        setLongestStreak(data.longestStreak || 0);
+        setTotalClaims(data.totalClaims || 0);
         setLoading(false);
-        setProgress(Math.round(((data.claimedDays?.length || 0) / getDaysInMonth(year, month)) * 100));
+        setProgress(data.progress || 0);
       })
       .catch(() => {
         setClaimedDays([]);
         setStreak(0);
+        setLongestStreak(0);
+        setTotalClaims(0);
         setLoading(false);
         setProgress(0);
       });
@@ -90,9 +96,13 @@ export default function DailyCalendar() {
       .then(data => {
         setClaimedDays(data.claimedDays || []);
         setStreak(data.streak || 0);
-        setProgress(Math.round(((data.claimedDays?.length || 0) / getDaysInMonth(year, month)) * 100));
-        if (REWARD_DAYS.includes(data.claimedDays.length)) {
-          setShowReward(getRandomReward());
+        setLongestStreak(data.longestStreak || 0);
+        setTotalClaims(data.totalClaims || 0);
+        setProgress(data.progress || 0);
+        
+        // Mostrar recompensa si se proporciona
+        if (data.reward) {
+          setShowReward(data.reward);
           setTimeout(() => setShowReward(null), 5000);
         }
         setLoading(false);
@@ -155,7 +165,22 @@ export default function DailyCalendar() {
           );
         })}
       </div>
-      <div className="calendar-streak">Racha actual: <b>{streak}</b> días</div>
+      <div className="calendar-streak">
+        <div className="streak-info">
+          <div className="streak-item">
+            <span className="streak-label">Racha actual:</span>
+            <span className="streak-value">{streak} días</span>
+          </div>
+          <div className="streak-item">
+            <span className="streak-label">Mejor racha:</span>
+            <span className="streak-value">{longestStreak} días</span>
+          </div>
+          <div className="streak-item">
+            <span className="streak-label">Total reclamado:</span>
+            <span className="streak-value">{totalClaims} días</span>
+          </div>
+        </div>
+      </div>
       {loading && <div className="calendar-loading">Cargando...</div>}
       {showReward && (
         <div className="calendar-reward-modal">
