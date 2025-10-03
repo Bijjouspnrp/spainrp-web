@@ -91,21 +91,30 @@ export const DNISection = ({ data }) => {
 // Sección Multas
 export const MultasSection = ({ data, userId, onRefresh }) => {
   const [paying, setPaying] = useState(null);
+  const [result, setResult] = useState('');
 
   const handlePayMulta = async (multaId) => {
     setPaying(multaId);
+    setResult('');
+    
     try {
       const response = await fetch(apiUrl('/api/proxy/admin/pagar-multa'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ multaId, userId })
+        body: JSON.stringify({ multaId, discordId: userId })
       });
 
-      if (response.ok) {
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setResult('✅ Multa pagada correctamente');
         onRefresh();
+      } else {
+        setResult(`❌ Error: ${data.error || 'Error pagando multa'}`);
       }
     } catch (err) {
       console.error('Error pagando multa:', err);
+      setResult('❌ Error de conexión al pagar multa');
     } finally {
       setPaying(null);
     }
@@ -130,7 +139,7 @@ export const MultasSection = ({ data, userId, onRefresh }) => {
         {data.map((multa, index) => (
           <div key={index} className={`multa-card ${multa.pagada ? 'pagada' : 'pendiente'}`}>
             <div className="multa-header">
-              <h4>Multa #{multa.id}</h4>
+              <h4>Multa #{multa.id || multa._id || `#${index + 1}`}</h4>
               <span className={`multa-status ${multa.pagada ? 'pagada' : 'pendiente'}`}>
                 {multa.pagada ? 'PAGADA' : 'PENDIENTE'}
               </span>
@@ -138,15 +147,15 @@ export const MultasSection = ({ data, userId, onRefresh }) => {
             <div className="multa-info">
               <div className="multa-field">
                 <label>Motivo:</label>
-                <span>{multa.motivo}</span>
+                <span>{multa.motivo || multa.cargos || 'N/A'}</span>
               </div>
               <div className="multa-field">
                 <label>Cantidad:</label>
-                <span className="multa-amount">{multa.cantidad}€</span>
+                <span className="multa-amount">{multa.cantidad || multa.multa || 0}€</span>
               </div>
               <div className="multa-field">
                 <label>Fecha:</label>
-                <span>{new Date(multa.fecha).toLocaleDateString()}</span>
+                <span>{multa.fecha ? new Date(multa.fecha).toLocaleDateString() : 'N/A'}</span>
               </div>
               {multa.descripcion && (
                 <div className="multa-field">
@@ -154,19 +163,37 @@ export const MultasSection = ({ data, userId, onRefresh }) => {
                   <span>{multa.descripcion}</span>
                 </div>
               )}
+              {multa.tiempoOOC && (
+                <div className="multa-field">
+                  <label>Tiempo OOC:</label>
+                  <span>{multa.tiempoOOC}</span>
+                </div>
+              )}
+              {multa.tiempoIC && (
+                <div className="multa-field">
+                  <label>Tiempo IC:</label>
+                  <span>{multa.tiempoIC}</span>
+                </div>
+              )}
             </div>
             {!multa.pagada && (
               <button 
                 className="mdt-btn mdt-btn-success"
-                onClick={() => handlePayMulta(multa.id)}
-                disabled={paying === multa.id}
+                onClick={() => handlePayMulta(multa.id || multa._id)}
+                disabled={paying === (multa.id || multa._id)}
               >
-                {paying === multa.id ? 'Pagando...' : 'Pagar Multa'}
+                {paying === (multa.id || multa._id) ? 'Pagando...' : 'Pagar Multa'}
               </button>
             )}
           </div>
         ))}
       </div>
+
+      {result && (
+        <div className={`result-message ${result.startsWith('✅') ? 'success' : 'error'}`}>
+          {result}
+        </div>
+      )}
     </div>
   );
 };
