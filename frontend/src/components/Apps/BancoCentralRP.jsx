@@ -183,6 +183,31 @@ const BancoCentralRP = () => {
     }
   };
 
+  const getUserRoles = async (userId) => {
+    try {
+      // En producción, esto haría una llamada a la API para obtener los roles del usuario
+      // Por ahora simulamos algunos roles comunes
+      console.log('[BANCO-FRONTEND] 🔍 Obteniendo roles para usuario:', userId);
+      
+      // Simular roles del usuario (en producción vendría del backend)
+      const mockRoles = [
+        '1384340649205301359', // Admin role
+        '123456789012345678',  // Staff role
+        '987654321098765432'   // VIP role
+      ];
+      
+      // Asegurar que todos los roles sean strings
+      const rolesAsStrings = mockRoles.map(role => String(role));
+      
+      console.log('[BANCO-FRONTEND] 📋 Roles obtenidos:', rolesAsStrings);
+      return rolesAsStrings;
+    } catch (error) {
+      console.error('[BANCO-FRONTEND] ❌ Error obteniendo roles:', error);
+      // Devolver array vacío si hay error
+      return [];
+    }
+  };
+
   const showMessage = (msg, type = 'success') => {
     setMessage(msg);
     setMessageType(type);
@@ -380,8 +405,9 @@ const BancoCentralRP = () => {
     
     setLoadingAction(true);
     try {
-      // Simular roles del usuario (en producción vendría del backend)
-      const roles = ['123456789012345678']; // ID de rol de ejemplo
+      // Obtener roles del usuario desde Discord (simulado por ahora)
+      // En producción, esto vendría de una API que consulte los roles del usuario
+      const roles = await getUserRoles(user.id);
       
       console.log('[BANCO-FRONTEND] 💳 Cobrando nómina:', { userId: user.id, roles });
       

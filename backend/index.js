@@ -3654,7 +3654,11 @@ app.post('/api/proxy/cobrar-nomina', express.json(), async (req, res) => {
       return res.status(400).json({ error: 'userId y roles array requeridos' });
     }
     
-    const data = await proxyCollectSalary(userId, roles);
+    // Asegurar que todos los roles sean strings para evitar problemas de comparación
+    const rolesAsStrings = roles.map(role => String(role));
+    console.log(`[BANCO] [cobrar-nomina-user] Roles normalizados:`, rolesAsStrings);
+    
+    const data = await proxyCollectSalary(userId, rolesAsStrings);
     console.log(`[BANCO] [cobrar-nomina-user] Response:`, data);
     res.json(data);
   } catch (error) {
