@@ -349,7 +349,7 @@
   align-items: center;
   gap: 8px; /* Como en React */
   padding: 8px 16px; /* Como en React */
-  background: #7289da; /* Exacto */
+  background: #5865f2; /* Mejor contraste para accesibilidad */
   color: #fff; /* Exacto */
   border-radius: 8px; /* Exacto */
   font-weight: 700; /* Exacto */

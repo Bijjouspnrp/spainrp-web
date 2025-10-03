@@ -225,15 +225,33 @@ export default defineConfig({
   }
   ,
   build: {
-    chunkSizeWarningLimit: 2000,
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
           router: ['react-router-dom'],
-          icons: ['react-icons']
-        }
+          icons: ['react-icons'],
+          socket: ['socket.io-client'],
+          utils: ['react', 'react-dom', 'react-router-dom']
+        },
+        // Optimizar nombres de chunks
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]'
       }
+    },
+    // Optimizaciones adicionales
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    },
+    // Tree shaking más agresivo
+    treeshake: {
+      moduleSideEffects: false
     }
   },
   // Configuración para el preview/producción

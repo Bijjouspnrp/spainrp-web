@@ -223,6 +223,8 @@ function StaffMemberCard({ member, resolvedId, getRoleColor }) {
             src={avatarUrl}
             alt={`Avatar de Roblox de ${member.name}`}
             className="staff-avatar"
+            loading="lazy"
+            decoding="async"
             onError={e => {
               console.warn(`[StaffSection] Error cargando imagen para ${member.name}`);
               e.target.onerror = null;

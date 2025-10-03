@@ -741,11 +741,11 @@ const BancoCentralRP = () => {
                   onChange={(e) => setTransferData({...transferData, toId: e.target.value})}
                   placeholder="ID de Discord del destinatario"
                 />
-              </div>
+            </div>
               <div className="input-group">
                 <label>Cantidad (€)</label>
-                <input
-                  type="number"
+            <input
+              type="number"
                   value={transferData.amount}
                   onChange={(e) => setTransferData({...transferData, amount: e.target.value})}
                   placeholder="0"
@@ -766,7 +766,7 @@ const BancoCentralRP = () => {
               <button onClick={() => setShowTransfer(false)} className="btn-secondary">
                 Cancelar
               </button>
-              <button 
+              <button
                 onClick={handleTransfer} 
                 className="btn-primary"
                 disabled={loadingAction || !transferData.toId || !transferData.amount}
@@ -800,7 +800,7 @@ const BancoCentralRP = () => {
               <button onClick={() => setShowWork(false)} className="btn-secondary">
                 Cancelar
               </button>
-              <button 
+              <button
                 onClick={handleWork} 
                 className="btn-primary"
                 disabled={loadingAction || workCooldown > 0}
@@ -841,9 +841,9 @@ const BancoCentralRP = () => {
               >
                 {loadingAction ? 'Procesando...' : 'Cobrar Nómina'}
               </button>
-            </div>
           </div>
         </div>
+      </div>
       )}
 
       {/* Message Toast */}

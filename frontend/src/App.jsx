@@ -1,17 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { io } from 'socket.io-client';
 import './App.css';
 import { apiUrl } from './utils/api';
 import Navbar from './components/Navbar';
 import AdBlockDetect from './components/AdBlockDetect';
-import BlackMarket from './components/BlackMarket/BlackMarket';
-import Rules from './components/Rules';
-import News from './components/News/News';
-import StockMarket from './components/StockMarket/StockMarket';
-import TinderRP from './components/Apps/TinderRP';
-import BancoCentralRP from './components/Apps/BancoCentralRP';
-import MinijuegosRP from './components/Apps/MinijuegosRP';
-import AppsMenu from './components/Apps/AppsMenu';
 import Hero from './components/Hero';
 import Features from './components/Features';
 import Stats from './components/Stats';
@@ -19,20 +11,30 @@ import StaffSection from './components/StaffSection';
 import DiscordSection from './components/DiscordSection';
 import Footer from './components/Footer';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import Panel from './components/Panel';
-import AdminPanel from './components/AdminPanel';
-import AdvancedLogs from './components/AdvancedLogs';
-import Cookies from './components/Cookies';
-import CookieConsentBanner from './components/CookieConsentBanner';
-import Terms from './components/Terms';
-import Support from './components/Support';
-import ModeratorDashboard from './components/ModeratorDashboard';
-import NotFound from './components/NotFound';
 import spainLogo from '/assets/spainrplogo.png';
-import SimuladorTienda from './components/Apps/SimuladorTienda';
-import GlobalSearch from './components/GlobalSearch';
 import ToastProvider from './components/ToastProvider';
 import MaintenanceControl from './components/MaintenanceControl';
+
+// Lazy load components that are not immediately visible
+const BlackMarket = lazy(() => import('./components/BlackMarket/BlackMarket'));
+const Rules = lazy(() => import('./components/Rules'));
+const News = lazy(() => import('./components/News/News'));
+const StockMarket = lazy(() => import('./components/StockMarket/StockMarket'));
+const TinderRP = lazy(() => import('./components/Apps/TinderRP'));
+const BancoCentralRP = lazy(() => import('./components/Apps/BancoCentralRP'));
+const MinijuegosRP = lazy(() => import('./components/Apps/MinijuegosRP'));
+const AppsMenu = lazy(() => import('./components/Apps/AppsMenu'));
+const Panel = lazy(() => import('./components/Panel'));
+const AdminPanel = lazy(() => import('./components/AdminPanel'));
+const AdvancedLogs = lazy(() => import('./components/AdvancedLogs'));
+const Cookies = lazy(() => import('./components/Cookies'));
+const CookieConsentBanner = lazy(() => import('./components/CookieConsentBanner'));
+const Terms = lazy(() => import('./components/Terms'));
+const Support = lazy(() => import('./components/Support'));
+const ModeratorDashboard = lazy(() => import('./components/ModeratorDashboard'));
+const NotFound = lazy(() => import('./components/NotFound'));
+const SimuladorTienda = lazy(() => import('./components/Apps/SimuladorTienda'));
+const GlobalSearch = lazy(() => import('./components/GlobalSearch'));
 
 // Componente de Login
 function LoginPage() {
@@ -896,29 +898,42 @@ function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading }) {
     <div className="App">
       <AdBlockDetect />
       {!hideNavbar && <Navbar />}
-      <Routes>
-        <Route path="/" element={<Home memberCount={memberCount} totalMembers={totalMembers} loading={loading} />} />
-        <Route path="/cookies" element={<Cookies />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route path="/support" element={<Support />} />
-        <Route path="/moderator-dashboard" element={<ModeratorDashboard />} />
-        <Route path="/blackmarket" element={<BlackMarket />} />
-        <Route path="/rules" element={<Rules />} />
-        <Route path="/news" element={<News />} />
-        <Route path="/stockmarket" element={<StockMarket />} />
-        <Route path="/apps" element={<AppsMenu />} />
-        <Route path="/apps/tinder" element={<TinderRP />} />
-        <Route path="/apps/banco" element={<BancoCentralRP />} />
-        <Route path="/apps/minijuegos" element={<MinijuegosRP />} />
-        <Route path="/apps/tienda" element={<SimuladorTienda />} />
-        <Route path="/panel" element={<Panel />} />
-        <Route path="/admin" element={<PrivateRoute><AdminPanel /></PrivateRoute>} />
-        <Route path="/auth/login" element={<LoginPage />} />
-        <Route path="/logout" element={<LogoutPage />} />
-        <Route path="/logs" element={<PrivateRoute><AdvancedLogs /></PrivateRoute>} />
-        <Route path="/404" element={<NotFound />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <Suspense fallback={
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          height: '50vh',
+          fontSize: '1.2rem',
+          color: '#666'
+        }}>
+          Cargando...
+        </div>
+      }>
+        <Routes>
+          <Route path="/" element={<Home memberCount={memberCount} totalMembers={totalMembers} loading={loading} />} />
+          <Route path="/cookies" element={<Cookies />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/support" element={<Support />} />
+          <Route path="/moderator-dashboard" element={<ModeratorDashboard />} />
+          <Route path="/blackmarket" element={<BlackMarket />} />
+          <Route path="/rules" element={<Rules />} />
+          <Route path="/news" element={<News />} />
+          <Route path="/stockmarket" element={<StockMarket />} />
+          <Route path="/apps" element={<AppsMenu />} />
+          <Route path="/apps/tinder" element={<TinderRP />} />
+          <Route path="/apps/banco" element={<BancoCentralRP />} />
+          <Route path="/apps/minijuegos" element={<MinijuegosRP />} />
+          <Route path="/apps/tienda" element={<SimuladorTienda />} />
+          <Route path="/panel" element={<Panel />} />
+          <Route path="/admin" element={<PrivateRoute><AdminPanel /></PrivateRoute>} />
+          <Route path="/auth/login" element={<LoginPage />} />
+          <Route path="/logout" element={<LogoutPage />} />
+          <Route path="/logs" element={<PrivateRoute><AdvancedLogs /></PrivateRoute>} />
+          <Route path="/404" element={<NotFound />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
       <CookieConsentBanner />
       {!hideFooter && <Footer />}
     </div>

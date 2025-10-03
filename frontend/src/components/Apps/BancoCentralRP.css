@@ -1012,45 +1012,60 @@
   }
 }
 
-/* Scrollbar Styling */
+/* Scrollbar Styling - Optimized */
 .transactions-list::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 
 .transactions-list::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
 }
 
 .transactions-list::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
 }
 
 .transactions-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.4);
 }
 
-/* Animation for balance updates */
+/* Performance optimizations */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Critical CSS for above-the-fold content */
+.balance-section,
+.banco-header {
+  contain: layout style paint;
+}
+
 .balance-card {
-  animation: balanceUpdate 0.5s ease;
+  will-change: transform;
+}
+
+.action-btn {
+  will-change: transform;
+}
+
+/* Optimized animations */
+.balance-card {
+  animation: balanceUpdate 0.3s ease;
 }
 
 @keyframes balanceUpdate {
   from {
-    transform: scale(1.02);
+    transform: scale(1.01);
   }
   to {
     transform: scale(1);
   }
-}
-
-/* Hover effects for transaction items */
-.transaction-item:hover {
-  background: rgba(0, 0, 0, 0.02);
-  border-radius: 10px;
-  margin: 0 -10px;
-  padding-left: 25px;
-  padding-right: 25px;
-  transition: all 0.2s ease;
 }
