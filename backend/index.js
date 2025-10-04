@@ -2278,26 +2278,40 @@ async function banCheckMiddleware(req, res, next) {
 // Middleware de verificación de bans para usuarios autenticados
 async function authenticatedBanCheckMiddleware(req, res, next) {
   try {
-    const ip = getRealIP(req);
+    // Verificar si hay usuario autenticado (Passport o JWT)
+    let userId = null;
     
-    // Verificar ban de IP
-    const ipBan = await isIPBanned(ip);
-    if (ipBan) {
-      console.log(`[BAN SYSTEM] IP ${ip} is banned:`, ipBan.reason);
-      return res.status(403).json({
-        error: 'Banned',
-        message: 'Tu IP ha sido baneada de este sitio web.',
-        reason: ipBan.reason,
-        bannedAt: ipBan.bannedAt,
-        expiresAt: ipBan.expiresAt
-      });
+    // Primero intentar con sesión de Passport
+    if (req.isAuthenticated && req.isAuthenticated() && req.user && req.user.id) {
+      userId = req.user.id;
+      console.log(`[BAN CHECK] Usuario Passport detectado: ${userId}`);
+    }
+    // Si no hay sesión Passport, intentar con JWT
+    else {
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        try {
+          const { verifyToken } = require('./middleware/jwt');
+          // Verificar JWT de forma síncrona para obtener el usuario
+          const token = authHeader.split(' ')[1];
+          const jwt = require('jsonwebtoken');
+          const decoded = jwt.verify(token, process.env.JWT_SECRET || 'spainrp_secret_key');
+          userId = decoded.userId || decoded.id;
+          console.log(`[BAN CHECK] Usuario JWT detectado: ${userId}`);
+        } catch (jwtError) {
+          // Token JWT inválido, continuar sin usuario
+          console.log('[BAN CHECK] Token JWT inválido o no presente');
+        }
+      }
     }
     
     // Si hay usuario autenticado, verificar ban de Discord
-    if (req.user && req.user.id) {
-      const discordBan = await isDiscordUserBanned(req.user.id);
+    if (userId) {
+      console.log(`[BAN CHECK] Verificando usuario Discord: ${userId}`);
+      
+      const discordBan = await isDiscordUserBanned(userId);
       if (discordBan) {
-        console.log(`[BAN SYSTEM] Discord user ${req.user.id} is banned:`, discordBan.reason);
+        console.log(`[BAN SYSTEM] Discord user ${userId} is banned:`, discordBan.reason);
         return res.status(403).json({
           error: 'Banned',
           type: 'discord',
@@ -2308,9 +2322,6 @@ async function authenticatedBanCheckMiddleware(req, res, next) {
         });
       }
     }
-    
-    // Trackear IP con usuario
-    await trackIP(req, req.user?.id);
     
     next();
   } catch (error) {
