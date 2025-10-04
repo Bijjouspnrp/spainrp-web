@@ -50,7 +50,7 @@ router.get('/', async (req, res) => {
 
     const notifications = await new Promise((resolve, reject) => {
       db.all(
-        'SELECT * FROM notifications WHERE userId = ? OR userId IS NULL ORDER BY createdAt DESC LIMIT 50',
+        'SELECT * FROM notifications WHERE userId = ? OR userId IS NULL ORDER BY created_at DESC LIMIT 50',
         [userId],
         (err, rows) => {
           if (err) reject(err);
