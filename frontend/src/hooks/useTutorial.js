@@ -93,17 +93,18 @@ const useTutorial = () => {
     };
   };
 
+  // Asegurar que siempre devolvemos un objeto válido
   return {
-    shouldShowTutorial,
-    isTutorialOpen,
-    tutorialCompleted,
-    isInitialized,
-    openTutorial,
-    closeTutorial,
-    completeTutorial,
-    skipTutorial,
-    resetTutorial,
-    getTutorialStats
+    shouldShowTutorial: shouldShowTutorial || false,
+    isTutorialOpen: isTutorialOpen || false,
+    tutorialCompleted: tutorialCompleted || false,
+    isInitialized: isInitialized || false,
+    openTutorial: openTutorial || (() => {}),
+    closeTutorial: closeTutorial || (() => {}),
+    completeTutorial: completeTutorial || (() => {}),
+    skipTutorial: skipTutorial || (() => {}),
+    resetTutorial: resetTutorial || (() => {}),
+    getTutorialStats: getTutorialStats || (() => ({}))
   };
 };
 
