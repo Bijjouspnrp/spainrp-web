@@ -589,7 +589,6 @@ function App() {
   const vantaElRef = useRef(null);
   
   // Hook del tutorial
-  const tutorialHook = useTutorial();
   const {
     shouldShowTutorial = false,
     isTutorialOpen = false,
@@ -597,7 +596,7 @@ function App() {
     openTutorial = () => {},
     closeTutorial = () => {},
     completeTutorial = () => {}
-  } = tutorialHook || {};
+  } = useTutorial();
   
   // Capturar token de la URL después del login - EJECUTAR INMEDIATAMENTE
   useEffect(() => {
@@ -992,7 +991,7 @@ function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading }) {
       {!hideFooter && <Footer />}
       
       {/* Tutorial Interactivo */}
-      {tutorialHook && isInitialized && (
+      {isInitialized && (
         <InteractiveTutorial
           isOpen={isTutorialOpen}
           onClose={closeTutorial}
@@ -1001,7 +1000,7 @@ function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading }) {
       )}
       
       {/* Botón de Ayuda Flotante */}
-      {tutorialHook && isInitialized && <HelpButton />}
+      {isInitialized && <HelpButton />}
     </div>
   );
 }
