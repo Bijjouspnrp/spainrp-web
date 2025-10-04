@@ -49,8 +49,7 @@ import {
   FaDownload,
   FaPrint,
   FaCopy,
-  FaExpand,
-  FaBan
+  FaExpand
 } from 'react-icons/fa';
 
 const TERMS_KEY = 'spainrp_terms_accepted';
