@@ -15,6 +15,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocat
 import spainLogo from '/assets/spainrplogo.png';
 import ToastProvider from './components/ToastProvider';
 import MaintenanceControl from './components/MaintenanceControl';
+import MobileBetaWarning from './components/MobileBetaWarning';
 // Tutorial desactivado temporalmente para optimizar rendimiento
 // import InteractiveTutorial from './components/Tutorial/InteractiveTutorial';
 // import HelpButton from './components/Tutorial/HelpButton';
@@ -916,6 +917,7 @@ function App() {
     <Router>
       <ToastProvider>
         <GlobalSearch />
+        <MobileBetaWarning />
         <AppContent 
           noNavbarRoutes={noNavbarRoutes} 
           memberCount={memberCount} 

@@ -30,11 +30,24 @@ body {
   background: #0a0a0a;
   overflow-x: hidden;
   scroll-behavior: smooth;
+  transition: background 0.3s ease;
+}
+
+/* Modo claro */
+body:not(.dark) {
+  background: #f8f9fa;
+  color: #1a1a1a;
 }
 
 .App {
   min-height: 100vh;
   background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+  transition: background 0.3s ease;
+}
+
+/* Modo claro */
+body:not(.dark) .App {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #dee2e6 100%);
 }
 
 /* Custom scrollbar */
@@ -44,15 +57,33 @@ body {
 
 ::-webkit-scrollbar-track {
   background: #1a1a2e;
+  transition: background 0.3s ease;
+}
+
+/* Modo claro */
+body:not(.dark) ::-webkit-scrollbar-track {
+  background: #e9ecef;
 }
 
 ::-webkit-scrollbar-thumb {
   background: #4a90e2;
   border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+/* Modo claro */
+body:not(.dark) ::-webkit-scrollbar-thumb {
+  background: #6c757d;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #357abd;
+  transition: background 0.3s ease;
+}
+
+/* Modo claro */
+body:not(.dark) ::-webkit-scrollbar-thumb:hover {
+  background: #495057;
 }
 
 /* Utility classes */

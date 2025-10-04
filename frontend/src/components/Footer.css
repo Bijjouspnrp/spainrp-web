@@ -2,6 +2,13 @@
   background: rgba(10, 10, 10, 0.95);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding: 4rem 0 2rem 0;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+/* Modo claro */
+body:not(.dark) .footer {
+  background: rgba(248, 249, 250, 0.95);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .footer-content {
@@ -33,17 +40,35 @@
   font-size: 1.5rem;
   font-weight: 700;
   margin-bottom: 0.25rem;
+  transition: color 0.3s ease;
+}
+
+/* Modo claro */
+body:not(.dark) .footer-logo h3 {
+  color: #1a1a1a;
 }
 
 .footer-logo p {
   color: #b0b0b0;
   font-size: 0.9rem;
+  transition: color 0.3s ease;
+}
+
+/* Modo claro */
+body:not(.dark) .footer-logo p {
+  color: #4a4a4a;
 }
 
 .footer-description {
   color: #b0b0b0;
   line-height: 1.6;
   margin-bottom: 2rem;
+  transition: color 0.3s ease;
+}
+
+/* Modo claro */
+body:not(.dark) .footer-description {
+  color: #4a4a4a;
 }
 
 .footer-social {
@@ -81,6 +106,12 @@
   font-size: 1.1rem;
   font-weight: 600;
   margin-bottom: 1rem;
+  transition: color 0.3s ease;
+}
+
+/* Modo claro */
+body:not(.dark) .footer-section h4 {
+  color: #1a1a1a;
 }
 
 .footer-section ul {
@@ -100,6 +131,11 @@
   font-size: 0.9rem;
 }
 
+/* Modo claro */
+body:not(.dark) .footer-section a {
+  color: #4a4a4a;
+}
+
 .footer-section a:hover {
   color: #4a90e2;
 }
@@ -107,6 +143,12 @@
 .footer-bottom {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding-top: 2rem;
+  transition: border-color 0.3s ease;
+}
+
+/* Modo claro */
+body:not(.dark) .footer-bottom {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .footer-bottom-content {
@@ -122,6 +164,13 @@
   color: #888;
   font-size: 0.9rem;
   margin: 0;
+  transition: color 0.3s ease;
+}
+
+/* Modo claro */
+body:not(.dark) .footer-copyright,
+body:not(.dark) .footer-made-with {
+  color: #666;
 }
 
 .footer-made-with {
