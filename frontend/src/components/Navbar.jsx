@@ -747,7 +747,7 @@ const Navbar = () => {
           )}
           
           {/* Dropdown de apps y servicios */}
-          <div style={{ position: 'relative', zIndex: 1002 }}>
+          <div style={{ position: 'relative', zIndex: 1002 }} data-tutorial="apps-dropdown">
             <button
               onClick={toggleDropdown}
               style={{
@@ -969,7 +969,9 @@ const Navbar = () => {
           maxWidth: isMobile ? '120px' : '200px'
         }}>
           {/* Sección de usuario/login */}
-          {renderUserSection()}
+          <div data-tutorial="user-panel">
+            {renderUserSection()}
+          </div>
 
           {/* Botón Discord solo visible en desktop */}
           {!isMobile && (
@@ -1022,6 +1024,28 @@ const Navbar = () => {
             ) : (
               <FaMoon size={isMobile ? 16 : 20} color="#7289da" />
             )}
+          </button>
+
+          {/* Botón de tutorial */}
+          <button
+            onClick={() => {
+              // Disparar evento para abrir tutorial
+              window.dispatchEvent(new CustomEvent('open-tutorial'));
+            }}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: isMobile ? 4 : 8,
+              borderRadius: 8,
+              cursor: 'pointer',
+              transition: 'background 0.2s ease',
+              flexShrink: 0,
+              color: '#7289da'
+            }}
+            title="Ver tutorial interactivo"
+            aria-label="Ver tutorial interactivo"
+          >
+            <FaHandPointer size={isMobile ? 16 : 20} />
           </button>
         </div>
 

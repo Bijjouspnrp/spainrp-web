@@ -15,6 +15,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocat
 import spainLogo from '/assets/spainrplogo.png';
 import ToastProvider from './components/ToastProvider';
 import MaintenanceControl from './components/MaintenanceControl';
+import InteractiveTutorial from './components/Tutorial/InteractiveTutorial';
+import HelpButton from './components/Tutorial/HelpButton';
+import useTutorial from './hooks/useTutorial';
 
 // Lazy load components that are not immediately visible
 const BlackMarket = lazy(() => import('./components/BlackMarket/BlackMarket'));
@@ -586,6 +589,16 @@ function App() {
   const vantaRef = useRef(null);
   const vantaElRef = useRef(null);
   
+  // Hook del tutorial
+  const {
+    shouldShowTutorial,
+    isTutorialOpen,
+    openTutorial,
+    closeTutorial,
+    completeTutorial,
+    skipTutorial
+  } = useTutorial();
+  
   // Capturar token de la URL después del login - EJECUTAR INMEDIATAMENTE
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -641,6 +654,27 @@ function App() {
     console.log('[App] 📍 Timestamp:', new Date().toISOString());
     console.log('[App] 📊 Initial state:', { memberCount, totalMembers, loading, maintenance });
   }, []);
+
+  // Mostrar tutorial automáticamente si es necesario
+  useEffect(() => {
+    if (shouldShowTutorial && !loading && !maintenance) {
+      // Esperar un poco para que la página se cargue completamente
+      const timer = setTimeout(() => {
+        openTutorial();
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [shouldShowTutorial, loading, maintenance, openTutorial]);
+
+  // Listener para abrir tutorial manualmente
+  useEffect(() => {
+    const handleOpenTutorial = () => {
+      openTutorial();
+    };
+
+    window.addEventListener('open-tutorial', handleOpenTutorial);
+    return () => window.removeEventListener('open-tutorial', handleOpenTutorial);
+  }, [openTutorial]);
   // Progreso mantenimiento (hooks siempre fuera de condicionales)
   const totalMinutes = 50;
   const [elapsed, setElapsed] = useState(0);
@@ -943,6 +977,16 @@ function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading }) {
       </Suspense>
       <CookieConsentBanner />
       {!hideFooter && <Footer />}
+      
+      {/* Tutorial Interactivo */}
+      <InteractiveTutorial
+        isOpen={isTutorialOpen}
+        onClose={closeTutorial}
+        onComplete={completeTutorial}
+      />
+      
+      {/* Botón de Ayuda Flotante */}
+      <HelpButton />
     </div>
   );
 }
