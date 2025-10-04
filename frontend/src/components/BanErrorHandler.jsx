@@ -4,9 +4,14 @@ import BannedPage from './BannedPage';
 const BanErrorHandler = ({ children }) => {
   const [banData, setBanData] = useState(null);
   const [isChecking, setIsChecking] = useState(true);
+  const [hasChecked, setHasChecked] = useState(false);
 
   useEffect(() => {
-    checkBanStatus();
+    // Solo verificar una vez por sesión
+    if (!hasChecked) {
+      checkBanStatus();
+      setHasChecked(true);
+    }
     
     // Escuchar evento personalizado de ban
     const handleUserBanned = (e) => {
@@ -20,7 +25,7 @@ const BanErrorHandler = ({ children }) => {
     return () => {
       window.removeEventListener('userBanned', handleUserBanned);
     };
-  }, []);
+  }, [hasChecked]);
 
   const checkBanStatus = async () => {
     try {

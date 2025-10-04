@@ -18,9 +18,9 @@ window.fetch = async function(...args) {
         if (data.error === 'Banned' && (data.type || data.message)) {
           console.log('[BAN INTERCEPTOR] ✅ Usuario baneado detectado:', data);
           
-          // Prevenir redirecciones múltiples
-          if (isRedirecting) {
-            console.log('[BAN INTERCEPTOR] ⚠️ Redirección ya en progreso, ignorando...');
+          // Prevenir redirecciones múltiples o si ya estamos en /banned
+          if (isRedirecting || window.location.pathname === '/banned') {
+            console.log('[BAN INTERCEPTOR] ⚠️ Redirección ya en progreso o ya en /banned, ignorando...');
             return response;
           }
           

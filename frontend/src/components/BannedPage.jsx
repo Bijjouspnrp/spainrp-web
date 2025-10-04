@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FaBan, FaExclamationTriangle, FaClock, FaGavel, FaEnvelope } from 'react-icons/fa';
 import './BannedPage.css';
 
@@ -6,10 +6,17 @@ const BannedPage = () => {
   const [banData, setBanData] = useState(null);
   const [timeLeft, setTimeLeft] = useState(null);
   const [isChecking, setIsChecking] = useState(true);
+  const [hasRedirected, setHasRedirected] = useState(false);
+  const hasInitialized = useRef(false);
 
   useEffect(() => {
     console.log('[BANNED PAGE] Componente montado');
-    checkBanStatus();
+    
+    // Solo inicializar una vez
+    if (!hasInitialized.current) {
+      hasInitialized.current = true;
+      checkBanStatus();
+    }
   }, []);
 
   const checkBanStatus = () => {
@@ -25,8 +32,14 @@ const BannedPage = () => {
           localStorage.removeItem('ban_error');
           setBanData(null);
           setIsChecking(false);
-          // Redirigir a la página principal
-          window.location.href = '/';
+          
+          // Redirigir con delay para evitar bucles
+          if (!hasRedirected) {
+            setHasRedirected(true);
+            setTimeout(() => {
+              window.location.href = '/';
+            }, 1000);
+          }
           return;
         }
         
@@ -35,9 +48,14 @@ const BannedPage = () => {
         return;
       }
 
-      // Si no hay datos de ban, redirigir a la página principal
-      console.log('[BANNED PAGE] No hay datos de ban, redirigiendo...');
-      window.location.href = '/';
+      // Si no hay datos de ban, redirigir con delay
+      if (!hasRedirected) {
+        console.log('[BANNED PAGE] No hay datos de ban, redirigiendo en 2 segundos...');
+        setHasRedirected(true);
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 2000);
+      }
     } catch (error) {
       console.error('[BANNED PAGE] Error checking ban status:', error);
       setIsChecking(false);
@@ -113,6 +131,9 @@ const BannedPage = () => {
             margin: '0 auto 1rem auto'
           }}></div>
           <p style={{ margin: 0, color: '#64748b' }}>Verificando acceso...</p>
+          <p style={{ margin: '0.5rem 0 0 0', color: '#94a3b8', fontSize: '0.875rem' }}>
+            {hasRedirected ? 'Redirigiendo...' : 'Cargando...'}
+          </p>
         </div>
       </div>
     );
