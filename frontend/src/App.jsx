@@ -28,6 +28,7 @@ const AppsMenu = lazy(() => import('./components/Apps/AppsMenu'));
 const Panel = lazy(() => import('./components/Panel'));
 const AdminPanel = lazy(() => import('./components/AdminPanel'));
 const BanErrorHandler = lazy(() => import('./components/BanErrorHandler'));
+const BannedPage = lazy(() => import('./components/BannedPage'));
 const Logs = lazy(() => import('./components/Logs'));
 const Cookies = lazy(() => import('./components/Cookies'));
 const CookieConsentBanner = lazy(() => import('./components/CookieConsentBanner'));
@@ -932,7 +933,7 @@ function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading }) {
           <Route path="/panel" element={<BanErrorHandler><Panel /></BanErrorHandler>} />
           <Route path="/panel/bans" element={<BanErrorHandler><Panel /></BanErrorHandler>} />
           <Route path="/admin" element={<PrivateRoute><BanErrorHandler><AdminPanel /></BanErrorHandler></PrivateRoute>} />
-          <Route path="/banned" element={<BanErrorHandler><div>Verificando ban...</div></BanErrorHandler>} />
+          <Route path="/banned" element={<BanErrorHandler><BannedPage /></BanErrorHandler>} />
           <Route path="/auth/login" element={<LoginPage />} />
           <Route path="/logout" element={<LogoutPage />} />
           <Route path="/logs" element={<Logs />} />
