@@ -278,8 +278,18 @@ const BanManagement = () => {
                     </div>
                     <div className="item-details">
                       <span className="detail">
-                        <FaUser /> {ip.userId || 'Anónimo'}
+                        <FaUser /> {ip.username ? `${ip.username}#${ip.discriminator || '0000'}` : (ip.userId ? `ID: ${ip.userId}` : 'Anónimo')}
                       </span>
+                      {ip.avatar && (
+                        <span className="detail">
+                          <img 
+                            src={`https://cdn.discordapp.com/avatars/${ip.userId}/${ip.avatar}.png?size=32`} 
+                            alt="Avatar" 
+                            style={{width: 20, height: 20, borderRadius: '50%', marginRight: 5}}
+                            onError={(e) => e.target.style.display = 'none'}
+                          />
+                        </span>
+                      )}
                       <span className="detail">
                         <FaClock /> {new Date(ip.lastSeen).toLocaleString()}
                       </span>

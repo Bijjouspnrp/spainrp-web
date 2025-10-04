@@ -2177,9 +2177,40 @@ async function trackIP(req, userId = null) {
     // Extraer información del dispositivo del User-Agent
     const deviceInfo = parseUserAgent(userAgent, req);
     
+    // Obtener información adicional del usuario si está disponible
+    let userInfo = null;
+    if (userId) {
+      // Intentar obtener información del usuario desde la base de datos o sesión
+      if (req.user && req.user.username) {
+        userInfo = {
+          username: req.user.username,
+          discriminator: req.user.discriminator || '0000',
+          avatar: req.user.avatar
+        };
+      } else {
+        // Si no hay información en req.user, intentar obtenerla de la base de datos
+        try {
+          const userData = await getQuery(
+            'SELECT username, discriminator, avatar FROM users WHERE id = ?',
+            [userId]
+          );
+          if (userData) {
+            userInfo = {
+              username: userData.username,
+              discriminator: userData.discriminator || '0000',
+              avatar: userData.avatar
+            };
+          }
+        } catch (dbError) {
+          console.log('[IP TRACKING] No se pudo obtener info del usuario desde DB:', dbError.message);
+        }
+      }
+    }
+    
     console.log('[IP TRACKING] Registrando IP:', { 
       ip, 
       userId, 
+      userInfo,
       userAgent: userAgent.substring(0, 50) + '...',
       device: deviceInfo
     });
@@ -2193,15 +2224,15 @@ async function trackIP(req, userId = null) {
     if (existing) {
       // Actualizar IP existente
       await runQuery(
-        'UPDATE ip_tracking SET lastSeen = ?, visitCount = visitCount + 1, userId = COALESCE(?, userId), isActive = 1, userAgent = ?, country = ?, city = ? WHERE ip = ?',
-        [now, userId, userAgent, deviceInfo.country, deviceInfo.city, ip]
+        'UPDATE ip_tracking SET lastSeen = ?, visitCount = visitCount + 1, userId = COALESCE(?, userId), username = COALESCE(?, username), discriminator = COALESCE(?, discriminator), avatar = COALESCE(?, avatar), isActive = 1, userAgent = ?, country = ?, city = ? WHERE ip = ?',
+        [now, userId, userInfo?.username, userInfo?.discriminator, userInfo?.avatar, userAgent, deviceInfo.country, deviceInfo.city, ip]
       );
       console.log('[IP TRACKING] IP actualizada:', ip);
     } else {
       // Crear nueva entrada de IP
       await runQuery(
-        'INSERT INTO ip_tracking (ip, userId, userAgent, country, city, firstSeen, lastSeen, visitCount, isActive) VALUES (?, ?, ?, ?, ?, ?, ?, 1, 1)',
-        [ip, userId, userAgent, deviceInfo.country, deviceInfo.city, now, now]
+        'INSERT INTO ip_tracking (ip, userId, username, discriminator, avatar, userAgent, country, city, firstSeen, lastSeen, visitCount, isActive) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1)',
+        [ip, userId, userInfo?.username, userInfo?.discriminator, userInfo?.avatar, userAgent, deviceInfo.country, deviceInfo.city, now, now]
       );
       console.log('[IP TRACKING] Nueva IP registrada:', ip);
     }
