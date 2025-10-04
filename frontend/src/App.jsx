@@ -995,8 +995,8 @@ function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading }) {
       <CookieConsentBanner />
       {!hideFooter && <Footer />}
       
-      {/* Tutorial Interactivo - Temporalmente deshabilitado */}
-      {/* {tutorialHook && isInitialized && (
+      {/* Tutorial Interactivo */}
+      {tutorialHook && isInitialized && (
         <InteractiveTutorial
           isOpen={isTutorialOpen}
           onClose={closeTutorial}
@@ -1004,7 +1004,8 @@ function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading }) {
         />
       )}
       
-      <HelpButton /> */}
+      {/* Botón de Ayuda Flotante */}
+      {tutorialHook && isInitialized && <HelpButton />}
     </div>
   );
 }
