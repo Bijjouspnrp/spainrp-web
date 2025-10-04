@@ -395,7 +395,112 @@ const Terms = () => {
         </InteractiveSection>
 
         <InteractiveSection
-          title="7. Uso de Apps y Herramientas"
+          title="7. Sistema de Moderación Web y Baneos"
+          icon={<FaBan />}
+          isExpanded={expandedSections['web-moderation']}
+          onToggle={() => toggleSection('web-moderation')}
+        >
+          <div style={{ paddingLeft: '30px' }}>
+            <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
+              SpainRP implementa un sistema avanzado de moderación web que incluye baneos de IP, baneos de usuarios de Discord 
+              y monitoreo de actividad para mantener un entorno seguro y justo para todos los usuarios.
+            </p>
+
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>7.1 Baneos de Dirección IP</h3>
+            <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
+              • Podemos banear tu dirección IP por violaciones graves de nuestros términos<br/>
+              • Los baneos de IP pueden ser temporales o permanentes según la gravedad<br/>
+              • Una IP baneada no puede acceder a ninguna parte del sitio web<br/>
+              • Los baneos de IP se aplican a todos los dispositivos que usen esa dirección<br/>
+              • No se permiten intentos de eludir baneos de IP mediante VPNs o proxies
+            </p>
+
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>7.2 Baneos de Usuario de Discord</h3>
+            <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
+              • Podemos banear tu cuenta de Discord del sitio web independientemente del servidor<br/>
+              • Los baneos de Discord afectan a todas las funcionalidades que requieren autenticación<br/>
+              • Un usuario baneado no puede acceder al panel, apps o funciones privadas<br/>
+              • Los baneos de Discord pueden ser temporales o permanentes<br/>
+              • No se permite crear cuentas alternativas para eludir baneos
+            </p>
+
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>7.3 Monitoreo y Tracking de IPs</h3>
+            <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
+              • Registramos todas las direcciones IP que acceden al sitio web<br/>
+              • Recopilamos información básica del dispositivo (navegador, sistema operativo)<br/>
+              • Monitoreamos patrones de actividad sospechosos<br/>
+              • Rastreamos la ubicación geográfica aproximada (país, ciudad)<br/>
+              • Mantenemos logs de todas las acciones realizadas en el sitio
+            </p>
+
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>7.4 Motivos para Baneos</h3>
+            <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
+              • Violación grave de los términos y condiciones<br/>
+              • Actividad maliciosa o intentos de hackeo<br/>
+              • Uso de bots, scripts o automatización no autorizada<br/>
+              • Spam, acoso o comportamiento tóxico<br/>
+              • Intentos de explotar vulnerabilidades del sistema<br/>
+              • Múltiples advertencias previas ignoradas
+            </p>
+
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>7.5 Proceso de Apelación</h3>
+            <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
+              • Los baneos pueden ser apelados contactando a BijjouPro08 en Discord<br/>
+              • Debes proporcionar evidencia de que el ban fue injusto<br/>
+              • Las apelaciones se revisan en un plazo de 7 días hábiles<br/>
+              • Solo se permite una apelación por ban<br/>
+              • Las decisiones de apelación son finales e inapelables
+            </p>
+
+            <h3 style={{ color: '#FFD700', marginTop: '1rem', marginBottom: '0.5rem' }}>7.6 Baneos Automáticos</h3>
+            <p style={{ opacity: 0.85, marginBottom: '1rem', lineHeight: '1.6' }}>
+              • El sistema puede aplicar baneos automáticos por actividad sospechosa<br/>
+              • Los baneos automáticos pueden ser revisados y revocados manualmente<br/>
+              • Se notifica al usuario sobre baneos automáticos cuando es posible<br/>
+              • Los falsos positivos se resuelven rápidamente mediante apelación
+            </p>
+
+            <div style={{
+              background: 'rgba(231, 76, 60, 0.1)',
+              border: '1px solid rgba(231, 76, 60, 0.3)',
+              borderRadius: '8px',
+              padding: '12px',
+              marginTop: '1rem'
+            }}>
+              <h4 style={{ color: '#e74c3c', margin: '0 0 8px 0', fontSize: '14px' }}>
+                ⚠️ Información importante sobre baneos:
+              </h4>
+              <ul style={{ opacity: 0.8, margin: 0, fontSize: '13px', lineHeight: '1.5', paddingLeft: '16px' }}>
+                <li>Los baneos son inapelables después de 30 días</li>
+                <li>No se reembolsan servicios por baneos justificados</li>
+                <li>Los baneos pueden extenderse a servicios relacionados</li>
+                <li>El incumplimiento de baneos puede resultar en sanciones adicionales</li>
+              </ul>
+            </div>
+
+            <div style={{
+              background: 'rgba(114, 137, 218, 0.1)',
+              border: '1px solid rgba(114, 137, 218, 0.3)',
+              borderRadius: '8px',
+              padding: '12px',
+              marginTop: '1rem'
+            }}>
+              <h4 style={{ color: '#7289da', margin: '0 0 8px 0', fontSize: '14px' }}>
+                🔒 Datos recopilados para moderación:
+              </h4>
+              <ul style={{ opacity: 0.8, margin: 0, fontSize: '13px', lineHeight: '1.5', paddingLeft: '16px' }}>
+                <li>Dirección IP y ubicación geográfica</li>
+                <li>Información del navegador y dispositivo</li>
+                <li>Historial de actividad en el sitio</li>
+                <li>Datos de autenticación de Discord</li>
+                <li>Logs de acciones y transacciones</li>
+              </ul>
+            </div>
+          </div>
+        </InteractiveSection>
+
+        <InteractiveSection
+          title="9\. Uso de Apps y Herramientas"
           icon={<FaAppStore />}
           isExpanded={expandedSections['apps-tools']}
           onToggle={() => toggleSection('apps-tools')}
@@ -464,7 +569,7 @@ const Terms = () => {
         </InteractiveSection>
 
         <InteractiveSection
-          title="8. Seguridad y Anti-Cheat"
+          title="9\. Seguridad y Anti-Cheat"
           icon={<FaShieldAlt />}
           isExpanded={expandedSections['security-anticheat']}
           onToggle={() => toggleSection('security-anticheat')}
@@ -530,7 +635,7 @@ const Terms = () => {
         </InteractiveSection>
 
         <InteractiveSection
-          title="9. Integración con Plataformas"
+          title="10\. Integración con Plataformas"
           icon={<FaDiscord />}
           isExpanded={expandedSections['platform-integration']}
           onToggle={() => toggleSection('platform-integration')}
@@ -608,7 +713,7 @@ const Terms = () => {
         </InteractiveSection>
 
         <InteractiveSection
-          title="10. Edad mínima"
+          title="11\. Edad mínima"
           icon={<FaUserShield />}
           isExpanded={expandedSections['age-requirement']}
           onToggle={() => toggleSection('age-requirement')}
@@ -630,13 +735,13 @@ const Terms = () => {
               </h4>
               <p style={{ opacity: 0.8, margin: 0, fontSize: '13px', lineHeight: '1.5' }}>
                 Al unirte al servidor de Discord, confirmas que cumples con los requisitos de edad mínima establecidos.
-              </p>
-            </div>
+          </p>
+        </div>
         </div>
         </InteractiveSection>
 
         <InteractiveSection
-          title="11. Contenidos de usuario"
+          title="12\. Contenidos de usuario"
           icon={<FaUserShield />}
           isExpanded={expandedSections['user-content']}
           onToggle={() => toggleSection('user-content')}
@@ -663,12 +768,12 @@ const Terms = () => {
                 <li>Textos y mensajes respetuosos</li>
                 <li>Contenido original del usuario</li>
               </ul>
-            </div>
+        </div>
         </div>
         </InteractiveSection>
 
         <InteractiveSection
-          title="12. Propiedad intelectual"
+          title="13\. Propiedad intelectual"
           icon={<FaLock />}
           isExpanded={expandedSections['intellectual-property']}
           onToggle={() => toggleSection('intellectual-property')}
@@ -694,12 +799,12 @@ const Terms = () => {
                 <li>Diseños y elementos gráficos</li>
                 <li>Contenido original del sitio</li>
               </ul>
-            </div>
+        </div>
         </div>
         </InteractiveSection>
 
         <InteractiveSection
-          title="13. Servicios de terceros y limitación de responsabilidad"
+          title="14\. Servicios de terceros y limitación de responsabilidad"
           icon={<FaShieldAlt />}
           isExpanded={expandedSections['third-party-services']}
           onToggle={() => toggleSection('third-party-services')}
@@ -754,7 +859,7 @@ const Terms = () => {
         </InteractiveSection>
 
         <InteractiveSection
-          title="14. Política de datos y privacidad detallada"
+          title="15\. Política de datos y privacidad detallada"
           icon={<FaLock />}
           isExpanded={expandedSections['privacy']}
           onToggle={() => toggleSection('privacy')}
@@ -817,7 +922,7 @@ const Terms = () => {
         </InteractiveSection>
 
         <InteractiveSection
-          title="15. Disponibilidad y mantenimiento"
+          title="16\. Disponibilidad y mantenimiento"
           icon={<FaInfoCircle />}
           isExpanded={expandedSections['availability']}
           onToggle={() => toggleSection('availability')}
@@ -840,13 +945,13 @@ const Terms = () => {
               </h4>
               <p style={{ opacity: 0.8, margin: 0, fontSize: '13px', lineHeight: '1.5' }}>
                 Los mantenimientos se anuncian con 24 horas de antelación en el servidor de Discord.
-              </p>
-            </div>
+          </p>
+        </div>
         </div>
         </InteractiveSection>
 
         <InteractiveSection
-          title="16. Limitación de responsabilidad"
+          title="17\. Limitación de responsabilidad"
           icon={<FaExclamationTriangle />}
           isExpanded={expandedSections['liability']}
           onToggle={() => toggleSection('liability')}
@@ -872,12 +977,12 @@ const Terms = () => {
                 <li>Servicio proporcionado "como está"</li>
                 <li>Limitaciones según la ley aplicable</li>
               </ul>
-            </div>
+        </div>
         </div>
         </InteractiveSection>
 
         <InteractiveSection
-          title="17. Modificaciones y notificación de cambios"
+          title="18\. Modificaciones y notificación de cambios"
           icon={<FaInfoCircle />}
           isExpanded={expandedSections['modifications']}
           onToggle={() => toggleSection('modifications')}
@@ -913,7 +1018,7 @@ const Terms = () => {
         </InteractiveSection>
 
         <InteractiveSection
-          title="18. Contacto"
+          title="19\. Contacto"
           icon={<FaUserShield />}
           isExpanded={expandedSections['contact']}
           onToggle={() => toggleSection('contact')}
