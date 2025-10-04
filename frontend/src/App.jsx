@@ -659,28 +659,24 @@ function App() {
 
   // Mostrar tutorial automáticamente si es necesario
   useEffect(() => {
-    if (tutorialHook && shouldShowTutorial && !loading && !maintenance) {
+    if (shouldShowTutorial && !loading && !maintenance) {
       // Esperar un poco para que la página se cargue completamente
       const timer = setTimeout(() => {
-        if (openTutorial) {
-          openTutorial();
-        }
+        openTutorial();
       }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [tutorialHook, shouldShowTutorial, loading, maintenance, openTutorial]);
+  }, [shouldShowTutorial, loading, maintenance, openTutorial]);
 
   // Listener para abrir tutorial manualmente
   useEffect(() => {
     const handleOpenTutorial = () => {
-      if (tutorialHook && openTutorial) {
-        openTutorial();
-      }
+      openTutorial();
     };
 
     window.addEventListener('open-tutorial', handleOpenTutorial);
     return () => window.removeEventListener('open-tutorial', handleOpenTutorial);
-  }, [tutorialHook, openTutorial]);
+  }, [openTutorial]);
   // Progreso mantenimiento (hooks siempre fuera de condicionales)
   const totalMinutes = 50;
   const [elapsed, setElapsed] = useState(0);
@@ -985,7 +981,7 @@ function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading }) {
       {!hideFooter && <Footer />}
       
       {/* Tutorial Interactivo */}
-      {tutorialHook && isInitialized && (
+      {isInitialized && (
         <InteractiveTutorial
           isOpen={isTutorialOpen}
           onClose={closeTutorial}
@@ -994,7 +990,7 @@ function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading }) {
       )}
       
       {/* Botón de Ayuda Flotante */}
-      {tutorialHook && isInitialized && <HelpButton />}
+      {isInitialized && <HelpButton />}
     </div>
   );
 }
