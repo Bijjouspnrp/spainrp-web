@@ -2257,6 +2257,7 @@ async function banCheckMiddleware(req, res, next) {
       console.log(`[BAN SYSTEM] IP ${ip} is banned:`, ipBan.reason);
       return res.status(403).json({
         error: 'Banned',
+        type: 'ip',
         message: 'Tu IP ha sido baneada de este sitio web.',
         reason: ipBan.reason,
         bannedAt: ipBan.bannedAt,
@@ -2299,6 +2300,7 @@ async function authenticatedBanCheckMiddleware(req, res, next) {
         console.log(`[BAN SYSTEM] Discord user ${req.user.id} is banned:`, discordBan.reason);
         return res.status(403).json({
           error: 'Banned',
+          type: 'discord',
           message: 'Tu cuenta de Discord ha sido baneada de este sitio web.',
           reason: discordBan.reason,
           bannedAt: discordBan.bannedAt,
@@ -2319,6 +2321,9 @@ async function authenticatedBanCheckMiddleware(req, res, next) {
 
 // Middleware global de ban - APLICAR NUEVO SISTEMA DE BANS
 app.use(banCheckMiddleware);
+
+// Middleware de verificación de bans para usuarios autenticados - APLICAR GLOBALMENTE
+app.use(authenticatedBanCheckMiddleware);
 
 app.get('/', (req, res) => {
   const uptime = process.uptime();

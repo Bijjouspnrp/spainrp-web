@@ -116,7 +116,9 @@ const BannedPage = ({ banData }) => {
               <div className="info-row">
                 <span className="label">Tipo:</span>
                 <span className="value">
-                  {banData?.type === 'ip' ? 'Dirección IP' : 'Usuario Discord'}
+                  {banData?.type === 'ip' ? '🌐 Dirección IP' : 
+                   banData?.type === 'discord' ? '👤 Usuario Discord' : 
+                   '❓ Tipo desconocido'}
                 </span>
               </div>
               <div className="info-row">
@@ -187,8 +189,12 @@ const BannedPage = ({ banData }) => {
           <div className="footer-card">
             <h4>¿Qué significa esto?</h4>
             <p>
-              Has sido baneado de SpainRP Web por violar nuestros términos de servicio. 
-              Esto significa que no puedes acceder a ninguna funcionalidad del sitio web.
+              {banData?.type === 'ip' ? 
+                'Tu dirección IP ha sido baneada de SpainRP Web por violar nuestros términos de servicio. Esto significa que no puedes acceder desde esta IP a ninguna funcionalidad del sitio web.' :
+                banData?.type === 'discord' ?
+                'Tu cuenta de Discord ha sido baneada de SpainRP Web por violar nuestros términos de servicio. Esto significa que no puedes acceder con esta cuenta a ninguna funcionalidad del sitio web.' :
+                'Has sido baneado de SpainRP Web por violar nuestros términos de servicio. Esto significa que no puedes acceder a ninguna funcionalidad del sitio web.'
+              }
             </p>
           </div>
 

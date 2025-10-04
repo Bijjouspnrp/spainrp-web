@@ -13,16 +13,29 @@ window.fetch = async function(...args) {
         const data = await response.clone().json();
         console.log('[BAN INTERCEPTOR] Datos de respuesta 403:', data);
         
-        // Verificar si es una respuesta de ban
-        if (data.error === 'Banned' && data.type) {
+        // Verificar si es una respuesta de ban (IP o Discord)
+        if (data.error === 'Banned' && (data.type || data.message)) {
           console.log('[BAN INTERCEPTOR] ✅ Usuario baneado detectado:', data);
+          
+          // Determinar el tipo de ban basado en el mensaje si no hay type
+          let banType = data.type;
+          if (!banType) {
+            if (data.message.includes('IP')) {
+              banType = 'ip';
+            } else if (data.message.includes('Discord')) {
+              banType = 'discord';
+            } else {
+              banType = 'unknown';
+            }
+          }
           
           // Guardar datos de ban en localStorage
           const banData = {
-            type: data.type,
-            reason: data.reason,
-            bannedAt: data.bannedAt,
-            expiresAt: data.expiresAt
+            type: banType,
+            reason: data.reason || 'No especificada',
+            bannedAt: data.bannedAt || new Date().toISOString(),
+            expiresAt: data.expiresAt || null,
+            message: data.message
           };
           
           localStorage.setItem('ban_error', JSON.stringify(banData));
