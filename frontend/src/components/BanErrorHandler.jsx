@@ -7,7 +7,50 @@ const BanErrorHandler = ({ children }) => {
 
   useEffect(() => {
     checkBanStatus();
-  }, []);
+    
+    // Escuchar evento personalizado de ban
+    const handleUserBanned = (e) => {
+      console.log('[BAN ERROR HANDLER] Evento de ban recibido:', e.detail);
+      setBanData(e.detail);
+      setIsChecking(false);
+    };
+
+    // Escuchar cambios en localStorage para detectar bans en tiempo real
+    const handleStorageChange = (e) => {
+      if (e.key === 'ban_error' && e.newValue) {
+        try {
+          const ban = JSON.parse(e.newValue);
+          setBanData(ban);
+          setIsChecking(false);
+        } catch (error) {
+          console.error('Error parsing ban data:', error);
+        }
+      }
+    };
+
+    window.addEventListener('userBanned', handleUserBanned);
+    window.addEventListener('storage', handleStorageChange);
+    
+    // También verificar periódicamente por si el interceptor ya guardó los datos
+    const interval = setInterval(() => {
+      const banError = localStorage.getItem('ban_error');
+      if (banError && !banData) {
+        try {
+          const ban = JSON.parse(banError);
+          setBanData(ban);
+          setIsChecking(false);
+        } catch (error) {
+          console.error('Error parsing ban data:', error);
+        }
+      }
+    }, 100);
+
+    return () => {
+      window.removeEventListener('userBanned', handleUserBanned);
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, [banData]);
 
   const checkBanStatus = async () => {
     try {

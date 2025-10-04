@@ -6,6 +6,10 @@ const BannedPage = ({ banData }) => {
   const [timeLeft, setTimeLeft] = useState(null);
 
   useEffect(() => {
+    console.log('[BANNED PAGE] Componente montado con banData:', banData);
+  }, [banData]);
+
+  useEffect(() => {
     if (banData?.expiresAt) {
       const updateTimeLeft = () => {
         const now = new Date().getTime();
@@ -42,6 +46,52 @@ const BannedPage = ({ banData }) => {
 
   const isPermanent = !banData?.expiresAt;
   const isExpired = banData?.expiresAt && new Date(banData.expiresAt).getTime() <= Date.now();
+
+  // Si no hay datos de ban, mostrar mensaje genérico
+  if (!banData) {
+    return (
+      <div className="banned-page">
+        <div className="banned-container">
+          <div className="banned-header">
+            <div className="banned-icon">
+              <FaBan />
+            </div>
+            <h1>Acceso Denegado</h1>
+            <p>Tu acceso a SpainRP Web ha sido restringido</p>
+          </div>
+          <div className="banned-info">
+            <div className="info-card">
+              <div className="info-header">
+                <FaExclamationTriangle className="info-icon" />
+                <h3>Detalles del Ban</h3>
+              </div>
+              <div className="info-content">
+                <div className="info-row">
+                  <span className="label">Estado:</span>
+                  <span className="value">Acceso restringido</span>
+                </div>
+                <div className="info-row">
+                  <span className="label">Razón:</span>
+                  <span className="value reason">No especificada</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="contact-section">
+            <p>¿Necesitas ayuda? Contáctanos en Discord</p>
+            <a 
+              href="https://discord.gg/sMzFgFQHXA" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="contact-btn"
+            >
+              <FaGavel /> Servidor de Discord
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="banned-page">
