@@ -147,7 +147,7 @@ const InteractiveTutorial = ({ isOpen, onClose, onComplete }) => {
       }, 4000);
       return () => clearTimeout(timer);
     }
-  }, [isPlaying, currentStep]);
+  }, [isPlaying, currentStep, nextStep, tutorialSteps.length]);
 
   // Efecto de la mano
   useEffect(() => {
