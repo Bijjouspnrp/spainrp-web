@@ -590,7 +590,6 @@ function App() {
   const vantaElRef = useRef(null);
   
   // Hook del tutorial
-  const tutorialHook = useTutorial();
   const {
     shouldShowTutorial = false,
     isTutorialOpen = false,
@@ -599,7 +598,7 @@ function App() {
     closeTutorial = () => {},
     completeTutorial = () => {},
     skipTutorial = () => {}
-  } = tutorialHook || {};
+  } = useTutorial();
   
   // Capturar token de la URL después del login - EJECUTAR INMEDIATAMENTE
   useEffect(() => {

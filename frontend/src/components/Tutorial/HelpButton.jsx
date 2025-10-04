@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { FaQuestion, FaHandPointer, FaTimes, FaLightbulb } from 'react-icons/fa';
 import './HelpButton.css';
 

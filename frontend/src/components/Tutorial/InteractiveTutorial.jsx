@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { 
   FaArrowRight, 
   FaArrowLeft, 
@@ -27,7 +27,6 @@ const InteractiveTutorial = ({ isOpen, onClose, onComplete }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showHand, setShowHand] = useState(false);
   const [highlightedElement, setHighlightedElement] = useState(null);
-  const [tutorialData, setTutorialData] = useState(null);
   const overlayRef = useRef(null);
   const handRef = useRef(null);
 
