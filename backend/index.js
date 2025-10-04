@@ -11,6 +11,7 @@ const nodemailer = require('nodemailer');
 const sgMail = require('@sendgrid/mail');
 const { Server } = require('socket.io');
 const http = require('http');
+const jwt = require('jsonwebtoken');
 
 const authRoutes = require('./auth');
 const discordRoutes = require('./routes/discord');
