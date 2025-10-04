@@ -1,5 +1,6 @@
 // Interceptor global para capturar respuestas de ban
 const originalFetch = window.fetch;
+let isRedirecting = false; // Prevenir redirecciones múltiples
 
 window.fetch = async function(...args) {
   try {
@@ -16,6 +17,12 @@ window.fetch = async function(...args) {
         // Verificar si es una respuesta de ban (IP o Discord)
         if (data.error === 'Banned' && (data.type || data.message)) {
           console.log('[BAN INTERCEPTOR] ✅ Usuario baneado detectado:', data);
+          
+          // Prevenir redirecciones múltiples
+          if (isRedirecting) {
+            console.log('[BAN INTERCEPTOR] ⚠️ Redirección ya en progreso, ignorando...');
+            return response;
+          }
           
           // Determinar el tipo de ban basado en el mensaje si no hay type
           let banType = data.type;
@@ -44,7 +51,8 @@ window.fetch = async function(...args) {
           // Disparar evento personalizado para notificar a otros componentes
           window.dispatchEvent(new CustomEvent('userBanned', { detail: banData }));
           
-          // Redirigir inmediatamente a la página de ban
+          // Marcar que estamos redirigiendo y redirigir inmediatamente a la página de ban
+          isRedirecting = true;
           console.log('[BAN INTERCEPTOR] 🔄 Redirigiendo a /banned...');
           window.location.href = '/banned';
           return response;

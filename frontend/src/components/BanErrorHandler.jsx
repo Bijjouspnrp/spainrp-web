@@ -34,11 +34,13 @@ const BanErrorHandler = ({ children }) => {
     // También verificar periódicamente por si el interceptor ya guardó los datos
     const interval = setInterval(() => {
       const banError = localStorage.getItem('ban_error');
-      if (banError && !banData) {
+      if (banError) {
         try {
           const ban = JSON.parse(banError);
           setBanData(ban);
           setIsChecking(false);
+          // Limpiar el intervalo una vez que se detecta el ban
+          clearInterval(interval);
         } catch (error) {
           console.error('Error parsing ban data:', error);
         }
@@ -50,7 +52,7 @@ const BanErrorHandler = ({ children }) => {
       window.removeEventListener('storage', handleStorageChange);
       clearInterval(interval);
     };
-  }, [banData]);
+  }, []); // Remover banData de las dependencias para evitar bucle infinito
 
   const checkBanStatus = async () => {
     try {
