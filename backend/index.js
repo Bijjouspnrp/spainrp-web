@@ -2185,6 +2185,154 @@ async function cleanupExpiredBans() {
   }
 }
 
+// Función para enviar mensaje DM sobre unban
+async function sendUnbanNotification(userId, banType, unbannedBy) {
+  try {
+    if (!discordClient || !discordClient.readyAt) {
+      console.warn('[UNBAN DM] Bot de Discord no disponible para enviar notificación');
+      return false;
+    }
+
+    // Obtener información del usuario
+    const user = await discordClient.users.fetch(userId).catch(err => {
+      console.error('[UNBAN DM] Error obteniendo usuario:', err.message);
+      return null;
+    });
+
+    if (!user) {
+      console.warn(`[UNBAN DM] Usuario ${userId} no encontrado`);
+      return false;
+    }
+
+    // Crear embed del mensaje
+    const embed = {
+      color: 0x2ecc71, // Verde
+      title: '✅ Has sido desbaneado de SpainRP Web',
+      description: `Tu acceso al sitio web de SpainRP ha sido restaurado.`,
+      fields: [
+        {
+          name: '📋 Tipo de Ban Removido',
+          value: banType === 'ip' ? 'Dirección IP' : 'Usuario de Discord',
+          inline: true
+        },
+        {
+          name: '👮 Desbaneado por',
+          value: `<@${unbannedBy}>`,
+          inline: true
+        },
+        {
+          name: '⏰ Fecha',
+          value: `<t:${Math.floor(Date.now() / 1000)}:F>`,
+          inline: true
+        }
+      ],
+      footer: {
+        text: 'SpainRP - Sistema de Moderación',
+        icon_url: 'https://cdn.discordapp.com/icons/1212556680911650866/a_1234567890abcdef1234567890abcdef.webp'
+      },
+      timestamp: new Date().toISOString()
+    };
+
+    // Agregar información de bienvenida
+    embed.fields.push({
+      name: '🎉 ¡Bienvenido de vuelta!',
+      value: 'Ya puedes acceder nuevamente al sitio web. Esperamos que tengas una mejor experiencia esta vez.',
+      inline: false
+    });
+
+    // Enviar mensaje DM
+    await user.send({ embeds: [embed] });
+    
+    console.log(`[UNBAN DM] ✅ Notificación de unban enviada a ${user.tag} (${userId})`);
+    return true;
+  } catch (error) {
+    console.error('[UNBAN DM] Error enviando notificación:', error);
+    return false;
+  }
+}
+
+// Función para enviar mensaje DM sobre baneo
+async function sendBanNotification(userId, banType, reason, expiresAt, bannedBy) {
+  try {
+    if (!discordClient || !discordClient.readyAt) {
+      console.warn('[BAN DM] Bot de Discord no disponible para enviar notificación');
+      return false;
+    }
+
+    // Obtener información del usuario
+    const user = await discordClient.users.fetch(userId).catch(err => {
+      console.error('[BAN DM] Error obteniendo usuario:', err.message);
+      return null;
+    });
+
+    if (!user) {
+      console.warn(`[BAN DM] Usuario ${userId} no encontrado`);
+      return false;
+    }
+
+    // Crear embed del mensaje
+    const embed = {
+      color: 0xe74c3c, // Rojo
+      title: '🚫 Has sido baneado de SpainRP Web',
+      description: `Tu acceso al sitio web de SpainRP ha sido restringido.`,
+      fields: [
+        {
+          name: '📋 Tipo de Ban',
+          value: banType === 'ip' ? 'Dirección IP' : 'Usuario de Discord',
+          inline: true
+        },
+        {
+          name: '📝 Motivo',
+          value: reason || 'No especificado',
+          inline: true
+        },
+        {
+          name: '👮 Baneado por',
+          value: `<@${bannedBy}>`,
+          inline: true
+        }
+      ],
+      footer: {
+        text: 'SpainRP - Sistema de Moderación',
+        icon_url: 'https://cdn.discordapp.com/icons/1212556680911650866/a_1234567890abcdef1234567890abcdef.webp'
+      },
+      timestamp: new Date().toISOString()
+    };
+
+    // Agregar información de expiración si aplica
+    if (expiresAt) {
+      const expirationDate = new Date(expiresAt);
+      embed.fields.push({
+        name: '⏰ Expira',
+        value: `<t:${Math.floor(expirationDate.getTime() / 1000)}:F>`,
+        inline: true
+      });
+    } else {
+      embed.fields.push({
+        name: '⏰ Duración',
+        value: 'Permanente',
+        inline: true
+      });
+    }
+
+    // Agregar información de apelación
+    embed.fields.push({
+      name: '📞 Apelación',
+      value: 'Si crees que este ban es injusto, contacta a <@710112055985963090> en Discord para apelar.',
+      inline: false
+    });
+
+    // Enviar mensaje DM
+    await user.send({ embeds: [embed] });
+    
+    console.log(`[BAN DM] ✅ Notificación enviada a ${user.tag} (${userId})`);
+    return true;
+  } catch (error) {
+    console.error('[BAN DM] Error enviando notificación:', error);
+    return false;
+  }
+}
+
 // Función para trackear IP
 async function trackIP(req, userId = null) {
   try {
@@ -6662,6 +6810,25 @@ app.post('/api/admin/ban/ip', ensureAuthOrJWT, ensureExclusiveAdmin, express.jso
     }
     
     console.log(`[BAN ADMIN] IP ${ip} banned by ${req.user.id}: ${reason}`);
+    
+    // Intentar enviar notificación DM si hay un usuario asociado a esta IP
+    try {
+      const { getQuery } = require('./db/database');
+      const ipData = await getQuery(
+        'SELECT userId FROM ip_tracking WHERE ip = ? AND userId IS NOT NULL ORDER BY lastSeen DESC LIMIT 1',
+        [ip]
+      );
+      
+      if (ipData && ipData.userId) {
+        await sendBanNotification(ipData.userId, 'ip', reason, expiresAt, req.user.id);
+      } else {
+        console.log(`[BAN ADMIN] No se encontró usuario asociado a la IP ${ip} para enviar DM`);
+      }
+    } catch (dmError) {
+      console.error('[BAN ADMIN] Error enviando DM para IP ban:', dmError);
+      // No fallar el ban si no se puede enviar el DM
+    }
+    
     res.json({ success: true, message: 'IP baneada correctamente' });
   } catch (error) {
     console.error('[BAN ADMIN] Error baneando IP:', error);
@@ -6711,6 +6878,15 @@ app.post('/api/admin/ban/discord', ensureAuthOrJWT, ensureExclusiveAdmin, expres
     }
     
     console.log(`[BAN ADMIN] Discord user ${userId} banned by ${req.user.id}: ${reason}`);
+    
+    // Enviar notificación DM al usuario baneado
+    try {
+      await sendBanNotification(userId, 'discord', reason, expiresAt, req.user.id);
+    } catch (dmError) {
+      console.error('[BAN ADMIN] Error enviando DM:', dmError);
+      // No fallar el ban si no se puede enviar el DM
+    }
+    
     res.json({ success: true, message: 'Usuario de Discord baneado correctamente' });
   } catch (error) {
     console.error('[BAN ADMIN] Error baneando usuario Discord:', error);
@@ -6734,6 +6910,30 @@ app.delete('/api/admin/ban/:type/:value', ensureAuthOrJWT, ensureExclusiveAdmin,
     );
     
     console.log(`[BAN ADMIN] ${type} ${value} unbanned by ${req.user.id}`);
+    
+    // Enviar notificación DM si es un ban de Discord o si hay usuario asociado a la IP
+    try {
+      if (type === 'discord') {
+        await sendUnbanNotification(value, 'discord', req.user.id);
+      } else if (type === 'ip') {
+        // Buscar usuario asociado a la IP
+        const { getQuery } = require('./db/database');
+        const ipData = await getQuery(
+          'SELECT userId FROM ip_tracking WHERE ip = ? AND userId IS NOT NULL ORDER BY lastSeen DESC LIMIT 1',
+          [value]
+        );
+        
+        if (ipData && ipData.userId) {
+          await sendUnbanNotification(ipData.userId, 'ip', req.user.id);
+        } else {
+          console.log(`[BAN ADMIN] No se encontró usuario asociado a la IP ${value} para enviar DM de unban`);
+        }
+      }
+    } catch (dmError) {
+      console.error('[BAN ADMIN] Error enviando DM de unban:', dmError);
+      // No fallar el unban si no se puede enviar el DM
+    }
+    
     res.json({ success: true, message: 'Ban removido correctamente' });
   } catch (error) {
     console.error('[BAN ADMIN] Error removiendo ban:', error);
