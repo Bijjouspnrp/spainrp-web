@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FaChevronDown, FaChevronUp, FaInfoCircle, FaShieldAlt, FaUserShield, FaLock, FaExclamationTriangle, FaAppStore, FaDiscord } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaInfoCircle, FaShieldAlt, FaUserShield, FaLock, FaExclamationTriangle, FaAppStore, FaDiscord, FaBan } from 'react-icons/fa';
 
 const sectionStyle = {
   background: 'rgba(255,255,255,0.05)',
