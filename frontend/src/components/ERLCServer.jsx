@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaUsers, FaClock, FaServer, FaGamepad, FaGlobe } from 'react-icons/fa';
+import { FaUsers, FaClock, FaServer, FaGamepad, FaGlobe, FaChevronDown, FaChevronUp, FaInfoCircle } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { apiUrl } from '../utils/api';
 import './ERLCServer.css';
@@ -8,6 +8,11 @@ const ERLCServer = () => {
   const [serverData, setServerData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [expandedSections, setExpandedSections] = useState({
+    stats: true,
+    info: false,
+    join: false
+  });
 
   useEffect(() => {
     const fetchServerData = async () => {
@@ -121,6 +126,13 @@ const ERLCServer = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const toggleSection = (section) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
   if (loading) {
     return (
       <section className="erlc-server" id="erlc">
@@ -191,6 +203,7 @@ const ERLCServer = () => {
           transition={{ duration: 0.8, delay: 0.2 }}
           viewport={{ once: true }}
         >
+          {/* Estadísticas principales - Siempre visibles */}
           <div className="erlc-stats">
             <div className="stat-card">
               <div className="stat-icon">
@@ -223,69 +236,98 @@ const ERLCServer = () => {
             </div>
           </div>
 
+          {/* Información del servidor - Desplegable */}
           <div className="erlc-info">
             <div className="info-card">
-              <div className="info-header">
-                <FaGlobe className="info-icon" />
+              <div 
+                className="info-header clickable"
+                onClick={() => toggleSection('info')}
+              >
+                <FaInfoCircle className="info-icon" />
                 <h4>Información del Servidor</h4>
+                {expandedSections.info ? <FaChevronUp /> : <FaChevronDown />}
               </div>
-              <div className="info-content">
-                <div className="info-item">
-                  <span className="info-label">Nombre:</span>
-                  <span className="info-value">{serverData?.serverName || 'SpainRP Official'}</span>
-                </div>
-                <div className="info-item">
-                  <span className="info-label">Estado:</span>
-                  <span className={`info-value status ${serverData?.online ? 'online' : 'offline'}`}>
-                    {serverData?.online ? '🟢 Online' : '🔴 Offline'}
-                  </span>
-                </div>
-                <div className="info-item">
-                  <span className="info-label">Mapa:</span>
-                  <span className="info-value">{serverData?.map || 'Liberty City'}</span>
-                </div>
-                <div className="info-item">
-                  <span className="info-label">Join Key:</span>
-                  <span className="info-value">{serverData?.joinKey || 'SpainRP'}</span>
-                </div>
-                <div className="info-item">
-                  <span className="info-label">Verificación:</span>
-                  <span className="info-value">{serverData?.accVerifiedReq || 'Disabled'}</span>
-                </div>
-                <div className="info-item">
-                  <span className="info-label">Team Balance:</span>
-                  <span className={`info-value ${serverData?.teamBalance ? 'enabled' : 'disabled'}`}>
-                    {serverData?.teamBalance ? '✅ Activado' : '❌ Desactivado'}
-                  </span>
-                </div>
-              </div>
+              {expandedSections.info && (
+                <motion.div 
+                  className="info-content"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="info-item">
+                    <span className="info-label">Nombre:</span>
+                    <span className="info-value">{serverData?.serverName || 'SpainRP Official'}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Estado:</span>
+                    <span className={`info-value status ${serverData?.online ? 'online' : 'offline'}`}>
+                      {serverData?.online ? '🟢 Online' : '🔴 Offline'}
+                    </span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Mapa:</span>
+                    <span className="info-value">{serverData?.map || 'Liberty City'}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Join Key:</span>
+                    <span className="info-value">{serverData?.joinKey || 'SpainRP'}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Verificación:</span>
+                    <span className="info-value">{serverData?.accVerifiedReq || 'Disabled'}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Team Balance:</span>
+                    <span className={`info-value ${serverData?.teamBalance ? 'enabled' : 'disabled'}`}>
+                      {serverData?.teamBalance ? '✅ Activado' : '❌ Desactivado'}
+                    </span>
+                  </div>
+                </motion.div>
+              )}
             </div>
 
+            {/* Sección de unirse - Desplegable */}
             <div className="join-section">
-              <h4>¡Únete al Servidor!</h4>
-              <p>Conecta con otros jugadores y vive la experiencia completa de roleplay policial</p>
-              <div className="join-buttons">
-                <a 
-                  href="https://discord.gg/sMzFgFQHXA" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="join-btn discord-btn"
-                >
-                  <FaGlobe />
-                  Discord
-                </a>
-                <button 
-                  className="join-btn copy-btn"
-                  onClick={() => {
-                    const joinKey = serverData?.joinKey || 'SpainRP';
-                    navigator.clipboard.writeText(joinKey);
-                    // Aquí podrías añadir un toast de confirmación
-                  }}
-                >
-                  <FaServer />
-                  Copiar Join Key
-                </button>
+              <div 
+                className="join-header clickable"
+                onClick={() => toggleSection('join')}
+              >
+                <h4>¡Únete al Servidor!</h4>
+                {expandedSections.join ? <FaChevronUp /> : <FaChevronDown />}
               </div>
+              {expandedSections.join && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <p>Conecta con otros jugadores y vive la experiencia completa de roleplay policial</p>
+                  <div className="join-buttons">
+                    <a 
+                      href="https://discord.gg/sMzFgFQHXA" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="join-btn discord-btn"
+                    >
+                      <FaGlobe />
+                      Discord
+                    </a>
+                    <button 
+                      className="join-btn copy-btn"
+                      onClick={() => {
+                        const joinKey = serverData?.joinKey || 'SpainRP';
+                        navigator.clipboard.writeText(joinKey);
+                        // Aquí podrías añadir un toast de confirmación
+                      }}
+                    >
+                      <FaServer />
+                      Copiar Join Key
+                    </button>
+                  </div>
+                </motion.div>
+              )}
             </div>
           </div>
         </motion.div>

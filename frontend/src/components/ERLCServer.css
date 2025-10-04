@@ -240,9 +240,26 @@ body:not(.dark) .info-card {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.info-header.clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  padding: 12px;
+  margin: -12px -12px 20px -12px;
+}
+
+.info-header.clickable:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
 /* Modo claro */
 body:not(.dark) .info-header {
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Modo claro para clickable */
+body:not(.dark) .info-header.clickable:hover {
+  background: rgba(0, 0, 0, 0.05);
 }
 
 .info-icon {
@@ -329,9 +346,36 @@ body:not(.dark) .info-value {
   margin: 0 0 10px 0;
 }
 
+.join-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  padding: 12px;
+  margin: -12px -12px 0 -12px;
+}
+
+.join-header:hover {
+  background: rgba(114, 137, 218, 0.1);
+}
+
+.join-header h4 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 /* Modo claro */
 body:not(.dark) .join-section h4 {
   color: #1a1a1a;
+}
+
+/* Modo claro para join header */
+body:not(.dark) .join-header:hover {
+  background: rgba(114, 137, 218, 0.05);
 }
 
 .join-section p {
