@@ -158,6 +158,9 @@ const InteractiveTutorial = ({ isOpen, onClose, onComplete }) => {
     }
   ];
 
+  // Definir currentStepData antes de usarlo
+  const currentStepData = tutorialSteps[currentStep];
+
   // Función para detectar elementos de forma robusta
   const detectElement = (selector) => {
     if (!selector) return null;
@@ -280,7 +283,6 @@ const InteractiveTutorial = ({ isOpen, onClose, onComplete }) => {
     setIsPlaying(!isPlaying);
   };
 
-  const currentStepData = tutorialSteps[currentStep];
   const progress = ((currentStep + 1) / tutorialSteps.length) * 100;
 
   if (!isOpen) return null;
