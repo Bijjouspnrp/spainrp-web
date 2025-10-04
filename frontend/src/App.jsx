@@ -10,6 +10,7 @@ import Features from './components/Features';
 import Stats from './components/Stats';
 import StaffSection from './components/StaffSection';
 import DiscordSection from './components/DiscordSection';
+import ERLCServer from './components/ERLCServer';
 import Footer from './components/Footer';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import spainLogo from '/assets/spainrplogo.png';
@@ -287,6 +288,7 @@ function Home({ memberCount, totalMembers, loading }) {
       <Stats memberCount={memberCount} totalMembers={totalMembers} />
       <Features />
       <StaffSection />
+      <ERLCServer />
       <DiscordSection />
     </>
   );

@@ -4798,6 +4798,122 @@ app.get('/api/widget', async (req, res) => {
   }
 });
 
+// Endpoint para obtener estado del servidor ERLC
+app.get('/api/erlc/server-status', async (req, res) => {
+  try {
+    const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+    
+    const API_URL = 'https://api.policeroleplay.community/v1';
+    const SERVER_KEY = 'vgNwEFZzjbtMhsxvLPlp-TmDsImkTdeynQPbxlHANzllQUkSHvbSStOsRPrJN';
+    
+    console.log('[ERLC API] 🔍 Iniciando consulta a la API...');
+    
+    // Obtener información básica del servidor
+    const serverResponse = await fetch(`${API_URL}/server`, {
+      headers: {
+        'server-key': SERVER_KEY,
+        'Accept': '*/*'
+      }
+    });
+    
+    console.log('[ERLC API] 📡 Respuesta del servidor:', {
+      status: serverResponse.status,
+      ok: serverResponse.ok,
+      headers: Object.fromEntries(serverResponse.headers.entries())
+    });
+    
+    if (!serverResponse.ok) {
+      const errorText = await serverResponse.text();
+      console.error('[ERLC API] ❌ Error en respuesta del servidor:', errorText);
+      throw new Error(`Error de API: ${serverResponse.status} - ${errorText}`);
+    }
+    
+    const serverData = await serverResponse.json();
+    console.log('[ERLC API] 📊 Datos del servidor recibidos:', serverData);
+    
+    // Obtener jugadores en cola
+    let queueCount = 0;
+    try {
+      const queueResponse = await fetch(`${API_URL}/server/queue`, {
+        headers: {
+          'server-key': SERVER_KEY,
+          'Accept': '*/*'
+        }
+      });
+      
+      if (queueResponse.ok) {
+        const queueData = await queueResponse.json();
+        queueCount = Array.isArray(queueData) ? queueData.length : 0;
+        console.log('[ERLC API] 🚶 Cola de jugadores:', queueCount);
+      }
+    } catch (queueError) {
+      console.warn('[ERLC API] ⚠️ Error obteniendo cola:', queueError.message);
+    }
+    
+    // Obtener jugadores actuales en el servidor
+    let currentPlayers = 0;
+    try {
+      const playersResponse = await fetch(`${API_URL}/server/players`, {
+        headers: {
+          'server-key': SERVER_KEY,
+          'Accept': '*/*'
+        }
+      });
+      
+      if (playersResponse.ok) {
+        const playersData = await playersResponse.json();
+        currentPlayers = Array.isArray(playersData) ? playersData.length : 0;
+        console.log('[ERLC API] 👥 Jugadores actuales:', currentPlayers);
+      }
+    } catch (playersError) {
+      console.warn('[ERLC API] ⚠️ Error obteniendo jugadores:', playersError.message);
+      // Usar datos del servidor si falla la consulta de jugadores
+      currentPlayers = serverData.CurrentPlayers || 0;
+    }
+    
+    // Construir respuesta con datos reales de la API
+    const responseData = {
+      serverName: serverData.Name || 'SpainRP Official',
+      players: currentPlayers,
+      maxPlayers: serverData.MaxPlayers || 32,
+      queue: queueCount,
+      online: true, // Si llegamos aquí, el servidor está online
+      map: 'Liberty City', // No disponible en la API, usar valor por defecto
+      version: 'Latest', // No disponible en la API, usar valor por defecto
+      joinKey: serverData.JoinKey || 'SpainRP',
+      accVerifiedReq: serverData.AccVerifiedReq || 'Disabled',
+      teamBalance: serverData.TeamBalance || false,
+      ownerId: serverData.OwnerId,
+      coOwnerIds: serverData.CoOwnerIds || []
+    };
+    
+    console.log('[ERLC API] ✅ Datos finales del servidor:', responseData);
+    res.json(responseData);
+    
+  } catch (error) {
+    console.error('[ERLC API] ❌ Error obteniendo datos del servidor:', error);
+    
+    // Datos de fallback en caso de error
+    const fallbackData = {
+      serverName: 'SpainRP Official',
+      players: 0,
+      maxPlayers: 32,
+      queue: 0,
+      online: false,
+      map: 'Liberty City',
+      version: 'Latest',
+      joinKey: 'SpainRP',
+      accVerifiedReq: 'Disabled',
+      teamBalance: false,
+      ownerId: null,
+      coOwnerIds: []
+    };
+    
+    console.log('[ERLC API] 🔄 Usando datos de fallback:', fallbackData);
+    res.json(fallbackData);
+  }
+});
+
 // Endpoint para verificar si el usuario es admin
 app.get('/api/discord/isadmin/:userId', async (req, res) => {
   try {
