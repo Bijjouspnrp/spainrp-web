@@ -4800,75 +4800,160 @@ app.get('/api/widget', async (req, res) => {
 
 // Endpoint para obtener estado del servidor ERLC
 app.get('/api/erlc/server-status', async (req, res) => {
+  const startTime = Date.now();
+  const requestId = Math.random().toString(36).substr(2, 9);
+  
   try {
     const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
     
     const API_URL = 'https://api.policeroleplay.community/v1';
     const SERVER_KEY = 'vgNwEFZzjbtMhsxvLPlp-TmDsImkTdeynQPbxlHANzllQUkSHvbSStOsRPrJN';
     
-    console.log('[ERLC API] 🔍 Iniciando consulta a la API...');
+    console.log(`[ERLC API] 🔍 [${requestId}] Iniciando consulta a la API...`);
+    console.log(`[ERLC API] 📋 [${requestId}] Configuración:`, {
+      apiUrl: API_URL,
+      serverKeyLength: SERVER_KEY.length,
+      serverKeyPreview: SERVER_KEY.substring(0, 10) + '...',
+      timestamp: new Date().toISOString()
+    });
     
     // Obtener información básica del servidor
+    console.log(`[ERLC API] 🌐 [${requestId}] Haciendo petición a /server...`);
     const serverResponse = await fetch(`${API_URL}/server`, {
       headers: {
         'server-key': SERVER_KEY,
-        'Accept': '*/*'
+        'Accept': '*/*',
+        'User-Agent': 'SpainRP-Web/1.0'
       }
     });
     
-    console.log('[ERLC API] 📡 Respuesta del servidor:', {
+    const serverResponseTime = Date.now() - startTime;
+    console.log(`[ERLC API] 📡 [${requestId}] Respuesta del servidor (${serverResponseTime}ms):`, {
       status: serverResponse.status,
       ok: serverResponse.ok,
-      headers: Object.fromEntries(serverResponse.headers.entries())
+      statusText: serverResponse.statusText,
+      contentType: serverResponse.headers.get('content-type'),
+      contentLength: serverResponse.headers.get('content-length'),
+      date: serverResponse.headers.get('date'),
+      server: serverResponse.headers.get('server')
     });
     
     if (!serverResponse.ok) {
       const errorText = await serverResponse.text();
-      console.error('[ERLC API] ❌ Error en respuesta del servidor:', errorText);
+      console.error(`[ERLC API] ❌ [${requestId}] Error en respuesta del servidor:`, {
+        status: serverResponse.status,
+        statusText: serverResponse.statusText,
+        errorText: errorText.substring(0, 500),
+        fullErrorText: errorText
+      });
       throw new Error(`Error de API: ${serverResponse.status} - ${errorText}`);
     }
     
     const serverData = await serverResponse.json();
-    console.log('[ERLC API] 📊 Datos del servidor recibidos:', serverData);
+    console.log(`[ERLC API] 📊 [${requestId}] Datos del servidor recibidos:`, {
+      name: serverData.Name,
+      currentPlayers: serverData.CurrentPlayers,
+      maxPlayers: serverData.MaxPlayers,
+      joinKey: serverData.JoinKey,
+      accVerifiedReq: serverData.AccVerifiedReq,
+      teamBalance: serverData.TeamBalance,
+      ownerId: serverData.OwnerId,
+      coOwnerIds: serverData.CoOwnerIds,
+      fullData: serverData
+    });
     
     // Obtener jugadores en cola
     let queueCount = 0;
+    let queueData = null;
     try {
+      console.log(`[ERLC API] 🚶 [${requestId}] Obteniendo cola de jugadores...`);
+      const queueStartTime = Date.now();
+      
       const queueResponse = await fetch(`${API_URL}/server/queue`, {
         headers: {
           'server-key': SERVER_KEY,
-          'Accept': '*/*'
+          'Accept': '*/*',
+          'User-Agent': 'SpainRP-Web/1.0'
         }
       });
       
+      const queueResponseTime = Date.now() - queueStartTime;
+      console.log(`[ERLC API] 🚶 [${requestId}] Respuesta de cola (${queueResponseTime}ms):`, {
+        status: queueResponse.status,
+        ok: queueResponse.ok,
+        contentType: queueResponse.headers.get('content-type')
+      });
+      
       if (queueResponse.ok) {
-        const queueData = await queueResponse.json();
+        queueData = await queueResponse.json();
         queueCount = Array.isArray(queueData) ? queueData.length : 0;
-        console.log('[ERLC API] 🚶 Cola de jugadores:', queueCount);
+        console.log(`[ERLC API] 🚶 [${requestId}] Cola de jugadores:`, {
+          count: queueCount,
+          data: queueData,
+          isArray: Array.isArray(queueData)
+        });
+      } else {
+        console.warn(`[ERLC API] ⚠️ [${requestId}] Error en respuesta de cola:`, {
+          status: queueResponse.status,
+          statusText: queueResponse.statusText
+        });
       }
     } catch (queueError) {
-      console.warn('[ERLC API] ⚠️ Error obteniendo cola:', queueError.message);
+      console.warn(`[ERLC API] ⚠️ [${requestId}] Error obteniendo cola:`, {
+        message: queueError.message,
+        stack: queueError.stack,
+        name: queueError.name
+      });
     }
     
     // Obtener jugadores actuales en el servidor
     let currentPlayers = 0;
+    let playersData = null;
     try {
+      console.log(`[ERLC API] 👥 [${requestId}] Obteniendo jugadores actuales...`);
+      const playersStartTime = Date.now();
+      
       const playersResponse = await fetch(`${API_URL}/server/players`, {
         headers: {
           'server-key': SERVER_KEY,
-          'Accept': '*/*'
+          'Accept': '*/*',
+          'User-Agent': 'SpainRP-Web/1.0'
         }
       });
       
+      const playersResponseTime = Date.now() - playersStartTime;
+      console.log(`[ERLC API] 👥 [${requestId}] Respuesta de jugadores (${playersResponseTime}ms):`, {
+        status: playersResponse.status,
+        ok: playersResponse.ok,
+        contentType: playersResponse.headers.get('content-type')
+      });
+      
       if (playersResponse.ok) {
-        const playersData = await playersResponse.json();
+        playersData = await playersResponse.json();
         currentPlayers = Array.isArray(playersData) ? playersData.length : 0;
-        console.log('[ERLC API] 👥 Jugadores actuales:', currentPlayers);
+        console.log(`[ERLC API] 👥 [${requestId}] Jugadores actuales:`, {
+          count: currentPlayers,
+          isArray: Array.isArray(playersData),
+          sampleData: Array.isArray(playersData) ? playersData.slice(0, 3) : playersData
+        });
+      } else {
+        console.warn(`[ERLC API] ⚠️ [${requestId}] Error en respuesta de jugadores:`, {
+          status: playersResponse.status,
+          statusText: playersResponse.statusText
+        });
+        // Usar datos del servidor si falla la consulta de jugadores
+        currentPlayers = serverData.CurrentPlayers || 0;
+        console.log(`[ERLC API] 🔄 [${requestId}] Usando datos del servidor para jugadores:`, currentPlayers);
       }
     } catch (playersError) {
-      console.warn('[ERLC API] ⚠️ Error obteniendo jugadores:', playersError.message);
+      console.warn(`[ERLC API] ⚠️ [${requestId}] Error obteniendo jugadores:`, {
+        message: playersError.message,
+        stack: playersError.stack,
+        name: playersError.name
+      });
       // Usar datos del servidor si falla la consulta de jugadores
       currentPlayers = serverData.CurrentPlayers || 0;
+      console.log(`[ERLC API] 🔄 [${requestId}] Usando datos del servidor para jugadores:`, currentPlayers);
     }
     
     // Construir respuesta con datos reales de la API
@@ -4887,11 +4972,24 @@ app.get('/api/erlc/server-status', async (req, res) => {
       coOwnerIds: serverData.CoOwnerIds || []
     };
     
-    console.log('[ERLC API] ✅ Datos finales del servidor:', responseData);
+    const totalTime = Date.now() - startTime;
+    console.log(`[ERLC API] ✅ [${requestId}] Datos finales del servidor (${totalTime}ms):`, {
+      ...responseData,
+      processingTime: totalTime,
+      queueDataReceived: !!queueData,
+      playersDataReceived: !!playersData
+    });
+    
     res.json(responseData);
     
   } catch (error) {
-    console.error('[ERLC API] ❌ Error obteniendo datos del servidor:', error);
+    const totalTime = Date.now() - startTime;
+    console.error(`[ERLC API] ❌ [${requestId}] Error obteniendo datos del servidor (${totalTime}ms):`, {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      processingTime: totalTime
+    });
     
     // Datos de fallback en caso de error
     const fallbackData = {
@@ -4909,7 +5007,12 @@ app.get('/api/erlc/server-status', async (req, res) => {
       coOwnerIds: []
     };
     
-    console.log('[ERLC API] 🔄 Usando datos de fallback:', fallbackData);
+    console.log(`[ERLC API] 🔄 [${requestId}] Usando datos de fallback:`, {
+      ...fallbackData,
+      processingTime: totalTime,
+      errorOccurred: true
+    });
+    
     res.json(fallbackData);
   }
 });

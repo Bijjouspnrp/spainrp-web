@@ -71,11 +71,14 @@ body:not(.dark) .stats {
 }
 
 .stat-number {
-  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
   font-weight: 800;
   color: var(--stat-fg);
   margin-bottom: 0.5rem;
   line-height: 1;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .stat-label {
@@ -105,7 +108,8 @@ body:not(.dark) .stats {
   }
 
   .stat-number {
-    font-size: 2rem;
+    font-size: 1.8rem;
+    word-break: break-word;
   }
 }
 
@@ -129,6 +133,7 @@ body:not(.dark) .stats {
   }
 
   .stat-number {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
+    word-break: break-word;
   }
 } 

@@ -14,16 +14,35 @@ const ERLCServer = () => {
         setLoading(true);
         setError(null);
         
+        console.log('[ERLCServer] 🔍 Iniciando consulta a la API...');
         const response = await fetch('/api/erlc/server-status');
+        
+        console.log('[ERLCServer] 📡 Respuesta recibida:', {
+          status: response.status,
+          ok: response.ok,
+          contentType: response.headers.get('content-type')
+        });
+        
+        // Verificar si la respuesta es JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          const textResponse = await response.text();
+          console.error('[ERLCServer] ❌ Respuesta no es JSON:', textResponse.substring(0, 200));
+          throw new Error('La respuesta del servidor no es JSON válido');
+        }
+        
         const data = await response.json();
+        console.log('[ERLCServer] 📊 Datos recibidos:', data);
         
         if (response.ok) {
           setServerData(data);
+          console.log('[ERLCServer] ✅ Datos del servidor actualizados');
         } else {
           throw new Error(data.message || 'Error al obtener datos del servidor');
         }
       } catch (err) {
-        console.error('[ERLCServer] Error fetching server data:', err);
+        console.error('[ERLCServer] ❌ Error fetching server data:', err);
+        console.error('[ERLCServer] 📝 Stack trace:', err.stack);
         setError(err.message);
       } finally {
         setLoading(false);
