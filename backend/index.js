@@ -5346,6 +5346,178 @@ app.post('/api/calendar/claim', verifyToken, async (req, res) => {
     }
 
     const { getQuery, runQuery, allQuery } = require('./db/database');
+
+// === SISTEMA DE BANS Y TRACKING ===
+const ADMIN_USER_ID = '710112055985963090';
+
+// Función para obtener IP real del usuario
+function getRealIP(req) {
+  return req.headers['cf-connecting-ip'] || 
+         req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
+         req.headers['x-real-ip'] || 
+         req.connection?.remoteAddress || 
+         req.socket?.remoteAddress || 
+         req.ip || 
+         '127.0.0.1';
+}
+
+// Función para verificar si una IP está baneada
+async function isIPBanned(ip) {
+  try {
+    const ban = await getQuery(
+      'SELECT * FROM web_bans WHERE type = ? AND value = ? AND isActive = 1 AND (expiresAt IS NULL OR expiresAt > ?)',
+      ['ip', ip, new Date().toISOString()]
+    );
+    return ban || null;
+  } catch (error) {
+    console.error('[BAN SYSTEM] Error checking IP ban:', error);
+    return null;
+  }
+}
+
+// Función para verificar si un usuario de Discord está baneado
+async function isDiscordUserBanned(userId) {
+  try {
+    const ban = await getQuery(
+      'SELECT * FROM web_bans WHERE type = ? AND value = ? AND isActive = 1 AND (expiresAt IS NULL OR expiresAt > ?)',
+      ['discord', userId, new Date().toISOString()]
+    );
+    return ban || null;
+  } catch (error) {
+    console.error('[BAN SYSTEM] Error checking Discord ban:', error);
+    return null;
+  }
+}
+
+// Función para trackear IP
+async function trackIP(req, userId = null) {
+  try {
+    const ip = getRealIP(req);
+    const userAgent = req.headers['user-agent'] || 'Unknown';
+    const now = new Date().toISOString();
+    
+    // Verificar si la IP ya existe
+    const existing = await getQuery(
+      'SELECT * FROM ip_tracking WHERE ip = ?',
+      [ip]
+    );
+    
+    if (existing) {
+      // Actualizar IP existente
+      await runQuery(
+        'UPDATE ip_tracking SET lastSeen = ?, visitCount = visitCount + 1, userId = COALESCE(?, userId), isActive = 1 WHERE ip = ?',
+        [now, userId, ip]
+      );
+    } else {
+      // Crear nueva entrada de IP
+      await runQuery(
+        'INSERT INTO ip_tracking (ip, userId, userAgent, firstSeen, lastSeen, visitCount, isActive) VALUES (?, ?, ?, ?, ?, 1, 1)',
+        [ip, userId, userAgent, now, now]
+      );
+    }
+  } catch (error) {
+    console.error('[IP TRACKING] Error tracking IP:', error);
+  }
+}
+
+// Middleware de verificación de bans
+async function banCheckMiddleware(req, res, next) {
+  try {
+    const ip = getRealIP(req);
+    
+    // Verificar ban de IP
+    const ipBan = await isIPBanned(ip);
+    if (ipBan) {
+      console.log(`[BAN SYSTEM] IP ${ip} is banned:`, ipBan.reason);
+      return res.status(403).json({
+        error: 'Banned',
+        message: 'Tu IP ha sido baneada de este sitio web.',
+        reason: ipBan.reason,
+        bannedAt: ipBan.bannedAt,
+        expiresAt: ipBan.expiresAt
+      });
+    }
+    
+    // Trackear IP
+    await trackIP(req);
+    
+    next();
+  } catch (error) {
+    console.error('[BAN SYSTEM] Error in ban check middleware:', error);
+    next();
+  }
+}
+
+// Middleware de verificación de bans para usuarios autenticados
+async function authenticatedBanCheckMiddleware(req, res, next) {
+  try {
+    const ip = getRealIP(req);
+    
+    // Verificar ban de IP
+    const ipBan = await isIPBanned(ip);
+    if (ipBan) {
+      console.log(`[BAN SYSTEM] IP ${ip} is banned:`, ipBan.reason);
+      return res.status(403).json({
+        error: 'Banned',
+        message: 'Tu IP ha sido baneada de este sitio web.',
+        reason: ipBan.reason,
+        bannedAt: ipBan.bannedAt,
+        expiresAt: ipBan.expiresAt
+      });
+    }
+    
+    // Si hay usuario autenticado, verificar ban de Discord
+    if (req.user && req.user.id) {
+      const discordBan = await isDiscordUserBanned(req.user.id);
+      if (discordBan) {
+        console.log(`[BAN SYSTEM] Discord user ${req.user.id} is banned:`, discordBan.reason);
+        return res.status(403).json({
+          error: 'Banned',
+          message: 'Tu cuenta de Discord ha sido baneada de este sitio web.',
+          reason: discordBan.reason,
+          bannedAt: discordBan.bannedAt,
+          expiresAt: discordBan.expiresAt
+        });
+      }
+    }
+    
+    // Trackear IP con usuario
+    await trackIP(req, req.user?.id);
+    
+    next();
+  } catch (error) {
+    console.error('[BAN SYSTEM] Error in authenticated ban check middleware:', error);
+    next();
+  }
+}
+
+// Middleware para verificar JWT
+function ensureJWT(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Token de acceso requerido' });
+  }
+  
+  const token = authHeader.substring(7);
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'spainrp_secret_key');
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Token inválido' });
+  }
+}
+
+// Middleware para verificar que es el admin exclusivo
+function ensureExclusiveAdmin(req, res, next) {
+  if (!req.user || req.user.id !== ADMIN_USER_ID) {
+    return res.status(403).json({
+      error: 'Forbidden',
+      message: 'Solo el administrador principal puede acceder a esta función.'
+    });
+  }
+  next();
+}
     
     // Verificar si el día ya fue reclamado
     const existingClaim = await getQuery(
@@ -6241,6 +6413,200 @@ const isMaintenanceMode = () => {
 
 
 // Middleware de mantenimiento (después de la ruta API)
+// === ENDPOINTS DE GESTIÓN DE BANS (SOLO ADMIN EXCLUSIVO) ===
+
+// Obtener todas las IPs trackeadas
+app.get('/api/admin/ban/ips', ensureJWT, ensureExclusiveAdmin, async (req, res) => {
+  try {
+    const { page = 1, limit = 50, active = 'true' } = req.query;
+    const offset = (page - 1) * limit;
+    
+    let query = 'SELECT * FROM ip_tracking';
+    let params = [];
+    
+    if (active === 'true') {
+      query += ' WHERE isActive = 1';
+    }
+    
+    query += ' ORDER BY lastSeen DESC LIMIT ? OFFSET ?';
+    params.push(parseInt(limit), parseInt(offset));
+    
+    const ips = await allQuery(query, params);
+    
+    // Obtener total de IPs
+    const totalQuery = active === 'true' ? 
+      'SELECT COUNT(*) as total FROM ip_tracking WHERE isActive = 1' :
+      'SELECT COUNT(*) as total FROM ip_tracking';
+    const totalResult = await getQuery(totalQuery);
+    
+    res.json({
+      ips,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: totalResult.total,
+        pages: Math.ceil(totalResult.total / limit)
+      }
+    });
+  } catch (error) {
+    console.error('[BAN ADMIN] Error obteniendo IPs:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// Obtener todos los bans
+app.get('/api/admin/ban/bans', ensureJWT, ensureExclusiveAdmin, async (req, res) => {
+  try {
+    const { type, active = 'true' } = req.query;
+    
+    let query = 'SELECT * FROM web_bans';
+    let params = [];
+    
+    const conditions = [];
+    if (active === 'true') {
+      conditions.push('isActive = 1');
+    }
+    if (type) {
+      conditions.push('type = ?');
+      params.push(type);
+    }
+    
+    if (conditions.length > 0) {
+      query += ' WHERE ' + conditions.join(' AND ');
+    }
+    
+    query += ' ORDER BY bannedAt DESC';
+    
+    const bans = await allQuery(query, params);
+    res.json(bans);
+  } catch (error) {
+    console.error('[BAN ADMIN] Error obteniendo bans:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// Banear IP
+app.post('/api/admin/ban/ip', ensureJWT, ensureExclusiveAdmin, express.json(), async (req, res) => {
+  try {
+    const { ip, reason, expiresAt } = req.body;
+    
+    if (!ip) {
+      return res.status(400).json({ error: 'IP es requerida' });
+    }
+    
+    const now = new Date().toISOString();
+    
+    // Verificar si ya está baneada
+    const existing = await getQuery(
+      'SELECT id FROM web_bans WHERE type = ? AND value = ?',
+      ['ip', ip]
+    );
+    
+    if (existing) {
+      // Reactivar ban existente
+      await runQuery(
+        'UPDATE web_bans SET isActive = 1, reason = ?, bannedBy = ?, bannedAt = ?, expiresAt = ? WHERE type = ? AND value = ?',
+        [reason, req.user.id, now, expiresAt || null, 'ip', ip]
+      );
+    } else {
+      // Crear nuevo ban
+      await runQuery(
+        'INSERT INTO web_bans (type, value, reason, bannedBy, bannedAt, expiresAt, isActive) VALUES (?, ?, ?, ?, ?, ?, 1)',
+        ['ip', ip, reason, req.user.id, now, expiresAt || null]
+      );
+    }
+    
+    console.log(`[BAN ADMIN] IP ${ip} banned by ${req.user.id}: ${reason}`);
+    res.json({ success: true, message: 'IP baneada correctamente' });
+  } catch (error) {
+    console.error('[BAN ADMIN] Error baneando IP:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// Banear usuario de Discord
+app.post('/api/admin/ban/discord', ensureJWT, ensureExclusiveAdmin, express.json(), async (req, res) => {
+  try {
+    const { userId, reason, expiresAt } = req.body;
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID es requerido' });
+    }
+    
+    const now = new Date().toISOString();
+    
+    // Verificar si ya está baneado
+    const existing = await getQuery(
+      'SELECT id FROM web_bans WHERE type = ? AND value = ?',
+      ['discord', userId]
+    );
+    
+    if (existing) {
+      // Reactivar ban existente
+      await runQuery(
+        'UPDATE web_bans SET isActive = 1, reason = ?, bannedBy = ?, bannedAt = ?, expiresAt = ? WHERE type = ? AND value = ?',
+        [reason, req.user.id, now, expiresAt || null, 'discord', userId]
+      );
+    } else {
+      // Crear nuevo ban
+      await runQuery(
+        'INSERT INTO web_bans (type, value, reason, bannedBy, bannedAt, expiresAt, isActive) VALUES (?, ?, ?, ?, ?, ?, 1)',
+        ['discord', userId, reason, req.user.id, now, expiresAt || null]
+      );
+    }
+    
+    console.log(`[BAN ADMIN] Discord user ${userId} banned by ${req.user.id}: ${reason}`);
+    res.json({ success: true, message: 'Usuario de Discord baneado correctamente' });
+  } catch (error) {
+    console.error('[BAN ADMIN] Error baneando usuario Discord:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// Desbanear IP o usuario
+app.delete('/api/admin/ban/:type/:value', ensureJWT, ensureExclusiveAdmin, async (req, res) => {
+  try {
+    const { type, value } = req.params;
+    
+    if (!['ip', 'discord'].includes(type)) {
+      return res.status(400).json({ error: 'Tipo de ban inválido' });
+    }
+    
+    await runQuery(
+      'UPDATE web_bans SET isActive = 0 WHERE type = ? AND value = ?',
+      [type, value]
+    );
+    
+    console.log(`[BAN ADMIN] ${type} ${value} unbanned by ${req.user.id}`);
+    res.json({ success: true, message: 'Ban removido correctamente' });
+  } catch (error) {
+    console.error('[BAN ADMIN] Error removiendo ban:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// Obtener estadísticas de bans
+app.get('/api/admin/ban/stats', ensureJWT, ensureExclusiveAdmin, async (req, res) => {
+  try {
+    const [ipBans, discordBans, totalIPs, activeIPs] = await Promise.all([
+      getQuery('SELECT COUNT(*) as count FROM web_bans WHERE type = ? AND isActive = 1', ['ip']),
+      getQuery('SELECT COUNT(*) as count FROM web_bans WHERE type = ? AND isActive = 1', ['discord']),
+      getQuery('SELECT COUNT(*) as count FROM ip_tracking'),
+      getQuery('SELECT COUNT(*) as count FROM ip_tracking WHERE isActive = 1')
+    ]);
+    
+    res.json({
+      ipBans: ipBans.count,
+      discordBans: discordBans.count,
+      totalIPs: totalIPs.count,
+      activeIPs: activeIPs.count
+    });
+  } catch (error) {
+    console.error('[BAN ADMIN] Error obteniendo estadísticas:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
 app.use((req, res, next) => {
   if (isMaintenanceMode()) {
     console.log('🔧 MODO MANTENIMIENTO ACTIVADO - Bloqueando:', req.path);

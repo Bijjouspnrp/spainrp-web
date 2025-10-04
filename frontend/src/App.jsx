@@ -26,6 +26,7 @@ const MinijuegosRP = lazy(() => import('./components/Apps/MinijuegosRP'));
 const AppsMenu = lazy(() => import('./components/Apps/AppsMenu'));
 const Panel = lazy(() => import('./components/Panel'));
 const AdminPanel = lazy(() => import('./components/AdminPanel'));
+const BanErrorHandler = lazy(() => import('./components/BanErrorHandler'));
 const Logs = lazy(() => import('./components/Logs'));
 const Cookies = lazy(() => import('./components/Cookies'));
 const CookieConsentBanner = lazy(() => import('./components/CookieConsentBanner'));
@@ -921,14 +922,15 @@ function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading }) {
           <Route path="/rules" element={<Rules />} />
           <Route path="/news" element={<News />} />
           <Route path="/stockmarket" element={<StockMarket />} />
-          <Route path="/apps" element={<AppsMenu />} />
-          <Route path="/apps/tinder" element={<TinderRP />} />
-          <Route path="/apps/banco" element={<BancoCentralRP />} />
-          <Route path="/apps/minijuegos" element={<MinijuegosRP />} />
-          <Route path="/apps/tienda" element={<SimuladorTienda />} />
-          <Route path="/apps/mdt" element={<MDTPolicial />} />
-          <Route path="/panel" element={<Panel />} />
-          <Route path="/admin" element={<PrivateRoute><AdminPanel /></PrivateRoute>} />
+          <Route path="/apps" element={<BanErrorHandler><AppsMenu /></BanErrorHandler>} />
+          <Route path="/apps/tinder" element={<BanErrorHandler><TinderRP /></BanErrorHandler>} />
+          <Route path="/apps/banco" element={<BanErrorHandler><BancoCentralRP /></BanErrorHandler>} />
+          <Route path="/apps/minijuegos" element={<BanErrorHandler><MinijuegosRP /></BanErrorHandler>} />
+          <Route path="/apps/tienda" element={<BanErrorHandler><SimuladorTienda /></BanErrorHandler>} />
+          <Route path="/apps/mdt" element={<BanErrorHandler><MDTPolicial /></BanErrorHandler>} />
+          <Route path="/panel" element={<BanErrorHandler><Panel /></BanErrorHandler>} />
+          <Route path="/panel/bans" element={<BanErrorHandler><Panel /></BanErrorHandler>} />
+          <Route path="/admin" element={<PrivateRoute><BanErrorHandler><AdminPanel /></BanErrorHandler></PrivateRoute>} />
           <Route path="/auth/login" element={<LoginPage />} />
           <Route path="/logout" element={<LogoutPage />} />
           <Route path="/logs" element={<Logs />} />

@@ -1,0 +1,373 @@
+/* === BANNED PAGE STYLES === */
+
+.banned-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.banned-container {
+  max-width: 800px;
+  width: 100%;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header */
+.banned-header {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  text-align: center;
+  padding: 3rem 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.banned-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+  pointer-events: none;
+}
+
+.banned-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: pulse 2s infinite;
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.banned-header h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 2.5rem;
+  font-weight: 800;
+  position: relative;
+  z-index: 1;
+}
+
+.banned-header p {
+  margin: 0;
+  font-size: 1.2rem;
+  opacity: 0.9;
+  position: relative;
+  z-index: 1;
+}
+
+/* Información del ban */
+.banned-info {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.info-card, .time-card, .expired-card {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+}
+
+.info-header, .time-header, .expired-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.info-icon, .time-icon, .expired-icon {
+  font-size: 1.5rem;
+  color: #ef4444;
+}
+
+.expired-icon {
+  color: #10b981;
+}
+
+.info-header h3, .time-header h3, .expired-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.label {
+  font-weight: 600;
+  color: #64748b;
+  min-width: 80px;
+}
+
+.value {
+  color: #1e293b;
+  font-family: 'Courier New', monospace;
+  text-align: right;
+  flex: 1;
+}
+
+.value.reason {
+  color: #ef4444;
+  font-weight: 600;
+  font-family: inherit;
+}
+
+/* Tiempo restante */
+.time-display {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.time-unit {
+  text-align: center;
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+}
+
+.time-value {
+  display: block;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #ef4444;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.time-label {
+  font-size: 0.875rem;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Ban expirado */
+.expired-card {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.expired-card p {
+  margin: 0 0 1rem 0;
+  color: #166534;
+  font-weight: 500;
+}
+
+.retry-btn {
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.retry-btn:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+/* Footer */
+.banned-footer {
+  padding: 0 2rem 2rem 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.footer-card {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+}
+
+.footer-card h4 {
+  margin: 0 0 0.75rem 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.footer-card p {
+  margin: 0 0 1rem 0;
+  color: #64748b;
+  line-height: 1.6;
+  font-size: 0.9rem;
+}
+
+.discord-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #5865f2;
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.discord-btn:hover {
+  background: #4752c4;
+  transform: translateY(-1px);
+}
+
+/* Sección de contacto */
+.contact-section {
+  background: #1e293b;
+  color: white;
+  text-align: center;
+  padding: 2rem;
+}
+
+.contact-section p {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+.contact-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: linear-gradient(135deg, #5865f2, #4752c4);
+  color: white;
+  text-decoration: none;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(88, 101, 242, 0.3);
+}
+
+.contact-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(88, 101, 242, 0.4);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .banned-page {
+    padding: 1rem;
+  }
+  
+  .banned-header {
+    padding: 2rem 1.5rem;
+  }
+  
+  .banned-header h1 {
+    font-size: 2rem;
+  }
+  
+  .banned-header p {
+    font-size: 1rem;
+  }
+  
+  .banned-info {
+    padding: 1.5rem;
+  }
+  
+  .banned-footer {
+    padding: 0 1.5rem 1.5rem 1.5rem;
+    grid-template-columns: 1fr;
+  }
+  
+  .time-display {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  
+  .value {
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  .banned-icon {
+    font-size: 3rem;
+  }
+  
+  .banned-header h1 {
+    font-size: 1.75rem;
+  }
+  
+  .time-display {
+    grid-template-columns: 1fr;
+  }
+  
+  .time-unit {
+    padding: 0.75rem;
+  }
+  
+  .time-value {
+    font-size: 1.5rem;
+  }
+  
+  .contact-btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
+}

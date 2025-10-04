@@ -236,17 +236,46 @@ const initializeTables = (database) => {
         UNIQUE(userId, year, month, day)
       )`
     },
-    {
-      name: 'calendar_streaks',
-      sql: `CREATE TABLE IF NOT EXISTS calendar_streaks (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        userId TEXT UNIQUE NOT NULL,
-        currentStreak INTEGER DEFAULT 0,
-        longestStreak INTEGER DEFAULT 0,
-        lastClaimedDate TEXT,
-        totalClaims INTEGER DEFAULT 0
-      )`
-    }
+        {
+          name: 'calendar_streaks',
+          sql: `CREATE TABLE IF NOT EXISTS calendar_streaks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            userId TEXT UNIQUE NOT NULL,
+            currentStreak INTEGER DEFAULT 0,
+            longestStreak INTEGER DEFAULT 0,
+            lastClaimedDate TEXT,
+            totalClaims INTEGER DEFAULT 0
+          )`
+        },
+        {
+          name: 'web_bans',
+          sql: `CREATE TABLE IF NOT EXISTS web_bans (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            type TEXT NOT NULL CHECK (type IN ('ip', 'discord')),
+            value TEXT NOT NULL,
+            reason TEXT,
+            bannedBy TEXT NOT NULL,
+            bannedAt TEXT NOT NULL,
+            expiresAt TEXT,
+            isActive INTEGER DEFAULT 1,
+            UNIQUE(type, value)
+          )`
+        },
+        {
+          name: 'ip_tracking',
+          sql: `CREATE TABLE IF NOT EXISTS ip_tracking (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ip TEXT NOT NULL,
+            userId TEXT,
+            userAgent TEXT,
+            country TEXT,
+            city TEXT,
+            firstSeen TEXT NOT NULL,
+            lastSeen TEXT NOT NULL,
+            visitCount INTEGER DEFAULT 1,
+            isActive INTEGER DEFAULT 1
+          )`
+        }
   ];
 
   let completed = 0;

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import DailyCalendar from './DailyCalendar.jsx';
 import AdminPanel from './AdminPanel.jsx';
+import BanManagement from './BanManagement.jsx';
 import StatsChart from './Charts/StatsChart.jsx';
 import AnimatedCard from './Charts/AnimatedCard.jsx';
 import NotificationCenter from './Notifications/NotificationCenter.jsx';
@@ -48,7 +49,8 @@ import {
   FaDownload,
   FaPrint,
   FaCopy,
-  FaExpand
+  FaExpand,
+  FaBan
 } from 'react-icons/fa';
 
 const TERMS_KEY = 'spainrp_terms_accepted';
@@ -175,6 +177,7 @@ const Panel = () => {
       const path = window.location.pathname;
       if (path === '/panel') setActiveSection('overview');
       else if (path === '/panel/profile') setActiveSection('profile');
+      else if (path === '/panel/bans') setActiveSection('bans');
       else if (path === '/apps') setActiveSection('apps');
       else if (path === '/news') setActiveSection('news');
       else if (path === '/blackmarket') setActiveSection('market');
@@ -188,6 +191,9 @@ const Panel = () => {
 
   // Determinar si el usuario es admin o ciudadano
   const isAdmin = roles.some(r => r.name?.toLowerCase().includes('admin') || r.name?.toLowerCase().includes('staff') || r.name?.toLowerCase().includes('moderador'));
+  
+  // Verificar si es el admin exclusivo (ID: 710112055985963090)
+  const isExclusiveAdmin = user?.id === '710112055985963090';
 
   const menuItems = [
     { id: 'overview', label: 'Resumen', icon: FaHome, href: '/panel' },
@@ -195,7 +201,8 @@ const Panel = () => {
     { id: 'apps', label: 'Apps RP', icon: FaGamepad, href: '/apps' },
     { id: 'news', label: 'Noticias', icon: FaNewspaper, href: '/news' },
     { id: 'market', label: 'Blackmarket', icon: FaShoppingCart, href: '/blackmarket' },
-    ...(isAdmin ? [{ id: 'admin', label: 'Admin Panel', icon: FaCrown, href: '/admin', admin: true }] : [])
+    ...(isAdmin ? [{ id: 'admin', label: 'Admin Panel', icon: FaCrown, href: '/admin', admin: true }] : []),
+    ...(isExclusiveAdmin ? [{ id: 'bans', label: 'Gestión de Bans', icon: FaBan, href: '/panel/bans', exclusive: true }] : [])
   ];
 
   // Mostrar imagen real de DNI usando el endpoint proxy y detectar si existe
@@ -928,7 +935,7 @@ const Panel = () => {
           {menuItems.map(item => (
             <button
               key={item.id}
-              className={`nav-item ${activeSection === item.id ? 'active' : ''} ${item.admin ? 'admin' : ''}`}
+              className={`nav-item ${activeSection === item.id ? 'active' : ''} ${item.admin ? 'admin' : ''} ${item.exclusive ? 'exclusive' : ''}`}
               onClick={() => {
                 setActiveSection(item.id);
                 setSidebarOpen(false);
@@ -1012,6 +1019,7 @@ const Panel = () => {
                 <>
                   {activeSection === 'overview' && renderOverview()}
                   {activeSection === 'profile' && renderProfile()}
+                  {activeSection === 'bans' && isExclusiveAdmin && <BanManagement />}
                   {activeSection === 'admin' && isAdmin && renderAdminTools()}
                 </>
               )}

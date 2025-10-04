@@ -407,6 +407,17 @@ html, body, #root {
   color: #fbbf24;
 }
 
+.nav-item.exclusive {
+  color: #ef4444;
+  font-weight: 600;
+  border-left-color: #ef4444;
+}
+
+.nav-item.exclusive:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
 .sidebar-footer {
   padding: 1.5rem;
   border-top: 1px solid #334155;
