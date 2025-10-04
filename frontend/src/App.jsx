@@ -933,7 +933,7 @@ function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading }) {
           <Route path="/panel" element={<BanErrorHandler><Panel /></BanErrorHandler>} />
           <Route path="/panel/bans" element={<BanErrorHandler><Panel /></BanErrorHandler>} />
           <Route path="/admin" element={<PrivateRoute><BanErrorHandler><AdminPanel /></BanErrorHandler></PrivateRoute>} />
-          <Route path="/banned" element={<BanErrorHandler><BannedPage /></BanErrorHandler>} />
+          <Route path="/banned" element={<BannedPage />} />
           <Route path="/auth/login" element={<LoginPage />} />
           <Route path="/logout" element={<LogoutPage />} />
           <Route path="/logs" element={<Logs />} />

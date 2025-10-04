@@ -15,55 +15,12 @@ const BanErrorHandler = ({ children }) => {
       setIsChecking(false);
     };
 
-    // Escuchar cambios en localStorage para detectar bans en tiempo real
-    const handleStorageChange = (e) => {
-      if (e.key === 'ban_error' && e.newValue) {
-        try {
-          const ban = JSON.parse(e.newValue);
-          setBanData(ban);
-          setIsChecking(false);
-        } catch (error) {
-          console.error('Error parsing ban data:', error);
-        }
-      }
-    };
-
     window.addEventListener('userBanned', handleUserBanned);
-    window.addEventListener('storage', handleStorageChange);
-    
-    // También verificar periódicamente por si el interceptor ya guardó los datos
-    const interval = setInterval(() => {
-      const banError = localStorage.getItem('ban_error');
-      if (banError) {
-        try {
-          const ban = JSON.parse(banError);
-          
-          // Verificar si el ban ha expirado
-          if (ban.expiresAt && new Date(ban.expiresAt).getTime() <= Date.now()) {
-            console.log('[BAN ERROR HANDLER] Ban expirado, limpiando localStorage');
-            localStorage.removeItem('ban_error');
-            setBanData(null);
-            setIsChecking(false);
-            clearInterval(interval);
-            return;
-          }
-          
-          setBanData(ban);
-          setIsChecking(false);
-          // Limpiar el intervalo una vez que se detecta el ban
-          clearInterval(interval);
-        } catch (error) {
-          console.error('Error parsing ban data:', error);
-        }
-      }
-    }, 500); // Reducir frecuencia de verificación
 
     return () => {
       window.removeEventListener('userBanned', handleUserBanned);
-      window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
     };
-  }, []); // Remover banData de las dependencias para evitar bucle infinito
+  }, []);
 
   const checkBanStatus = async () => {
     try {
@@ -74,7 +31,7 @@ const BanErrorHandler = ({ children }) => {
         
         // Verificar si el ban ha expirado
         if (ban.expiresAt && new Date(ban.expiresAt).getTime() <= Date.now()) {
-          console.log('[BAN ERROR HANDLER] Ban expirado en checkBanStatus, limpiando localStorage');
+          console.log('[BAN ERROR HANDLER] Ban expirado, limpiando localStorage');
           localStorage.removeItem('ban_error');
           setBanData(null);
           setIsChecking(false);
@@ -94,9 +51,10 @@ const BanErrorHandler = ({ children }) => {
     }
   };
 
-  // Si está baneado, mostrar la página de ban
+  // Si está baneado, redirigir a la página de ban
   if (banData) {
-    return <BannedPage banData={banData} />;
+    window.location.href = '/banned';
+    return null;
   }
 
   // Si está verificando, mostrar loading

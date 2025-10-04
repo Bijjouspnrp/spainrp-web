@@ -2,12 +2,47 @@ import React, { useState, useEffect } from 'react';
 import { FaBan, FaExclamationTriangle, FaClock, FaGavel, FaEnvelope } from 'react-icons/fa';
 import './BannedPage.css';
 
-const BannedPage = ({ banData }) => {
+const BannedPage = () => {
+  const [banData, setBanData] = useState(null);
   const [timeLeft, setTimeLeft] = useState(null);
+  const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    console.log('[BANNED PAGE] Componente montado con banData:', banData);
-  }, [banData]);
+    console.log('[BANNED PAGE] Componente montado');
+    checkBanStatus();
+  }, []);
+
+  const checkBanStatus = () => {
+    try {
+      // Verificar si hay datos de ban en localStorage
+      const banError = localStorage.getItem('ban_error');
+      if (banError) {
+        const ban = JSON.parse(banError);
+        
+        // Verificar si el ban ha expirado
+        if (ban.expiresAt && new Date(ban.expiresAt).getTime() <= Date.now()) {
+          console.log('[BANNED PAGE] Ban expirado, limpiando localStorage');
+          localStorage.removeItem('ban_error');
+          setBanData(null);
+          setIsChecking(false);
+          // Redirigir a la página principal
+          window.location.href = '/';
+          return;
+        }
+        
+        setBanData(ban);
+        setIsChecking(false);
+        return;
+      }
+
+      // Si no hay datos de ban, redirigir a la página principal
+      console.log('[BANNED PAGE] No hay datos de ban, redirigiendo...');
+      window.location.href = '/';
+    } catch (error) {
+      console.error('[BANNED PAGE] Error checking ban status:', error);
+      setIsChecking(false);
+    }
+  };
 
   useEffect(() => {
     if (banData?.expiresAt) {
@@ -50,6 +85,38 @@ const BannedPage = ({ banData }) => {
       minute: '2-digit'
     });
   };
+
+  // Si está verificando, mostrar loading
+  if (isChecking) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        background: '#f8fafc'
+      }}>
+        <div style={{
+          textAlign: 'center',
+          padding: '2rem',
+          background: 'white',
+          borderRadius: '12px',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
+        }}>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            border: '4px solid #e2e8f0',
+            borderTop: '4px solid #3b82f6',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 1rem auto'
+          }}></div>
+          <p style={{ margin: 0, color: '#64748b' }}>Verificando acceso...</p>
+        </div>
+      </div>
+    );
+  }
 
   const isPermanent = !banData?.expiresAt;
   const isExpired = banData?.expiresAt && new Date(banData.expiresAt).getTime() <= Date.now();
