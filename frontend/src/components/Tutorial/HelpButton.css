@@ -94,7 +94,39 @@
   transform: rotate(45deg);
 }
 
-/* Responsive */
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .help-button-container {
+    bottom: 18px;
+    right: 18px;
+  }
+  
+  .help-button {
+    width: 55px;
+    height: 55px;
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 992px) {
+  .help-button-container {
+    bottom: 16px;
+    right: 16px;
+  }
+  
+  .help-button {
+    width: 52px;
+    height: 52px;
+    font-size: 21px;
+  }
+  
+  .help-tooltip {
+    font-size: 13px;
+    padding: 11px 14px;
+    max-width: 180px;
+  }
+}
+
 @media (max-width: 768px) {
   .help-button-container {
     bottom: 15px;
@@ -120,6 +152,31 @@
   }
 }
 
+@media (max-width: 576px) {
+  .help-button-container {
+    bottom: 12px;
+    right: 12px;
+  }
+  
+  .help-button {
+    width: 48px;
+    height: 48px;
+    font-size: 19px;
+  }
+  
+  .help-badge {
+    width: 17px;
+    height: 17px;
+    font-size: 9px;
+  }
+  
+  .help-tooltip {
+    font-size: 11px;
+    padding: 9px 11px;
+    max-width: 140px;
+  }
+}
+
 @media (max-width: 480px) {
   .help-button-container {
     bottom: 10px;
@@ -136,5 +193,75 @@
     width: 16px;
     height: 16px;
     font-size: 9px;
+  }
+  
+  .help-tooltip {
+    font-size: 10px;
+    padding: 8px 10px;
+    max-width: 120px;
+  }
+}
+
+@media (max-width: 360px) {
+  .help-button-container {
+    bottom: 8px;
+    right: 8px;
+  }
+  
+  .help-button {
+    width: 42px;
+    height: 42px;
+    font-size: 16px;
+  }
+  
+  .help-badge {
+    width: 15px;
+    height: 15px;
+    font-size: 8px;
+  }
+  
+  .help-tooltip {
+    font-size: 9px;
+    padding: 7px 9px;
+    max-width: 100px;
+  }
+}
+
+/* Landscape orientation */
+@media (max-height: 600px) and (orientation: landscape) {
+  .help-button-container {
+    bottom: 8px;
+    right: 8px;
+  }
+  
+  .help-button {
+    width: 45px;
+    height: 45px;
+    font-size: 18px;
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .help-button {
+    border-width: 0.5px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .help-tooltip {
+    background: linear-gradient(135deg, #1a1d21, #23272a);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .help-button {
+    transition: none;
+  }
+  
+  .help-pulse {
+    animation: none;
   }
 }

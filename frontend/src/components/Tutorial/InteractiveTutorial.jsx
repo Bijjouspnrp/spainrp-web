@@ -22,6 +22,34 @@ import {
 } from 'react-icons/fa';
 import './InteractiveTutorial.css';
 
+// Hook para detectar el tamaño de pantalla
+const useScreenSize = () => {
+  const [screenSize, setScreenSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+    isMobile: window.innerWidth <= 768,
+    isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
+    isDesktop: window.innerWidth > 1024
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setScreenSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+        isMobile: window.innerWidth <= 768,
+        isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
+        isDesktop: window.innerWidth > 1024
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return screenSize;
+};
+
 const InteractiveTutorial = ({ isOpen, onClose, onComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -29,6 +57,7 @@ const InteractiveTutorial = ({ isOpen, onClose, onComplete }) => {
   const [highlightedElement, setHighlightedElement] = useState(null);
   const overlayRef = useRef(null);
   const handRef = useRef(null);
+  const screenSize = useScreenSize();
 
   // Datos del tutorial
   const tutorialSteps = [
@@ -129,6 +158,31 @@ const InteractiveTutorial = ({ isOpen, onClose, onComplete }) => {
     }
   ];
 
+  // Función para detectar elementos de forma robusta
+  const detectElement = (selector) => {
+    if (!selector) return null;
+    
+    // Intentar múltiples métodos de detección
+    let element = document.querySelector(selector);
+    
+    // Si no se encuentra, intentar con data-tutorial
+    if (!element) {
+      element = document.querySelector(`[data-tutorial="${selector}"]`);
+    }
+    
+    // Si aún no se encuentra, intentar con ID
+    if (!element && selector.startsWith('#')) {
+      element = document.getElementById(selector.substring(1));
+    }
+    
+    // Si aún no se encuentra, intentar con clase
+    if (!element && selector.startsWith('.')) {
+      element = document.querySelector(selector);
+    }
+    
+    return element;
+  };
+
   // Definir nextStep antes de usarlo en useEffect
   const nextStep = () => {
     if (currentStep < tutorialSteps.length - 1) {
@@ -165,7 +219,7 @@ const InteractiveTutorial = ({ isOpen, onClose, onComplete }) => {
     }
   }, [isPlaying, currentStep, nextStep, tutorialSteps.length]);
 
-  // Efecto de la mano
+  // Efecto de la mano y detección de elementos
   useEffect(() => {
     if (showHand && handRef.current) {
       const hand = handRef.current;
@@ -177,7 +231,25 @@ const InteractiveTutorial = ({ isOpen, onClose, onComplete }) => {
         hand.style.animation = 'pointing 1s ease-in-out infinite';
       }, 500);
     }
-  }, [showHand]);
+
+    // Detectar y destacar elementos
+    if (currentStepData && currentStepData.target) {
+      const element = detectElement(currentStepData.target);
+      if (element) {
+        const rect = element.getBoundingClientRect();
+        setHighlightedElement({
+          top: rect.top + window.scrollY,
+          left: rect.left + window.scrollX,
+          width: rect.width,
+          height: rect.height
+        });
+      } else {
+        setHighlightedElement(null);
+      }
+    } else {
+      setHighlightedElement(null);
+    }
+  }, [showHand, currentStepData]);
 
   const prevStep = () => {
     if (currentStep > 0) {
@@ -272,11 +344,19 @@ const InteractiveTutorial = ({ isOpen, onClose, onComplete }) => {
           className="tutorial-panel"
           style={{
             position: 'absolute',
-            top: currentStepData.position === 'top' ? '20%' : 
-                 currentStepData.position === 'center' ? '50%' : '70%',
-            left: currentStepData.position === 'top-right' ? '60%' : '50%',
+            top: screenSize.isMobile ? 
+                 (currentStepData.position === 'top' ? '10%' : 
+                  currentStepData.position === 'center' ? '50%' : '80%') :
+                 (currentStepData.position === 'top' ? '15%' : 
+                  currentStepData.position === 'center' ? '50%' : '75%'),
+            left: screenSize.isMobile ? '50%' :
+                  currentStepData.position === 'top-right' ? '65%' : '50%',
             transform: 'translate(-50%, -50%)',
-            zIndex: 1003
+            zIndex: 1003,
+            maxHeight: screenSize.isMobile ? '85vh' : '80vh',
+            overflowY: 'auto',
+            width: screenSize.isMobile ? '95vw' : 
+                   screenSize.isTablet ? '90vw' : '500px'
           }}
         >
           {/* Header del tutorial */}
