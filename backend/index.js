@@ -2139,6 +2139,7 @@ function getRealIP(req) {
 // Función para verificar si una IP está baneada
 async function isIPBanned(ip) {
   try {
+    const { getQuery } = require('./db/database');
     const ban = await getQuery(
       'SELECT * FROM web_bans WHERE type = ? AND value = ? AND isActive = 1 AND (expiresAt IS NULL OR expiresAt > ?)',
       ['ip', ip, new Date().toISOString()]
@@ -2153,6 +2154,7 @@ async function isIPBanned(ip) {
 // Función para verificar si un usuario de Discord está baneado
 async function isDiscordUserBanned(userId) {
   try {
+    const { getQuery } = require('./db/database');
     const ban = await getQuery(
       'SELECT * FROM web_bans WHERE type = ? AND value = ? AND isActive = 1 AND (expiresAt IS NULL OR expiresAt > ?)',
       ['discord', userId, new Date().toISOString()]
@@ -2167,6 +2169,7 @@ async function isDiscordUserBanned(userId) {
 // Función para trackear IP
 async function trackIP(req, userId = null) {
   try {
+    const { getQuery, runQuery } = require('./db/database');
     const ip = getRealIP(req);
     const userAgent = req.headers['user-agent'] || 'Unknown';
     const now = new Date().toISOString();
