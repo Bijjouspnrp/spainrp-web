@@ -2468,8 +2468,30 @@ async function banCheckMiddleware(req, res, next) {
       });
     }
     
-    // Trackear IP
-    await trackIP(req);
+    // Extraer userId si está disponible (JWT o sesión)
+    let userId = null;
+    
+    // Intentar obtener userId del JWT
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.substring(7);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'spainrp_secret_key');
+        userId = decoded.userId;
+        console.log(`[BAN CHECK] Usuario JWT detectado: ${userId}`);
+      } catch (jwtError) {
+        // JWT inválido, continuar sin userId
+      }
+    }
+    
+    // Si no hay JWT, intentar obtener de la sesión Passport
+    if (!userId && req.user && req.user.id) {
+      userId = req.user.id;
+      console.log(`[BAN CHECK] Usuario de sesión detectado: ${userId}`);
+    }
+    
+    // Trackear IP con userId si está disponible
+    await trackIP(req, userId);
     
     next();
   } catch (error) {
