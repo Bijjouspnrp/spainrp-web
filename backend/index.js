@@ -6408,6 +6408,7 @@ function ensureAuthOrJWT(req, res, next) {
 
 // Middleware para verificar que es el admin exclusivo
 function ensureExclusiveAdmin(req, res, next) {
+  const ADMIN_USER_ID = '710112055985963090';
   if (!req.user || req.user.id !== ADMIN_USER_ID) {
     return res.status(403).json({
       error: 'Forbidden',
