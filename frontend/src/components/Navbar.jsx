@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import './Navbar.css';
 import { 
   FaDiscord, FaBars, FaTimes, FaUserCircle, FaMoon, FaSun, 
-  FaHome, FaUsers, FaStar, FaNewspaper, FaStore, FaAppStore 
+  FaHome, FaUsers, FaStar, FaNewspaper, FaStore, FaAppStore, FaHandPointer 
 } from 'react-icons/fa';
 import { useLocation, useNavigate } from 'react-router-dom';
 
