@@ -16,8 +16,6 @@ import {
   FaBars, 
   FaUserShield, 
   FaUser, 
-  FaChevronDown, 
-  FaChevronUp, 
   FaCrown, 
   FaIdCard, 
   FaCoins, 
@@ -27,29 +25,15 @@ import {
   FaGamepad,
   FaNewspaper,
   FaShoppingCart,
-  FaCog,
   FaSignOutAlt,
   FaBell,
-  FaChartLine,
-  FaShieldAlt,
   FaCalendarCheck,
   FaUserCircle,
-  FaEnvelope,
-  FaImage,
   FaBan,
-  FaUserTimes,
-  FaUserPlus,
-  FaUsers,
-  FaCog as FaSettings,
-  FaHistory,
-  FaClipboardList,
   FaCheckCircle,
   FaSpinner,
   FaShare,
-  FaDownload,
-  FaPrint,
-  FaCopy,
-  FaExpand
+  FaDownload
 } from 'react-icons/fa';
 
 const TERMS_KEY = 'spainrp_terms_accepted';
@@ -76,7 +60,6 @@ const Panel = () => {
   const [activeSection, setActiveSection] = useState('overview');
   const [showNotificationSender, setShowNotificationSender] = useState(false);
   const [showDNIShare, setShowDNIShare] = useState(false);
-  const [dniFullscreen, setDniFullscreen] = useState(false);
 
   // Estado para imagen real de DNI
   const [dniImgUrl, setDniImgUrl] = useState(null);
@@ -227,9 +210,6 @@ const Panel = () => {
   const [dniFlipped, setDniFlipped] = useState(false);
   // Estado para mostrar modal de reporte
   const [showReport, setShowReport] = useState(false);
-  const [reportMsg, setReportMsg] = useState("");
-  const [reportLoading, setReportLoading] = useState(false);
-  const [toast, setToast] = useState(null);
 
 
   // Estado para totales generales
@@ -272,13 +252,6 @@ const Panel = () => {
     }
   }, [user?.id]);
 
-  const allZero =
-    statsTotals.antecedentes === 0 &&
-    statsTotals.arrestos === 0 &&
-    statsTotals.multasPendientes === 0 &&
-    userRecords.antecedentes === 0 &&
-    userRecords.multasTotal === 0 &&
-    userRecords.multasPendientes === 0;
 
   // Datos para gráficos
   const chartData = {
@@ -902,7 +875,10 @@ const Panel = () => {
             <h3>¿Desvincular perfil Roblox?</h3>
             <p>¿Seguro que quieres desvincular tu cuenta de Roblox?<br/>Perderás la insignia y los datos asociados.</p>
             <div style={{display:'flex',gap:18,justifyContent:'center',marginTop:18}}>
-              <button className="btn-primary" style={{padding:'8px 24px',fontSize:16}} onClick={handleUnlinkRoblox} disabled={robloxLoading}>
+              <button className="btn-primary" style={{padding:'8px 24px',fontSize:16}} onClick={() => {
+                // TODO: Implementar función de desvincular Roblox
+                console.log('Desvincular Roblox - función pendiente');
+              }} disabled={robloxLoading}>
                 {robloxLoading ? <FaSpinner className="fa-spin" /> : 'Sí, desvincular'}
               </button>
               <button className="btn-secondary" style={{padding:'8px 24px',fontSize:16}} onClick={() => setRobloxUnlinkModal(false)} disabled={robloxLoading}>Cancelar</button>
