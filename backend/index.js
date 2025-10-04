@@ -5492,14 +5492,6 @@ async function authenticatedBanCheckMiddleware(req, res, next) {
   }
 }
 
-// Middleware para verificar autenticación con Passport
-function ensureAuth(req, res, next) {
-  if (req.isAuthenticated && req.isAuthenticated() && req.user) {
-    next();
-  } else {
-    return res.status(401).json({ error: 'No autenticado' });
-  }
-}
 
 // Middleware para verificar que es el admin exclusivo
 function ensureExclusiveAdmin(req, res, next) {
@@ -6409,7 +6401,7 @@ const isMaintenanceMode = () => {
 // === ENDPOINTS DE GESTIÓN DE BANS (SOLO ADMIN EXCLUSIVO) ===
 
 // Obtener todas las IPs trackeadas
-app.get('/api/admin/ban/ips', ensureAuth, ensureExclusiveAdmin, async (req, res) => {
+app.get('/api/admin/ban/ips', ensureAuthenticated, ensureExclusiveAdmin, async (req, res) => {
   try {
     const { page = 1, limit = 50, active = 'true' } = req.query;
     const offset = (page - 1) * limit;
@@ -6448,7 +6440,7 @@ app.get('/api/admin/ban/ips', ensureAuth, ensureExclusiveAdmin, async (req, res)
 });
 
 // Obtener todos los bans
-app.get('/api/admin/ban/bans', ensureAuth, ensureExclusiveAdmin, async (req, res) => {
+app.get('/api/admin/ban/bans', ensureAuthenticated, ensureExclusiveAdmin, async (req, res) => {
   try {
     const { type, active = 'true' } = req.query;
     
@@ -6479,7 +6471,7 @@ app.get('/api/admin/ban/bans', ensureAuth, ensureExclusiveAdmin, async (req, res
 });
 
 // Banear IP
-app.post('/api/admin/ban/ip', ensureAuth, ensureExclusiveAdmin, express.json(), async (req, res) => {
+app.post('/api/admin/ban/ip', ensureAuthenticated, ensureExclusiveAdmin, express.json(), async (req, res) => {
   try {
     const { ip, reason, expiresAt } = req.body;
     
@@ -6518,7 +6510,7 @@ app.post('/api/admin/ban/ip', ensureAuth, ensureExclusiveAdmin, express.json(), 
 });
 
 // Banear usuario de Discord
-app.post('/api/admin/ban/discord', ensureAuth, ensureExclusiveAdmin, express.json(), async (req, res) => {
+app.post('/api/admin/ban/discord', ensureAuthenticated, ensureExclusiveAdmin, express.json(), async (req, res) => {
   try {
     const { userId, reason, expiresAt } = req.body;
     
@@ -6557,7 +6549,7 @@ app.post('/api/admin/ban/discord', ensureAuth, ensureExclusiveAdmin, express.jso
 });
 
 // Desbanear IP o usuario
-app.delete('/api/admin/ban/:type/:value', ensureAuth, ensureExclusiveAdmin, async (req, res) => {
+app.delete('/api/admin/ban/:type/:value', ensureAuthenticated, ensureExclusiveAdmin, async (req, res) => {
   try {
     const { type, value } = req.params;
     
@@ -6579,7 +6571,7 @@ app.delete('/api/admin/ban/:type/:value', ensureAuth, ensureExclusiveAdmin, asyn
 });
 
 // Obtener estadísticas de bans
-app.get('/api/admin/ban/stats', ensureAuth, ensureExclusiveAdmin, async (req, res) => {
+app.get('/api/admin/ban/stats', ensureAuthenticated, ensureExclusiveAdmin, async (req, res) => {
   try {
     const [ipBans, discordBans, totalIPs, activeIPs] = await Promise.all([
       getQuery('SELECT COUNT(*) as count FROM web_bans WHERE type = ? AND isActive = 1', ['ip']),
