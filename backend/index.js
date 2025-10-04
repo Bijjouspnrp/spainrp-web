@@ -6592,6 +6592,18 @@ app.post('/api/admin/ban/ip', ensureAuthOrJWT, ensureExclusiveAdmin, express.jso
       return res.status(400).json({ error: 'IP es requerida' });
     }
     
+    // Obtener la IP del administrador actual
+    const adminIP = getRealIP(req);
+    
+    // Verificar que no se esté baneando a sí mismo
+    if (ip === adminIP) {
+      console.log(`[BAN ADMIN] Intento de auto-ban bloqueado: ${req.user.id} intentó banear su propia IP ${adminIP}`);
+      return res.status(400).json({ 
+        error: 'No puedes banearte a ti mismo',
+        message: 'No puedes banear tu propia IP. Esto te bloquearía el acceso al panel de administración.'
+      });
+    }
+    
     const now = new Date().toISOString();
     
     // Verificar si ya está baneada
@@ -6630,6 +6642,15 @@ app.post('/api/admin/ban/discord', ensureAuthOrJWT, ensureExclusiveAdmin, expres
     
     if (!userId) {
       return res.status(400).json({ error: 'User ID es requerido' });
+    }
+    
+    // Verificar que no se esté baneando a sí mismo
+    if (userId === req.user.id) {
+      console.log(`[BAN ADMIN] Intento de auto-ban bloqueado: ${req.user.id} intentó banear su propia cuenta de Discord`);
+      return res.status(400).json({ 
+        error: 'No puedes banearte a ti mismo',
+        message: 'No puedes banear tu propia cuenta de Discord. Esto te bloquearía el acceso al panel de administración.'
+      });
     }
     
     const now = new Date().toISOString();

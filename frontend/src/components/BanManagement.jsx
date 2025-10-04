@@ -134,7 +134,12 @@ const BanManagement = () => {
         alert('Ban aplicado correctamente');
       } else {
         const error = await response.json();
-        alert(`Error: ${error.error}`);
+        // Mostrar mensaje específico para auto-ban
+        if (error.error === 'No puedes banearte a ti mismo') {
+          alert(`❌ ${error.error}\n\n${error.message}`);
+        } else {
+          alert(`Error: ${error.error}`);
+        }
       }
     } catch (error) {
       console.error('Error banning:', error);
