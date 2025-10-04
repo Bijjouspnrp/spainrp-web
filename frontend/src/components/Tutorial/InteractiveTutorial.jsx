@@ -129,6 +129,22 @@ const InteractiveTutorial = ({ isOpen, onClose, onComplete }) => {
     }
   ];
 
+  // Definir nextStep antes de usarlo en useEffect
+  const nextStep = () => {
+    if (currentStep < tutorialSteps.length - 1) {
+      setCurrentStep(prev => prev + 1);
+      setShowHand(false);
+      setHighlightedElement(null);
+      
+      // Mostrar mano después de un breve delay
+      setTimeout(() => {
+        setShowHand(true);
+      }, 300);
+    } else {
+      completeTutorial();
+    }
+  };
+
   // Efectos de animación
   useEffect(() => {
     if (isOpen) {
@@ -162,21 +178,6 @@ const InteractiveTutorial = ({ isOpen, onClose, onComplete }) => {
       }, 500);
     }
   }, [showHand]);
-
-  const nextStep = () => {
-    if (currentStep < tutorialSteps.length - 1) {
-      setCurrentStep(prev => prev + 1);
-      setShowHand(false);
-      setHighlightedElement(null);
-      
-      // Mostrar mano después de un breve delay
-      setTimeout(() => {
-        setShowHand(true);
-      }, 300);
-    } else {
-      completeTutorial();
-    }
-  };
 
   const prevStep = () => {
     if (currentStep > 0) {
