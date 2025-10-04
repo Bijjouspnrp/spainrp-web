@@ -5493,16 +5493,6 @@ async function authenticatedBanCheckMiddleware(req, res, next) {
 }
 
 
-// Middleware para verificar que es el admin exclusivo
-function ensureExclusiveAdmin(req, res, next) {
-  if (!req.user || req.user.id !== ADMIN_USER_ID) {
-    return res.status(403).json({
-      error: 'Forbidden',
-      message: 'Solo el administrador principal puede acceder a esta función.'
-    });
-  }
-  next();
-}
     
     // Verificar si el día ya fue reclamado
     const existingClaim = await getQuery(
@@ -6399,6 +6389,17 @@ const isMaintenanceMode = () => {
 
 // Middleware de mantenimiento (después de la ruta API)
 // === ENDPOINTS DE GESTIÓN DE BANS (SOLO ADMIN EXCLUSIVO) ===
+
+// Middleware para verificar que es el admin exclusivo
+function ensureExclusiveAdmin(req, res, next) {
+  if (!req.user || req.user.id !== ADMIN_USER_ID) {
+    return res.status(403).json({
+      error: 'Forbidden',
+      message: 'Solo el administrador principal puede acceder a esta función.'
+    });
+  }
+  next();
+}
 
 // Obtener todas las IPs trackeadas
 app.get('/api/admin/ban/ips', ensureAuthenticated, ensureExclusiveAdmin, async (req, res) => {
