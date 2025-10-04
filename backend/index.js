@@ -2208,11 +2208,11 @@ async function sendUnbanNotification(userId, banType, unbannedBy) {
     const embed = {
       color: 0x2ecc71, // Verde
       title: '✅ Has sido desbaneado de SpainRP Web',
-      description: `Tu acceso al sitio web de SpainRP ha sido restaurado.`,
+      description: `Tu acceso al sitio web de SpainRP ha sido restaurado completamente.`,
       fields: [
         {
           name: '📋 Tipo de Ban Removido',
-          value: banType === 'ip' ? 'Dirección IP' : 'Usuario de Discord',
+          value: banType === 'ip' ? '🌐 Dirección IP' : '👤 Usuario de Discord',
           inline: true
         },
         {
@@ -2221,27 +2221,67 @@ async function sendUnbanNotification(userId, banType, unbannedBy) {
           inline: true
         },
         {
-          name: '⏰ Fecha',
-          value: `<t:${Math.floor(Date.now() / 1000)}:F>`,
+          name: '⏰ Fecha de Restauración',
+          value: `<t:${Math.floor(Date.now() / 1000)}:F>\n<t:${Math.floor(Date.now() / 1000)}:R>`,
           inline: true
         }
       ],
       footer: {
-        text: 'SpainRP - Sistema de Moderación',
+        text: 'SpainRP - Sistema de Moderación Web',
         icon_url: 'https://cdn.discordapp.com/icons/1212556680911650866/a_1234567890abcdef1234567890abcdef.webp'
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      thumbnail: {
+        url: 'https://cdn.discordapp.com/icons/1212556680911650866/a_1234567890abcdef1234567890abcdef.webp'
+      }
     };
 
     // Agregar información de bienvenida
     embed.fields.push({
       name: '🎉 ¡Bienvenido de vuelta!',
-      value: 'Ya puedes acceder nuevamente al sitio web. Esperamos que tengas una mejor experiencia esta vez.',
+      value: 'Ya puedes acceder nuevamente al sitio web. Esperamos que tengas una mejor experiencia esta vez.\n\n**📋 Recuerda:**\n• Cumple con las normas y términos de uso\n• Respeta a otros usuarios y el staff\n• Disfruta de tu experiencia en SpainRP',
       inline: false
     });
 
-    // Enviar mensaje DM
-    await user.send({ embeds: [embed] });
+    // Agregar información de contacto
+    embed.fields.push({
+      name: '📞 Soporte y Ayuda',
+      value: `Si necesitas ayuda o tienes preguntas:\n\n**👑 BijjouPro08** (<@710112055985963090>)\n**📧 Email:** spainrpoficial@proton.me`,
+      inline: false
+    });
+
+    // Crear componentes de interacción (botones)
+    const components = [
+      {
+        type: 1, // ACTION_ROW
+        components: [
+          {
+            type: 2, // BUTTON
+            style: 5, // LINK
+            label: '🌐 Acceder al Sitio Web',
+            url: 'https://spainrp-web.onrender.com',
+            emoji: {
+              name: '🚀'
+            }
+          },
+          {
+            type: 2, // BUTTON
+            style: 5, // LINK
+            label: '📞 Contactar Soporte',
+            url: 'https://discord.com/users/710112055985963090',
+            emoji: {
+              name: '💬'
+            }
+          }
+        ]
+      }
+    ];
+
+    // Enviar mensaje DM con embed y botones
+    await user.send({ 
+      embeds: [embed],
+      components: components
+    });
     
     console.log(`[UNBAN DM] ✅ Notificación de unban enviada a ${user.tag} (${userId})`);
     return true;
@@ -2274,11 +2314,11 @@ async function sendBanNotification(userId, banType, reason, expiresAt, bannedBy)
     const embed = {
       color: 0xe74c3c, // Rojo
       title: '🚫 Has sido baneado de SpainRP Web',
-      description: `Tu acceso al sitio web de SpainRP ha sido restringido.`,
+      description: `Tu acceso al sitio web de SpainRP ha sido restringido temporalmente.`,
       fields: [
         {
           name: '📋 Tipo de Ban',
-          value: banType === 'ip' ? 'Dirección IP' : 'Usuario de Discord',
+          value: banType === 'ip' ? '🌐 Dirección IP' : '👤 Usuario de Discord',
           inline: true
         },
         {
@@ -2293,18 +2333,30 @@ async function sendBanNotification(userId, banType, reason, expiresAt, bannedBy)
         }
       ],
       footer: {
-        text: 'SpainRP - Sistema de Moderación',
+        text: 'SpainRP - Sistema de Moderación Web',
         icon_url: 'https://cdn.discordapp.com/icons/1212556680911650866/a_1234567890abcdef1234567890abcdef.webp'
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      thumbnail: {
+        url: 'https://cdn.discordapp.com/icons/1212556680911650866/a_1234567890abcdef1234567890abcdef.webp'
+      }
     };
 
     // Agregar información de expiración si aplica
     if (expiresAt) {
       const expirationDate = new Date(expiresAt);
+      const timeLeft = Math.max(0, expirationDate.getTime() - Date.now());
+      const daysLeft = Math.ceil(timeLeft / (1000 * 60 * 60 * 24));
+      
       embed.fields.push({
         name: '⏰ Expira',
-        value: `<t:${Math.floor(expirationDate.getTime() / 1000)}:F>`,
+        value: `<t:${Math.floor(expirationDate.getTime() / 1000)}:F>\n<t:${Math.floor(expirationDate.getTime() / 1000)}:R>`,
+        inline: true
+      });
+      
+      embed.fields.push({
+        name: '📅 Tiempo Restante',
+        value: `${daysLeft} día${daysLeft !== 1 ? 's' : ''}`,
         inline: true
       });
     } else {
@@ -2313,17 +2365,60 @@ async function sendBanNotification(userId, banType, reason, expiresAt, bannedBy)
         value: 'Permanente',
         inline: true
       });
+      
+      embed.fields.push({
+        name: '📅 Tiempo Restante',
+        value: 'Indefinido',
+        inline: true
+      });
     }
 
-    // Agregar información de apelación
+    // Agregar información de apelación mejorada
     embed.fields.push({
-      name: '📞 Apelación',
-      value: 'Si crees que este ban es injusto, contacta a <@710112055985963090> en Discord para apelar.',
+      name: '📞 Apelación y Contacto',
+      value: `Si crees que este ban es injusto, puedes apelar contactando a:\n\n**👑 BijjouPro08** (<@710112055985963090>)\n**📧 Email:** spainrpoficial@proton.me\n\n*Las apelaciones se revisan en un plazo de 7 días hábiles.*`,
       inline: false
     });
 
-    // Enviar mensaje DM
-    await user.send({ embeds: [embed] });
+    // Agregar información sobre verificación de estado
+    embed.fields.push({
+      name: '🔍 Verificar Estado del Ban',
+      value: `Puedes verificar si tu ban ha expirado visitando el sitio web. Si el ban ha caducado, podrás acceder normalmente.`,
+      inline: false
+    });
+
+    // Crear componentes de interacción (botones)
+    const components = [
+      {
+        type: 1, // ACTION_ROW
+        components: [
+          {
+            type: 2, // BUTTON
+            style: 5, // LINK
+            label: '🌐 Verificar Estado del Ban',
+            url: 'https://spainrp-oficial.onrender.com',
+            emoji: {
+              name: '🔍'
+            }
+          },
+          {
+            type: 2, // BUTTON
+            style: 5, // LINK
+            label: '📞 Contactar Soporte',
+            url: 'https://discord.com/users/710112055985963090',
+            emoji: {
+              name: '💬'
+            }
+          }
+        ]
+      }
+    ];
+
+    // Enviar mensaje DM con embed y botones
+    await user.send({ 
+      embeds: [embed],
+      components: components
+    });
     
     console.log(`[BAN DM] ✅ Notificación enviada a ${user.tag} (${userId})`);
     return true;
