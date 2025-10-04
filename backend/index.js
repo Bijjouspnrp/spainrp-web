@@ -4808,8 +4808,19 @@ app.get('/api/erlc/test', (req, res) => {
   });
 });
 
+// Endpoint simple para verificar que la ruta base funcione
+app.get('/api/erlc', (req, res) => {
+  console.log('[ERLC API] 📍 Endpoint base ERLC llamado');
+  res.json({ 
+    message: 'ERLC API base endpoint funcionando',
+    availableEndpoints: ['/api/erlc/test', '/api/erlc/server-status'],
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Endpoint para obtener estado del servidor ERLC
 app.get('/api/erlc/server-status', async (req, res) => {
+  console.log('[ERLC API] 🚀 Endpoint /api/erlc/server-status llamado');
   const startTime = Date.now();
   const requestId = Math.random().toString(36).substr(2, 9);
   

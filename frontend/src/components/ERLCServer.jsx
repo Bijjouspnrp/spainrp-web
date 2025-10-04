@@ -15,6 +15,30 @@ const ERLCServer = () => {
         setError(null);
         
         console.log('[ERLCServer] 🔍 Iniciando consulta a la API...');
+        
+        // Primero probar el endpoint base para verificar que el backend esté funcionando
+        console.log('[ERLCServer] 🧪 Probando endpoint base...');
+        try {
+          const baseResponse = await fetch('/api/erlc', {
+            method: 'GET',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (baseResponse.ok) {
+            const baseData = await baseResponse.json();
+            console.log('[ERLCServer] ✅ Endpoint base funcionando:', baseData);
+          } else {
+            console.warn('[ERLCServer] ⚠️ Endpoint base no disponible:', baseResponse.status);
+          }
+        } catch (baseError) {
+          console.warn('[ERLCServer] ⚠️ Error en endpoint base:', baseError.message);
+        }
+        
+        // Ahora intentar el endpoint principal
+        console.log('[ERLCServer] 🎮 Consultando estado del servidor...');
         const response = await fetch('/api/erlc/server-status', {
           method: 'GET',
           headers: {
