@@ -590,6 +590,8 @@ function App() {
   
   // Hook del tutorial
   const tutorialHook = useTutorial();
+  
+  // Asegurar que tutorialHook esté definido antes de desestructurar
   const {
     shouldShowTutorial = false,
     isTutorialOpen = false,
@@ -657,7 +659,7 @@ function App() {
 
   // Mostrar tutorial automáticamente si es necesario
   useEffect(() => {
-    if (tutorialHook && shouldShowTutorial && !loading && !maintenance) {
+    if (shouldShowTutorial && !loading && !maintenance) {
       // Esperar un poco para que la página se cargue completamente
       const timer = setTimeout(() => {
         if (openTutorial) {
@@ -666,19 +668,19 @@ function App() {
       }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [tutorialHook, shouldShowTutorial, loading, maintenance, openTutorial]);
+  }, [shouldShowTutorial, loading, maintenance, openTutorial]);
 
   // Listener para abrir tutorial manualmente
   useEffect(() => {
     const handleOpenTutorial = () => {
-      if (tutorialHook && openTutorial) {
+      if (openTutorial) {
         openTutorial();
       }
     };
 
     window.addEventListener('open-tutorial', handleOpenTutorial);
     return () => window.removeEventListener('open-tutorial', handleOpenTutorial);
-  }, [tutorialHook, openTutorial]);
+  }, [openTutorial]);
   // Progreso mantenimiento (hooks siempre fuera de condicionales)
   const totalMinutes = 50;
   const [elapsed, setElapsed] = useState(0);
@@ -918,7 +920,6 @@ function App() {
           memberCount={memberCount} 
           totalMembers={totalMembers} 
           loading={loading}
-          tutorialHook={tutorialHook}
           isInitialized={isInitialized}
           isTutorialOpen={isTutorialOpen}
           closeTutorial={closeTutorial}
@@ -929,7 +930,7 @@ function App() {
   );
 }
 
-function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading, tutorialHook, isInitialized, isTutorialOpen, closeTutorial, completeTutorial }) {
+function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading, isInitialized, isTutorialOpen, closeTutorial, completeTutorial }) {
   const currentLocation = useLocation();
   const hideNavbar = noNavbarRoutes.includes(currentLocation.pathname);
   const hideFooter = ['/apps/tienda'].includes(currentLocation.pathname);
@@ -1006,7 +1007,7 @@ function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading, tutori
       {!hideFooter && <Footer />}
       
       {/* Tutorial Interactivo */}
-      {tutorialHook && isInitialized && (
+      {isInitialized && (
         <InteractiveTutorial
           isOpen={isTutorialOpen}
           onClose={closeTutorial}
@@ -1015,7 +1016,7 @@ function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading, tutori
       )}
       
       {/* Botón de Ayuda Flotante */}
-      {tutorialHook && isInitialized && <HelpButton />}
+      {isInitialized && <HelpButton />}
     </div>
   );
 }
