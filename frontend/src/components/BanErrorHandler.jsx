@@ -37,6 +37,17 @@ const BanErrorHandler = ({ children }) => {
       if (banError) {
         try {
           const ban = JSON.parse(banError);
+          
+          // Verificar si el ban ha expirado
+          if (ban.expiresAt && new Date(ban.expiresAt).getTime() <= Date.now()) {
+            console.log('[BAN ERROR HANDLER] Ban expirado, limpiando localStorage');
+            localStorage.removeItem('ban_error');
+            setBanData(null);
+            setIsChecking(false);
+            clearInterval(interval);
+            return;
+          }
+          
           setBanData(ban);
           setIsChecking(false);
           // Limpiar el intervalo una vez que se detecta el ban
@@ -45,7 +56,7 @@ const BanErrorHandler = ({ children }) => {
           console.error('Error parsing ban data:', error);
         }
       }
-    }, 100);
+    }, 500); // Reducir frecuencia de verificación
 
     return () => {
       window.removeEventListener('userBanned', handleUserBanned);
@@ -60,6 +71,16 @@ const BanErrorHandler = ({ children }) => {
       const banError = localStorage.getItem('ban_error');
       if (banError) {
         const ban = JSON.parse(banError);
+        
+        // Verificar si el ban ha expirado
+        if (ban.expiresAt && new Date(ban.expiresAt).getTime() <= Date.now()) {
+          console.log('[BAN ERROR HANDLER] Ban expirado en checkBanStatus, limpiando localStorage');
+          localStorage.removeItem('ban_error');
+          setBanData(null);
+          setIsChecking(false);
+          return;
+        }
+        
         setBanData(ban);
         setIsChecking(false);
         return;

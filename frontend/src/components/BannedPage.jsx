@@ -24,7 +24,14 @@ const BannedPage = ({ banData }) => {
 
           setTimeLeft({ days, hours, minutes, seconds });
         } else {
+          // Ban expirado, limpiar localStorage y recargar página
+          console.log('[BANNED PAGE] Ban expirado, limpiando localStorage y recargando...');
+          localStorage.removeItem('ban_error');
           setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+          // Recargar la página para permitir acceso
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
         }
       };
 

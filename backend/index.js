@@ -2166,6 +2166,25 @@ async function isDiscordUserBanned(userId) {
   }
 }
 
+// Función para limpiar bans expirados
+async function cleanupExpiredBans() {
+  try {
+    const { runQuery } = require('./db/database');
+    const now = new Date().toISOString();
+    
+    const result = await runQuery(
+      'UPDATE web_bans SET isActive = 0 WHERE isActive = 1 AND expiresAt IS NOT NULL AND expiresAt <= ?',
+      [now]
+    );
+    
+    if (result.changes > 0) {
+      console.log(`[BAN CLEANUP] ${result.changes} bans expirados desactivados`);
+    }
+  } catch (error) {
+    console.error('[BAN CLEANUP] Error limpiando bans expirados:', error);
+  }
+}
+
 // Función para trackear IP
 async function trackIP(req, userId = null) {
   try {
@@ -2278,6 +2297,11 @@ function parseUserAgent(userAgent, req = null) {
 // Middleware de verificación de bans
 async function banCheckMiddleware(req, res, next) {
   try {
+    // Limpiar bans expirados periódicamente
+    if (Math.random() < 0.01) { // 1% de probabilidad de ejecutar limpieza
+      await cleanupExpiredBans();
+    }
+    
     const ip = getRealIP(req);
     
     console.log('[BAN CHECK] Verificando IP:', ip);
@@ -6503,6 +6527,17 @@ function ensureExclusiveAdmin(req, res, next) {
   }
   next();
 }
+
+// Limpiar bans expirados manualmente
+app.post('/api/admin/ban/cleanup', ensureAuthOrJWT, ensureExclusiveAdmin, async (req, res) => {
+  try {
+    await cleanupExpiredBans();
+    res.json({ success: true, message: 'Bans expirados limpiados correctamente' });
+  } catch (error) {
+    console.error('[BAN CLEANUP] Error:', error);
+    res.status(500).json({ error: 'Error limpiando bans expirados' });
+  }
+});
 
 // Obtener todas las IPs trackeadas
 app.get('/api/admin/ban/ips', ensureAuthOrJWT, ensureExclusiveAdmin, async (req, res) => {
