@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import './Navbar.css';
 import { 
   FaDiscord, FaBars, FaTimes, FaUserCircle, FaMoon, FaSun, 
-  FaHome, FaUsers, FaStar, FaNewspaper, FaStore, FaAppStore, FaHandPointer 
+  FaHome, FaUsers, FaStar, FaNewspaper, FaStore, FaAppStore, FaHandPointer, FaServer 
 } from 'react-icons/fa';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -20,6 +20,7 @@ const NAVIGATION_CONFIG = {
     { to: '/#home', label: 'Inicio', icon: <FaHome />, section: 'home' },
     { to: '/#features', label: 'Características', icon: <FaStar />, section: 'features' },
     { to: '/#staff', label: 'Staff', icon: <FaUsers />, section: 'staff' },
+    { to: '/#erlc', label: 'ERLC Server', icon: <FaServer />, section: 'erlc' },
     { to: '/#discord', label: 'Discord', icon: <FaDiscord size={14} />, section: 'discord' },
     { to: '/#about', label: 'Sobre Nosotros', icon: <FaUsers />, section: 'home' },
   ],
