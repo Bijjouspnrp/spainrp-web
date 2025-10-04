@@ -4,6 +4,7 @@ const useTutorial = () => {
   const [shouldShowTutorial, setShouldShowTutorial] = useState(false);
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [tutorialCompleted, setTutorialCompleted] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Verificar si debe mostrar el tutorial
   useEffect(() => {
@@ -33,6 +34,7 @@ const useTutorial = () => {
     };
 
     checkTutorialStatus();
+    setIsInitialized(true);
   }, []);
 
   // Abrir tutorial
@@ -95,6 +97,7 @@ const useTutorial = () => {
     shouldShowTutorial,
     isTutorialOpen,
     tutorialCompleted,
+    isInitialized,
     openTutorial,
     closeTutorial,
     completeTutorial,
