@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaUsers, FaClock, FaServer, FaGamepad, FaGlobe } from 'react-icons/fa';
 import { motion } from 'framer-motion';
+import { apiUrl } from '../utils/api';
 import './ERLCServer.css';
 
 const ERLCServer = () => {
@@ -19,7 +20,7 @@ const ERLCServer = () => {
         // Primero probar el endpoint base para verificar que el backend esté funcionando
         console.log('[ERLCServer] 🧪 Probando endpoint base...');
         try {
-          const baseResponse = await fetch('/api/erlc', {
+          const baseResponse = await fetch(apiUrl('/api/erlc'), {
             method: 'GET',
             headers: {
               'Accept': 'application/json',
@@ -39,7 +40,7 @@ const ERLCServer = () => {
         
         // Ahora intentar el endpoint principal
         console.log('[ERLCServer] 🎮 Consultando estado del servidor...');
-        const response = await fetch('/api/erlc/server-status', {
+        const response = await fetch(apiUrl('/api/erlc/server-status'), {
           method: 'GET',
           headers: {
             'Accept': 'application/json',
