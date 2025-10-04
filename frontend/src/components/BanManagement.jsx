@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { apiUrl } from '../utils/api';
+import useToast from '../hooks/useToast';
+import ToastContainer from './ToastContainer';
 import { 
   FaBan, 
   FaUnlock, 
@@ -8,6 +10,8 @@ import {
   FaPlus, 
   FaTrash, 
   FaExclamationTriangle,
+  FaDiscord,
+  FaEnvelope,
   FaCheckCircle,
   FaClock,
   FaGlobe,
@@ -44,6 +48,7 @@ const BanManagement = () => {
   const [showBanModal, setShowBanModal] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [showStats, setShowStats] = useState(true);
+  const { toasts, success, error, warning, info, removeToast } = useToast();
   const [banForm, setBanForm] = useState({
     type: 'ip',
     value: '',
@@ -207,23 +212,33 @@ const BanManagement = () => {
       });
 
       if (response.ok) {
+        const result = await response.json();
         setShowBanModal(false);
         setBanForm({ type: 'ip', value: '', reason: '', expiresAt: '' });
         loadBans();
         loadStats();
-        alert('Ban aplicado correctamente');
+        
+        // Mostrar feedback de éxito
+        success(`✅ Ban aplicado correctamente`, 4000);
+        
+        // Mostrar información sobre notificación DM
+        if (type === 'discord') {
+          info(`📨 Se envió una notificación DM al usuario baneado`, 6000);
+        } else if (type === 'ip') {
+          warning(`📨 Se buscará un usuario asociado a esta IP para enviar notificación DM`, 6000);
+        }
       } else {
-        const error = await response.json();
+        const errorData = await response.json();
         // Mostrar mensaje específico para auto-ban
-        if (error.error === 'No puedes banearte a ti mismo') {
-          alert(`❌ ${error.error}\n\n${error.message}`);
+        if (errorData.error === 'No puedes banearte a ti mismo') {
+          error(`❌ ${errorData.error}\n\n${errorData.message}`, 8000);
         } else {
-          alert(`Error: ${error.error}`);
+          error(`❌ Error: ${errorData.error}`, 5000);
         }
       }
     } catch (error) {
       console.error('Error banning:', error);
-      alert('Error al aplicar el ban');
+      error('❌ Error al aplicar el ban', 5000);
     } finally {
       setLoading(false);
     }
@@ -247,14 +262,23 @@ const BanManagement = () => {
       if (response.ok) {
         loadBans();
         loadStats();
-        alert('Ban removido correctamente');
+        
+        // Mostrar feedback de éxito
+        success(`✅ Ban removido correctamente`, 4000);
+        
+        // Mostrar información sobre notificación DM
+        if (type === 'discord') {
+          info(`📨 Se envió una notificación DM al usuario desbaneado`, 6000);
+        } else if (type === 'ip') {
+          warning(`📨 Se buscará un usuario asociado a esta IP para enviar notificación DM`, 6000);
+        }
       } else {
-        const error = await response.json();
-        alert(`Error: ${error.error}`);
+        const errorData = await response.json();
+        error(`❌ Error: ${errorData.error}`, 5000);
       }
     } catch (error) {
       console.error('Error unbanning:', error);
-      alert('Error al remover el ban');
+      error('❌ Error al remover el ban', 5000);
     } finally {
       setLoading(false);
     }
@@ -542,6 +566,12 @@ const BanManagement = () => {
                       <div className="card-title">
                         <FaGlobe />
                         <span className="ip-address">{ip.ip}</span>
+                        {ip.userId && (
+                          <div className="dm-indicator" title="Notificaciones DM habilitadas">
+                            <FaDiscord />
+                            <span>DM</span>
+                          </div>
+                        )}
                         <button 
                           className="copy-btn"
                           onClick={() => copyToClipboard(ip.ip)}
@@ -655,6 +685,18 @@ const BanManagement = () => {
                       </div>
                       <div className="ban-value">
                         {ban.value}
+                        {ban.type === 'discord' && (
+                          <div className="dm-indicator" title="Notificaciones DM enviadas">
+                            <FaDiscord />
+                            <span>DM</span>
+                          </div>
+                        )}
+                        {ban.type === 'ip' && (
+                          <div className="dm-indicator muted" title="Notificaciones DM (si hay usuario asociado)">
+                            <FaEnvelope />
+                            <span>DM?</span>
+                          </div>
+                        )}
                         <button 
                           className="copy-btn"
                           onClick={() => copyToClipboard(ban.value)}
@@ -852,6 +894,9 @@ const BanManagement = () => {
           </div>
         </div>
       )}
+      
+      {/* Toast Container */}
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
     </div>
   );
 };
