@@ -15,9 +15,10 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocat
 import spainLogo from '/assets/spainrplogo.png';
 import ToastProvider from './components/ToastProvider';
 import MaintenanceControl from './components/MaintenanceControl';
-import InteractiveTutorial from './components/Tutorial/InteractiveTutorial';
-import HelpButton from './components/Tutorial/HelpButton';
-import useTutorial from './hooks/useTutorial';
+// Tutorial desactivado temporalmente para optimizar rendimiento
+// import InteractiveTutorial from './components/Tutorial/InteractiveTutorial';
+// import HelpButton from './components/Tutorial/HelpButton';
+// import useTutorial from './hooks/useTutorial';
 
 // Lazy load components that are not immediately visible
 const BlackMarket = lazy(() => import('./components/BlackMarket/BlackMarket'));
@@ -588,18 +589,18 @@ function App() {
   const vantaRef = useRef(null);
   const vantaElRef = useRef(null);
   
-  // Hook del tutorial
-  const tutorialHook = useTutorial();
+  // Hook del tutorial - DESACTIVADO TEMPORALMENTE
+  // const tutorialHook = useTutorial();
   
   // Asegurar que tutorialHook esté definido antes de desestructurar
-  const {
-    shouldShowTutorial = false,
-    isTutorialOpen = false,
-    isInitialized = false,
-    openTutorial = () => {},
-    closeTutorial = () => {},
-    completeTutorial = () => {}
-  } = tutorialHook || {};
+  // const {
+  //   shouldShowTutorial = false,
+  //   isTutorialOpen = false,
+  //   isInitialized = false,
+  //   openTutorial = () => {},
+  //   closeTutorial = () => {},
+  //   completeTutorial = () => {}
+  // } = tutorialHook || {};
   
   // Capturar token de la URL después del login - EJECUTAR INMEDIATAMENTE
   useEffect(() => {
@@ -657,30 +658,30 @@ function App() {
     console.log('[App] 📊 Initial state:', { memberCount, totalMembers, loading, maintenance });
   }, []);
 
-  // Mostrar tutorial automáticamente si es necesario
-  useEffect(() => {
-    if (shouldShowTutorial && !loading && !maintenance) {
-      // Esperar un poco para que la página se cargue completamente
-      const timer = setTimeout(() => {
-        if (openTutorial) {
-          openTutorial();
-        }
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [shouldShowTutorial, loading, maintenance, openTutorial]);
+  // Mostrar tutorial automáticamente si es necesario - DESACTIVADO TEMPORALMENTE
+  // useEffect(() => {
+  //   if (shouldShowTutorial && !loading && !maintenance) {
+  //     // Esperar un poco para que la página se cargue completamente
+  //     const timer = setTimeout(() => {
+  //       if (openTutorial) {
+  //         openTutorial();
+  //       }
+  //     }, 2000);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [shouldShowTutorial, loading, maintenance, openTutorial]);
 
-  // Listener para abrir tutorial manualmente
-  useEffect(() => {
-    const handleOpenTutorial = () => {
-      if (openTutorial) {
-        openTutorial();
-      }
-    };
+  // Listener para abrir tutorial manualmente - DESACTIVADO TEMPORALMENTE
+  // useEffect(() => {
+  //   const handleOpenTutorial = () => {
+  //     if (openTutorial) {
+  //       openTutorial();
+  //     }
+  //   };
 
-    window.addEventListener('open-tutorial', handleOpenTutorial);
-    return () => window.removeEventListener('open-tutorial', handleOpenTutorial);
-  }, [openTutorial]);
+  //   window.addEventListener('open-tutorial', handleOpenTutorial);
+  //   return () => window.removeEventListener('open-tutorial', handleOpenTutorial);
+  // }, [openTutorial]);
   // Progreso mantenimiento (hooks siempre fuera de condicionales)
   const totalMinutes = 50;
   const [elapsed, setElapsed] = useState(0);
@@ -920,17 +921,13 @@ function App() {
           memberCount={memberCount} 
           totalMembers={totalMembers} 
           loading={loading}
-          isInitialized={isInitialized}
-          isTutorialOpen={isTutorialOpen}
-          closeTutorial={closeTutorial}
-          completeTutorial={completeTutorial}
         />
       </ToastProvider>
     </Router>
   );
 }
 
-function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading, isInitialized, isTutorialOpen, closeTutorial, completeTutorial }) {
+function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading }) {
   const currentLocation = useLocation();
   const hideNavbar = noNavbarRoutes.includes(currentLocation.pathname);
   const hideFooter = ['/apps/tienda'].includes(currentLocation.pathname);
@@ -1006,17 +1003,17 @@ function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading, isInit
       <CookieConsentBanner />
       {!hideFooter && <Footer />}
       
-      {/* Tutorial Interactivo */}
-      {isInitialized && (
+      {/* Tutorial Interactivo - DESACTIVADO TEMPORALMENTE */}
+      {/* {isInitialized && (
         <InteractiveTutorial
           isOpen={isTutorialOpen}
           onClose={closeTutorial}
           onComplete={completeTutorial}
         />
-      )}
+      )} */}
       
-      {/* Botón de Ayuda Flotante */}
-      {isInitialized && <HelpButton />}
+      {/* Botón de Ayuda Flotante - DESACTIVADO TEMPORALMENTE */}
+      {/* {isInitialized && <HelpButton />} */}
     </div>
   );
 }
