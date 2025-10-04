@@ -16,7 +16,7 @@ import {
   FaChartLine,
   FaFilter,
   FaSort,
-  FaRefresh,
+  FaRedo,
   FaDownload,
   FaUpload,
   FaCog,
@@ -306,7 +306,7 @@ const BanManagement = () => {
               onClick={() => window.location.reload()}
               title="Recargar datos"
             >
-              <FaRefresh />
+              <FaRedo />
             </button>
           </div>
         </div>
@@ -530,7 +530,7 @@ const BanManagement = () => {
                 <h3>No hay IPs para mostrar</h3>
                 <p>Las IPs aparecerán aquí cuando los usuarios accedan al sitio</p>
                 <button className="btn-primary" onClick={() => window.location.reload()}>
-                  <FaRefresh />
+                  <FaRedo />
                   Recargar
                 </button>
               </div>
