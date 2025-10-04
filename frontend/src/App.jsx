@@ -913,13 +913,23 @@ function App() {
     <Router>
       <ToastProvider>
         <GlobalSearch />
-        <AppContent noNavbarRoutes={noNavbarRoutes} memberCount={memberCount} totalMembers={totalMembers} loading={loading} />
+        <AppContent 
+          noNavbarRoutes={noNavbarRoutes} 
+          memberCount={memberCount} 
+          totalMembers={totalMembers} 
+          loading={loading}
+          tutorialHook={tutorialHook}
+          isInitialized={isInitialized}
+          isTutorialOpen={isTutorialOpen}
+          closeTutorial={closeTutorial}
+          completeTutorial={completeTutorial}
+        />
       </ToastProvider>
     </Router>
   );
 }
 
-function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading }) {
+function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading, tutorialHook, isInitialized, isTutorialOpen, closeTutorial, completeTutorial }) {
   const currentLocation = useLocation();
   const hideNavbar = noNavbarRoutes.includes(currentLocation.pathname);
   const hideFooter = ['/apps/tienda'].includes(currentLocation.pathname);
