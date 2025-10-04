@@ -46,7 +46,6 @@ const GlobalSearch = lazy(() => import('./components/GlobalSearch'));
 // Componente de Login
 function LoginPage() {
   const location = useLocation();
-  const navigate = useNavigate();
   
   // Debug logging for LoginPage
   useEffect(() => {
@@ -293,7 +292,7 @@ function Home({ memberCount, totalMembers, loading }) {
 
 
 // Componente de página de mantenimiento con panel administrativo
-function MaintenancePage({ vantaElRef, totalMinutes, elapsed, percent, apiUrl }) {
+function MaintenancePage({ vantaElRef, totalMinutes, apiUrl }) {
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminLoading, setAdminLoading] = useState(true);
@@ -597,8 +596,7 @@ function App() {
     isInitialized = false,
     openTutorial = () => {},
     closeTutorial = () => {},
-    completeTutorial = () => {},
-    skipTutorial = () => {}
+    completeTutorial = () => {}
   } = tutorialHook || {};
   
   // Capturar token de la URL después del login - EJECUTAR INMEDIATAMENTE
@@ -729,7 +727,9 @@ function App() {
           spacing: 16.0,
           showDots: true
         });
-      } catch {}
+      } catch (e) {
+        console.warn('[App] Error loading Vanta:', e);
+      }
     };
     if (maintenance) {
       (async () => {
@@ -744,16 +744,22 @@ function App() {
           }
           initVanta();
         } catch (e) {
-          // Silenciar fallo de decoración visual
+          console.warn('[App] Error loading Vanta scripts:', e);
         }
       })();
     }
     return () => {
       if (vantaRef.current && vantaRef.current.destroy) {
-        try { vantaRef.current.destroy(); } catch {}
+        try { vantaRef.current.destroy(); } catch (e) {
+          console.warn('[App] Error destroying Vanta:', e);
+        }
         vantaRef.current = null;
       }
-      scripts.forEach(s => { try { s.remove(); } catch {} });
+      scripts.forEach(s => { 
+        try { s.remove(); } catch (e) {
+          console.warn('[App] Error removing script:', e);
+        }
+      });
     };
   }, [maintenance]);
 
@@ -783,7 +789,9 @@ function App() {
         setMaintenance(!!data.maintenance);
         setMaintenanceStart(data.data?.activatedAt || null);
       });
-    } catch {}
+    } catch (e) {
+      console.warn('[App] Error setting up socket:', e);
+    }
     // Fallback: polling cada 10s
     updateFromApi();
     const interval = setInterval(updateFromApi, 10000);
@@ -807,7 +815,9 @@ function App() {
         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         else window.scrollTo({ top: 0, behavior: 'smooth' });
       }
-    } catch (_) {}
+    } catch (e) {
+      console.warn('[App] Error handling scroll target:', e);
+    }
   }, []);
   const fetchMemberCount = async () => {
     try {
@@ -821,6 +831,7 @@ function App() {
           data = await response.json();
           setMemberCount(data.presence_count || 0);
         } catch (e) {
+          console.warn('[App] Error parsing widget response:', e);
           setMemberCount(0);
         }
       }
@@ -834,10 +845,12 @@ function App() {
           totalData = await totalRes.json();
           setTotalMembers(totalData.memberCount || 0);
         } catch (e) {
+          console.warn('[App] Error parsing member count response:', e);
           setTotalMembers(0);
         }
       }
     } catch (error) {
+      console.warn('[App] Error fetching member count:', error);
       setMemberCount(0);
       setTotalMembers(0);
     } finally {
@@ -849,8 +862,6 @@ function App() {
   const noNavbarRoutes = [
     '/blackmarket', '/news', '/stockmarket', '/apps', '/apps/tinder', '/apps/banco', '/apps/minijuegos', '/apps/tienda', '/rules'
   ];
-  // Páginas especiales sin Footer (pantalla completa)
-  const noFooterRoutes = ['/apps/tienda'];
 
   if (maintenance) {
     return <MaintenancePage 
@@ -981,7 +992,7 @@ function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading }) {
       {!hideFooter && <Footer />}
       
       {/* Tutorial Interactivo */}
-      {isInitialized && (
+      {tutorialHook && isInitialized && (
         <InteractiveTutorial
           isOpen={isTutorialOpen}
           onClose={closeTutorial}
@@ -990,7 +1001,7 @@ function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading }) {
       )}
       
       {/* Botón de Ayuda Flotante */}
-      {isInitialized && <HelpButton />}
+      {tutorialHook && isInitialized && <HelpButton />}
     </div>
   );
 }
