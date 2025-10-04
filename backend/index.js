@@ -5492,20 +5492,12 @@ async function authenticatedBanCheckMiddleware(req, res, next) {
   }
 }
 
-// Middleware para verificar JWT
-function ensureJWT(req, res, next) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Token de acceso requerido' });
-  }
-  
-  const token = authHeader.substring(7);
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'spainrp_secret_key');
-    req.user = decoded;
+// Middleware para verificar autenticación con Passport
+function ensureAuth(req, res, next) {
+  if (req.isAuthenticated && req.isAuthenticated() && req.user) {
     next();
-  } catch (error) {
-    return res.status(401).json({ error: 'Token inválido' });
+  } else {
+    return res.status(401).json({ error: 'No autenticado' });
   }
 }
 
@@ -6417,7 +6409,7 @@ const isMaintenanceMode = () => {
 // === ENDPOINTS DE GESTIÓN DE BANS (SOLO ADMIN EXCLUSIVO) ===
 
 // Obtener todas las IPs trackeadas
-app.get('/api/admin/ban/ips', ensureJWT, ensureExclusiveAdmin, async (req, res) => {
+app.get('/api/admin/ban/ips', ensureAuth, ensureExclusiveAdmin, async (req, res) => {
   try {
     const { page = 1, limit = 50, active = 'true' } = req.query;
     const offset = (page - 1) * limit;
@@ -6456,7 +6448,7 @@ app.get('/api/admin/ban/ips', ensureJWT, ensureExclusiveAdmin, async (req, res) 
 });
 
 // Obtener todos los bans
-app.get('/api/admin/ban/bans', ensureJWT, ensureExclusiveAdmin, async (req, res) => {
+app.get('/api/admin/ban/bans', ensureAuth, ensureExclusiveAdmin, async (req, res) => {
   try {
     const { type, active = 'true' } = req.query;
     
@@ -6487,7 +6479,7 @@ app.get('/api/admin/ban/bans', ensureJWT, ensureExclusiveAdmin, async (req, res)
 });
 
 // Banear IP
-app.post('/api/admin/ban/ip', ensureJWT, ensureExclusiveAdmin, express.json(), async (req, res) => {
+app.post('/api/admin/ban/ip', ensureAuth, ensureExclusiveAdmin, express.json(), async (req, res) => {
   try {
     const { ip, reason, expiresAt } = req.body;
     
@@ -6526,7 +6518,7 @@ app.post('/api/admin/ban/ip', ensureJWT, ensureExclusiveAdmin, express.json(), a
 });
 
 // Banear usuario de Discord
-app.post('/api/admin/ban/discord', ensureJWT, ensureExclusiveAdmin, express.json(), async (req, res) => {
+app.post('/api/admin/ban/discord', ensureAuth, ensureExclusiveAdmin, express.json(), async (req, res) => {
   try {
     const { userId, reason, expiresAt } = req.body;
     
@@ -6565,7 +6557,7 @@ app.post('/api/admin/ban/discord', ensureJWT, ensureExclusiveAdmin, express.json
 });
 
 // Desbanear IP o usuario
-app.delete('/api/admin/ban/:type/:value', ensureJWT, ensureExclusiveAdmin, async (req, res) => {
+app.delete('/api/admin/ban/:type/:value', ensureAuth, ensureExclusiveAdmin, async (req, res) => {
   try {
     const { type, value } = req.params;
     
@@ -6587,7 +6579,7 @@ app.delete('/api/admin/ban/:type/:value', ensureJWT, ensureExclusiveAdmin, async
 });
 
 // Obtener estadísticas de bans
-app.get('/api/admin/ban/stats', ensureJWT, ensureExclusiveAdmin, async (req, res) => {
+app.get('/api/admin/ban/stats', ensureAuth, ensureExclusiveAdmin, async (req, res) => {
   try {
     const [ipBans, discordBans, totalIPs, activeIPs] = await Promise.all([
       getQuery('SELECT COUNT(*) as count FROM web_bans WHERE type = ? AND isActive = 1', ['ip']),
