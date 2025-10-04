@@ -2124,21 +2124,156 @@ app.get('/auth/me', (req, res) => {
     res.status(401).json({ error: 'No autenticado' });
   }
 });
-// Middleware global de ban
-app.use((req, res, next) => {
-  const ip = getClientIp(req);
-  const userId = req.user?.id || null;
-  db.all('SELECT id FROM bans WHERE (ip = ? AND ip IS NOT NULL) OR (userId = ? AND userId IS NOT NULL) LIMIT 1', [ip, userId], (err, rows) => {
-    if (err) {
-      console.error('[BAN CHECK] Error:', err);
-      return next();
+// ===== SISTEMA DE BANS =====
+// Función para obtener IP real
+function getRealIP(req) {
+  return req.headers['cf-connecting-ip'] || 
+         req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
+         req.headers['x-real-ip'] || 
+         req.connection?.remoteAddress || 
+         req.socket?.remoteAddress || 
+         req.ip || 
+         '127.0.0.1';
+}
+
+// Función para verificar si una IP está baneada
+async function isIPBanned(ip) {
+  try {
+    const ban = await getQuery(
+      'SELECT * FROM web_bans WHERE type = ? AND value = ? AND isActive = 1 AND (expiresAt IS NULL OR expiresAt > ?)',
+      ['ip', ip, new Date().toISOString()]
+    );
+    return ban || null;
+  } catch (error) {
+    console.error('[BAN SYSTEM] Error checking IP ban:', error);
+    return null;
+  }
+}
+
+// Función para verificar si un usuario de Discord está baneado
+async function isDiscordUserBanned(userId) {
+  try {
+    const ban = await getQuery(
+      'SELECT * FROM web_bans WHERE type = ? AND value = ? AND isActive = 1 AND (expiresAt IS NULL OR expiresAt > ?)',
+      ['discord', userId, new Date().toISOString()]
+    );
+    return ban || null;
+  } catch (error) {
+    console.error('[BAN SYSTEM] Error checking Discord ban:', error);
+    return null;
+  }
+}
+
+// Función para trackear IP
+async function trackIP(req, userId = null) {
+  try {
+    const ip = getRealIP(req);
+    const userAgent = req.headers['user-agent'] || 'Unknown';
+    const now = new Date().toISOString();
+    
+    console.log('[IP TRACKING] Registrando IP:', { ip, userId, userAgent: userAgent.substring(0, 50) + '...' });
+    
+    // Verificar si la IP ya existe
+    const existing = await getQuery(
+      'SELECT * FROM ip_tracking WHERE ip = ?',
+      [ip]
+    );
+    
+    if (existing) {
+      // Actualizar IP existente
+      await runQuery(
+        'UPDATE ip_tracking SET lastSeen = ?, visitCount = visitCount + 1, userId = COALESCE(?, userId), isActive = 1 WHERE ip = ?',
+        [now, userId, ip]
+      );
+      console.log('[IP TRACKING] IP actualizada:', ip);
+    } else {
+      // Crear nueva entrada de IP
+      await runQuery(
+        'INSERT INTO ip_tracking (ip, userId, userAgent, firstSeen, lastSeen, visitCount, isActive) VALUES (?, ?, ?, ?, ?, 1, 1)',
+        [ip, userId, userAgent, now, now]
+      );
+      console.log('[IP TRACKING] Nueva IP registrada:', ip);
     }
-    if (rows && rows.length > 0) {
-      return res.status(403).json({ error: 'Acceso bloqueado por ban' });
+  } catch (error) {
+    console.error('[IP TRACKING] Error tracking IP:', error);
+  }
+}
+
+// Middleware de verificación de bans
+async function banCheckMiddleware(req, res, next) {
+  try {
+    const ip = getRealIP(req);
+    
+    console.log('[BAN CHECK] Verificando IP:', ip);
+    
+    // Verificar ban de IP
+    const ipBan = await isIPBanned(ip);
+    if (ipBan) {
+      console.log(`[BAN SYSTEM] IP ${ip} is banned:`, ipBan.reason);
+      return res.status(403).json({
+        error: 'Banned',
+        message: 'Tu IP ha sido baneada de este sitio web.',
+        reason: ipBan.reason,
+        bannedAt: ipBan.bannedAt,
+        expiresAt: ipBan.expiresAt
+      });
     }
+    
+    // Trackear IP
+    await trackIP(req);
+    
     next();
-  });
-});
+  } catch (error) {
+    console.error('[BAN SYSTEM] Error in ban check middleware:', error);
+    next();
+  }
+}
+
+// Middleware de verificación de bans para usuarios autenticados
+async function authenticatedBanCheckMiddleware(req, res, next) {
+  try {
+    const ip = getRealIP(req);
+    
+    // Verificar ban de IP
+    const ipBan = await isIPBanned(ip);
+    if (ipBan) {
+      console.log(`[BAN SYSTEM] IP ${ip} is banned:`, ipBan.reason);
+      return res.status(403).json({
+        error: 'Banned',
+        message: 'Tu IP ha sido baneada de este sitio web.',
+        reason: ipBan.reason,
+        bannedAt: ipBan.bannedAt,
+        expiresAt: ipBan.expiresAt
+      });
+    }
+    
+    // Si hay usuario autenticado, verificar ban de Discord
+    if (req.user && req.user.id) {
+      const discordBan = await isDiscordUserBanned(req.user.id);
+      if (discordBan) {
+        console.log(`[BAN SYSTEM] Discord user ${req.user.id} is banned:`, discordBan.reason);
+        return res.status(403).json({
+          error: 'Banned',
+          message: 'Tu cuenta de Discord ha sido baneada de este sitio web.',
+          reason: discordBan.reason,
+          bannedAt: discordBan.bannedAt,
+          expiresAt: discordBan.expiresAt
+        });
+      }
+    }
+    
+    // Trackear IP con usuario
+    await trackIP(req, req.user?.id);
+    
+    next();
+  } catch (error) {
+    console.error('[BAN SYSTEM] Error in authenticated ban check middleware:', error);
+    next();
+  }
+}
+
+// Middleware global de ban - APLICAR NUEVO SISTEMA DE BANS
+app.use(banCheckMiddleware);
 
 app.get('/', (req, res) => {
   const uptime = process.uptime();
@@ -5351,147 +5486,6 @@ app.post('/api/calendar/claim', verifyToken, async (req, res) => {
 // === SISTEMA DE BANS Y TRACKING ===
 const ADMIN_USER_ID = '710112055985963090';
 
-// Función para obtener IP real del usuario
-function getRealIP(req) {
-  return req.headers['cf-connecting-ip'] || 
-         req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
-         req.headers['x-real-ip'] || 
-         req.connection?.remoteAddress || 
-         req.socket?.remoteAddress || 
-         req.ip || 
-         '127.0.0.1';
-}
-
-// Función para verificar si una IP está baneada
-async function isIPBanned(ip) {
-  try {
-    const ban = await getQuery(
-      'SELECT * FROM web_bans WHERE type = ? AND value = ? AND isActive = 1 AND (expiresAt IS NULL OR expiresAt > ?)',
-      ['ip', ip, new Date().toISOString()]
-    );
-    return ban || null;
-  } catch (error) {
-    console.error('[BAN SYSTEM] Error checking IP ban:', error);
-    return null;
-  }
-}
-
-// Función para verificar si un usuario de Discord está baneado
-async function isDiscordUserBanned(userId) {
-  try {
-    const ban = await getQuery(
-      'SELECT * FROM web_bans WHERE type = ? AND value = ? AND isActive = 1 AND (expiresAt IS NULL OR expiresAt > ?)',
-      ['discord', userId, new Date().toISOString()]
-    );
-    return ban || null;
-  } catch (error) {
-    console.error('[BAN SYSTEM] Error checking Discord ban:', error);
-    return null;
-  }
-}
-
-// Función para trackear IP
-async function trackIP(req, userId = null) {
-  try {
-    const ip = getRealIP(req);
-    const userAgent = req.headers['user-agent'] || 'Unknown';
-    const now = new Date().toISOString();
-    
-    // Verificar si la IP ya existe
-    const existing = await getQuery(
-      'SELECT * FROM ip_tracking WHERE ip = ?',
-      [ip]
-    );
-    
-    if (existing) {
-      // Actualizar IP existente
-      await runQuery(
-        'UPDATE ip_tracking SET lastSeen = ?, visitCount = visitCount + 1, userId = COALESCE(?, userId), isActive = 1 WHERE ip = ?',
-        [now, userId, ip]
-      );
-    } else {
-      // Crear nueva entrada de IP
-      await runQuery(
-        'INSERT INTO ip_tracking (ip, userId, userAgent, firstSeen, lastSeen, visitCount, isActive) VALUES (?, ?, ?, ?, ?, 1, 1)',
-        [ip, userId, userAgent, now, now]
-      );
-    }
-  } catch (error) {
-    console.error('[IP TRACKING] Error tracking IP:', error);
-  }
-}
-
-// Middleware de verificación de bans
-async function banCheckMiddleware(req, res, next) {
-  try {
-    const ip = getRealIP(req);
-    
-    // Verificar ban de IP
-    const ipBan = await isIPBanned(ip);
-    if (ipBan) {
-      console.log(`[BAN SYSTEM] IP ${ip} is banned:`, ipBan.reason);
-      return res.status(403).json({
-        error: 'Banned',
-        message: 'Tu IP ha sido baneada de este sitio web.',
-        reason: ipBan.reason,
-        bannedAt: ipBan.bannedAt,
-        expiresAt: ipBan.expiresAt
-      });
-    }
-    
-    // Trackear IP
-    await trackIP(req);
-    
-    next();
-  } catch (error) {
-    console.error('[BAN SYSTEM] Error in ban check middleware:', error);
-    next();
-  }
-}
-
-// Middleware de verificación de bans para usuarios autenticados
-async function authenticatedBanCheckMiddleware(req, res, next) {
-  try {
-    const ip = getRealIP(req);
-    
-    // Verificar ban de IP
-    const ipBan = await isIPBanned(ip);
-    if (ipBan) {
-      console.log(`[BAN SYSTEM] IP ${ip} is banned:`, ipBan.reason);
-      return res.status(403).json({
-        error: 'Banned',
-        message: 'Tu IP ha sido baneada de este sitio web.',
-        reason: ipBan.reason,
-        bannedAt: ipBan.bannedAt,
-        expiresAt: ipBan.expiresAt
-      });
-    }
-    
-    // Si hay usuario autenticado, verificar ban de Discord
-    if (req.user && req.user.id) {
-      const discordBan = await isDiscordUserBanned(req.user.id);
-      if (discordBan) {
-        console.log(`[BAN SYSTEM] Discord user ${req.user.id} is banned:`, discordBan.reason);
-        return res.status(403).json({
-          error: 'Banned',
-          message: 'Tu cuenta de Discord ha sido baneada de este sitio web.',
-          reason: discordBan.reason,
-          bannedAt: discordBan.bannedAt,
-          expiresAt: discordBan.expiresAt
-        });
-      }
-    }
-    
-    // Trackear IP con usuario
-    await trackIP(req, req.user?.id);
-    
-    next();
-  } catch (error) {
-    console.error('[BAN SYSTEM] Error in authenticated ban check middleware:', error);
-    next();
-  }
-}
-
 
     
     // Verificar si el día ya fue reclamado
@@ -6425,6 +6419,8 @@ app.get('/api/admin/ban/ips', ensureAuthOrJWT, ensureExclusiveAdmin, async (req,
     const { page = 1, limit = 50, active = 'true' } = req.query;
     const offset = (page - 1) * limit;
     
+    console.log('[BAN ADMIN] Obteniendo IPs - Parámetros:', { page, limit, active, offset });
+    
     let query = 'SELECT * FROM ip_tracking';
     let params = [];
     
@@ -6435,7 +6431,11 @@ app.get('/api/admin/ban/ips', ensureAuthOrJWT, ensureExclusiveAdmin, async (req,
     query += ' ORDER BY lastSeen DESC LIMIT ? OFFSET ?';
     params.push(parseInt(limit), parseInt(offset));
     
+    console.log('[BAN ADMIN] Query SQL:', query);
+    console.log('[BAN ADMIN] Parámetros:', params);
+    
     const ips = await allQuery(query, params);
+    console.log('[BAN ADMIN] IPs encontradas:', ips.length);
     
     // Obtener total de IPs
     const totalQuery = active === 'true' ? 
