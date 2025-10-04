@@ -4798,6 +4798,16 @@ app.get('/api/widget', async (req, res) => {
   }
 });
 
+// Endpoint de prueba para verificar que el backend esté funcionando
+app.get('/api/erlc/test', (req, res) => {
+  console.log('[ERLC API] 🧪 Endpoint de prueba llamado');
+  res.json({ 
+    message: 'Backend ERLC funcionando correctamente',
+    timestamp: new Date().toISOString(),
+    status: 'ok'
+  });
+});
+
 // Endpoint para obtener estado del servidor ERLC
 app.get('/api/erlc/server-status', async (req, res) => {
   const startTime = Date.now();
