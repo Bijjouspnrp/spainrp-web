@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { io } from 'socket.io-client';
 import './App.css';
 import { apiUrl } from './utils/api';
+import './utils/fetchInterceptor'; // Interceptor global de bans
 import Navbar from './components/Navbar';
 import AdBlockDetect from './components/AdBlockDetect';
 import Hero from './components/Hero';
@@ -931,6 +932,7 @@ function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading }) {
           <Route path="/panel" element={<BanErrorHandler><Panel /></BanErrorHandler>} />
           <Route path="/panel/bans" element={<BanErrorHandler><Panel /></BanErrorHandler>} />
           <Route path="/admin" element={<PrivateRoute><BanErrorHandler><AdminPanel /></BanErrorHandler></PrivateRoute>} />
+          <Route path="/banned" element={<BanErrorHandler><div>Verificando ban...</div></BanErrorHandler>} />
           <Route path="/auth/login" element={<LoginPage />} />
           <Route path="/logout" element={<LogoutPage />} />
           <Route path="/logs" element={<Logs />} />

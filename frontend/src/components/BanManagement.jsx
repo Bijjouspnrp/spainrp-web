@@ -286,6 +286,16 @@ const BanManagement = () => {
                       <span className="detail">
                         Visitas: {ip.visitCount}
                       </span>
+                      {ip.country && (
+                        <span className="detail">
+                          🌍 {ip.country} {ip.city && `- ${ip.city}`}
+                        </span>
+                      )}
+                      {ip.userAgent && (
+                        <span className="detail" title={ip.userAgent}>
+                          📱 {ip.userAgent.substring(0, 30)}...
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="item-actions">

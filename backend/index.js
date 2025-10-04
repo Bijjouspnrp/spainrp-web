@@ -2174,7 +2174,15 @@ async function trackIP(req, userId = null) {
     const userAgent = req.headers['user-agent'] || 'Unknown';
     const now = new Date().toISOString();
     
-    console.log('[IP TRACKING] Registrando IP:', { ip, userId, userAgent: userAgent.substring(0, 50) + '...' });
+    // Extraer información del dispositivo del User-Agent
+    const deviceInfo = parseUserAgent(userAgent, req);
+    
+    console.log('[IP TRACKING] Registrando IP:', { 
+      ip, 
+      userId, 
+      userAgent: userAgent.substring(0, 50) + '...',
+      device: deviceInfo
+    });
     
     // Verificar si la IP ya existe
     const existing = await getQuery(
@@ -2185,21 +2193,55 @@ async function trackIP(req, userId = null) {
     if (existing) {
       // Actualizar IP existente
       await runQuery(
-        'UPDATE ip_tracking SET lastSeen = ?, visitCount = visitCount + 1, userId = COALESCE(?, userId), isActive = 1 WHERE ip = ?',
-        [now, userId, ip]
+        'UPDATE ip_tracking SET lastSeen = ?, visitCount = visitCount + 1, userId = COALESCE(?, userId), isActive = 1, userAgent = ?, country = ?, city = ? WHERE ip = ?',
+        [now, userId, userAgent, deviceInfo.country, deviceInfo.city, ip]
       );
       console.log('[IP TRACKING] IP actualizada:', ip);
     } else {
       // Crear nueva entrada de IP
       await runQuery(
-        'INSERT INTO ip_tracking (ip, userId, userAgent, firstSeen, lastSeen, visitCount, isActive) VALUES (?, ?, ?, ?, ?, 1, 1)',
-        [ip, userId, userAgent, now, now]
+        'INSERT INTO ip_tracking (ip, userId, userAgent, country, city, firstSeen, lastSeen, visitCount, isActive) VALUES (?, ?, ?, ?, ?, ?, ?, 1, 1)',
+        [ip, userId, userAgent, deviceInfo.country, deviceInfo.city, now, now]
       );
       console.log('[IP TRACKING] Nueva IP registrada:', ip);
     }
   } catch (error) {
     console.error('[IP TRACKING] Error tracking IP:', error);
   }
+}
+
+// Función para parsear User-Agent y extraer información del dispositivo
+function parseUserAgent(userAgent, req = null) {
+  const info = {
+    browser: 'Unknown',
+    os: 'Unknown',
+    device: 'Unknown',
+    country: req?.headers['cf-ipcountry'] || 'Unknown',
+    city: req?.headers['cf-ipcity'] || 'Unknown'
+  };
+  
+  // Detectar navegador
+  if (userAgent.includes('Chrome')) info.browser = 'Chrome';
+  else if (userAgent.includes('Firefox')) info.browser = 'Firefox';
+  else if (userAgent.includes('Safari')) info.browser = 'Safari';
+  else if (userAgent.includes('Edge')) info.browser = 'Edge';
+  else if (userAgent.includes('Opera')) info.browser = 'Opera';
+  
+  // Detectar sistema operativo
+  if (userAgent.includes('Windows')) info.os = 'Windows';
+  else if (userAgent.includes('Mac OS')) info.os = 'macOS';
+  else if (userAgent.includes('Linux')) info.os = 'Linux';
+  else if (userAgent.includes('Android')) info.os = 'Android';
+  else if (userAgent.includes('iOS')) info.os = 'iOS';
+  
+  // Detectar tipo de dispositivo
+  if (userAgent.includes('Mobile')) info.device = 'Mobile';
+  else if (userAgent.includes('Tablet')) info.device = 'Tablet';
+  else if (userAgent.includes('Desktop')) info.device = 'Desktop';
+  else if (userAgent.includes('Bot')) info.device = 'Bot';
+  else info.device = 'Desktop';
+  
+  return info;
 }
 
 // Middleware de verificación de bans
