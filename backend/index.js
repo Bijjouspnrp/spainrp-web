@@ -6421,6 +6421,7 @@ function ensureExclusiveAdmin(req, res, next) {
 // Obtener todas las IPs trackeadas
 app.get('/api/admin/ban/ips', ensureAuthOrJWT, ensureExclusiveAdmin, async (req, res) => {
   try {
+    const { getQuery, allQuery } = require('./db/database');
     const { page = 1, limit = 50, active = 'true' } = req.query;
     const offset = (page - 1) * limit;
     
@@ -6460,6 +6461,7 @@ app.get('/api/admin/ban/ips', ensureAuthOrJWT, ensureExclusiveAdmin, async (req,
 // Obtener todos los bans
 app.get('/api/admin/ban/bans', ensureAuthOrJWT, ensureExclusiveAdmin, async (req, res) => {
   try {
+    const { allQuery } = require('./db/database');
     const { type, active = 'true' } = req.query;
     
     let query = 'SELECT * FROM web_bans';
@@ -6491,6 +6493,7 @@ app.get('/api/admin/ban/bans', ensureAuthOrJWT, ensureExclusiveAdmin, async (req
 // Banear IP
 app.post('/api/admin/ban/ip', ensureAuthOrJWT, ensureExclusiveAdmin, express.json(), async (req, res) => {
   try {
+    const { getQuery, runQuery } = require('./db/database');
     const { ip, reason, expiresAt } = req.body;
     
     if (!ip) {
@@ -6530,6 +6533,7 @@ app.post('/api/admin/ban/ip', ensureAuthOrJWT, ensureExclusiveAdmin, express.jso
 // Banear usuario de Discord
 app.post('/api/admin/ban/discord', ensureAuthOrJWT, ensureExclusiveAdmin, express.json(), async (req, res) => {
   try {
+    const { getQuery, runQuery } = require('./db/database');
     const { userId, reason, expiresAt } = req.body;
     
     if (!userId) {
@@ -6569,6 +6573,7 @@ app.post('/api/admin/ban/discord', ensureAuthOrJWT, ensureExclusiveAdmin, expres
 // Desbanear IP o usuario
 app.delete('/api/admin/ban/:type/:value', ensureAuthOrJWT, ensureExclusiveAdmin, async (req, res) => {
   try {
+    const { runQuery } = require('./db/database');
     const { type, value } = req.params;
     
     if (!['ip', 'discord'].includes(type)) {
@@ -6591,6 +6596,7 @@ app.delete('/api/admin/ban/:type/:value', ensureAuthOrJWT, ensureExclusiveAdmin,
 // Obtener estadísticas de bans
 app.get('/api/admin/ban/stats', ensureAuthOrJWT, ensureExclusiveAdmin, async (req, res) => {
   try {
+    const { getQuery } = require('./db/database');
     const [ipBans, discordBans, totalIPs, activeIPs] = await Promise.all([
       getQuery('SELECT COUNT(*) as count FROM web_bans WHERE type = ? AND isActive = 1', ['ip']),
       getQuery('SELECT COUNT(*) as count FROM web_bans WHERE type = ? AND isActive = 1', ['discord']),
