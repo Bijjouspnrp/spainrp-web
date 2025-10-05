@@ -78,7 +78,7 @@ function LoginPage() {
     const discordAuthUrl = `${apiUrl.replace(/\/$/, '')}/auth/login?redirect=${encodeURIComponent(redirect)}`;
     console.log('[LoginPage] 🔗 Redirecting to Discord OAuth:', discordAuthUrl);
     window.location.href = discordAuthUrl;
-  }, [location.search, navigate]);
+  }, [location.search]);
 
   return (
     <div style={{
