@@ -767,7 +767,660 @@
   box-shadow: 0 8px 20px rgba(138, 43, 226, 0.3);
 }
 
-/* Responsive para modal */
+/* ===== RESPONSIVE DESIGN COMPLETO ===== */
+
+/* Tablets y pantallas medianas (768px - 1024px) */
+@media (max-width: 1024px) {
+  .cni-container {
+    padding-top: 70px;
+  }
+  
+  .cni-header {
+    padding: 1.5rem;
+  }
+  
+  .cni-header h1 {
+    font-size: 2rem;
+  }
+  
+  .cni-header p {
+    font-size: 1rem;
+  }
+  
+  .cni-tabs {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .cni-tab {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .cni-content {
+    padding: 1.5rem;
+  }
+  
+  .cni-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+  
+  .cni-card {
+    padding: 1rem;
+  }
+  
+  .cni-card h3 {
+    font-size: 1.1rem;
+  }
+  
+  .cni-card .cni-number {
+    font-size: 1.8rem;
+  }
+  
+  .cni-form {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .cni-form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .cni-btn {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .cni-results {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .cni-result {
+    padding: 1rem;
+  }
+  
+  .cni-business-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .cni-business-actions .cni-btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  .cni-blog-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .cni-blog-card {
+    padding: 1rem;
+  }
+  
+  .cni-blog-card h4 {
+    font-size: 1.1rem;
+  }
+  
+  .cni-welcome-modal {
+    max-width: 90%;
+    margin: 1rem;
+  }
+  
+  .cni-welcome-content {
+    padding: 1.5rem;
+  }
+  
+  .cni-mission-cards {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+/* Móviles grandes (481px - 767px) */
+@media (max-width: 767px) {
+  .cni-container {
+    padding-top: 60px;
+  }
+  
+  .cni-header {
+    padding: 1rem;
+    text-align: center;
+  }
+  
+  .cni-header h1 {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .cni-header p {
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+  
+  .cni-logo {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 1rem;
+  }
+  
+  .cni-tabs {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.3rem;
+  }
+  
+  .cni-tab {
+    width: 100%;
+    padding: 0.8rem;
+    font-size: 0.85rem;
+    text-align: center;
+  }
+  
+  .cni-content {
+    padding: 1rem;
+  }
+  
+  .cni-grid {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+  }
+  
+  .cni-card {
+    padding: 0.8rem;
+  }
+  
+  .cni-card h3 {
+    font-size: 1rem;
+  }
+  
+  .cni-card .cni-number {
+    font-size: 1.5rem;
+  }
+  
+  .cni-form {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+  }
+  
+  .cni-form-group label {
+    font-size: 0.9rem;
+  }
+  
+  .cni-form-group input,
+  .cni-form-group select,
+  .cni-form-group textarea {
+    padding: 0.6rem;
+    font-size: 0.9rem;
+  }
+  
+  .cni-btn {
+    padding: 0.7rem 1rem;
+    font-size: 0.85rem;
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  .cni-results {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+  }
+  
+  .cni-result {
+    padding: 0.8rem;
+  }
+  
+  .cni-result-type {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+  }
+  
+  .cni-business-actions {
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 1rem;
+  }
+  
+  .cni-business-actions .cni-btn {
+    width: 100%;
+    padding: 0.6rem;
+    font-size: 0.8rem;
+    margin-bottom: 0.3rem;
+  }
+  
+  .cni-blog-grid {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+  }
+  
+  .cni-blog-card {
+    padding: 0.8rem;
+  }
+  
+  .cni-blog-card h4 {
+    font-size: 1rem;
+  }
+  
+  .cni-blog-card p {
+    font-size: 0.85rem;
+  }
+  
+  .cni-blog-card .cni-blog-meta {
+    font-size: 0.75rem;
+  }
+  
+  .cni-welcome-modal {
+    max-width: 95%;
+    margin: 0.5rem;
+    max-height: 95vh;
+  }
+  
+  .cni-welcome-header h2 {
+    font-size: 1.3rem;
+  }
+  
+  .cni-welcome-content {
+    padding: 1rem;
+  }
+  
+  .cni-welcome-content h3 {
+    font-size: 1.1rem;
+  }
+  
+  .cni-welcome-content ul {
+    padding-left: 1rem;
+  }
+  
+  .cni-welcome-content li {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .cni-mission-cards {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+  }
+  
+  .cni-mission-card {
+    padding: 0.8rem;
+  }
+  
+  .cni-mission-card h4 {
+    font-size: 1rem;
+  }
+  
+  .cni-mission-card p {
+    font-size: 0.85rem;
+  }
+  
+  .cni-welcome-actions .cni-btn {
+    width: 100%;
+    padding: 0.8rem;
+  }
+}
+
+/* Móviles pequeños (320px - 480px) */
+@media (max-width: 480px) {
+  .cni-container {
+    padding-top: 50px;
+  }
+  
+  .cni-header {
+    padding: 0.8rem;
+  }
+  
+  .cni-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .cni-header p {
+    font-size: 0.8rem;
+  }
+  
+  .cni-logo {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .cni-tabs {
+    gap: 0.2rem;
+  }
+  
+  .cni-tab {
+    padding: 0.6rem 0.5rem;
+    font-size: 0.8rem;
+  }
+  
+  .cni-content {
+    padding: 0.8rem;
+  }
+  
+  .cni-grid {
+    gap: 0.6rem;
+  }
+  
+  .cni-card {
+    padding: 0.6rem;
+  }
+  
+  .cni-card h3 {
+    font-size: 0.9rem;
+  }
+  
+  .cni-card .cni-number {
+    font-size: 1.3rem;
+  }
+  
+  .cni-form {
+    gap: 0.6rem;
+  }
+  
+  .cni-form-group input,
+  .cni-form-group select,
+  .cni-form-group textarea {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
+  
+  .cni-btn {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  
+  .cni-results {
+    gap: 0.6rem;
+  }
+  
+  .cni-result {
+    padding: 0.6rem;
+  }
+  
+  .cni-result h4 {
+    font-size: 0.9rem;
+  }
+  
+  .cni-result p {
+    font-size: 0.8rem;
+  }
+  
+  .cni-business-actions {
+    padding: 0.8rem;
+    gap: 0.2rem;
+  }
+  
+  .cni-business-actions .cni-btn {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  .cni-blog-card {
+    padding: 0.6rem;
+  }
+  
+  .cni-blog-card h4 {
+    font-size: 0.9rem;
+  }
+  
+  .cni-blog-card p {
+    font-size: 0.8rem;
+  }
+  
+  .cni-blog-card .cni-blog-meta {
+    font-size: 0.7rem;
+  }
+  
+  .cni-welcome-modal {
+    max-width: 98%;
+    margin: 0.2rem;
+  }
+  
+  .cni-welcome-header h2 {
+    font-size: 1.1rem;
+  }
+  
+  .cni-welcome-content {
+    padding: 0.8rem;
+  }
+  
+  .cni-welcome-content h3 {
+    font-size: 1rem;
+  }
+  
+  .cni-welcome-content ul {
+    padding-left: 0.8rem;
+  }
+  
+  .cni-welcome-content li {
+    font-size: 0.85rem;
+  }
+  
+  .cni-mission-card {
+    padding: 0.6rem;
+  }
+  
+  .cni-mission-card h4 {
+    font-size: 0.9rem;
+  }
+  
+  .cni-mission-card p {
+    font-size: 0.8rem;
+  }
+  
+  .cni-welcome-actions .cni-btn {
+    padding: 0.7rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* Pantallas muy pequeñas (menos de 320px) */
+@media (max-width: 320px) {
+  .cni-container {
+    padding-top: 40px;
+  }
+  
+  .cni-header {
+    padding: 0.5rem;
+  }
+  
+  .cni-header h1 {
+    font-size: 1.3rem;
+  }
+  
+  .cni-header p {
+    font-size: 0.75rem;
+  }
+  
+  .cni-logo {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .cni-tab {
+    padding: 0.5rem 0.3rem;
+    font-size: 0.75rem;
+  }
+  
+  .cni-content {
+    padding: 0.5rem;
+  }
+  
+  .cni-card {
+    padding: 0.5rem;
+  }
+  
+  .cni-card h3 {
+    font-size: 0.85rem;
+  }
+  
+  .cni-card .cni-number {
+    font-size: 1.2rem;
+  }
+  
+  .cni-form-group input,
+  .cni-form-group select,
+  .cni-form-group textarea {
+    padding: 0.4rem;
+    font-size: 0.8rem;
+  }
+  
+  .cni-btn {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.75rem;
+  }
+  
+  .cni-result {
+    padding: 0.5rem;
+  }
+  
+  .cni-result h4 {
+    font-size: 0.85rem;
+  }
+  
+  .cni-result p {
+    font-size: 0.75rem;
+  }
+  
+  .cni-business-actions .cni-btn {
+    padding: 0.4rem;
+    font-size: 0.7rem;
+  }
+  
+  .cni-blog-card {
+    padding: 0.5rem;
+  }
+  
+  .cni-blog-card h4 {
+    font-size: 0.85rem;
+  }
+  
+  .cni-blog-card p {
+    font-size: 0.75rem;
+  }
+  
+  .cni-blog-card .cni-blog-meta {
+    font-size: 0.65rem;
+  }
+  
+  .cni-welcome-modal {
+    max-width: 99%;
+    margin: 0.1rem;
+  }
+  
+  .cni-welcome-header h2 {
+    font-size: 1rem;
+  }
+  
+  .cni-welcome-content {
+    padding: 0.6rem;
+  }
+  
+  .cni-welcome-content h3 {
+    font-size: 0.9rem;
+  }
+  
+  .cni-welcome-content li {
+    font-size: 0.8rem;
+  }
+  
+  .cni-mission-card {
+    padding: 0.5rem;
+  }
+  
+  .cni-mission-card h4 {
+    font-size: 0.85rem;
+  }
+  
+  .cni-mission-card p {
+    font-size: 0.75rem;
+  }
+  
+  .cni-welcome-actions .cni-btn {
+    padding: 0.6rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* Orientación landscape en móviles */
+@media (max-height: 500px) and (orientation: landscape) {
+  .cni-container {
+    padding-top: 50px;
+  }
+  
+  .cni-header {
+    padding: 0.5rem 1rem;
+  }
+  
+  .cni-header h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.3rem;
+  }
+  
+  .cni-header p {
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .cni-logo {
+    width: 35px;
+    height: 35px;
+    margin-bottom: 0.5rem;
+  }
+  
+  .cni-tabs {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+  
+  .cni-tab {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+  }
+  
+  .cni-content {
+    padding: 0.8rem;
+  }
+  
+  .cni-welcome-modal {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  .cni-welcome-content {
+    padding: 1rem;
+  }
+}
+
+/* Mejoras para pantallas táctiles */
+@media (hover: none) and (pointer: coarse) {
+  .cni-tab {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .cni-btn {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .cni-form-group input,
+  .cni-form-group select,
+  .cni-form-group textarea {
+    min-height: 44px;
+  }
+  
+  .cni-business-actions .cni-btn {
+    min-height: 40px;
+  }
+}
+
+/* Responsive para modal existente */
 @media (max-width: 768px) {
   .cni-welcome-modal {
     width: 95%;

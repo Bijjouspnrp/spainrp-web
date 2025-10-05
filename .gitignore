@@ -140,3 +140,11 @@ vite.config.ts.timestamp-*
 
 # DNI Cache directory
 backend/cache/
+
+# SQLite databases
+*.db
+*.sqlite
+*.sqlite3
+backend/*.db
+backend/*.sqlite
+backend/*.sqlite3
