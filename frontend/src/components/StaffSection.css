@@ -307,4 +307,214 @@ body:not(.dark) .staff-cta p {
     height: 20px;
     font-size: 0.6rem;
   }
+}
+
+/* Modal de Bienvenida Staff */
+.staff-welcome-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(5px);
+}
+
+.staff-welcome-modal {
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  border: 2px solid #7289da;
+  border-radius: 16px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  animation: staffModalSlideIn 0.3s ease-out;
+}
+
+.staff-welcome-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 24px 16px 24px;
+  border-bottom: 1px solid rgba(114, 137, 218, 0.2);
+  text-align: center;
+}
+
+.staff-welcome-icon-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+}
+
+.staff-welcome-icon {
+  font-size: 28px;
+  transition: all 0.3s ease;
+}
+
+.staff-welcome-icon.crown {
+  color: #ffd700;
+  animation: crownFloat 2s ease-in-out infinite;
+}
+
+.staff-welcome-icon.users {
+  color: #4ecdc4;
+  animation: usersPulse 1.8s ease-in-out infinite;
+}
+
+.staff-welcome-icon.star {
+  color: #ff6b6b;
+  animation: starTwinkle 1.5s ease-in-out infinite;
+}
+
+.staff-welcome-header h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.staff-welcome-content {
+  padding: 20px 24px;
+  color: #e0e0e0;
+  line-height: 1.6;
+}
+
+.staff-welcome-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: rgba(114, 137, 218, 0.05);
+  border-radius: 8px;
+  border-left: 3px solid #7289da;
+  transition: all 0.3s ease;
+}
+
+.staff-welcome-feature:hover {
+  background: rgba(114, 137, 218, 0.1);
+  transform: translateX(4px);
+}
+
+.feature-icon {
+  font-size: 20px;
+  color: #7289da;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.staff-welcome-feature p {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.staff-welcome-content strong {
+  color: #7289da;
+  font-weight: 600;
+}
+
+.staff-welcome-actions {
+  padding: 16px 24px 24px 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.staff-welcome-btn {
+  background: linear-gradient(135deg, #7289da, #5865f2);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 120px;
+}
+
+.staff-welcome-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(114, 137, 218, 0.4);
+}
+
+.staff-welcome-btn:active {
+  transform: translateY(0);
+}
+
+@keyframes staffModalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes crownFloat {
+  0%, 100% {
+    transform: translateY(0) rotate(-5deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(5deg);
+  }
+}
+
+@keyframes usersPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+@keyframes starTwinkle {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  25% {
+    transform: scale(1.2) rotate(90deg);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(0.9) rotate(180deg);
+    opacity: 1;
+  }
+  75% {
+    transform: scale(1.1) rotate(270deg);
+    opacity: 0.9;
+  }
+}
+
+/* Responsive para el modal */
+@media (max-width: 768px) {
+  .staff-welcome-modal {
+    width: 95%;
+    margin: 20px;
+  }
+  
+  .staff-welcome-header {
+    padding: 20px 20px 12px 20px;
+  }
+  
+  .staff-welcome-content {
+    padding: 16px 20px;
+  }
+  
+  .staff-welcome-actions {
+    padding: 12px 20px 20px 20px;
+  }
 } 

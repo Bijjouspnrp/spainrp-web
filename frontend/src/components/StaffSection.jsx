@@ -314,6 +314,16 @@ function StaffMemberCard({ member, resolvedId, getRoleColor }) {
   );
 }
 const StaffSection = () => {
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+
+  // Mostrar modal de bienvenida la primera vez
+  useEffect(() => {
+    const hasSeenStaffWelcome = localStorage.getItem('staff_welcome_seen');
+    if (!hasSeenStaffWelcome) {
+      setShowWelcomeModal(true);
+    }
+  }, []);
+
   const getRoleColor = (role) => {
     const roleColors = {
       'BijjouPro08': '#ffd700',
@@ -444,6 +454,56 @@ const StaffSection = () => {
           </a>
         </div>
       </div>
+
+      {/* Modal de Bienvenida Staff */}
+      {showWelcomeModal && (
+        <div className="staff-welcome-modal-overlay">
+          <div className="staff-welcome-modal">
+            <div className="staff-welcome-header">
+              <div className="staff-welcome-icon-container">
+                <FaCrown className="staff-welcome-icon crown" />
+                <FaUsers className="staff-welcome-icon users" />
+                <FaStar className="staff-welcome-icon star" />
+              </div>
+              <h3>¡Conoce a Nuestro Equipo!</h3>
+            </div>
+            <div className="staff-welcome-content">
+              <div className="staff-welcome-feature">
+                <FaUsers className="feature-icon" />
+                <p>
+                  Aquí puedes ver a los miembros principales del staff de SpainRP. 
+                  <strong> No mostramos todo el equipo para no saturar la página.</strong>
+                </p>
+              </div>
+              <div className="staff-welcome-feature">
+                <FaCrown className="feature-icon" />
+                <p>
+                  Cada miembro tiene su rol específico y contribuye de manera única 
+                  al crecimiento y desarrollo de nuestra comunidad.
+                </p>
+              </div>
+              <div className="staff-welcome-feature">
+                <FaStar className="feature-icon" />
+                <p>
+                  ¿Quieres formar parte del equipo? ¡Únete a nuestro Discord y 
+                  participa en la comunidad para tener oportunidades de staff!
+                </p>
+              </div>
+            </div>
+            <div className="staff-welcome-actions">
+              <button 
+                className="staff-welcome-btn primary"
+                onClick={() => {
+                  localStorage.setItem('staff_welcome_seen', 'true');
+                  setShowWelcomeModal(false);
+                }}
+              >
+                ¡Entendido!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
       <style>{`
         @keyframes spin {
