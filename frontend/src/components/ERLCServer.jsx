@@ -13,6 +13,15 @@ const ERLCServer = () => {
     info: false,
     join: false
   });
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+
+  // Mostrar modal de bienvenida la primera vez
+  useEffect(() => {
+    const hasSeenERLCWelcome = localStorage.getItem('erlc_welcome_seen');
+    if (!hasSeenERLCWelcome) {
+      setShowWelcomeModal(true);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchServerData = async () => {
@@ -332,6 +341,47 @@ const ERLCServer = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Modal de Bienvenida ERLC */}
+      {showWelcomeModal && (
+        <div className="erlc-welcome-modal-overlay">
+          <div className="erlc-welcome-modal">
+            <div className="erlc-welcome-header">
+              <FaServer className="erlc-welcome-icon" />
+              <h3>¡Bienvenido a la Sección ERLC!</h3>
+            </div>
+            <div className="erlc-welcome-content">
+              <p>
+                Aquí puedes ver los datos en tiempo real del servidor privado de ERLC. 
+                <strong> Propietario: BijjouPro08</strong>
+              </p>
+              <p>
+                Recuerda que puedes unirte a nuestra comunidad de Roblox para no perderte de nada:
+              </p>
+              <a 
+                href="https://www.roblox.com/es/communities/975983786/SpainRP-Espa-ol#!/about" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="erlc-community-link"
+              >
+                <FaGlobe />
+                Unirse a la Comunidad de Roblox
+              </a>
+            </div>
+            <div className="erlc-welcome-actions">
+              <button 
+                className="erlc-welcome-btn primary"
+                onClick={() => {
+                  localStorage.setItem('erlc_welcome_seen', 'true');
+                  setShowWelcomeModal(false);
+                }}
+              >
+                ¡Entendido!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
