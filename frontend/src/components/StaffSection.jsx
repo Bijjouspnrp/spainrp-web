@@ -96,7 +96,18 @@ const staffMembers = [
     ]
   },
   {
-    name: "Coordinador",
+    name: "Encargado del Consejo Directivo",
+    role: "benjanaessens1234",
+    robloxUserId: "benjanaessens1234",
+    color: "#e67e22",
+    icon: <FaUserTie />,
+    medals: [
+      { icon: <FaStar />, text: "Socio Fundador SpainRP", color: "#4ecdc4" },
+      { icon: <FaHandshake />, text: "Trabajador", color: "#27ae60" }
+    ]
+  },
+  {
+    name: "Directivo",
     role: "EricPGarrido",
     robloxUserId: "EricPGarrido",
     color: "#9b59b6",
@@ -104,6 +115,17 @@ const staffMembers = [
     medals: [
       { icon: <FaChartLine />, text: "Actividad", color: "#e74c3c" },
       { icon: <FaGem />, text: "Lealtad al Servidor", color: "#9b59b6" }
+    ]
+  },
+  {
+    name: "Directivo",
+    role: "Benj4XP",
+    robloxUserId: "Benj4XP",
+    color: "#8e44ad",
+    icon: <FaUserTie />,
+    medals: [
+      { icon: <FaGem />, text: "Developer Confianza SpainRP", color: "#8e44ad" },
+      { icon: <FaTrophy />, text: "Primeros Miembros SpainRP", color: "#ffd700" }
     ]
   }
 ];
@@ -300,7 +322,9 @@ const StaffSection = () => {
       'gamessss5025': '#030968ff',
       'XxBoy931xX': '#96ceb4',
       'JoSEyALEx3000': '#feca57',
+      'benjanaessens1234': '#e67e22',
       'EricPGarrido': '#9b59b6',
+      'Benj4XP': '#8e44ad',
       'Soporte': '#45b7d1',
       'Eventos': '#96ceb4',
       'Constructor': '#feca57'
