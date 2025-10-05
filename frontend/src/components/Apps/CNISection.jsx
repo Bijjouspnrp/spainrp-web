@@ -710,8 +710,15 @@ const TrackingTab = () => {
   const handleTrackingSearch = async () => {
     if (!trackingForm.target.trim()) return;
     
+    console.log('[CNI][RASTREO] 🔍 Iniciando búsqueda de rastreo para:', trackingForm.target);
     setLoading(true);
+    setError('');
+    setSuccess('');
+    
     try {
+      console.log('[CNI][RASTREO] 📡 Realizando consultas paralelas...');
+      const startTime = Date.now();
+      
       // Buscar datos del usuario en múltiples fuentes
       const [dniRes, multasRes, antecedentesRes, balanceRes, inventarioRes] = await Promise.all([
         fetch(apiUrl(`/api/proxy/admin/dni/search?q=${encodeURIComponent(trackingForm.target)}`)),
@@ -721,13 +728,21 @@ const TrackingTab = () => {
         fetch(apiUrl(`/api/proxy/admin/inventory/${trackingForm.target}`))
       ]);
 
+      const searchTime = Date.now() - startTime;
+      console.log(`[CNI][RASTREO] ⏱️ Consultas completadas en ${searchTime}ms`);
+
       const results = [];
+      console.log('[CNI][RASTREO] 📊 Procesando resultados...');
       
       // Procesar DNI
+      console.log('[CNI][RASTREO] 🆔 Procesando datos de DNI...');
       if (dniRes.ok) {
         const dniData = await dniRes.json();
+        console.log('[CNI][RASTREO] 📋 Datos DNI recibidos:', dniData);
         if (dniData.dniPorNombre && dniData.dniPorNombre.length > 0) {
-          dniData.dniPorNombre.forEach(dni => {
+          console.log(`[CNI][RASTREO] ✅ Encontrados ${dniData.dniPorNombre.length} DNIs`);
+          dniData.dniPorNombre.forEach((dni, index) => {
+            console.log(`[CNI][RASTREO] 👤 DNI ${index + 1}:`, dni);
             results.push({
               type: 'DNI',
               status: dni.arrestado ? 'Arrestado' : 'Activo',
@@ -735,72 +750,110 @@ const TrackingTab = () => {
               lastSeen: dni.fecha_registro || 'Desconocido'
             });
           });
+        } else {
+          console.log('[CNI][RASTREO] ⚠️ No se encontraron DNIs');
         }
+      } else {
+        console.log('[CNI][RASTREO] ❌ Error en consulta DNI:', dniRes.status, dniRes.statusText);
       }
 
       // Procesar Multas
+      console.log('[CNI][RASTREO] 🚨 Procesando datos de multas...');
       if (multasRes.ok) {
         const multasData = await multasRes.json();
+        console.log('[CNI][RASTREO] 📋 Datos multas recibidos:', multasData);
         if (multasData.multas && multasData.multas.length > 0) {
           const totalMultas = multasData.multas.length;
           const pendientes = multasData.multas.filter(m => !m.pagada).length;
+          console.log(`[CNI][RASTREO] ✅ Encontradas ${totalMultas} multas (${pendientes} pendientes)`);
           results.push({
             type: 'Multas',
             status: pendientes > 0 ? 'Pendientes' : 'Al día',
             details: `${totalMultas} multas totales, ${pendientes} pendientes`,
             lastSeen: multasData.multas[0]?.fecha || 'Desconocido'
           });
+        } else {
+          console.log('[CNI][RASTREO] ⚠️ No se encontraron multas');
         }
+      } else {
+        console.log('[CNI][RASTREO] ❌ Error en consulta multas:', multasRes.status, multasRes.statusText);
       }
 
       // Procesar Antecedentes
+      console.log('[CNI][RASTREO] ⚖️ Procesando datos de antecedentes...');
       if (antecedentesRes.ok) {
         const antData = await antecedentesRes.json();
+        console.log('[CNI][RASTREO] 📋 Datos antecedentes recibidos:', antData);
         if (antData.antecedentes && antData.antecedentes.length > 0) {
+          console.log(`[CNI][RASTREO] ✅ Encontrados ${antData.antecedentes.length} antecedentes`);
           results.push({
             type: 'Antecedentes',
             status: 'Con historial',
             details: `${antData.antecedentes.length} antecedentes registrados`,
             lastSeen: antData.antecedentes[0]?.fecha || 'Desconocido'
           });
+        } else {
+          console.log('[CNI][RASTREO] ⚠️ No se encontraron antecedentes');
         }
+      } else {
+        console.log('[CNI][RASTREO] ❌ Error en consulta antecedentes:', antecedentesRes.status, antecedentesRes.statusText);
       }
 
       // Procesar Balance Financiero
+      console.log('[CNI][RASTREO] 💰 Procesando datos financieros...');
       if (balanceRes.ok) {
         const balanceData = await balanceRes.json();
+        console.log('[CNI][RASTREO] 📋 Datos balance recibidos:', balanceData);
         if (balanceData.success && balanceData.balance) {
           const total = balanceData.balance.cash + balanceData.balance.bank;
+          const patrimonio = total > 100000 ? 'Alto patrimonio' : total > 10000 ? 'Patrimonio medio' : 'Patrimonio bajo';
+          console.log(`[CNI][RASTREO] ✅ Balance: ${total.toLocaleString()}€ (${patrimonio})`);
           results.push({
             type: 'Finanzas',
-            status: total > 100000 ? 'Alto patrimonio' : total > 10000 ? 'Patrimonio medio' : 'Patrimonio bajo',
+            status: patrimonio,
             details: `Efectivo: ${balanceData.balance.cash.toLocaleString()}€ | Banco: ${balanceData.balance.bank.toLocaleString()}€ | Total: ${total.toLocaleString()}€`,
             lastSeen: 'Activo'
           });
+        } else {
+          console.log('[CNI][RASTREO] ⚠️ No se encontraron datos de balance');
         }
+      } else {
+        console.log('[CNI][RASTREO] ❌ Error en consulta balance:', balanceRes.status, balanceRes.statusText);
       }
 
       // Procesar Inventario
+      console.log('[CNI][RASTREO] 🎒 Procesando datos de inventario...');
       if (inventarioRes.ok) {
         const inventarioData = await inventarioRes.json();
+        console.log('[CNI][RASTREO] 📋 Datos inventario recibidos:', inventarioData);
         if (inventarioData.success && inventarioData.inventario && inventarioData.inventario.length > 0) {
           const itemsValiosos = inventarioData.inventario.filter(item => 
             item.precio && item.precio > 10000
           );
+          console.log(`[CNI][RASTREO] ✅ Inventario: ${inventarioData.inventario.length} objetos (${itemsValiosos.length} valiosos)`);
           results.push({
             type: 'Inventario',
             status: itemsValiosos.length > 0 ? 'Objetos valiosos' : 'Inventario normal',
             details: `${inventarioData.inventario.length} objetos, ${itemsValiosos.length} valiosos`,
             lastSeen: 'Activo'
           });
+        } else {
+          console.log('[CNI][RASTREO] ⚠️ No se encontraron objetos en inventario');
         }
+      } else {
+        console.log('[CNI][RASTREO] ❌ Error en consulta inventario:', inventarioRes.status, inventarioRes.statusText);
       }
 
+      console.log(`[CNI][RASTREO] 🎯 Búsqueda completada. Resultados: ${results.length}`);
+      console.log('[CNI][RASTREO] 📊 Resultados finales:', results);
       setTrackingResults(results);
+      setSuccess(`✅ Rastreo completado. Encontrados ${results.length} tipos de datos.`);
     } catch (error) {
-      console.error('Error en búsqueda de rastreo:', error);
+      console.error('[CNI][RASTREO] ❌ Error en búsqueda de rastreo:', error);
+      setError('❌ Error de conexión durante el rastreo');
     } finally {
       setLoading(false);
+      console.log('[CNI][RASTREO] ✅ Proceso de rastreo finalizado');
     }
   };
 
@@ -1008,6 +1061,8 @@ const BusinessRecordsTab = () => {
 
   // Funciones de gestión empresarial
   const handleBusinessAction = async (businessId, action, newStatus = null) => {
+    console.log(`[CNI][EMPRESAS] 🏢 Iniciando acción empresarial:`, { businessId, action, newStatus });
+    
     // Confirmaciones específicas para cada acción
     const confirmations = {
       'delete': {
@@ -1043,26 +1098,38 @@ const BusinessRecordsTab = () => {
     };
 
     const confirmation = confirmations[newStatus || action];
-    if (!confirmation) return;
+    if (!confirmation) {
+      console.log('[CNI][EMPRESAS] ❌ Confirmación no encontrada para:', newStatus || action);
+      return;
+    }
+
+    console.log('[CNI][EMPRESAS] ⚠️ Mostrando confirmación:', confirmation.title);
 
     // Mostrar confirmación personalizada
     const confirmed = window.confirm(
       `${confirmation.title}\n\n${confirmation.message}\n\nPresiona OK para ${confirmation.confirmText.toLowerCase()} o Cancelar para ${confirmation.cancelText.toLowerCase()}.`
     );
 
-    if (!confirmed) return;
+    if (!confirmed) {
+      console.log('[CNI][EMPRESAS] ❌ Acción cancelada por el usuario');
+      return;
+    }
 
+    console.log('[CNI][EMPRESAS] ✅ Confirmación aceptada, ejecutando acción...');
     setLoading(true);
     setError('');
     setSuccess('');
     
     try {
+      console.log(`[CNI][EMPRESAS] 📡 Enviando petición ${action} para empresa ${businessId}...`);
       let response;
       if (action === 'delete') {
+        console.log('[CNI][EMPRESAS] 🗑️ Ejecutando eliminación...');
         response = await fetch(apiUrl(`/api/cni/empresas/${businessId}`), {
           method: 'DELETE'
         });
       } else if (action === 'update') {
+        console.log(`[CNI][EMPRESAS] 🔄 Actualizando estado a: ${newStatus}`);
         response = await fetch(apiUrl(`/api/cni/empresas/${businessId}`), {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -1070,7 +1137,9 @@ const BusinessRecordsTab = () => {
         });
       }
       
+      console.log(`[CNI][EMPRESAS] 📊 Respuesta recibida:`, response.status, response.statusText);
       const data = await response.json();
+      console.log('[CNI][EMPRESAS] 📋 Datos de respuesta:', data);
       
       if (data.success) {
         const actionMessages = {
@@ -1080,17 +1149,22 @@ const BusinessRecordsTab = () => {
           'clausurada': '🚫 Empresa clausurada definitivamente',
           'activa': '✅ Empresa reactivada'
         };
-        setSuccess(actionMessages[newStatus || action]);
+        const message = actionMessages[newStatus || action];
+        console.log(`[CNI][EMPRESAS] ✅ Acción exitosa: ${message}`);
+        setSuccess(message);
+        console.log('[CNI][EMPRESAS] 🔄 Recargando datos...');
         loadBusinesses();
         loadStats();
       } else {
+        console.log(`[CNI][EMPRESAS] ❌ Error en respuesta: ${data.error}`);
         setError(`❌ Error: ${data.error}`);
       }
     } catch (err) {
-      console.error('Error en acción empresarial:', err);
+      console.error('[CNI][EMPRESAS] ❌ Error en acción empresarial:', err);
       setError('❌ Error de conexión');
     } finally {
       setLoading(false);
+      console.log('[CNI][EMPRESAS] ✅ Proceso de acción empresarial finalizado');
     }
   };
 
@@ -1451,77 +1525,103 @@ const BlogTab = () => {
   });
 
   const loadArticles = async () => {
+    console.log('[CNI][BLOG] 📚 Cargando artículos del blog...');
     try {
       setLoading(true);
       const response = await fetch(apiUrl('/api/cni/blog'));
+      console.log('[CNI][BLOG] 📡 Respuesta recibida:', response.status, response.statusText);
       const data = await response.json();
+      console.log('[CNI][BLOG] 📋 Datos recibidos:', data);
       
       if (data.success) {
+        console.log(`[CNI][BLOG] ✅ Cargados ${data.articles.length} artículos`);
         setArticles(data.articles);
       } else {
+        console.log('[CNI][BLOG] ❌ Error en respuesta:', data.error);
         setError('Error cargando artículos');
       }
     } catch (err) {
-      console.error('Error cargando artículos:', err);
+      console.error('[CNI][BLOG] ❌ Error cargando artículos:', err);
       setError('Error de conexión al cargar artículos');
     } finally {
       setLoading(false);
+      console.log('[CNI][BLOG] ✅ Carga de artículos finalizada');
     }
   };
 
   const handleAddArticle = async (e) => {
     e.preventDefault();
+    console.log('[CNI][BLOG] ✍️ Creando nuevo artículo:', newArticle);
     setLoading(true);
     setError('');
     setSuccess('');
     
     try {
+      console.log('[CNI][BLOG] 📡 Enviando petición de creación...');
       const response = await fetch(apiUrl('/api/cni/blog'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newArticle)
       });
       
+      console.log('[CNI][BLOG] 📊 Respuesta recibida:', response.status, response.statusText);
       const data = await response.json();
+      console.log('[CNI][BLOG] 📋 Datos de respuesta:', data);
       
       if (data.success) {
+        console.log('[CNI][BLOG] ✅ Artículo creado exitosamente');
         setSuccess('✅ Artículo creado correctamente');
         setNewArticle({ titulo: '', banda: '', categoria: 'investigacion', contenido: '', imagen_url: '', agente: '', nivel_seguridad: 'confidencial' });
         setShowNewArticle(false);
+        console.log('[CNI][BLOG] 🔄 Recargando lista de artículos...');
         loadArticles();
       } else {
+        console.log('[CNI][BLOG] ❌ Error en creación:', data.error);
         setError(`❌ Error: ${data.error}`);
       }
     } catch (err) {
-      console.error('Error creando artículo:', err);
+      console.error('[CNI][BLOG] ❌ Error creando artículo:', err);
       setError('❌ Error de conexión al crear artículo');
     } finally {
       setLoading(false);
+      console.log('[CNI][BLOG] ✅ Proceso de creación finalizado');
     }
   };
 
   const handleDeleteArticle = async (articleId) => {
-    if (!window.confirm('¿Estás seguro de eliminar este artículo?')) return;
+    console.log(`[CNI][BLOG] 🗑️ Iniciando eliminación de artículo ${articleId}`);
+    if (!window.confirm('¿Estás seguro de eliminar este artículo?')) {
+      console.log('[CNI][BLOG] ❌ Eliminación cancelada por el usuario');
+      return;
+    }
     
+    console.log('[CNI][BLOG] ✅ Confirmación aceptada, eliminando artículo...');
     setLoading(true);
     try {
+      console.log('[CNI][BLOG] 📡 Enviando petición de eliminación...');
       const response = await fetch(apiUrl(`/api/cni/blog/${articleId}`), {
         method: 'DELETE'
       });
       
+      console.log('[CNI][BLOG] 📊 Respuesta recibida:', response.status, response.statusText);
       const data = await response.json();
+      console.log('[CNI][BLOG] 📋 Datos de respuesta:', data);
       
       if (data.success) {
+        console.log('[CNI][BLOG] ✅ Artículo eliminado exitosamente');
         setSuccess('✅ Artículo eliminado correctamente');
+        console.log('[CNI][BLOG] 🔄 Recargando lista de artículos...');
         loadArticles();
       } else {
+        console.log('[CNI][BLOG] ❌ Error en eliminación:', data.error);
         setError(`❌ Error: ${data.error}`);
       }
     } catch (err) {
-      console.error('Error eliminando artículo:', err);
+      console.error('[CNI][BLOG] ❌ Error eliminando artículo:', err);
       setError('❌ Error de conexión');
     } finally {
       setLoading(false);
+      console.log('[CNI][BLOG] ✅ Proceso de eliminación finalizado');
     }
   };
 

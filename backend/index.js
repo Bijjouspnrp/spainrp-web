@@ -5023,15 +5023,19 @@ app.get('/api/cni/estadisticas', (req, res) => {
 
 // GET /api/cni/blog - Obtener todos los artículos del blog
 app.get('/api/cni/blog', (req, res) => {
-  console.log('[CNI][BLOG] GET /api/cni/blog');
+  console.log('[CNI][BLOG] 📚 GET /api/cni/blog - Obteniendo artículos del blog');
+  console.log(`[CNI][BLOG] 🕐 Timestamp: ${new Date().toISOString()}`);
   
   db.all('SELECT * FROM cni_blog ORDER BY fecha_creacion DESC', (err, rows) => {
     if (err) {
-      console.error('[CNI][BLOG] Error consultando artículos:', err);
+      console.error('[CNI][BLOG] ❌ Error consultando artículos:', err);
       return res.status(500).json({ error: 'Error consultando artículos', details: err });
     }
     
-    console.log(`[CNI][BLOG] Encontrados ${rows.length} artículos`);
+    console.log(`[CNI][BLOG] ✅ Encontrados ${rows.length} artículos`);
+    if (rows.length > 0) {
+      console.log('[CNI][BLOG] 📋 Artículos:', rows.map(article => `${article.titulo} (${article.banda}) - ${article.nivel_seguridad}`));
+    }
     res.json({ success: true, articles: rows });
   });
 });
@@ -5039,22 +5043,28 @@ app.get('/api/cni/blog', (req, res) => {
 // POST /api/cni/blog - Crear nuevo artículo
 app.post('/api/cni/blog', (req, res) => {
   const { titulo, banda, categoria, contenido, imagen_url, agente, nivel_seguridad } = req.body;
-  console.log('[CNI][BLOG] POST /api/cni/blog', req.body);
+  console.log('[CNI][BLOG] ✍️ POST /api/cni/blog - Creando nuevo artículo');
+  console.log(`[CNI][BLOG] 🕐 Timestamp: ${new Date().toISOString()}`);
+  console.log('[CNI][BLOG] 📋 Datos recibidos:', req.body);
   
   if (!titulo || !banda || !contenido || !agente) {
+    console.log('[CNI][BLOG] ❌ Faltan campos obligatorios');
     return res.status(400).json({ error: 'Faltan campos obligatorios' });
   }
+  
+  console.log(`[CNI][BLOG] 📝 Creando artículo: "${titulo}" para banda "${banda}" por agente "${agente}"`);
   
   db.run(
     'INSERT INTO cni_blog (titulo, banda, categoria, contenido, imagen_url, agente, nivel_seguridad) VALUES (?, ?, ?, ?, ?, ?, ?)',
     [titulo, banda, categoria, contenido, imagen_url || '', agente, nivel_seguridad || 'confidencial'],
     function(err) {
       if (err) {
-        console.error('[CNI][BLOG] Error insertando artículo:', err);
+        console.error('[CNI][BLOG] ❌ Error insertando artículo:', err);
         return res.status(500).json({ error: 'Error creando artículo', details: err });
       }
       
-      console.log(`[CNI][BLOG] Artículo creado con ID: ${this.lastID}`);
+      console.log(`[CNI][BLOG] ✅ Artículo creado con ID: ${this.lastID}`);
+      console.log(`[CNI][BLOG] 📊 Detalles: ${titulo} | ${banda} | ${categoria} | ${nivel_seguridad || 'confidencial'}`);
       res.json({ 
         success: true, 
         article: {
@@ -7971,15 +7981,17 @@ app.get('/api/proxy/admin/multas/:id', async (req, res) => {
 // GET /api/proxy/admin/inventory/:id - Obtener inventario de un usuario específico
 app.get('/api/proxy/admin/inventory/:id', async (req, res) => {
   const { id } = req.params;
-  console.log(`[ADMIN PROXY] GET /api/proxy/admin/inventory/${id}`);
+  console.log(`[ADMIN PROXY] 🎒 GET /api/proxy/admin/inventory/${id}`);
+  console.log(`[ADMIN PROXY] 🕐 Timestamp: ${new Date().toISOString()}`);
   
   try {
     const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
     
     // Llamar al proxy externo
     const proxyUrl = `http://37.27.21.91:5021/api/proxy/admin/inventory/${id}`;
-    console.log(`[ADMIN PROXY] Llamando a proxy externo: ${proxyUrl}`);
+    console.log(`[ADMIN PROXY] 📡 Llamando a proxy externo: ${proxyUrl}`);
     
+    const startTime = Date.now();
     const response = await fetch(proxyUrl, {
       method: 'GET',
       headers: {
@@ -7987,9 +7999,13 @@ app.get('/api/proxy/admin/inventory/:id', async (req, res) => {
         'User-Agent': 'SpainRP-Web/1.0'
       }
     });
+    const responseTime = Date.now() - startTime;
+    
+    console.log(`[ADMIN PROXY] ⏱️ Tiempo de respuesta: ${responseTime}ms`);
+    console.log(`[ADMIN PROXY] 📊 Status: ${response.status} ${response.statusText}`);
     
     if (!response.ok) {
-      console.error(`[ADMIN PROXY] Error en proxy externo: ${response.status} ${response.statusText}`);
+      console.error(`[ADMIN PROXY] ❌ Error en proxy externo: ${response.status} ${response.statusText}`);
       return res.status(500).json({ 
         error: 'Error obteniendo inventario', 
         details: `Proxy externo respondió con ${response.status}` 
@@ -7997,12 +8013,21 @@ app.get('/api/proxy/admin/inventory/:id', async (req, res) => {
     }
     
     const data = await response.json();
-    console.log(`[ADMIN PROXY] Datos recibidos del proxy:`, data);
+    console.log(`[ADMIN PROXY] 📋 Datos recibidos del proxy:`, data);
+    
+    if (data.success && data.inventario) {
+      const totalItems = data.inventario.length;
+      const itemsValiosos = data.inventario.filter(item => item.precio && item.precio > 10000);
+      console.log(`[ADMIN PROXY] 📦 Inventario: ${totalItems} objetos (${itemsValiosos.length} valiosos)`);
+      if (itemsValiosos.length > 0) {
+        console.log(`[ADMIN PROXY] 💎 Objetos valiosos encontrados:`, itemsValiosos.map(item => `${item.nombre} (${item.precio.toLocaleString()}€)`));
+      }
+    }
     
     res.json(data);
     
   } catch (err) {
-    console.error('[ADMIN PROXY] Error llamando al proxy externo:', err);
+    console.error('[ADMIN PROXY] ❌ Error llamando al proxy externo:', err);
     res.status(500).json({ error: 'Error obteniendo inventario', details: err.message });
   }
 });
@@ -8010,15 +8035,17 @@ app.get('/api/proxy/admin/inventory/:id', async (req, res) => {
 // GET /api/proxy/admin/balance/:id - Obtener balance de un usuario específico
 app.get('/api/proxy/admin/balance/:id', async (req, res) => {
   const { id } = req.params;
-  console.log(`[ADMIN PROXY] GET /api/proxy/admin/balance/${id}`);
+  console.log(`[ADMIN PROXY] 💰 GET /api/proxy/admin/balance/${id}`);
+  console.log(`[ADMIN PROXY] 🕐 Timestamp: ${new Date().toISOString()}`);
   
   try {
     const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
     
     // Llamar al proxy externo
     const proxyUrl = `http://37.27.21.91:5021/api/proxy/admin/balance/${id}`;
-    console.log(`[ADMIN PROXY] Llamando a proxy externo: ${proxyUrl}`);
+    console.log(`[ADMIN PROXY] 📡 Llamando a proxy externo: ${proxyUrl}`);
     
+    const startTime = Date.now();
     const response = await fetch(proxyUrl, {
       method: 'GET',
       headers: {
@@ -8026,9 +8053,13 @@ app.get('/api/proxy/admin/balance/:id', async (req, res) => {
         'User-Agent': 'SpainRP-Web/1.0'
       }
     });
+    const responseTime = Date.now() - startTime;
+    
+    console.log(`[ADMIN PROXY] ⏱️ Tiempo de respuesta: ${responseTime}ms`);
+    console.log(`[ADMIN PROXY] 📊 Status: ${response.status} ${response.statusText}`);
     
     if (!response.ok) {
-      console.error(`[ADMIN PROXY] Error en proxy externo: ${response.status} ${response.statusText}`);
+      console.error(`[ADMIN PROXY] ❌ Error en proxy externo: ${response.status} ${response.statusText}`);
       return res.status(500).json({ 
         error: 'Error obteniendo balance', 
         details: `Proxy externo respondió con ${response.status}` 
@@ -8036,12 +8067,17 @@ app.get('/api/proxy/admin/balance/:id', async (req, res) => {
     }
     
     const data = await response.json();
-    console.log(`[ADMIN PROXY] Datos recibidos del proxy:`, data);
+    console.log(`[ADMIN PROXY] 📋 Datos recibidos del proxy:`, data);
+    
+    if (data.success && data.balance) {
+      const total = data.balance.cash + data.balance.bank;
+      console.log(`[ADMIN PROXY] 💵 Balance total: ${total.toLocaleString()}€ (Efectivo: ${data.balance.cash.toLocaleString()}€, Banco: ${data.balance.bank.toLocaleString()}€)`);
+    }
     
     res.json(data);
     
   } catch (err) {
-    console.error('[ADMIN PROXY] Error llamando al proxy externo:', err);
+    console.error('[ADMIN PROXY] ❌ Error llamando al proxy externo:', err);
     res.status(500).json({ error: 'Error obteniendo balance', details: err.message });
   }
 });
