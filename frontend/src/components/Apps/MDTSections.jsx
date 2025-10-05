@@ -1298,57 +1298,6 @@ export const ArrestarSection = ({ onRefresh }) => {
 // Sección Ranking (Policía)
 export const RankingSection = ({ data, message }) => {
   const [activeTab, setActiveTab] = useState('importe');
-  const [userData, setUserData] = useState({});
-  const [loadingUsers, setLoadingUsers] = useState(false);
-
-  // Función para obtener datos de usuarios de Discord
-  const fetchUserData = async (discordIds) => {
-    if (discordIds.length === 0) return;
-    
-    setLoadingUsers(true);
-    try {
-      // Hacer múltiples requests en paralelo para obtener datos de usuarios
-      const userPromises = discordIds.map(async (discordId) => {
-        try {
-          const response = await fetch(apiUrl(`/api/discord/search-users?q=${discordId}`));
-          if (response.ok) {
-            const users = await response.json();
-            const user = users.find(u => u.id === discordId);
-            return { discordId, user: user || null };
-          }
-        } catch (err) {
-          console.warn(`Error obteniendo datos para ${discordId}:`, err);
-        }
-        return { discordId, user: null };
-      });
-
-      const results = await Promise.all(userPromises);
-      const userDataMap = {};
-      results.forEach(({ discordId, user }) => {
-        userDataMap[discordId] = user;
-      });
-      
-      setUserData(userDataMap);
-    } catch (err) {
-      console.error('Error obteniendo datos de usuarios:', err);
-    } finally {
-      setLoadingUsers(false);
-    }
-  };
-
-  // Obtener datos de usuarios cuando cambien los datos del ranking
-  React.useEffect(() => {
-    if (data?.top?.porImportePendiente || data?.top?.porNumeroPendientes) {
-      const allDiscordIds = [
-        ...(data.top?.porImportePendiente || []).map(u => u.discordId),
-        ...(data.top?.porNumeroPendientes || []).map(u => u.discordId)
-      ];
-      
-      // Eliminar duplicados
-      const uniqueIds = [...new Set(allDiscordIds)];
-      fetchUserData(uniqueIds);
-    }
-  }, [data]);
 
   if (!data || (!data.top?.porImportePendiente && !data.top?.porNumeroPendientes)) {
     return (
@@ -1373,20 +1322,12 @@ export const RankingSection = ({ data, message }) => {
       <div className="ranking-header">
         <h4>{title}</h4>
         <p className="ranking-subtitle">{subtitle}</p>
-        {loadingUsers && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
-            <FaSpinner className="fa-spin" />
-            <span style={{ fontSize: '0.9rem', color: '#9ca3af' }}>Cargando datos de usuarios...</span>
-          </div>
-        )}
       </div>
       <div className="ranking-list">
         {rankingData.map((user, index) => {
-          const userInfo = userData[user.discordId];
-          const username = userInfo?.username || userInfo?.displayName || `Usuario_${user.discordId?.slice(-4)}`;
-          const avatarUrl = userInfo?.avatar 
-            ? `https://cdn.discordapp.com/avatars/${user.discordId}/${userInfo.avatar}.png`
-            : `https://cdn.discordapp.com/avatars/${user.discordId}/default.png`;
+          // Usar directamente los datos que vienen de la API
+          const username = user.username || user.displayName || `Usuario_${user.discordId?.slice(-4)}`;
+          const avatarUrl = user.avatar || `https://cdn.discordapp.com/avatars/${user.discordId}/default.png`;
           
           return (
             <div key={user.discordId || index} className={`ranking-item ${index < 3 ? 'top' : ''}`}>
