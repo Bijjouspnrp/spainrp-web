@@ -13,7 +13,7 @@ const Footer = () => {
       { name: 'Sobre Nosotros', href: '#about' }
     ],
     'Comunidad': [
-      { name: 'Reglas', href: '#rules' },
+      { name: 'Reglas', href: '/rules' },
       { name: 'Eventos', href: '#events' },
       { name: 'Soporte', href: '#support' },
       { name: 'FAQ', href: '#faq' }
