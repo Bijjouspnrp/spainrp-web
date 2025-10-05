@@ -1153,39 +1153,96 @@ export const ArrestarSection = ({ onRefresh }) => {
 
       {arrestResult && (
         <div className="arrest-result">
-          <h4>Resultado del Arresto:</h4>
-          <div className="arrest-details">
-            <div className="arrest-field">
-              <label>Nombre:</label>
-              <span>{arrestResult.nombre}</span>
+          <h4>📋 Resumen del Arresto Procesado</h4>
+          
+          {/* Información del arrestado */}
+          <div className="arrest-section">
+            <h5>👤 Información del Arrestado</h5>
+            <div className="arrest-details">
+              <div className="arrest-field">
+                <label>Nombre Completo:</label>
+                <span className="arrest-value">{arrestResult.nombre} {arrestResult.apellidos || ''}</span>
+              </div>
+              <div className="arrest-field">
+                <label>DNI:</label>
+                <span className="arrest-value">{arrestResult.dni}</span>
+              </div>
+              <div className="arrest-field">
+                <label>Usuario Roblox:</label>
+                <span className="arrest-value">{arrestResult.roblox || 'No verificado'}</span>
+              </div>
+              <div className="arrest-field">
+                <label>Discord ID:</label>
+                <span className="arrest-value discord-id">{arrestResult.discordId}</span>
+              </div>
             </div>
-            <div className="arrest-field">
-              <label>DNI:</label>
-              <span>{arrestResult.dni}</span>
-            </div>
-            <div className="arrest-field">
-              <label>Roblox:</label>
-              <span>{arrestResult.roblox || 'N/A'}</span>
-            </div>
-            <div className="arrest-field">
-              <label>Cargos:</label>
+          </div>
+
+          {/* Cargos y sanciones */}
+          <div className="arrest-section">
+            <h5>⚖️ Cargos y Sanciones</h5>
+            <div className="cargos-summary">
               <div className="cargos-detail" dangerouslySetInnerHTML={{ __html: arrestResult.cargos }} />
             </div>
-            <div className="arrest-field">
-              <label>Multa Total:</label>
-              <span className="multa-total">{arrestResult.multaTotal}€</span>
+            <div className="sanciones-grid">
+              <div className="sancion-item multa">
+                <div className="sancion-icon">💰</div>
+                <div className="sancion-info">
+                  <div className="sancion-label">Multa Total</div>
+                  <div className="sancion-value">{arrestResult.multaTotal}€</div>
+                </div>
+              </div>
+              <div className="sancion-item tiempo-ic">
+                <div className="sancion-icon">⏰</div>
+                <div className="sancion-info">
+                  <div className="sancion-label">Tiempo IC</div>
+                  <div className="sancion-value">{arrestResult.tiempoIC}</div>
+                </div>
+              </div>
+              <div className="sancion-item tiempo-ooc">
+                <div className="sancion-icon">🕐</div>
+                <div className="sancion-info">
+                  <div className="sancion-label">Tiempo OOC</div>
+                  <div className="sancion-value">{arrestResult.tiempoOOC}</div>
+                </div>
+              </div>
             </div>
-            <div className="arrest-field">
-              <label>Tiempo IC:</label>
-              <span className="tiempo-ic">{arrestResult.tiempoIC}</span>
+          </div>
+
+          {/* Información del proceso */}
+          <div className="arrest-section">
+            <h5>📝 Información del Proceso</h5>
+            <div className="arrest-details">
+              <div className="arrest-field">
+                <label>Oficial Responsable:</label>
+                <span className="arrest-value">{arrestResult.oficialId}</span>
+              </div>
+              <div className="arrest-field">
+                <label>Fecha y Hora:</label>
+                <span className="arrest-value">{new Date(arrestResult.fecha).toLocaleString('es-ES', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}</span>
+              </div>
+              {arrestResult.fotoUrl && (
+                <div className="arrest-field">
+                  <label>Foto del Arresto:</label>
+                  <div className="foto-container">
+                    <img src={arrestResult.fotoUrl} alt="Foto del arresto" className="arrest-foto" />
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="arrest-field">
-              <label>Tiempo OOC:</label>
-              <span className="tiempo-ooc">{arrestResult.tiempoOOC}</span>
-            </div>
-            <div className="arrest-field">
-              <label>Fecha:</label>
-              <span>{new Date(arrestResult.fecha).toLocaleString('es-ES')}</span>
+          </div>
+
+          {/* Estado del proceso */}
+          <div className="arrest-status">
+            <div className="status-success">
+              <FaCheckCircle className="status-icon" />
+              <span>Arresto registrado exitosamente en la base de datos</span>
             </div>
           </div>
         </div>
