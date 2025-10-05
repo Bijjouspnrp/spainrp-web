@@ -3,7 +3,7 @@ import {
   FaIdCard, FaMoneyBillWave, FaHistory, FaClipboardList, 
   FaSearch, FaGavel, FaLock, FaTrophy, FaEye, 
   FaEdit, FaTrash, FaCheckCircle, FaTimes, FaExclamationTriangle,
-  FaUser, FaFileAlt, FaCarCrash, FaShieldAlt
+  FaUser, FaFileAlt, FaCarCrash, FaShieldAlt, FaSpinner
 } from 'react-icons/fa';
 import { apiUrl } from '../../utils/api';
 import codigoPenal from '../../utils/codigoPenal';
@@ -982,12 +982,21 @@ export const ArrestarSection = ({ onRefresh }) => {
     if (value.length >= 3) {
       setSearchingDiscord(true);
       try {
-        // Buscar usuarios en el servidor Discord
-        const response = await fetch(apiUrl(`/api/discord/search-users?q=${encodeURIComponent(value)}`));
+        // Buscar usuarios en el servidor Discord con autenticación
+        const token = localStorage.getItem('spainrp_token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        
+        const response = await fetch(apiUrl(`/api/discord/search-users?q=${encodeURIComponent(value)}`), {
+          headers
+        });
+        
         if (response.ok) {
           const users = await response.json();
           setDiscordSuggestions(users.slice(0, 5));
           setShowDiscordSuggestions(true);
+        } else if (response.status === 401) {
+          console.warn('No autenticado para buscar usuarios');
+          setShowDiscordSuggestions(false);
         }
       } catch (err) {
         console.error('Error buscando usuarios:', err);
