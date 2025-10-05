@@ -7837,6 +7837,92 @@ app.get('/api/discord/status', (req, res) => {
 });
 
 // Iniciar el servidor y el bot
+// ===== ENDPOINTS FALTANTES PARA MDT =====
+
+// GET /api/proxy/admin/stats - Estadísticas generales
+app.get('/api/proxy/admin/stats', async (req, res) => {
+  console.log('[ADMIN PROXY] GET /api/proxy/admin/stats');
+  
+  try {
+    // Estadísticas básicas (puedes expandir esto según necesites)
+    const stats = {
+      total_users: 0,
+      active_users: 0,
+      total_multas: 0,
+      total_arrestos: 0,
+      timestamp: new Date().toISOString()
+    };
+    
+    res.json({ success: true, stats });
+  } catch (err) {
+    console.error('[ADMIN PROXY] Error obteniendo estadísticas:', err);
+    res.status(500).json({ error: 'Error obteniendo estadísticas', details: err.message });
+  }
+});
+
+// GET /api/proxy/admin/stats/records - Registros de estadísticas
+app.get('/api/proxy/admin/stats/records', async (req, res) => {
+  console.log('[ADMIN PROXY] GET /api/proxy/admin/stats/records');
+  
+  try {
+    const records = {
+      daily_multas: 0,
+      weekly_arrestos: 0,
+      monthly_activity: 0,
+      timestamp: new Date().toISOString()
+    };
+    
+    res.json({ success: true, records });
+  } catch (err) {
+    console.error('[ADMIN PROXY] Error obteniendo registros:', err);
+    res.status(500).json({ error: 'Error obteniendo registros', details: err.message });
+  }
+});
+
+// GET /api/proxy/admin/multas/:id - Obtener multas de un usuario específico
+app.get('/api/proxy/admin/multas/:id', async (req, res) => {
+  const { id } = req.params;
+  console.log(`[ADMIN PROXY] GET /api/proxy/admin/multas/${id}`);
+  
+  try {
+    // Por ahora devolver datos vacíos, pero la estructura está lista
+    const multas = {
+      usuario_id: id,
+      multas: [],
+      total_multas: 0,
+      multas_pendientes: 0,
+      multas_pagadas: 0,
+      timestamp: new Date().toISOString()
+    };
+    
+    res.json({ success: true, multas });
+  } catch (err) {
+    console.error('[ADMIN PROXY] Error obteniendo multas:', err);
+    res.status(500).json({ error: 'Error obteniendo multas', details: err.message });
+  }
+});
+
+// GET /api/proxy/admin/inventory/:id - Obtener inventario de un usuario específico
+app.get('/api/proxy/admin/inventory/:id', async (req, res) => {
+  const { id } = req.params;
+  console.log(`[ADMIN PROXY] GET /api/proxy/admin/inventory/${id}`);
+  
+  try {
+    // Por ahora devolver datos vacíos, pero la estructura está lista
+    const inventory = {
+      usuario_id: id,
+      items: [],
+      total_items: 0,
+      timestamp: new Date().toISOString()
+    };
+    
+    res.json({ success: true, inventory });
+  } catch (err) {
+    console.error('[ADMIN PROXY] Error obteniendo inventario:', err);
+    res.status(500).json({ error: 'Error obteniendo inventario', details: err.message });
+  }
+});
+
 server.listen(PORT, () => {
   console.log(`Backend SpainRP escuchando en puerto ${PORT}`);
   
