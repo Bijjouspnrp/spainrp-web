@@ -4891,6 +4891,235 @@ app.get('/api/erlc', (req, res) => {
   });
 });
 
+// ===== ENDPOINTS PARA REGISTROS EMPRESARIALES CNI =====
+
+// Crear tabla de empresas si no existe
+db.run(`CREATE TABLE IF NOT EXISTS empresas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT NOT NULL,
+    tipo TEXT NOT NULL,
+    propietario TEXT NOT NULL,
+    ubicacion TEXT NOT NULL,
+    estado TEXT DEFAULT 'activa',
+    fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ultima_visita DATETIME,
+    notas TEXT,
+    agente_registro TEXT
+)`);
+
+// Crear tabla de visitas de inspección
+db.run(`CREATE TABLE IF NOT EXISTS visitas_empresas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    empresa_id INTEGER NOT NULL,
+    agente TEXT NOT NULL,
+    fecha_visita DATE NOT NULL,
+    notas TEXT,
+    estado TEXT DEFAULT 'completada',
+    fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (empresa_id) REFERENCES empresas (id)
+)`);
+
+// GET /api/cni/empresas - Obtener todas las empresas
+app.get('/api/cni/empresas', (req, res) => {
+  console.log('[CNI][EMPRESAS] GET /api/cni/empresas');
+  
+  db.all('SELECT * FROM empresas ORDER BY fecha_registro DESC', (err, rows) => {
+    if (err) {
+      console.error('[CNI][EMPRESAS] Error consultando empresas:', err);
+      return res.status(500).json({ error: 'Error consultando empresas', details: err });
+    }
+    
+    console.log(`[CNI][EMPRESAS] Encontradas ${rows.length} empresas`);
+    res.json({ success: true, empresas: rows });
+  });
+});
+
+// POST /api/cni/empresas - Registrar nueva empresa
+app.post('/api/cni/empresas', (req, res) => {
+  const { nombre, tipo, propietario, ubicacion, estado, notas, agente_registro } = req.body;
+  console.log('[CNI][EMPRESAS] POST /api/cni/empresas', req.body);
+  
+  if (!nombre || !tipo || !propietario || !ubicacion) {
+    return res.status(400).json({ error: 'Faltan campos obligatorios' });
+  }
+  
+  db.run(
+    'INSERT INTO empresas (nombre, tipo, propietario, ubicacion, estado, notas, agente_registro) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [nombre, tipo, propietario, ubicacion, estado || 'activa', notas || '', agente_registro || ''],
+    function(err) {
+      if (err) {
+        console.error('[CNI][EMPRESAS] Error insertando empresa:', err);
+        return res.status(500).json({ error: 'Error registrando empresa', details: err });
+      }
+      
+      console.log(`[CNI][EMPRESAS] Empresa registrada con ID: ${this.lastID}`);
+      res.json({ 
+        success: true, 
+        empresa: {
+          id: this.lastID,
+          nombre,
+          tipo,
+          propietario,
+          ubicacion,
+          estado: estado || 'activa',
+          fecha_registro: new Date().toISOString()
+        }
+      });
+    }
+  );
+});
+
+// PUT /api/cni/empresas/:id - Actualizar empresa
+app.put('/api/cni/empresas/:id', (req, res) => {
+  const { id } = req.params;
+  const { nombre, tipo, propietario, ubicacion, estado, notas } = req.body;
+  console.log(`[CNI][EMPRESAS] PUT /api/cni/empresas/${id}`, req.body);
+  
+  if (!nombre || !tipo || !propietario || !ubicacion) {
+    return res.status(400).json({ error: 'Faltan campos obligatorios' });
+  }
+  
+  db.run(
+    'UPDATE empresas SET nombre = ?, tipo = ?, propietario = ?, ubicacion = ?, estado = ?, notas = ? WHERE id = ?',
+    [nombre, tipo, propietario, ubicacion, estado, notas || '', id],
+    function(err) {
+      if (err) {
+        console.error('[CNI][EMPRESAS] Error actualizando empresa:', err);
+        return res.status(500).json({ error: 'Error actualizando empresa', details: err });
+      }
+      
+      if (this.changes === 0) {
+        return res.status(404).json({ error: 'Empresa no encontrada' });
+      }
+      
+      console.log(`[CNI][EMPRESAS] Empresa ${id} actualizada`);
+      res.json({ success: true, message: 'Empresa actualizada correctamente' });
+    }
+  );
+});
+
+// DELETE /api/cni/empresas/:id - Eliminar empresa
+app.delete('/api/cni/empresas/:id', (req, res) => {
+  const { id } = req.params;
+  console.log(`[CNI][EMPRESAS] DELETE /api/cni/empresas/${id}`);
+  
+  db.run('DELETE FROM empresas WHERE id = ?', [id], function(err) {
+    if (err) {
+      console.error('[CNI][EMPRESAS] Error eliminando empresa:', err);
+      return res.status(500).json({ error: 'Error eliminando empresa', details: err });
+    }
+    
+    if (this.changes === 0) {
+      return res.status(404).json({ error: 'Empresa no encontrada' });
+    }
+    
+    console.log(`[CNI][EMPRESAS] Empresa ${id} eliminada`);
+    res.json({ success: true, message: 'Empresa eliminada correctamente' });
+  });
+});
+
+// GET /api/cni/visitas - Obtener todas las visitas
+app.get('/api/cni/visitas', (req, res) => {
+  console.log('[CNI][VISITAS] GET /api/cni/visitas');
+  
+  db.all(`
+    SELECT v.*, e.nombre as empresa_nombre, e.tipo as empresa_tipo 
+    FROM visitas_empresas v 
+    JOIN empresas e ON v.empresa_id = e.id 
+    ORDER BY v.fecha_visita DESC
+  `, (err, rows) => {
+    if (err) {
+      console.error('[CNI][VISITAS] Error consultando visitas:', err);
+      return res.status(500).json({ error: 'Error consultando visitas', details: err });
+    }
+    
+    console.log(`[CNI][VISITAS] Encontradas ${rows.length} visitas`);
+    res.json({ success: true, visitas: rows });
+  });
+});
+
+// POST /api/cni/visitas - Registrar nueva visita
+app.post('/api/cni/visitas', (req, res) => {
+  const { empresa_id, agente, fecha_visita, notas, estado } = req.body;
+  console.log('[CNI][VISITAS] POST /api/cni/visitas', req.body);
+  
+  if (!empresa_id || !agente || !fecha_visita) {
+    return res.status(400).json({ error: 'Faltan campos obligatorios' });
+  }
+  
+  db.run(
+    'INSERT INTO visitas_empresas (empresa_id, agente, fecha_visita, notas, estado) VALUES (?, ?, ?, ?, ?)',
+    [empresa_id, agente, fecha_visita, notas || '', estado || 'completada'],
+    function(err) {
+      if (err) {
+        console.error('[CNI][VISITAS] Error insertando visita:', err);
+        return res.status(500).json({ error: 'Error registrando visita', details: err });
+      }
+      
+      // Actualizar última visita de la empresa
+      db.run(
+        'UPDATE empresas SET ultima_visita = ? WHERE id = ?',
+        [fecha_visita, empresa_id],
+        (err2) => {
+          if (err2) {
+            console.warn('[CNI][VISITAS] Error actualizando última visita:', err2);
+          }
+        }
+      );
+      
+      console.log(`[CNI][VISITAS] Visita registrada con ID: ${this.lastID}`);
+      res.json({ 
+        success: true, 
+        visita: {
+          id: this.lastID,
+          empresa_id,
+          agente,
+          fecha_visita,
+          estado: estado || 'completada'
+        }
+      });
+    }
+  );
+});
+
+// GET /api/cni/estadisticas - Obtener estadísticas
+app.get('/api/cni/estadisticas', (req, res) => {
+  console.log('[CNI][ESTADISTICAS] GET /api/cni/estadisticas');
+  
+  const queries = [
+    'SELECT COUNT(*) as total FROM empresas',
+    'SELECT COUNT(*) as activas FROM empresas WHERE estado = "activa"',
+    'SELECT COUNT(*) as inactivas FROM empresas WHERE estado = "inactiva"',
+    'SELECT COUNT(*) as suspendidas FROM empresas WHERE estado = "suspendida"',
+    'SELECT COUNT(*) as visitas_semana FROM visitas_empresas WHERE fecha_visita >= date("now", "-7 days")',
+    'SELECT COUNT(*) as visitas_mes FROM visitas_empresas WHERE fecha_visita >= date("now", "-30 days")'
+  ];
+  
+  Promise.all(queries.map(query => 
+    new Promise((resolve, reject) => {
+      db.get(query, (err, row) => {
+        if (err) reject(err);
+        else resolve(Object.values(row)[0]);
+      });
+    })
+  )).then(([total, activas, inactivas, suspendidas, visitas_semana, visitas_mes]) => {
+    res.json({
+      success: true,
+      estadisticas: {
+        total_empresas: total,
+        empresas_activas: activas,
+        empresas_inactivas: inactivas,
+        empresas_suspendidas: suspendidas,
+        visitas_semana: visitas_semana,
+        visitas_mes: visitas_mes
+      }
+    });
+  }).catch(err => {
+    console.error('[CNI][ESTADISTICAS] Error consultando estadísticas:', err);
+    res.status(500).json({ error: 'Error consultando estadísticas', details: err });
+  });
+});
+
 // Endpoint para obtener estado del servidor ERLC
 app.get('/api/erlc/server-status', async (req, res) => {
   console.log('[ERLC API] 🚀 Endpoint /api/erlc/server-status llamado');

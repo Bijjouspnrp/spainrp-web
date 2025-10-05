@@ -175,7 +175,18 @@ const CNISection = () => {
       <div className="cni-header">
         <div className="cni-header-content">
           <div className="cni-logo">
-            <FaEye />
+            <img 
+              src="https://i.imgur.com/4G56e8C.png" 
+              alt="CNI Logo" 
+              className="cni-logo-img"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
+              }}
+            />
+            <div className="cni-logo-fallback" style={{display: 'none'}}>
+              <FaEye />
+            </div>
             <h1>CNI - Centro Nacional de Inteligencia</h1>
           </div>
           <div className="cni-user-info">
@@ -703,81 +714,191 @@ const SurveillanceTab = () => {
 // Pestaña de Registros Empresariales
 const BusinessRecordsTab = () => {
   const [businesses, setBusinesses] = useState([]);
-  const [newBusiness, setNewBusiness] = useState({
-    name: '',
-    type: '',
-    owner: '',
-    location: '',
-    status: 'activa'
-  });
   const [visits, setVisits] = useState([]);
+  const [stats, setStats] = useState({
+    total_empresas: 0,
+    empresas_activas: 0,
+    empresas_inactivas: 0,
+    empresas_suspendidas: 0,
+    visitas_semana: 0,
+    visitas_mes: 0
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  
+  const [newBusiness, setNewBusiness] = useState({
+    nombre: '',
+    tipo: '',
+    propietario: '',
+    ubicacion: '',
+    estado: 'activa',
+    notas: '',
+    agente_registro: ''
+  });
+  
   const [newVisit, setNewVisit] = useState({
-    businessId: '',
-    agent: '',
-    date: '',
-    notes: '',
-    status: 'completada'
+    empresa_id: '',
+    agente: '',
+    fecha_visita: '',
+    notas: '',
+    estado: 'completada'
   });
 
   const loadBusinesses = async () => {
     try {
-      // Simular carga de empresas (aquí iría la llamada real a la API)
-      const mockBusinesses = [
-        { id: 1, name: 'Cafetería Central', type: 'Restaurante', owner: 'Juan Pérez', location: 'Centro', status: 'activa', lastVisit: '2024-01-15' },
-        { id: 2, name: 'Concesionario Speed', type: 'Automóviles', owner: 'María García', location: 'Norte', status: 'activa', lastVisit: '2024-01-10' },
-        { id: 3, name: 'Farmacia Salud', type: 'Salud', owner: 'Carlos López', location: 'Sur', status: 'inactiva', lastVisit: '2023-12-20' }
-      ];
-      setBusinesses(mockBusinesses);
+      setLoading(true);
+      const response = await fetch(apiUrl('/api/cni/empresas'));
+      const data = await response.json();
+      
+      if (data.success) {
+        setBusinesses(data.empresas);
+      } else {
+        setError('Error cargando empresas');
+      }
     } catch (err) {
       console.error('Error cargando empresas:', err);
+      setError('Error de conexión al cargar empresas');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadVisits = async () => {
+    try {
+      const response = await fetch(apiUrl('/api/cni/visitas'));
+      const data = await response.json();
+      
+      if (data.success) {
+        setVisits(data.visitas);
+      }
+    } catch (err) {
+      console.error('Error cargando visitas:', err);
+    }
+  };
+
+  const loadStats = async () => {
+    try {
+      const response = await fetch(apiUrl('/api/cni/estadisticas'));
+      const data = await response.json();
+      
+      if (data.success) {
+        setStats(data.estadisticas);
+      }
+    } catch (err) {
+      console.error('Error cargando estadísticas:', err);
     }
   };
 
   const handleAddBusiness = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    
     try {
-      // Aquí iría la llamada real a la API para añadir empresa
-      const newId = businesses.length + 1;
-      const business = { ...newBusiness, id: newId, lastVisit: null };
-      setBusinesses([...businesses, business]);
-      setNewBusiness({ name: '', type: '', owner: '', location: '', status: 'activa' });
+      const response = await fetch(apiUrl('/api/cni/empresas'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newBusiness)
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setSuccess('✅ Empresa registrada correctamente');
+        setNewBusiness({ nombre: '', tipo: '', propietario: '', ubicacion: '', estado: 'activa', notas: '', agente_registro: '' });
+        loadBusinesses();
+        loadStats();
+      } else {
+        setError(`❌ Error: ${data.error}`);
+      }
     } catch (err) {
       console.error('Error añadiendo empresa:', err);
+      setError('❌ Error de conexión al registrar empresa');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleAddVisit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    
     try {
-      // Aquí iría la llamada real a la API para añadir visita
-      const visit = { ...newVisit, id: visits.length + 1 };
-      setVisits([...visits, visit]);
-      setNewVisit({ businessId: '', agent: '', date: '', notes: '', status: 'completada' });
+      const response = await fetch(apiUrl('/api/cni/visitas'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newVisit)
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setSuccess('✅ Visita registrada correctamente');
+        setNewVisit({ empresa_id: '', agente: '', fecha_visita: '', notas: '', estado: 'completada' });
+        loadVisits();
+        loadBusinesses();
+        loadStats();
+      } else {
+        setError(`❌ Error: ${data.error}`);
+      }
     } catch (err) {
       console.error('Error añadiendo visita:', err);
+      setError('❌ Error de conexión al registrar visita');
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     loadBusinesses();
+    loadVisits();
+    loadStats();
   }, []);
 
   return (
     <div className="cni-section">
       <h3><FaBuilding /> Registros Empresariales</h3>
       
+      {error && (
+        <div className="cni-error-message">
+          {error}
+        </div>
+      )}
+      
+      {success && (
+        <div className="cni-success-message">
+          {success}
+        </div>
+      )}
+      
       <div className="cni-stats-grid">
         <div className="cni-stat-card">
-          <span className="cni-stat-label">Empresas Activas</span>
-          <span className="cni-stat-value">{businesses.filter(b => b.status === 'activa').length}</span>
+          <span className="cni-stat-label">Total Empresas</span>
+          <span className="cni-stat-value">{stats.total_empresas}</span>
         </div>
         <div className="cni-stat-card">
-          <span className="cni-stat-label">Visitas Esta Semana</span>
-          <span className="cni-stat-value">{visits.length}</span>
+          <span className="cni-stat-label">Empresas Activas</span>
+          <span className="cni-stat-value">{stats.empresas_activas}</span>
         </div>
         <div className="cni-stat-card">
           <span className="cni-stat-label">Empresas Inactivas</span>
-          <span className="cni-stat-value">{businesses.filter(b => b.status === 'inactiva').length}</span>
+          <span className="cni-stat-value">{stats.empresas_inactivas}</span>
+        </div>
+        <div className="cni-stat-card">
+          <span className="cni-stat-label">Empresas Suspendidas</span>
+          <span className="cni-stat-value">{stats.empresas_suspendidas}</span>
+        </div>
+        <div className="cni-stat-card">
+          <span className="cni-stat-label">Visitas Esta Semana</span>
+          <span className="cni-stat-value">{stats.visitas_semana}</span>
+        </div>
+        <div className="cni-stat-card">
+          <span className="cni-stat-label">Visitas Este Mes</span>
+          <span className="cni-stat-value">{stats.visitas_mes}</span>
         </div>
       </div>
 
@@ -789,8 +910,8 @@ const BusinessRecordsTab = () => {
               <label>Nombre de la Empresa:</label>
               <input
                 type="text"
-                value={newBusiness.name}
-                onChange={(e) => setNewBusiness({...newBusiness, name: e.target.value})}
+                value={newBusiness.nombre}
+                onChange={(e) => setNewBusiness({...newBusiness, nombre: e.target.value})}
                 className="cni-input"
                 required
               />
@@ -798,8 +919,8 @@ const BusinessRecordsTab = () => {
             <div className="cni-form-group">
               <label>Tipo:</label>
               <select 
-                value={newBusiness.type}
-                onChange={(e) => setNewBusiness({...newBusiness, type: e.target.value})}
+                value={newBusiness.tipo}
+                onChange={(e) => setNewBusiness({...newBusiness, tipo: e.target.value})}
                 className="cni-select"
                 required
               >
@@ -816,8 +937,8 @@ const BusinessRecordsTab = () => {
               <label>Propietario:</label>
               <input
                 type="text"
-                value={newBusiness.owner}
-                onChange={(e) => setNewBusiness({...newBusiness, owner: e.target.value})}
+                value={newBusiness.propietario}
+                onChange={(e) => setNewBusiness({...newBusiness, propietario: e.target.value})}
                 className="cni-input"
                 required
               />
@@ -826,8 +947,8 @@ const BusinessRecordsTab = () => {
               <label>Ubicación:</label>
               <input
                 type="text"
-                value={newBusiness.location}
-                onChange={(e) => setNewBusiness({...newBusiness, location: e.target.value})}
+                value={newBusiness.ubicacion}
+                onChange={(e) => setNewBusiness({...newBusiness, ubicacion: e.target.value})}
                 className="cni-input"
                 required
               />
@@ -835,8 +956,8 @@ const BusinessRecordsTab = () => {
             <div className="cni-form-group">
               <label>Estado:</label>
               <select 
-                value={newBusiness.status}
-                onChange={(e) => setNewBusiness({...newBusiness, status: e.target.value})}
+                value={newBusiness.estado}
+                onChange={(e) => setNewBusiness({...newBusiness, estado: e.target.value})}
                 className="cni-select"
               >
                 <option value="activa">Activa</option>
@@ -844,9 +965,29 @@ const BusinessRecordsTab = () => {
                 <option value="suspendida">Suspendida</option>
               </select>
             </div>
+            <div className="cni-form-group">
+              <label>Agente CNI:</label>
+              <input
+                type="text"
+                value={newBusiness.agente_registro}
+                onChange={(e) => setNewBusiness({...newBusiness, agente_registro: e.target.value})}
+                className="cni-input"
+                placeholder="Nombre del agente CNI"
+              />
+            </div>
           </div>
-          <button type="submit" className="cni-btn cni-btn-success">
-            <FaPlus /> Registrar Empresa
+          <div className="cni-form-group">
+            <label>Notas adicionales:</label>
+            <textarea
+              value={newBusiness.notas}
+              onChange={(e) => setNewBusiness({...newBusiness, notas: e.target.value})}
+              className="cni-textarea"
+              rows="3"
+              placeholder="Información adicional sobre la empresa..."
+            />
+          </div>
+          <button type="submit" className="cni-btn cni-btn-success" disabled={loading}>
+            {loading ? 'Registrando...' : 'Registrar Empresa'}
           </button>
         </form>
       </div>
@@ -858,15 +999,15 @@ const BusinessRecordsTab = () => {
             <div className="cni-form-group">
               <label>Empresa:</label>
               <select 
-                value={newVisit.businessId}
-                onChange={(e) => setNewVisit({...newVisit, businessId: e.target.value})}
+                value={newVisit.empresa_id}
+                onChange={(e) => setNewVisit({...newVisit, empresa_id: e.target.value})}
                 className="cni-select"
                 required
               >
                 <option value="">Seleccionar empresa...</option>
                 {businesses.map(business => (
                   <option key={business.id} value={business.id}>
-                    {business.name} - {business.owner}
+                    {business.nombre} - {business.propietario}
                   </option>
                 ))}
               </select>
@@ -875,8 +1016,8 @@ const BusinessRecordsTab = () => {
               <label>Agente CNI:</label>
               <input
                 type="text"
-                value={newVisit.agent}
-                onChange={(e) => setNewVisit({...newVisit, agent: e.target.value})}
+                value={newVisit.agente}
+                onChange={(e) => setNewVisit({...newVisit, agente: e.target.value})}
                 className="cni-input"
                 required
               />
@@ -885,8 +1026,8 @@ const BusinessRecordsTab = () => {
               <label>Fecha:</label>
               <input
                 type="date"
-                value={newVisit.date}
-                onChange={(e) => setNewVisit({...newVisit, date: e.target.value})}
+                value={newVisit.fecha_visita}
+                onChange={(e) => setNewVisit({...newVisit, fecha_visita: e.target.value})}
                 className="cni-input"
                 required
               />
@@ -894,8 +1035,8 @@ const BusinessRecordsTab = () => {
             <div className="cni-form-group">
               <label>Estado:</label>
               <select 
-                value={newVisit.status}
-                onChange={(e) => setNewVisit({...newVisit, status: e.target.value})}
+                value={newVisit.estado}
+                onChange={(e) => setNewVisit({...newVisit, estado: e.target.value})}
                 className="cni-select"
               >
                 <option value="completada">Completada</option>
@@ -907,51 +1048,75 @@ const BusinessRecordsTab = () => {
           <div className="cni-form-group">
             <label>Notas de la Visita:</label>
             <textarea
-              value={newVisit.notes}
-              onChange={(e) => setNewVisit({...newVisit, notes: e.target.value})}
+              value={newVisit.notas}
+              onChange={(e) => setNewVisit({...newVisit, notas: e.target.value})}
               className="cni-textarea"
               rows="3"
               placeholder="Detalles de la inspección, observaciones, incidencias..."
             />
           </div>
-          <button type="submit" className="cni-btn cni-btn-primary">
-            <FaCalendarAlt /> Registrar Visita
+          <button type="submit" className="cni-btn cni-btn-primary" disabled={loading}>
+            {loading ? 'Registrando...' : 'Registrar Visita'}
           </button>
         </form>
       </div>
 
       <div className="cni-section">
-        <h3><FaBuilding /> Empresas Registradas</h3>
-        <div className="cni-search-results">
-          {businesses.map(business => (
-            <div key={business.id} className="cni-result-card">
-              <div className="cni-result-header">
-                <h5><FaBuilding /> {business.name}</h5>
-                <span className={`cni-result-type ${business.status}`}>
-                  {business.status.toUpperCase()}
-                </span>
+        <h3><FaBuilding /> Empresas Registradas ({businesses.length})</h3>
+        {loading ? (
+          <div className="cni-loading">
+            <FaSpinner className="fa-spin" />
+            <p>Cargando empresas...</p>
+          </div>
+        ) : businesses.length === 0 ? (
+          <div className="cni-no-data">
+            <FaBuilding />
+            <p>No hay empresas registradas</p>
+          </div>
+        ) : (
+          <div className="cni-search-results">
+            {businesses.map(business => (
+              <div key={business.id} className="cni-result-card">
+                <div className="cni-result-header">
+                  <h5><FaBuilding /> {business.nombre}</h5>
+                  <span className={`cni-result-type ${business.estado}`}>
+                    {business.estado.toUpperCase()}
+                  </span>
+                </div>
+                <div className="cni-result-info">
+                  <div className="cni-result-field">
+                    <label>Tipo:</label>
+                    <span>{business.tipo}</span>
+                  </div>
+                  <div className="cni-result-field">
+                    <label>Propietario:</label>
+                    <span>{business.propietario}</span>
+                  </div>
+                  <div className="cni-result-field">
+                    <label>Ubicación:</label>
+                    <span>{business.ubicacion}</span>
+                  </div>
+                  <div className="cni-result-field">
+                    <label>Última Visita:</label>
+                    <span>{business.ultima_visita ? new Date(business.ultima_visita).toLocaleDateString('es-ES') : 'Sin visitas'}</span>
+                  </div>
+                  {business.agente_registro && (
+                    <div className="cni-result-field">
+                      <label>Agente Registro:</label>
+                      <span>{business.agente_registro}</span>
+                    </div>
+                  )}
+                  {business.notas && (
+                    <div className="cni-result-field">
+                      <label>Notas:</label>
+                      <span>{business.notas}</span>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="cni-result-info">
-                <div className="cni-result-field">
-                  <label>Tipo:</label>
-                  <span>{business.type}</span>
-                </div>
-                <div className="cni-result-field">
-                  <label>Propietario:</label>
-                  <span>{business.owner}</span>
-                </div>
-                <div className="cni-result-field">
-                  <label>Ubicación:</label>
-                  <span>{business.location}</span>
-                </div>
-                <div className="cni-result-field">
-                  <label>Última Visita:</label>
-                  <span>{business.lastVisit || 'Sin visitas'}</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -580,3 +580,25 @@
     transform: translateY(0);
   }
 }
+
+/* Logo CNI */
+.cni-logo-img {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.cni-logo-fallback {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #8a2be2, #6a0dad);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
