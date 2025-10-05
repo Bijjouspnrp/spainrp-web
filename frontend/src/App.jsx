@@ -551,7 +551,7 @@ function MaintenancePage({ vantaElRef, totalMinutes, apiUrl }) {
         </button>
         {/* Discord o soporte */}
         <div style={{color:'#aaa',fontSize:'1rem',marginTop:'1rem'}}>
-          ¿Dudas? Únete a nuestro <a href='https://discord.gg/spainrp' style={{color:'#FFD700'}}>Discord</a>
+          ¿Dudas? Únete a nuestro <a href='https://discord.com/invite/sMzFgFQHXA' style={{color:'#FFD700'}}>Discord</a>
         </div>
       </div>
 

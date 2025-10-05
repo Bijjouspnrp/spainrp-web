@@ -303,6 +303,31 @@ const News = () => {
   if (loading) return (
     <div className="news-bg">
       <DiscordUserBar />
+      
+      {/* Aviso de desarrollo */}
+      <div style={{
+        background: 'linear-gradient(135deg, #ffa502, #ff6348)',
+        color: 'white',
+        padding: '12px 20px',
+        textAlign: 'center',
+        fontSize: '14px',
+        fontWeight: '600',
+        boxShadow: '0 4px 15px rgba(255,165,2,0.3)',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        <div style={{
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          right: '0',
+          height: '2px',
+          background: 'linear-gradient(90deg, #ffa502, #ff6348, #ffa502)',
+          animation: 'shimmer 2s infinite'
+        }}></div>
+        🚧 Noticias RP está en desarrollo - Esperando finalización de BijjouPro08 🚧
+      </div>
+
       <div style={{textAlign:'center',marginTop:'120px',color:'#fff'}}>
         <div className="news-loader" style={{margin:'60px auto',width:60,height:60,borderRadius:'50%',border:'6px solid #7289da',borderTop:'6px solid #23272a',animation:'spin 1s linear infinite'}} />
         <h2>Cargando noticias...</h2>
@@ -313,6 +338,31 @@ const News = () => {
     return (
       <div className="news-bg">
         <DiscordUserBar />
+        
+        {/* Aviso de desarrollo */}
+        <div style={{
+          background: 'linear-gradient(135deg, #ffa502, #ff6348)',
+          color: 'white',
+          padding: '12px 20px',
+          textAlign: 'center',
+          fontSize: '14px',
+          fontWeight: '600',
+          boxShadow: '0 4px 15px rgba(255,165,2,0.3)',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          <div style={{
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            right: '0',
+            height: '2px',
+            background: 'linear-gradient(90deg, #ffa502, #ff6348, #ffa502)',
+            animation: 'shimmer 2s infinite'
+          }}></div>
+          🚧 Noticias RP está en desarrollo - Esperando finalización de BijjouPro08 🚧
+        </div>
+
         <div className="news-header" style={{background:'#23272a',color:'#fff',padding:'1.5rem 0 1rem 0',textAlign:'center',boxShadow:'0 2px 12px #23272a33',animation:'fadein 0.7s'}}>
           <span style={{fontSize:'2.2rem',fontWeight:900,letterSpacing:2,display:'block',marginBottom:8}}>📰 Noticias RP en Vivo</span>
           <span style={{fontSize:'1.15rem',opacity:0.85}}>Actualidad, sucesos y reportes en tiempo real</span>
@@ -327,7 +377,7 @@ const News = () => {
             <span style={{fontSize:'1.5rem',marginRight:10,verticalAlign:'middle'}}>🔑</span> Iniciar sesión con Discord
           </a>
           <div style={{marginTop:32,opacity:0.8,fontSize:'1.08rem',animation:'fadein 2.2s'}}>
-            <span>¿No tienes cuenta? <a href="https://discord.gg/spainrp" target="_blank" rel="noopener noreferrer" style={{color:'#7289da',fontWeight:700,textDecoration:'underline'}}>Únete al Discord oficial</a></span>
+            <span>¿No tienes cuenta? <a href="https://discord.com/invite/sMzFgFQHXA" target="_blank" rel="noopener noreferrer" style={{color:'#7289da',fontWeight:700,textDecoration:'underline'}}>Únete al Discord oficial</a></span>
           </div>
         </div>
         <div className="news-footer" style={{marginTop:48,padding:'1.2rem 0',background:'#23272a',color:'#fff',textAlign:'center',fontWeight:700,letterSpacing:1,fontSize:'1.1rem',boxShadow:'0 -2px 12px #23272a33',animation:'fadein 2.5s'}}>
@@ -344,6 +394,31 @@ const News = () => {
   return (
     <div className="news-bg">
       <DiscordUserBar />
+      
+      {/* Aviso de desarrollo */}
+      <div style={{
+        background: 'linear-gradient(135deg, #ffa502, #ff6348)',
+        color: 'white',
+        padding: '12px 20px',
+        textAlign: 'center',
+        fontSize: '14px',
+        fontWeight: '600',
+        boxShadow: '0 4px 15px rgba(255,165,2,0.3)',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        <div style={{
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          right: '0',
+          height: '2px',
+          background: 'linear-gradient(90deg, #ffa502, #ff6348, #ffa502)',
+          animation: 'shimmer 2s infinite'
+        }}></div>
+        🚧 Noticias RP está en desarrollo - Esperando finalización de BijjouPro08 🚧
+      </div>
+
       <div className="news-live-header" style={{background:'#23272a',color:'#fff',padding:'1.5rem 0 1rem 0',textAlign:'center',boxShadow:'0 2px 12px #23272a33'}}>
         <h1 style={{fontSize:'2.7rem',fontWeight:900,letterSpacing:2,marginBottom:8}}>📰 Noticias RP en Vivo</h1>
         <div style={{fontSize:'1.1rem',opacity:0.85}}>Actualidad, sucesos y reportes en tiempo real</div>
@@ -374,7 +449,7 @@ const News = () => {
                 <span style={{verticalAlign:'middle'}}>{msg.text}</span>
                 <div style={{margin:'1.2rem 0 0.7rem 0',fontWeight:500,fontSize:'1.05rem',opacity:0.95}}>
                   Puedes buscar <b>empresas de noticieros</b> en el <span style={{color:'#7289da'}}>Discord oficial de SpainRP</span>.<br/>
-                  <a href="https://discord.gg/spainrp" target="_blank" rel="noopener noreferrer" style={{display:'inline-block',margin:'0.7rem 0 0 0',background:'#7289da',color:'#fff',borderRadius:8,padding:'0.6rem 1.3rem',fontWeight:700,fontSize:'1.08rem',textDecoration:'none',boxShadow:'0 2px 8px #7289da44',transition:'background 0.2s'}}>Ir al Discord oficial</a>
+                  <a href="https://discord.com/invite/sMzFgFQHXA" target="_blank" rel="noopener noreferrer" style={{display:'inline-block',margin:'0.7rem 0 0 0',background:'#7289da',color:'#fff',borderRadius:8,padding:'0.6rem 1.3rem',fontWeight:700,fontSize:'1.08rem',textDecoration:'none',boxShadow:'0 2px 8px #7289da44',transition:'background 0.2s'}}>Ir al Discord oficial</a>
                 </div>
                 <div style={{margin:'0.7rem 0 0.2rem 0',fontWeight:500,fontSize:'1.05rem',opacity:0.95}}>
                   ¿Quieres ser <b>noticiero autónomo</b>?<br/>
