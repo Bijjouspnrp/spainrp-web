@@ -1958,3 +1958,26 @@
     font-size: 0.75rem;
   }
 }
+
+/* Estilos para avatares de Discord en ranking */
+.ranking-avatar-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--theme-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ranking-avatar-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--theme-surface);
+  border: 2px solid var(--theme-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--theme-text);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}

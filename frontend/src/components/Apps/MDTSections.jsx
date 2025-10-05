@@ -1297,11 +1297,6 @@ export const ArrestarSection = ({ onRefresh }) => {
 
 // Sección Ranking (Policía)
 export const RankingSection = ({ data, message }) => {
-  console.log('RankingSection - Datos recibidos:', data);
-  console.log('RankingSection - data.top:', data?.top);
-  console.log('RankingSection - porImportePendiente:', data?.top?.porImportePendiente);
-  console.log('RankingSection - porNumeroPendientes:', data?.top?.porNumeroPendientes);
-  
   if (!data || (!data.top?.porImportePendiente && !data.top?.porNumeroPendientes)) {
     return (
       <div className="mdt-section">
@@ -1338,7 +1333,16 @@ export const RankingSection = ({ data, message }) => {
               {index > 2 && <span className="position">#{user.posicion || index + 1}</span>}
             </div>
             <div className="ranking-avatar">
-              <div className="ranking-avatar-placeholder">
+              <img 
+                src={`https://cdn.discordapp.com/avatars/${user.discordId}/default.png`}
+                alt={`Avatar de ${user.discordId}`}
+                className="ranking-avatar-img"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'flex';
+                }}
+              />
+              <div className="ranking-avatar-placeholder" style={{display: 'none'}}>
                 <FaUser size={20} />
               </div>
             </div>
