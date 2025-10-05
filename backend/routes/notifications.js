@@ -48,13 +48,23 @@ router.get('/', async (req, res) => {
       return res.status(401).json({ error: 'No autorizado' });
     }
 
+    // Verificar que la base de datos esté disponible
+    if (!db) {
+      console.error('[NOTIFICATIONS] Base de datos no disponible');
+      return res.status(503).json({ error: 'Base de datos no disponible' });
+    }
+
     const notifications = await new Promise((resolve, reject) => {
       db.all(
         'SELECT * FROM notifications WHERE userId = ? OR userId IS NULL ORDER BY created_at DESC LIMIT 50',
         [userId],
         (err, rows) => {
-          if (err) reject(err);
-          else resolve(rows);
+          if (err) {
+            console.error('[NOTIFICATIONS] Error en query de notificaciones:', err);
+            reject(err);
+          } else {
+            resolve(rows || []);
+          }
         }
       );
     });
@@ -64,8 +74,12 @@ router.get('/', async (req, res) => {
         'SELECT COUNT(*) as count FROM notifications WHERE (userId = ? OR userId IS NULL) AND read = 0',
         [userId],
         (err, row) => {
-          if (err) reject(err);
-          else resolve(row.count);
+          if (err) {
+            console.error('[NOTIFICATIONS] Error en query de conteo:', err);
+            reject(err);
+          } else {
+            resolve(row ? row.count : 0);
+          }
         }
       );
     });
@@ -77,7 +91,10 @@ router.get('/', async (req, res) => {
     });
   } catch (error) {
     console.error('[NOTIFICATIONS] Error obteniendo notificaciones:', error);
-    res.status(500).json({ error: 'Error obteniendo notificaciones' });
+    res.status(500).json({ 
+      error: 'Error obteniendo notificaciones',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 

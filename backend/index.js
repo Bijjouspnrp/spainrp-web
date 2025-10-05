@@ -5666,19 +5666,40 @@ app.post('/api/admin/moderate', express.json(), async (req, res) => {
     
     console.log(`[ADMIN MODERATE] Acción: ${action}, Usuario: ${userId}, Motivo: ${reason}`);
     
-    if (!discordClient || !discordClient.readyAt) {
-      return res.status(503).json({ error: 'Bot de Discord no disponible' });
+    // Verificar que el cliente Discord esté disponible y conectado
+    if (!discordClient) {
+      console.error('[ADMIN MODERATE] Cliente Discord no inicializado');
+      return res.status(503).json({ error: 'Bot de Discord no inicializado' });
+    }
+    
+    if (!discordClient.readyAt) {
+      console.error('[ADMIN MODERATE] Cliente Discord no conectado');
+      return res.status(503).json({ error: 'Bot de Discord no conectado' });
+    }
+    
+    // Verificar que el bot esté en el servidor
+    if (!discordClient.guilds.cache.has(guildId)) {
+      console.error('[ADMIN MODERATE] Bot no está en el servidor:', guildId);
+      return res.status(404).json({ error: 'Bot no está en el servidor' });
     }
     
     const guild = discordClient.guilds.cache.get(guildId);
     if (!guild) {
+      console.error('[ADMIN MODERATE] Servidor no encontrado:', guildId);
       return res.status(404).json({ error: 'Servidor no encontrado' });
     }
     
-    await guild.members.fetch();
+    try {
+      await guild.members.fetch();
+    } catch (fetchError) {
+      console.error('[ADMIN MODERATE] Error obteniendo miembros del servidor:', fetchError);
+      return res.status(500).json({ error: 'Error obteniendo miembros del servidor' });
+    }
+    
     const member = guild.members.cache.get(userId);
     
     if (!member) {
+      console.error('[ADMIN MODERATE] Usuario no encontrado:', userId);
       return res.status(404).json({ error: 'Usuario no encontrado en el servidor' });
     }
     
@@ -5686,56 +5707,76 @@ app.post('/api/admin/moderate', express.json(), async (req, res) => {
     
     switch (action) {
       case 'ban':
-        await member.ban({ 
-          reason: reason || 'Baneado desde panel admin',
-          deleteMessageDays: 7
-        });
-        result = `Usuario ${member.user.username} (${userId}) baneado exitosamente.`;
+        try {
+          await member.ban({ 
+            reason: reason || 'Baneado desde panel admin',
+            deleteMessageDays: 7
+          });
+          result = `Usuario ${member.user.username} (${userId}) baneado exitosamente.`;
+        } catch (banError) {
+          console.error('[ADMIN MODERATE] Error baneando usuario:', banError);
+          return res.status(500).json({ error: 'Error baneando usuario', details: banError.message });
+        }
         break;
         
       case 'kick':
-        await member.kick(reason || 'Kickeado desde panel admin');
-        result = `Usuario ${member.user.username} (${userId}) kickeado exitosamente.`;
+        try {
+          await member.kick(reason || 'Kickeado desde panel admin');
+          result = `Usuario ${member.user.username} (${userId}) kickeado exitosamente.`;
+        } catch (kickError) {
+          console.error('[ADMIN MODERATE] Error kickeando usuario:', kickError);
+          return res.status(500).json({ error: 'Error kickeando usuario', details: kickError.message });
+        }
         break;
         
       case 'mute':
-        // Buscar rol de mute
-        let muteRole = guild.roles.cache.find(r => 
-          r.name.toLowerCase().includes('mute') || 
-          r.name.toLowerCase().includes('silenciado') ||
-          r.name.toLowerCase() === 'muted'
-        );
-        
-        if (!muteRole) {
-          muteRole = await guild.roles.create({
-            name: 'Muted',
-            color: '#888',
-            reason: 'Rol para silenciar usuarios',
-            permissions: []
-          });
+        try {
+          // Buscar rol de mute
+          let muteRole = guild.roles.cache.find(r => 
+            r.name.toLowerCase().includes('mute') || 
+            r.name.toLowerCase().includes('silenciado') ||
+            r.name.toLowerCase() === 'muted'
+          );
           
-          // Configurar permisos en todos los canales
-          for (const channel of guild.channels.cache.values()) {
-            if (channel.type === 0 || channel.type === 2) {
-              try {
-                await channel.permissionOverwrites.edit(muteRole, {
-                  SendMessages: false,
-                  Speak: false,
-                  Connect: false,
-                  AddReactions: false
-                });
-              } catch (e) {
-                console.warn(`[ADMIN MODERATE] No se pudo configurar permisos en canal ${channel.name}:`, e.message);
+          if (!muteRole) {
+            try {
+              muteRole = await guild.roles.create({
+                name: 'Muted',
+                color: '#888',
+                reason: 'Rol para silenciar usuarios',
+                permissions: []
+              });
+              
+              // Configurar permisos en todos los canales
+              for (const channel of guild.channels.cache.values()) {
+                if (channel.type === 0 || channel.type === 2) {
+                  try {
+                    await channel.permissionOverwrites.edit(muteRole, {
+                      SendMessages: false,
+                      Speak: false,
+                      Connect: false,
+                      AddReactions: false
+                    });
+                  } catch (e) {
+                    console.warn(`[ADMIN MODERATE] No se pudo configurar permisos en canal ${channel.name}:`, e.message);
+                  }
+                }
               }
+            } catch (roleError) {
+              console.error('[ADMIN MODERATE] Error creando rol de mute:', roleError);
+              return res.status(500).json({ error: 'Error creando rol de mute', details: roleError.message });
             }
           }
+          
+          if (member.roles.cache.has(muteRole.id)) {
+            return res.status(400).json({ error: 'El usuario ya está muteado' });
+          }
+          
+          await member.roles.add(muteRole.id, reason || 'Muteado desde panel admin');
+        } catch (muteError) {
+          console.error('[ADMIN MODERATE] Error muteando usuario:', muteError);
+          return res.status(500).json({ error: 'Error muteando usuario', details: muteError.message });
         }
-        
-        if (member.roles.cache.has(muteRole.id)) {
-          return res.status(400).json({ error: 'El usuario ya está muteado' });
-        }
-        
-        await member.roles.add(muteRole.id, reason || 'Muteado desde panel admin');
         
         // Programar desmute si hay tiempo especificado
         if (time && parseInt(time) > 0) {
@@ -5753,8 +5794,13 @@ app.post('/api/admin/moderate', express.json(), async (req, res) => {
         break;
         
       case 'unban':
-        await guild.members.unban(userId, reason || 'Desbaneado desde panel admin');
-        result = `Usuario ${userId} desbaneado exitosamente.`;
+        try {
+          await guild.members.unban(userId, reason || 'Desbaneado desde panel admin');
+          result = `Usuario ${userId} desbaneado exitosamente.`;
+        } catch (unbanError) {
+          console.error('[ADMIN MODERATE] Error desbaneando usuario:', unbanError);
+          return res.status(500).json({ error: 'Error desbaneando usuario', details: unbanError.message });
+        }
         break;
         
       default:
@@ -7484,15 +7530,78 @@ app.use((req, res, next) => {
   next();
 });
 
+// Endpoint de salud para verificar estado del sistema
+app.get('/api/health', (req, res) => {
+  const health = {
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    services: {
+      database: 'unknown',
+      discord: 'unknown'
+    }
+  };
+
+  // Verificar base de datos
+  try {
+    const db = require('./db/database').getDatabase();
+    if (db) {
+      health.services.database = 'connected';
+    } else {
+      health.services.database = 'disconnected';
+    }
+  } catch (err) {
+    health.services.database = 'error';
+    health.databaseError = err.message;
+  }
+
+  // Verificar Discord
+  if (discordClient && discordClient.readyAt) {
+    health.services.discord = 'connected';
+    health.discordGuilds = discordClient.guilds.cache.size;
+  } else if (discordClient) {
+    health.services.discord = 'connecting';
+  } else {
+    health.services.discord = 'not_initialized';
+  }
+
+  res.json(health);
+});
+
+// Endpoint específico para verificar estado de Discord
+app.get('/api/discord/status', (req, res) => {
+  const status = {
+    connected: false,
+    readyAt: null,
+    guilds: 0,
+    error: null
+  };
+
+  if (discordClient) {
+    status.connected = !!discordClient.readyAt;
+    status.readyAt = discordClient.readyAt;
+    status.guilds = discordClient.guilds.cache.size;
+    
+    if (!discordClient.readyAt) {
+      status.error = 'Bot no conectado';
+    }
+  } else {
+    status.error = 'Cliente Discord no inicializado';
+  }
+
+  res.json(status);
+});
+
 // Iniciar el servidor y el bot
 server.listen(PORT, () => {
   console.log(`Backend SpainRP escuchando en puerto ${PORT}`);
   
   // Iniciar el bot de Discord solo si hay token
   if (TOKEN) {
-  discordClient.login(TOKEN).catch(err => {
-    console.error('Error iniciando el bot de Discord:', err);
-  });
+    console.log('🤖 Iniciando bot de Discord...');
+    discordClient.login(TOKEN).catch(err => {
+      console.error('❌ Error iniciando el bot de Discord:', err);
+      console.error('🔧 Verifica que DISCORD_BOT_TOKEN sea válido y que el bot tenga permisos');
+    });
   } else {
     console.warn('⚠️ DISCORD_BOT_TOKEN no configurado. Funcionalidades de Discord deshabilitadas.');
   }
