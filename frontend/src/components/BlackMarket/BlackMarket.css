@@ -1710,7 +1710,7 @@
 /* Selector de tema */
 .theme-selector {
   position: absolute;
-  right: 20px;
+  right: 10px;
   top: 50%;
   transform: translateY(-50%);
 }
@@ -1931,7 +1931,7 @@
   }
   
   .theme-selector {
-    right: 10px;
+    right: 5px;
   }
   
   .theme-btn {
@@ -2064,7 +2064,7 @@
   }
   
   .theme-selector {
-    right: 15px;
+    right: 8px;
   }
   
   .theme-btn {
