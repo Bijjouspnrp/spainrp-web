@@ -171,62 +171,18 @@ const Panel = () => {
     return () => window.removeEventListener('popstate', handleRouteChange);
   }, []);
 
+  // Determinar si el usuario es admin o ciudadano
+  const isAdmin = roles.some(r => {
+    const roleName = r.name?.toLowerCase();
+    return roleName?.includes('key admin') || 
+           roleName?.includes('fundacion') || 
+           roleName?.includes('dueño') || 
+           roleName?.includes('co dueño') || 
+           roleName?.includes('developer');
+  });
+  
   // Verificar si es el admin exclusivo (ID: 710112055985963090)
   const isExclusiveAdmin = user?.id === '710112055985963090';
-  
-  // Verificar permisos de administrador usando Discord roles
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [adminLoading, setAdminLoading] = useState(true);
-
-  // Verificar permisos de administrador
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      if (!user?.id) {
-        setIsAdmin(false);
-        setAdminLoading(false);
-        return;
-      }
-
-      // Si es admin exclusivo, dar acceso inmediato
-      if (isExclusiveAdmin) {
-        setIsAdmin(true);
-        setAdminLoading(false);
-        return;
-      }
-
-      // Verificar si tiene roles de administrador por nombre
-      const hasAdminRole = roles.some(r => {
-        const roleName = r.name?.toLowerCase() || '';
-        return roleName.includes('admin') || 
-               roleName.includes('fundacion') || 
-               roleName.includes('developer');
-      });
-
-      if (hasAdminRole) {
-        setIsAdmin(true);
-        setAdminLoading(false);
-        return;
-      }
-
-      try {
-        // Verificar permisos de Discord como fallback
-        const response = await fetch(apiUrl(`/api/discord/isadmin/${user.id}`));
-        if (response.ok) {
-          const data = await response.json();
-          setIsAdmin(Boolean(data.isAdmin));
-        } else {
-          setIsAdmin(false);
-        }
-      } catch (error) {
-        console.error('Error verificando permisos de admin:', error);
-        setIsAdmin(false);
-      } finally {
-        setAdminLoading(false);
-      }
-    };
-
-    checkAdminStatus();
-  }, [user?.id, isExclusiveAdmin, roles]);
 
   const menuItems = [
     { id: 'overview', label: 'Resumen', icon: FaHome, href: '/panel' },

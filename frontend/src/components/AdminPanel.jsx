@@ -159,101 +159,11 @@ const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [user, setUser] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [adminLoading, setAdminLoading] = useState(true);
-  const [accessDenied, setAccessDenied] = useState(false);
   
   // Helper function para mostrar notificaciones
   const showToast = (message, type = 'success') => {
     notify(message, { type, duration: 3000 });
   };
-
-  // Verificar permisos de administrador con verificación mejorada
-  useEffect(() => {
-    const checkAdminPermissions = async () => {
-      try {
-        const token = localStorage.getItem('spainrp_token');
-        if (!token) {
-          console.log('[AdminPanel] No token found, access denied');
-          setAccessDenied(true);
-          setAdminLoading(false);
-          return;
-        }
-
-        // Verificar autenticación
-        const authResponse = await fetch(apiUrl('/auth/me'), {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json'
-          }
-        });
-
-        if (!authResponse.ok) {
-          console.log('[AdminPanel] Auth failed, access denied');
-          setAccessDenied(true);
-          setAdminLoading(false);
-          return;
-        }
-
-        const authData = await authResponse.json();
-        setUser(authData.user);
-
-        // Verificar si es admin exclusivo (máxima prioridad)
-        const isExclusiveAdmin = authData.user?.id === '710112055985963090';
-        
-        // Verificar permisos de administrador
-        let hasAdminPermissions = isExclusiveAdmin;
-        
-        if (!isExclusiveAdmin) {
-          try {
-            // Usar el endpoint de Discord para verificar roles con timeout
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000);
-            
-            const adminResponse = await fetch(apiUrl(`/api/discord/isadmin/${authData.user.id}`), {
-              signal: controller.signal
-            });
-            
-            clearTimeout(timeoutId);
-            
-            if (adminResponse.ok) {
-              const adminData = await adminResponse.json();
-              hasAdminPermissions = Boolean(adminData.isAdmin);
-              console.log('[AdminPanel] Discord admin check result:', adminData);
-            } else {
-              console.warn('[AdminPanel] Discord admin check failed:', adminResponse.status);
-              hasAdminPermissions = false;
-            }
-          } catch (error) {
-            if (error.name === 'AbortError') {
-              console.warn('[AdminPanel] Discord admin check timeout');
-            } else {
-              console.error('[AdminPanel] Error verificando permisos de admin:', error);
-            }
-            hasAdminPermissions = false;
-          }
-        } else {
-          console.log('[AdminPanel] Admin exclusivo detectado - acceso garantizado');
-        }
-
-        if (!hasAdminPermissions) {
-          console.log('[AdminPanel] Access denied - insufficient permissions');
-          setAccessDenied(true);
-        } else {
-          console.log('[AdminPanel] Access granted - admin permissions verified');
-          setIsAdmin(true);
-        }
-      } catch (error) {
-        console.error('[AdminPanel] Critical error in permission check:', error);
-        setAccessDenied(true);
-      } finally {
-        setAdminLoading(false);
-      }
-    };
-
-    checkAdminPermissions();
-  }, []);
 
   // Hook para detectar tamaño de pantalla
   useEffect(() => {
@@ -274,68 +184,6 @@ const AdminPanel = () => {
       delete window.showAdminToast;
     };
   }, [showToast]);
-
-  // Mostrar pantalla de carga
-  if (adminLoading) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: 'white'
-      }}>
-        <div style={{textAlign: 'center'}}>
-          <div style={{fontSize: '24px', marginBottom: '10px'}}>🔄</div>
-          <div>Verificando permisos de administrador...</div>
-          <div style={{fontSize: '0.9rem', color: '#9ca3af', marginTop: '0.5rem'}}>
-            Validando acceso seguro al panel
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Mostrar pantalla de acceso denegado
-  if (accessDenied || !isAdmin) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: 'white'
-      }}>
-        <div style={{
-          background: 'rgba(255,255,255,0.1)',
-          padding: '2rem',
-          borderRadius: '15px',
-          textAlign: 'center',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255,255,255,0.2)'
-        }}>
-          <div style={{fontSize:'4rem',marginBottom:'1rem'}}>🔒</div>
-          <h2 style={{color:'#ef4444',fontWeight:800,fontSize:'2rem',marginBottom:'1rem'}}>Acceso Denegado</h2>
-          <p style={{color:'#FFD700',fontSize:'1.1rem',marginBottom:'1.5rem'}}>
-            No tienes permisos de administrador para acceder a este panel.
-          </p>
-          <a href="/panel" style={{
-            background:'#7289da',
-            color:'white',
-            padding:'12px 24px',
-            borderRadius:'8px',
-            textDecoration:'none',
-            fontWeight:'bold',
-            display:'inline-block'
-          }}>
-            Volver al Panel
-          </a>
-        </div>
-      </div>
-    );
-  }
   
   // Panel de MDs privados
   const [dmUserId, setDmUserId] = useState('');
