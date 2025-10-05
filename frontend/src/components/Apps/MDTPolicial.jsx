@@ -133,9 +133,10 @@ const MDTPolicial = () => {
       const topRes = await fetch(apiUrl('/api/proxy/admin/top-multas'));
       if (topRes.ok) {
         const topData = await topRes.json();
+        console.log('Datos del ranking recibidos:', topData);
         setPoliceData(prev => ({ 
           ...prev, 
-          topMultas: topData.top || [],
+          topMultas: topData, // Pasar toda la estructura de datos
           rankingMessage: topData.message || null
         }));
       } else {
