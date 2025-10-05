@@ -1337,23 +1337,14 @@ export const RankingSection = ({ data, message }) => {
                 <FaUser size={20} />
               </div>
             </div>
-            <div className="ranking-info">
-              <h4>Usuario {user.discordId?.slice(-4) || 'N/A'}</h4>
-              <p className="ranking-discord-id">ID: {user.discordId}</p>
-              <p className="ranking-stats">
-                {activeTab === 'importe' ? (
-                  <>
-                    {user.numPendientes || 0} multas pendientes<br/>
-                    {user.importePendiente || 0}€ pendiente
-                  </>
-                ) : (
-                  <>
-                    {user.numPendientes || 0} multas pendientes<br/>
-                    {user.importePendiente || 0}€ pendiente
-                  </>
-                )}
-              </p>
-            </div>
+             <div className="ranking-info">
+               <h4>Usuario {user.discordId?.slice(-4) || 'N/A'}</h4>
+               <p className="ranking-discord-id">ID: {user.discordId}</p>
+               <p className="ranking-stats">
+                 {user.numPendientes || 0} multas pendientes<br/>
+                 {(user.importePendiente || 0).toLocaleString('es-ES')}€ pendiente
+               </p>
+             </div>
           </div>
         ))}
       </div>

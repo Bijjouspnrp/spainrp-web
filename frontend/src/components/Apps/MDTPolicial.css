@@ -872,6 +872,8 @@
   align-items: center;
   gap: 1rem;
   transition: all 0.3s ease;
+  min-height: 80px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .ranking-item.top {
@@ -882,14 +884,23 @@
 .ranking-item:hover {
   background: rgba(255, 255, 255, 0.1);
   transform: translateY(-2px);
+  border-color: rgba(251, 191, 36, 0.5);
 }
 
 .ranking-position {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 700;
   color: #fbbf24;
-  min-width: 60px;
+  min-width: 50px;
   text-align: center;
+  background: rgba(251, 191, 36, 0.1);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .ranking-avatar {
@@ -937,10 +948,16 @@
   color: #6b7280;
 }
 
+.ranking-info {
+  flex: 1;
+  min-width: 0;
+}
+
 .ranking-info h4 {
   margin: 0 0 0.3rem 0;
   color: #ffffff;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
+  font-weight: 600;
 }
 
 .ranking-info p {
@@ -950,16 +967,18 @@
 }
 
 .ranking-discord-id {
-  font-size: 0.8rem !important;
+  font-size: 0.85rem !important;
   color: #6b7280 !important;
   font-family: 'Courier New', monospace;
   margin: 0.2rem 0 !important;
+  word-break: break-all;
 }
 
 .ranking-stats {
   font-weight: 600 !important;
   color: #fbbf24 !important;
   font-size: 0.95rem !important;
+  line-height: 1.4 !important;
   margin-top: 0.3rem !important;
 }
 
