@@ -2650,6 +2650,78 @@ async function authenticatedBanCheckMiddleware(req, res, next) {
   }
 }
 
+// Endpoint para buscar usuarios de Discord (SIN AUTENTICACIÓN - debe ir ANTES de middlewares de ban)
+app.get('/api/discord/search-users', async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q || q.length < 3) {
+      return res.json([]);
+    }
+
+    console.log('[DISCORD SEARCH] Buscando usuarios:', q);
+
+    // Verificar si hay token de bot disponible
+    if (!process.env.DISCORD_BOT_TOKEN) {
+      console.warn('[DISCORD SEARCH] No hay token de bot disponible');
+      return res.json([]);
+    }
+
+    const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+    
+    // Buscar usuarios en el servidor Discord usando la API
+    const guildId = '1212556680911650866';
+    const response = await fetch(`https://discord.com/api/guilds/${guildId}/members/search?query=${encodeURIComponent(q)}&limit=10`, {
+      headers: {
+        'Authorization': `Bot ${process.env.DISCORD_BOT_TOKEN}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (response.ok) {
+      const users = await response.json();
+      const formattedUsers = users.map(user => ({
+        id: user.user.id,
+        username: user.user.username,
+        discriminator: user.user.discriminator,
+        avatar: user.user.avatar,
+        displayName: user.nick || user.user.username
+      }));
+      
+      console.log('[DISCORD SEARCH] Usuarios encontrados:', formattedUsers.length);
+      res.json(formattedUsers);
+    } else {
+      console.warn('[DISCORD SEARCH] Error en API de Discord:', response.status);
+      // Fallback: buscar en la base de datos local si existe
+      try {
+        const { allQuery } = require('./db/database');
+        const searchQuery = `
+          SELECT DISTINCT discord_id, username, avatar 
+          FROM user_data 
+          WHERE username LIKE ? OR discord_id LIKE ?
+          LIMIT 10
+        `;
+        const users = await allQuery(searchQuery, [`%${q}%`, `%${q}%`]);
+        
+        const formattedUsers = users.map(user => ({
+          id: user.discord_id,
+          username: user.username,
+          avatar: user.avatar,
+          displayName: user.username
+        }));
+        
+        console.log('[DISCORD SEARCH] Usuarios encontrados en BD:', formattedUsers.length);
+        res.json(formattedUsers);
+      } catch (dbError) {
+        console.error('[DISCORD SEARCH] Error en BD:', dbError);
+        res.json([]);
+      }
+    }
+  } catch (error) {
+    console.error('[DISCORD SEARCH] Error general:', error);
+    res.json([]);
+  }
+});
+
 // Middleware global de ban - APLICAR NUEVO SISTEMA DE BANS
 app.use(banCheckMiddleware);
 
@@ -2817,77 +2889,6 @@ app.get('/api/discord/members', ensureAuthenticated, async (req, res) => {
   }
 });
 
-// Endpoint para buscar usuarios de Discord (sin autenticación requerida)
-app.get('/api/discord/search-users', async (req, res) => {
-  try {
-    const { q } = req.query;
-    if (!q || q.length < 3) {
-      return res.json([]);
-    }
-
-    console.log('[DISCORD SEARCH] Buscando usuarios:', q);
-
-    // Verificar si hay token de bot disponible
-    if (!process.env.DISCORD_BOT_TOKEN) {
-      console.warn('[DISCORD SEARCH] No hay token de bot disponible');
-      return res.json([]);
-    }
-
-    const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-    
-    // Buscar usuarios en el servidor Discord usando la API
-    const guildId = '1212556680911650866';
-    const response = await fetch(`https://discord.com/api/guilds/${guildId}/members/search?query=${encodeURIComponent(q)}&limit=10`, {
-      headers: {
-        'Authorization': `Bot ${process.env.DISCORD_BOT_TOKEN}`,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    if (response.ok) {
-      const users = await response.json();
-      const formattedUsers = users.map(user => ({
-        id: user.user.id,
-        username: user.user.username,
-        discriminator: user.user.discriminator,
-        avatar: user.user.avatar,
-        displayName: user.nick || user.user.username
-      }));
-      
-      console.log('[DISCORD SEARCH] Usuarios encontrados:', formattedUsers.length);
-      res.json(formattedUsers);
-    } else {
-      console.warn('[DISCORD SEARCH] Error en API de Discord:', response.status);
-      // Fallback: buscar en la base de datos local si existe
-      try {
-        const { allQuery } = require('./db/database');
-        const searchQuery = `
-          SELECT DISTINCT discord_id, username, avatar 
-          FROM user_data 
-          WHERE username LIKE ? OR discord_id LIKE ?
-          LIMIT 10
-        `;
-        const users = await allQuery(searchQuery, [`%${q}%`, `%${q}%`]);
-        
-        const formattedUsers = users.map(user => ({
-          id: user.discord_id,
-          username: user.username,
-          avatar: user.avatar,
-          displayName: user.username
-        }));
-        
-        console.log('[DISCORD SEARCH] Usuarios encontrados en BD:', formattedUsers.length);
-        res.json(formattedUsers);
-      } catch (dbError) {
-        console.error('[DISCORD SEARCH] Error en BD:', dbError);
-        res.json([]);
-      }
-    }
-  } catch (error) {
-    console.error('[DISCORD SEARCH] Error general:', error);
-    res.json([]);
-  }
-});
 
 // Endpoint para obtener miembros del servidor con roles
 app.get('/api/discord/members-with-roles', ensureAuthenticated, async (req, res) => {
