@@ -6,6 +6,7 @@ import {
   FaUser, FaFileAlt, FaCarCrash, FaShieldAlt
 } from 'react-icons/fa';
 import { apiUrl } from '../../utils/api';
+import codigoPenal from '../../utils/codigoPenal';
 
 // Sección DNI
 export const DNISection = ({ data }) => {
@@ -898,6 +899,13 @@ export const ArrestarSection = ({ onRefresh }) => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState('');
   const [arrestResult, setArrestResult] = useState(null);
+  
+  // Estados para autocompletado
+  const [cargosSuggestions, setCargosSuggestions] = useState([]);
+  const [showCargosSuggestions, setShowCargosSuggestions] = useState(false);
+  const [discordSuggestions, setDiscordSuggestions] = useState([]);
+  const [showDiscordSuggestions, setShowDiscordSuggestions] = useState(false);
+  const [searchingDiscord, setSearchingDiscord] = useState(false);
 
   const handleArrest = async (e) => {
     e.preventDefault();
@@ -942,6 +950,69 @@ export const ArrestarSection = ({ onRefresh }) => {
     }
   };
 
+  // Función para buscar cargos
+  const handleCargosChange = (value) => {
+    setFormData({...formData, cargos: value});
+    
+    if (value.length > 0) {
+      const suggestions = Object.entries(codigoPenal)
+        .filter(([codigo, data]) => 
+          codigo.toLowerCase().includes(value.toLowerCase()) ||
+          data.nombre.toLowerCase().includes(value.toLowerCase())
+        )
+        .slice(0, 10)
+        .map(([codigo, data]) => ({
+          codigo,
+          nombre: data.nombre,
+          multa: data.multa,
+          tipo: data.tipo
+        }));
+      
+      setCargosSuggestions(suggestions);
+      setShowCargosSuggestions(true);
+    } else {
+      setShowCargosSuggestions(false);
+    }
+  };
+
+  // Función para buscar usuarios de Discord
+  const handleDiscordChange = async (value) => {
+    setFormData({...formData, discordId: value});
+    
+    if (value.length >= 3) {
+      setSearchingDiscord(true);
+      try {
+        // Buscar usuarios en el servidor Discord
+        const response = await fetch(apiUrl(`/api/discord/search-users?q=${encodeURIComponent(value)}`));
+        if (response.ok) {
+          const users = await response.json();
+          setDiscordSuggestions(users.slice(0, 5));
+          setShowDiscordSuggestions(true);
+        }
+      } catch (err) {
+        console.error('Error buscando usuarios:', err);
+      } finally {
+        setSearchingDiscord(false);
+      }
+    } else {
+      setShowDiscordSuggestions(false);
+    }
+  };
+
+  // Función para seleccionar cargo
+  const selectCargo = (cargo) => {
+    const currentCargos = formData.cargos.split(',').map(c => c.trim()).filter(c => c);
+    const newCargos = [...currentCargos, cargo.codigo].join(', ');
+    setFormData({...formData, cargos: newCargos});
+    setShowCargosSuggestions(false);
+  };
+
+  // Función para seleccionar usuario Discord
+  const selectDiscordUser = (user) => {
+    setFormData({...formData, discordId: user.id});
+    setShowDiscordSuggestions(false);
+  };
+
   return (
     <div className="mdt-section">
       <h3><FaLock /> Procesar Arresto</h3>
@@ -949,26 +1020,70 @@ export const ArrestarSection = ({ onRefresh }) => {
       <form onSubmit={handleArrest} className="arrest-form">
         <div className="form-group">
           <label>Discord ID del arrestado:</label>
-          <input
-            type="text"
-            value={formData.discordId}
-            onChange={(e) => setFormData({...formData, discordId: e.target.value})}
-            className="mdt-input"
-            placeholder="123456789012345678"
-            required
-          />
+          <div className="autocomplete-container">
+            <input
+              type="text"
+              value={formData.discordId}
+              onChange={(e) => handleDiscordChange(e.target.value)}
+              className="mdt-input"
+              placeholder="123456789012345678 o busca por nombre"
+              required
+            />
+            {searchingDiscord && <FaSpinner className="fa-spin search-spinner" />}
+            {showDiscordSuggestions && discordSuggestions.length > 0 && (
+              <div className="autocomplete-suggestions">
+                {discordSuggestions.map((user, index) => (
+                  <div
+                    key={index}
+                    className="suggestion-item"
+                    onClick={() => selectDiscordUser(user)}
+                  >
+                    <div className="suggestion-avatar">
+                      <img src={user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : '/assets/spainrplogo.png'} alt="Avatar" />
+                    </div>
+                    <div className="suggestion-info">
+                      <div className="suggestion-name">{user.username}</div>
+                      <div className="suggestion-id">ID: {user.id}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
         
         <div className="form-group">
           <label>Cargos (códigos del código penal):</label>
-          <input
-            type="text"
-            value={formData.cargos}
-            onChange={(e) => setFormData({...formData, cargos: e.target.value})}
-            className="mdt-input"
-            placeholder="1.1,2.2,3.3"
-            required
-          />
+          <div className="autocomplete-container">
+            <input
+              type="text"
+              value={formData.cargos}
+              onChange={(e) => handleCargosChange(e.target.value)}
+              className="mdt-input"
+              placeholder="1.1,2.2,3.3 o busca por nombre"
+              required
+            />
+            {showCargosSuggestions && cargosSuggestions.length > 0 && (
+              <div className="autocomplete-suggestions">
+                {cargosSuggestions.map((cargo, index) => (
+                  <div
+                    key={index}
+                    className="suggestion-item"
+                    onClick={() => selectCargo(cargo)}
+                  >
+                    <div className="suggestion-info">
+                      <div className="suggestion-name">
+                        <strong>{cargo.codigo}</strong> - {cargo.nombre}
+                      </div>
+                      <div className="suggestion-details">
+                        Multa: {cargo.multa}€ | Tipo: {cargo.tipo}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           <small className="form-help">Separar múltiples cargos con comas (ej: 1.1,2.2,3.3)</small>
         </div>
         
