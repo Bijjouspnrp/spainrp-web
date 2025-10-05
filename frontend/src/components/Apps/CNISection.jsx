@@ -34,6 +34,8 @@ const CNISection = () => {
     totalArrestos: 0
   });
 
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+
   const [advancedSearch, setAdvancedSearch] = useState({
     query: '',
     searchType: 'all',
@@ -74,6 +76,14 @@ const CNISection = () => {
         if (cniRes.ok) {
           const cniData = await cniRes.json();
           setIsCNI(cniData.hasRole);
+          
+          // Mostrar modal de bienvenida solo la primera vez
+          if (cniData.hasRole) {
+            const hasSeenWelcome = localStorage.getItem('cni-welcome-seen');
+            if (!hasSeenWelcome) {
+              setShowWelcomeModal(true);
+            }
+          }
         }
 
         setLoading(false);
@@ -195,6 +205,68 @@ const CNISection = () => {
 
   return (
     <div className="cni-container">
+      {/* Modal de Bienvenida CNI */}
+      {showWelcomeModal && (
+        <div className="cni-welcome-modal-overlay">
+          <div className="cni-welcome-modal">
+            <div className="cni-welcome-header">
+              <FaShieldAlt className="cni-welcome-icon" />
+              <h2>🎉 ¡Bienvenido al Centro Nacional de Inteligencia!</h2>
+            </div>
+            
+            <div className="cni-welcome-content">
+              <div className="cni-welcome-section">
+                <h3>🆕 Nuevas Funcionalidades Disponibles</h3>
+                <ul>
+                  <li><strong>🔍 Sistema de Rastreo Avanzado</strong> - Rastrea movimientos financieros, inventarios y actividad completa</li>
+                  <li><strong>🏢 Gestión Empresarial Completa</strong> - Suspender, investigar, clausurar y eliminar empresas</li>
+                  <li><strong>📝 Archivos CNI</strong> - Sistema de blog para documentar investigaciones de bandas</li>
+                  <li><strong>💰 Análisis Financiero</strong> - Supervisión de patrimonios y movimientos sospechosos</li>
+                </ul>
+              </div>
+
+              <div className="cni-welcome-section">
+                <h3>🎯 Misión del CNI en SpainRP</h3>
+                <div className="cni-mission-cards">
+                  <div className="cni-mission-card">
+                    <FaBuilding />
+                    <h4>Registro Empresarial</h4>
+                    <p>Registrar y supervisar todas las empresas del servidor Discord</p>
+                  </div>
+                  <div className="cni-mission-card">
+                    <FaEye />
+                    <h4>Supervisión Continua</h4>
+                    <p>Revisar y monitorear actividades empresariales</p>
+                  </div>
+                  <div className="cni-mission-card">
+                    <FaShieldAlt />
+                    <h4>Investigación Criminal</h4>
+                    <p>Detectar y documentar actos maliciosos en SpainRP</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="cni-welcome-section">
+                <h3>👨‍💻 Desarrollado por BijjouPro08</h3>
+                <p>Este sistema de inteligencia ha sido desarrollado específicamente para las necesidades del CNI de SpainRP, proporcionando herramientas avanzadas de investigación y supervisión.</p>
+              </div>
+            </div>
+
+            <div className="cni-welcome-actions">
+              <button 
+                className="cni-btn cni-btn-primary"
+                onClick={() => {
+                  localStorage.setItem('cni-welcome-seen', 'true');
+                  setShowWelcomeModal(false);
+                }}
+              >
+                <FaCheckCircle /> Entendido, Comenzar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="cni-header">
         <div className="cni-header-content">
           <div className="cni-logo">
@@ -936,6 +1008,50 @@ const BusinessRecordsTab = () => {
 
   // Funciones de gestión empresarial
   const handleBusinessAction = async (businessId, action, newStatus = null) => {
+    // Confirmaciones específicas para cada acción
+    const confirmations = {
+      'delete': {
+        title: '⚠️ CONFIRMACIÓN CRÍTICA',
+        message: '¿Estás seguro de ELIMINAR PERMANENTEMENTE esta empresa? Esta acción NO se puede deshacer y se perderán todos los datos asociados.',
+        confirmText: 'SÍ, ELIMINAR DEFINITIVAMENTE',
+        cancelText: 'Cancelar'
+      },
+      'suspendida': {
+        title: '⚠️ Suspender Empresa',
+        message: '¿Confirmas la SUSPENSIÓN TEMPORAL de esta empresa? La empresa quedará inactiva hasta nueva orden.',
+        confirmText: 'SÍ, SUSPENDER',
+        cancelText: 'Cancelar'
+      },
+      'bajo_investigacion': {
+        title: '🔍 Poner Bajo Investigación',
+        message: '¿Confirmas poner esta empresa BAJO INVESTIGACIÓN? Se iniciará un protocolo de supervisión especial.',
+        confirmText: 'SÍ, INVESTIGAR',
+        cancelText: 'Cancelar'
+      },
+      'clausurada': {
+        title: '🚫 Clausurar Empresa',
+        message: '¿Confirmas la CLAUSURA DEFINITIVA de esta empresa? Esta acción es IRREVERSIBLE.',
+        confirmText: 'SÍ, CLAUSURAR',
+        cancelText: 'Cancelar'
+      },
+      'activa': {
+        title: '✅ Reactivar Empresa',
+        message: '¿Confirmas REACTIVAR esta empresa? Se restaurará su estado operativo normal.',
+        confirmText: 'SÍ, REACTIVAR',
+        cancelText: 'Cancelar'
+      }
+    };
+
+    const confirmation = confirmations[newStatus || action];
+    if (!confirmation) return;
+
+    // Mostrar confirmación personalizada
+    const confirmed = window.confirm(
+      `${confirmation.title}\n\n${confirmation.message}\n\nPresiona OK para ${confirmation.confirmText.toLowerCase()} o Cancelar para ${confirmation.cancelText.toLowerCase()}.`
+    );
+
+    if (!confirmed) return;
+
     setLoading(true);
     setError('');
     setSuccess('');
@@ -1302,11 +1418,7 @@ const BusinessRecordsTab = () => {
                   )}
                   <button 
                     className="cni-btn cni-btn-danger"
-                    onClick={() => {
-                      if (window.confirm('¿Estás seguro de eliminar esta empresa? Esta acción no se puede deshacer.')) {
-                        handleBusinessAction(business.id, 'delete');
-                      }
-                    }}
+                    onClick={() => handleBusinessAction(business.id, 'delete')}
                     disabled={loading}
                   >
                     <FaTimes /> Eliminar
