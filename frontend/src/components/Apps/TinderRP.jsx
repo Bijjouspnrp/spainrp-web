@@ -539,6 +539,30 @@ const TinderRP = () => {
     }}>
       <DiscordUserBar />
       
+      {/* Aviso de desarrollo */}
+      <div style={{
+        background: 'linear-gradient(135deg, #ffa502, #ff6348)',
+        color: 'white',
+        padding: '12px 20px',
+        textAlign: 'center',
+        fontSize: '14px',
+        fontWeight: '600',
+        boxShadow: '0 4px 15px rgba(255,165,2,0.3)',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        <div style={{
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          right: '0',
+          height: '2px',
+          background: 'linear-gradient(90deg, #ffa502, #ff6348, #ffa502)',
+          animation: 'shimmer 2s infinite'
+        }}></div>
+        🚧 TinderRP está en desarrollo - Funcionalidades limitadas 🚧
+      </div>
+
       {/* Header */}
       <div style={{
         background: 'rgba(255,255,255,0.1)',
