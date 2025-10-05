@@ -12,10 +12,12 @@ import {
   DNISection, MultasSection, AntecedentesSection, InventarioSection,
   SearchSection, MultarSection, ArrestarSection, RankingSection 
 } from './MDTSections';
+import CNISection from './CNISection';
 
 const MDTPolicial = () => {
   const [user, setUser] = useState(null);
   const [isPolice, setIsPolice] = useState(false);
+  const [isCNI, setIsCNI] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('citizen');
   const [error, setError] = useState(null);
@@ -77,6 +79,13 @@ const MDTPolicial = () => {
         if (policeRes.ok) {
           const policeData = await policeRes.json();
           setIsPolice(policeData.hasRole);
+        }
+
+        // Verificar si es CNI
+        const cniRes = await fetch(apiUrl(`/api/discord/rolecheck/${userData.user.id}/1384340775772360841`));
+        if (cniRes.ok) {
+          const cniData = await cniRes.json();
+          setIsCNI(cniData.hasRole);
         }
 
         setLoading(false);
@@ -218,6 +227,14 @@ const MDTPolicial = () => {
             <FaShieldAlt /> Policía
           </button>
         )}
+        {isCNI && (
+          <button 
+            className={`mdt-tab ${activeTab === 'cni' ? 'active' : ''}`}
+            onClick={() => setActiveTab('cni')}
+          >
+            <FaEye /> CNI
+          </button>
+        )}
       </div>
 
       <div className="mdt-content">
@@ -234,6 +251,9 @@ const MDTPolicial = () => {
             onSearch={setPoliceData}
             onRefresh={loadPoliceData}
           />
+        )}
+        {activeTab === 'cni' && isCNI && (
+          <CNISection />
         )}
       </div>
     </div>
