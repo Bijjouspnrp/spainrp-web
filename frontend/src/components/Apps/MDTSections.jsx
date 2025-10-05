@@ -1297,7 +1297,7 @@ export const ArrestarSection = ({ onRefresh }) => {
 
 // Sección Ranking (Policía)
 export const RankingSection = ({ data, message }) => {
-  if (!data || (!data.porImportePendiente && !data.porNumeroPendientes)) {
+  if (!data || (!data.top?.porImportePendiente && !data.top?.porNumeroPendientes)) {
     return (
       <div className="mdt-section">
         <h3><FaTrophy /> Top Multas</h3>
@@ -1396,17 +1396,17 @@ export const RankingSection = ({ data, message }) => {
       </div>
 
       {/* Contenido del ranking */}
-      {activeTab === 'importe' && data.porImportePendiente && 
+      {activeTab === 'importe' && data.top?.porImportePendiente && 
         renderRankingList(
-          data.porImportePendiente, 
+          data.top.porImportePendiente, 
           "Top por Importe Pendiente", 
           "Usuarios con mayor cantidad de dinero pendiente de pago"
         )
       }
       
-      {activeTab === 'numero' && data.porNumeroPendientes && 
+      {activeTab === 'numero' && data.top?.porNumeroPendientes && 
         renderRankingList(
-          data.porNumeroPendientes, 
+          data.top.porNumeroPendientes, 
           "Top por Número de Multas", 
           "Usuarios con mayor cantidad de multas pendientes"
         )
