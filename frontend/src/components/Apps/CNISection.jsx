@@ -100,6 +100,7 @@ const CNISection = () => {
           setDatabaseStats(prev => ({
             ...prev,
             totalUsers: cniData.baseDatos?.totalUsuarios || 0,
+            totalDNIs: cniData.baseDatos?.dnisRegistrados || 0,
             totalMultas: cniData.multas?.total || 0,
             totalAntecedentes: cniData.baseDatos?.antecedentes || 0,
             totalArrestos: cniData.baseDatos?.arrestos || 0
