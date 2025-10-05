@@ -179,14 +179,29 @@ function PrivateRoute({ children }) {
           if (userData && userData.id) {
             try {
               console.log('[Auth] 🔍 Checking admin status for user:', userData.id);
-              const adminRes = await fetch(apiUrl(`/api/discord/isadmin/${userData.id}`));
-              if (adminRes.ok) {
-                const adminData = await adminRes.json();
-                userData.isAdmin = !!adminData.isAdmin;
-                console.log('[Auth] 👑 Admin status:', userData.isAdmin);
+              
+              // Verificar si es admin exclusivo primero
+              const isExclusiveAdmin = userData.id === '710112055985963090';
+              userData.isAdmin = isExclusiveAdmin;
+              
+              // Si no es admin exclusivo, verificar permisos de Discord
+              if (!isExclusiveAdmin) {
+                try {
+                  const adminRes = await fetch(apiUrl(`/api/discord/isadmin/${userData.id}`));
+                  if (adminRes.ok) {
+                    const adminData = await adminRes.json();
+                    userData.isAdmin = !!adminData.isAdmin;
+                    console.log('[Auth] 👑 Discord admin status:', userData.isAdmin);
+                  } else {
+                    userData.isAdmin = false;
+                    console.log('[Auth] ⚠️ Could not verify Discord admin status');
+                  }
+                } catch (error) {
+                  console.error('[Auth] ❌ Error checking Discord admin status:', error);
+                  userData.isAdmin = false;
+                }
               } else {
-                userData.isAdmin = false;
-                console.log('[Auth] ⚠️ Could not verify admin status');
+                console.log('[Auth] 👑 Exclusive admin detected');
               }
             } catch (error) {
               console.log('[Auth] ❌ Error checking admin status:', error);
