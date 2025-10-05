@@ -70,11 +70,11 @@ function LoginPage() {
       originalUrl: window.location.href,
       searchParams: location.search,
       redirectUrl: redirect,
-      apiUrl: import.meta.env.VITE_API_URL || 'https://spainrp-web.onrender.com'
+      apiUrl: import.meta.env.VITE_API_URL || 'https://spainrp-oficial.onrender.com'
     });
     
     // Redirigir a Discord OAuth
-    const apiUrl = import.meta.env.VITE_API_URL || 'https://spainrp-web.onrender.com';
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://spainrp-oficial.onrender.com';
     const discordAuthUrl = `${apiUrl.replace(/\/$/, '')}/auth/login?redirect=${encodeURIComponent(redirect)}`;
     console.log('[LoginPage] 🔗 Redirecting to Discord OAuth:', discordAuthUrl);
     window.location.href = discordAuthUrl;
@@ -788,7 +788,7 @@ function App() {
       }
     };
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://spainrp-web.onrender.com';
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://spainrp-oficial.onrender.com';
       socket = io(apiUrl.replace(/\/$/, ''), {
         path: '/socket.io',
         transports: ['websocket'],

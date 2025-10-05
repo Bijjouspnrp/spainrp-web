@@ -9,10 +9,10 @@ services:
         destination: "/index.html"
     envVars:
       - key: VITE_API_URL
-        value: https://spainrp-web.onrender.com
+        value: https://spainrp-oficial.onrender.com
       - key: VITE_BOT_URL
-        value: https://spainrp-web.onrender.com
+        value: https://spainrp-oficial.onrender.com
       - key: VITE_SHOP_URL
-        value: https://spainrp-web.onrender.com
+        value: https://spainrp-oficial.onrender.com
       - key: VITE_PPT_URL
-        value: https://spainrp-web.onrender.com
+        value: https://spainrp-oficial.onrender.com

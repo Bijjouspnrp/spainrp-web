@@ -4777,7 +4777,7 @@ app.get('/api/roblox/profile/:userId', async (req, res) => {
       });
     } else {
       // Usuario no verificado
-      res.status(404).json({ 
+      res.json({ 
         success: false,
         error: 'Usuario no verificado en Roblox',
         profile: null
