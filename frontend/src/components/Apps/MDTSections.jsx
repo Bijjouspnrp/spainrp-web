@@ -1297,6 +1297,59 @@ export const ArrestarSection = ({ onRefresh }) => {
 
 // Sección Ranking (Policía)
 export const RankingSection = ({ data, message }) => {
+  const [activeTab, setActiveTab] = useState('importe');
+  const [userData, setUserData] = useState({});
+  const [loadingUsers, setLoadingUsers] = useState(false);
+
+  // Función para obtener datos de usuarios de Discord
+  const fetchUserData = async (discordIds) => {
+    if (discordIds.length === 0) return;
+    
+    setLoadingUsers(true);
+    try {
+      // Hacer múltiples requests en paralelo para obtener datos de usuarios
+      const userPromises = discordIds.map(async (discordId) => {
+        try {
+          const response = await fetch(apiUrl(`/api/discord/search-users?q=${discordId}`));
+          if (response.ok) {
+            const users = await response.json();
+            const user = users.find(u => u.id === discordId);
+            return { discordId, user: user || null };
+          }
+        } catch (err) {
+          console.warn(`Error obteniendo datos para ${discordId}:`, err);
+        }
+        return { discordId, user: null };
+      });
+
+      const results = await Promise.all(userPromises);
+      const userDataMap = {};
+      results.forEach(({ discordId, user }) => {
+        userDataMap[discordId] = user;
+      });
+      
+      setUserData(userDataMap);
+    } catch (err) {
+      console.error('Error obteniendo datos de usuarios:', err);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  // Obtener datos de usuarios cuando cambien los datos del ranking
+  React.useEffect(() => {
+    if (data?.top?.porImportePendiente || data?.top?.porNumeroPendientes) {
+      const allDiscordIds = [
+        ...(data.top?.porImportePendiente || []).map(u => u.discordId),
+        ...(data.top?.porNumeroPendientes || []).map(u => u.discordId)
+      ];
+      
+      // Eliminar duplicados
+      const uniqueIds = [...new Set(allDiscordIds)];
+      fetchUserData(uniqueIds);
+    }
+  }, [data]);
+
   if (!data || (!data.top?.porImportePendiente && !data.top?.porNumeroPendientes)) {
     return (
       <div className="mdt-section">
@@ -1315,47 +1368,59 @@ export const RankingSection = ({ data, message }) => {
     );
   }
 
-  const [activeTab, setActiveTab] = useState('importe');
-
   const renderRankingList = (rankingData, title, subtitle) => (
     <div className="ranking-tab-content">
       <div className="ranking-header">
         <h4>{title}</h4>
         <p className="ranking-subtitle">{subtitle}</p>
+        {loadingUsers && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
+            <FaSpinner className="fa-spin" />
+            <span style={{ fontSize: '0.9rem', color: '#9ca3af' }}>Cargando datos de usuarios...</span>
+          </div>
+        )}
       </div>
       <div className="ranking-list">
-        {rankingData.map((user, index) => (
-          <div key={user.discordId || index} className={`ranking-item ${index < 3 ? 'top' : ''}`}>
-            <div className="ranking-position">
-              {index === 0 && <FaTrophy className="gold" />}
-              {index === 1 && <FaTrophy className="silver" />}
-              {index === 2 && <FaTrophy className="bronze" />}
-              {index > 2 && <span className="position">#{user.posicion || index + 1}</span>}
-            </div>
-            <div className="ranking-avatar">
-              <img 
-                src={`https://cdn.discordapp.com/avatars/${user.discordId}/default.png`}
-                alt={`Avatar de ${user.discordId}`}
-                className="ranking-avatar-img"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.nextSibling.style.display = 'flex';
-                }}
-              />
-              <div className="ranking-avatar-placeholder" style={{display: 'none'}}>
-                <FaUser size={20} />
+        {rankingData.map((user, index) => {
+          const userInfo = userData[user.discordId];
+          const username = userInfo?.username || userInfo?.displayName || `Usuario_${user.discordId?.slice(-4)}`;
+          const avatarUrl = userInfo?.avatar 
+            ? `https://cdn.discordapp.com/avatars/${user.discordId}/${userInfo.avatar}.png`
+            : `https://cdn.discordapp.com/avatars/${user.discordId}/default.png`;
+          
+          return (
+            <div key={user.discordId || index} className={`ranking-item ${index < 3 ? 'top' : ''}`}>
+              <div className="ranking-position">
+                {index === 0 && <FaTrophy className="gold" />}
+                {index === 1 && <FaTrophy className="silver" />}
+                {index === 2 && <FaTrophy className="bronze" />}
+                {index > 2 && <span className="position">#{user.posicion || index + 1}</span>}
               </div>
+              <div className="ranking-avatar">
+                <img 
+                  src={avatarUrl}
+                  alt={`Avatar de ${username}`}
+                  className="ranking-avatar-img"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'flex';
+                  }}
+                />
+                <div className="ranking-avatar-placeholder" style={{display: 'none'}}>
+                  <FaUser size={20} />
+                </div>
+              </div>
+               <div className="ranking-info">
+                 <h4>{username}</h4>
+                 <p className="ranking-discord-id">ID: {user.discordId}</p>
+                 <p className="ranking-stats">
+                   {user.numPendientes || 0} multas pendientes<br/>
+                   {(user.importePendiente || 0).toLocaleString('es-ES')}€ pendiente
+                 </p>
+               </div>
             </div>
-             <div className="ranking-info">
-               <h4>Usuario {user.discordId?.slice(-4) || 'N/A'}</h4>
-               <p className="ranking-discord-id">ID: {user.discordId}</p>
-               <p className="ranking-stats">
-                 {user.numPendientes || 0} multas pendientes<br/>
-                 {(user.importePendiente || 0).toLocaleString('es-ES')}€ pendiente
-               </p>
-             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
