@@ -194,8 +194,22 @@ const Panel = () => {
         return;
       }
 
+      // Verificar si tiene roles de administrador por nombre
+      const hasAdminRole = roles.some(r => {
+        const roleName = r.name?.toLowerCase() || '';
+        return roleName.includes('admin') || 
+               roleName.includes('fundacion') || 
+               roleName.includes('developer');
+      });
+
+      if (hasAdminRole) {
+        setIsAdmin(true);
+        setAdminLoading(false);
+        return;
+      }
+
       try {
-        // Verificar permisos de Discord
+        // Verificar permisos de Discord como fallback
         const response = await fetch(apiUrl(`/api/discord/isadmin/${user.id}`));
         if (response.ok) {
           const data = await response.json();
@@ -212,7 +226,7 @@ const Panel = () => {
     };
 
     checkAdminStatus();
-  }, [user?.id, isExclusiveAdmin]);
+  }, [user?.id, isExclusiveAdmin, roles]);
 
   const menuItems = [
     { id: 'overview', label: 'Resumen', icon: FaHome, href: '/panel' },
