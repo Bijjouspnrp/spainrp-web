@@ -88,7 +88,7 @@ html, body, #root {
 @media (max-width: 900px) {
   .sidebar {
     position: fixed;
-    left: -100vw;
+    left: -100%;
     top: 0;
     height: 100vh;
     width: 80vw;
@@ -96,20 +96,28 @@ html, body, #root {
     box-shadow: 2px 0 16px #23272a33;
     z-index: 1002;
     transition: left 0.3s cubic-bezier(.4,2,.6,1);
+    display: flex;
+    flex-direction: column;
   }
+  
   .sidebar.open {
     left: 0;
   }
-  .sidebar-overlay.open {
-    display: block;
+  
+  .sidebar-overlay {
+    display: none;
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background: rgba(0,0,0,0.5);
     z-index: 1001;
     backdrop-filter: blur(2px);
   }
-  .sidebar-overlay {
-    display: none;
+  
+  .sidebar-overlay.open {
+    display: block;
   }
   
   /* Mejorar navegación en móvil */
@@ -122,11 +130,39 @@ html, body, #root {
     gap: 16px;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    width: 100%;
+    text-align: left;
+    border: none;
+    background: none;
+    color: #cbd5e1;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .nav-item:hover {
+    background: #334155;
+    color: white;
+  }
+  
+  .nav-item.active {
+    background: #1e40af;
+    color: white;
+    border-left: 3px solid #fbbf24;
   }
   
   .nav-item:active {
     background: #1e40af;
     transform: scale(0.98);
+  }
+  
+  .nav-item.admin {
+    color: #fbbf24;
+    font-weight: 600;
+  }
+  
+  .nav-item.exclusive {
+    color: #ef4444;
+    font-weight: 600;
   }
 }
 
@@ -333,8 +369,8 @@ html, body, #root {
   background: #1e293b;
   color: white;
   position: fixed;
-  height: calc(100vh - 80px); /* Altura menos la navbar principal */
-  top: 80px; /* Posición debajo de la navbar principal */
+  height: 100vh;
+  top: 0;
   left: -280px;
   transition: left 0.3s ease;
   z-index: 1000;
@@ -350,7 +386,7 @@ html, body, #root {
 /* Overlay para móviles */
 .sidebar-overlay {
   position: fixed;
-  top: 80px; /* Debajo de la navbar principal */
+  top: 0;
   left: 0;
   right: 0;
   bottom: 0;
@@ -463,7 +499,6 @@ html, body, #root {
   flex: 1;
   margin-left: 0;
   transition: margin-left 0.3s ease;
-  margin-top: 80px; /* Espacio para la navbar principal */
 }
 
 .main-header {
