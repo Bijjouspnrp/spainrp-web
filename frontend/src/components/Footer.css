@@ -95,6 +95,30 @@ body:not(.dark) .footer-description {
   transform: translateY(-2px);
 }
 
+.social-link.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.05);
+  color: #666;
+}
+
+.social-link.disabled:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #666;
+  transform: none;
+}
+
+/* Modo claro para enlaces deshabilitados */
+body:not(.dark) .social-link.disabled {
+  background: rgba(0, 0, 0, 0.05);
+  color: #999;
+}
+
+body:not(.dark) .social-link.disabled:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #999;
+}
+
 .footer-links {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

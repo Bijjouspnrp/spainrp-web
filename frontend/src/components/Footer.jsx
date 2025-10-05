@@ -1,6 +1,6 @@
 import React from 'react';
 import './Footer.css';
-import { FaDiscord, FaTwitter, FaYoutube, FaInstagram, FaHeart } from 'react-icons/fa';
+import { FaDiscord, FaTwitter, FaYoutube, FaInstagram, FaTiktok, FaHeart } from 'react-icons/fa';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -26,10 +26,11 @@ const Footer = () => {
   };
 
   const socialLinks = [
-    { icon: <FaDiscord />, href: 'https://discord.gg/sMzFgFQHXA', label: 'Discord' },
-    { icon: <FaTwitter />, href: '#', label: 'Twitter' },
-    { icon: <FaYoutube />, href: '#', label: 'YouTube' },
-    { icon: <FaInstagram />, href: '#', label: 'Instagram' }
+    { icon: <FaDiscord />, href: 'https://discord.gg/sMzFgFQHXA', label: 'Discord', enabled: true },
+    { icon: <FaInstagram />, href: 'https://www.instagram.com/spainrp_oficial/', label: 'Instagram', enabled: true },
+    { icon: <FaTiktok />, href: 'https://www.tiktok.com/@spainrpoficialv21?_t=ZN-90IhRLfCMze&_r=1', label: 'TikTok', enabled: true },
+    { icon: <FaTwitter />, href: '#', label: 'Twitter', enabled: false },
+    { icon: <FaYoutube />, href: '#', label: 'YouTube', enabled: false }
   ];
 
   return (
@@ -56,16 +57,27 @@ const Footer = () => {
             
             <div className="footer-social">
               {socialLinks.map((social, index) => (
-                <a 
-                  key={index}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="social-link"
-                  aria-label={social.label}
-                >
-                  {social.icon}
-                </a>
+                social.enabled ? (
+                  <a 
+                    key={index}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="social-link"
+                    aria-label={social.label}
+                  >
+                    {social.icon}
+                  </a>
+                ) : (
+                  <span 
+                    key={index}
+                    className="social-link disabled"
+                    aria-label={`${social.label} - No disponible`}
+                    title={`${social.label} - No disponible`}
+                  >
+                    {social.icon}
+                  </span>
+                )
               ))}
             </div>
           </div>
