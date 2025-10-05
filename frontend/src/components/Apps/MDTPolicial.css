@@ -1650,6 +1650,79 @@
     max-width: 150px;
     max-height: 100px;
   }
+  
+  .selected-cargos {
+    padding: 0.4rem;
+    gap: 0.4rem;
+  }
+  
+  .cargo-chip {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.8rem;
+  }
+  
+  .cargo-chip-remove {
+    width: 18px;
+    height: 18px;
+    font-size: 12px;
+  }
+}
+
+/* Estilos para cargos seleccionados */
+.selected-cargos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 8px;
+  min-height: 40px;
+}
+
+.cargo-chip {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+  padding: 0.4rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  gap: 0.5rem;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+  transition: all 0.2s ease;
+}
+
+.cargo-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
+}
+
+.cargo-chip-text {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.cargo-chip-remove {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.cargo-chip-remove:hover {
+  background: rgba(239, 68, 68, 0.8);
+  transform: scale(1.1);
 }
 
 /* Estilos para autocompletado */

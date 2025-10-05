@@ -906,6 +906,8 @@ export const ArrestarSection = ({ onRefresh }) => {
   const [discordSuggestions, setDiscordSuggestions] = useState([]);
   const [showDiscordSuggestions, setShowDiscordSuggestions] = useState(false);
   const [searchingDiscord, setSearchingDiscord] = useState(false);
+  const [selectedCargos, setSelectedCargos] = useState([]);
+  const [cargosInput, setCargosInput] = useState('');
 
   const handleArrest = async (e) => {
     e.preventDefault();
@@ -938,6 +940,8 @@ export const ArrestarSection = ({ onRefresh }) => {
         setResult('✅ Arresto procesado correctamente');
         setArrestResult(data);
         setFormData({ discordId: '', cargos: '', oficialId: '', fotoUrl: '' });
+        setSelectedCargos([]);
+        setCargosInput('');
         onRefresh();
       } else {
         setResult(`❌ Error: ${data.error || 'Error procesando arresto'}`);
@@ -952,7 +956,7 @@ export const ArrestarSection = ({ onRefresh }) => {
 
   // Función para buscar cargos
   const handleCargosChange = (value) => {
-    setFormData({...formData, cargos: value});
+    setCargosInput(value);
     
     if (value.length > 0) {
       const suggestions = Object.entries(codigoPenal)
@@ -973,6 +977,31 @@ export const ArrestarSection = ({ onRefresh }) => {
     } else {
       setShowCargosSuggestions(false);
     }
+  };
+
+  // Función para seleccionar un cargo
+  const selectCargo = (cargo) => {
+    if (!selectedCargos.find(c => c.codigo === cargo.codigo)) {
+      const newSelectedCargos = [...selectedCargos, cargo];
+      setSelectedCargos(newSelectedCargos);
+      
+      // Actualizar el formData con los códigos separados por comas
+      const cargosString = newSelectedCargos.map(c => c.codigo).join(',');
+      setFormData({...formData, cargos: cargosString});
+    }
+    
+    setCargosInput('');
+    setShowCargosSuggestions(false);
+  };
+
+  // Función para eliminar un cargo seleccionado
+  const removeCargo = (codigo) => {
+    const newSelectedCargos = selectedCargos.filter(c => c.codigo !== codigo);
+    setSelectedCargos(newSelectedCargos);
+    
+    // Actualizar el formData
+    const cargosString = newSelectedCargos.map(c => c.codigo).join(',');
+    setFormData({...formData, cargos: cargosString});
   };
 
   // Función para buscar usuarios de Discord
@@ -1029,13 +1058,6 @@ export const ArrestarSection = ({ onRefresh }) => {
     }
   };
 
-  // Función para seleccionar cargo
-  const selectCargo = (cargo) => {
-    const currentCargos = formData.cargos.split(',').map(c => c.trim()).filter(c => c);
-    const newCargos = [...currentCargos, cargo.codigo].join(', ');
-    setFormData({...formData, cargos: newCargos});
-    setShowCargosSuggestions(false);
-  };
 
   // Función para seleccionar usuario Discord
   const selectDiscordUser = (user) => {
@@ -1083,16 +1105,39 @@ export const ArrestarSection = ({ onRefresh }) => {
         </div>
         
         <div className="form-group">
-          <label>Cargos (códigos del código penal):</label>
+          <label>Cargos *</label>
+          <div className="form-help">Busca y selecciona cargos del código penal</div>
+          
+          {/* Cargos seleccionados */}
+          {selectedCargos.length > 0 && (
+            <div className="selected-cargos">
+              {selectedCargos.map((cargo, index) => (
+                <div key={index} className="cargo-chip">
+                  <span className="cargo-chip-text">
+                    <strong>{cargo.codigo}</strong> - {cargo.nombre}
+                  </span>
+                  <button
+                    type="button"
+                    className="cargo-chip-remove"
+                    onClick={() => removeCargo(cargo.codigo)}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {/* Input de búsqueda */}
           <div className="autocomplete-container">
             <input
               type="text"
-              value={formData.cargos}
+              value={cargosInput}
               onChange={(e) => handleCargosChange(e.target.value)}
               className="mdt-input"
-              placeholder="1.1,2.2,3.3 o busca por nombre"
-              required
+              placeholder="Busca por código o nombre del cargo..."
             />
+            
             {showCargosSuggestions && cargosSuggestions.length > 0 && (
               <div className="autocomplete-suggestions">
                 {cargosSuggestions.map((cargo, index) => (
@@ -1106,7 +1151,7 @@ export const ArrestarSection = ({ onRefresh }) => {
                         <strong>{cargo.codigo}</strong> - {cargo.nombre}
                       </div>
                       <div className="suggestion-details">
-                        Multa: {cargo.multa}€ | Tipo: {cargo.tipo}
+                        {cargo.multa}€ • {cargo.tipo}
                       </div>
                     </div>
                   </div>
@@ -1114,7 +1159,6 @@ export const ArrestarSection = ({ onRefresh }) => {
               </div>
             )}
           </div>
-          <small className="form-help">Separar múltiples cargos con comas (ej: 1.1,2.2,3.3)</small>
         </div>
         
         <div className="form-group">
