@@ -30,10 +30,11 @@ body:not(.dark) .stats {
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 2rem;
   max-width: 1200px;
   margin: 0 auto;
+  align-items: stretch;
 }
 
 .stat-card {
@@ -42,10 +43,14 @@ body:not(.dark) .stats {
   border-radius: 16px;
   background: var(--stat-bg);
   padding: 2rem 1.5rem;
-  margin-bottom: 2rem;
   transition: transform 0.25s cubic-bezier(.4,2,.6,1), box-shadow 0.25s;
   animation: fadeInUp 0.7s;
   border: 1.5px solid var(--stat-ring);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-height: 180px;
 }
 
 .stat-card::before {
@@ -100,6 +105,10 @@ body:not(.dark) .stats {
     max-width: 1400px;
   }
   
+  .stat-card {
+    min-height: 200px;
+  }
+  
   .stat-number {
     font-size: 1.3rem;
   }
@@ -109,6 +118,10 @@ body:not(.dark) .stats {
   .stats-grid {
     grid-template-columns: repeat(5, 1fr);
     gap: 2rem;
+  }
+  
+  .stat-card {
+    min-height: 190px;
   }
   
   .stat-number {
@@ -121,6 +134,10 @@ body:not(.dark) .stats {
     grid-template-columns: repeat(4, 1fr);
   }
   
+  .stat-card {
+    min-height: 180px;
+  }
+  
   .stat-number {
     font-size: 1.3rem;
   }
@@ -129,6 +146,10 @@ body:not(.dark) .stats {
 @media (min-width: 900px) and (max-width: 1199px) {
   .stats-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .stat-card {
+    min-height: 170px;
   }
   
   .stat-number {
@@ -149,6 +170,7 @@ body:not(.dark) .stats {
   .stat-card {
     padding: 1.2rem 0.7rem;
     font-size: 15px;
+    min-height: 160px;
   }
 
   .stat-icon {
@@ -174,6 +196,7 @@ body:not(.dark) .stats {
 
   .stat-card {
     padding: 1.25rem;
+    min-height: 150px;
   }
 
   .stat-icon {
