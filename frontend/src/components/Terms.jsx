@@ -500,7 +500,7 @@ const Terms = () => {
         </InteractiveSection>
 
         <InteractiveSection
-          title="9\. Uso de Apps y Herramientas"
+          title="8. Uso de Apps y Herramientas"
           icon={<FaAppStore />}
           isExpanded={expandedSections['apps-tools']}
           onToggle={() => toggleSection('apps-tools')}
@@ -569,7 +569,7 @@ const Terms = () => {
         </InteractiveSection>
 
         <InteractiveSection
-          title="9\. Seguridad y Anti-Cheat"
+          title="9. Seguridad y Anti-Cheat"
           icon={<FaShieldAlt />}
           isExpanded={expandedSections['security-anticheat']}
           onToggle={() => toggleSection('security-anticheat')}
@@ -635,7 +635,7 @@ const Terms = () => {
         </InteractiveSection>
 
         <InteractiveSection
-          title="10\. Integración con Plataformas"
+          title="10. Integración con Plataformas"
           icon={<FaDiscord />}
           isExpanded={expandedSections['platform-integration']}
           onToggle={() => toggleSection('platform-integration')}
@@ -713,7 +713,7 @@ const Terms = () => {
         </InteractiveSection>
 
         <InteractiveSection
-          title="11\. Edad mínima"
+          title="11. Edad mínima"
           icon={<FaUserShield />}
           isExpanded={expandedSections['age-requirement']}
           onToggle={() => toggleSection('age-requirement')}
@@ -741,7 +741,7 @@ const Terms = () => {
         </InteractiveSection>
 
         <InteractiveSection
-          title="12\. Contenidos de usuario"
+          title="12. Contenidos de usuario"
           icon={<FaUserShield />}
           isExpanded={expandedSections['user-content']}
           onToggle={() => toggleSection('user-content')}
@@ -773,7 +773,7 @@ const Terms = () => {
         </InteractiveSection>
 
         <InteractiveSection
-          title="13\. Propiedad intelectual"
+          title="13. Propiedad intelectual"
           icon={<FaLock />}
           isExpanded={expandedSections['intellectual-property']}
           onToggle={() => toggleSection('intellectual-property')}
@@ -804,7 +804,7 @@ const Terms = () => {
         </InteractiveSection>
 
         <InteractiveSection
-          title="14\. Servicios de terceros y limitación de responsabilidad"
+          title="14. Servicios de terceros y limitación de responsabilidad"
           icon={<FaShieldAlt />}
           isExpanded={expandedSections['third-party-services']}
           onToggle={() => toggleSection('third-party-services')}
@@ -859,7 +859,7 @@ const Terms = () => {
         </InteractiveSection>
 
         <InteractiveSection
-          title="15\. Política de datos y privacidad detallada"
+          title="15. Política de datos y privacidad detallada"
           icon={<FaLock />}
           isExpanded={expandedSections['privacy']}
           onToggle={() => toggleSection('privacy')}
@@ -873,6 +873,7 @@ const Terms = () => {
             <br/>• Nombre de usuario y avatar
             <br/>• Roles y permisos en el servidor
             <br/>• Historial de actividad en el panel
+            <br/>• La aceptación de envio de MDS para la comunicación con el Bot Spain Web integrado con Discord.
             <br/>• Datos de verificación de Roblox (si aplica)
           </p>
 
@@ -922,7 +923,7 @@ const Terms = () => {
         </InteractiveSection>
 
         <InteractiveSection
-          title="16\. Disponibilidad y mantenimiento"
+          title="16. Disponibilidad y mantenimiento"
           icon={<FaInfoCircle />}
           isExpanded={expandedSections['availability']}
           onToggle={() => toggleSection('availability')}
@@ -951,7 +952,7 @@ const Terms = () => {
         </InteractiveSection>
 
         <InteractiveSection
-          title="17\. Limitación de responsabilidad"
+          title="17. Limitación de responsabilidad"
           icon={<FaExclamationTriangle />}
           isExpanded={expandedSections['liability']}
           onToggle={() => toggleSection('liability')}
@@ -982,7 +983,7 @@ const Terms = () => {
         </InteractiveSection>
 
         <InteractiveSection
-          title="18\. Modificaciones y notificación de cambios"
+          title="18. Modificaciones y notificación de cambios"
           icon={<FaInfoCircle />}
           isExpanded={expandedSections['modifications']}
           onToggle={() => toggleSection('modifications')}
@@ -1018,7 +1019,7 @@ const Terms = () => {
         </InteractiveSection>
 
         <InteractiveSection
-          title="19\. Contacto"
+          title="19. Contacto"
           icon={<FaUserShield />}
           isExpanded={expandedSections['contact']}
           onToggle={() => toggleSection('contact')}
