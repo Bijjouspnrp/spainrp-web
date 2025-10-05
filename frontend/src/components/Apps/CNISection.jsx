@@ -5,7 +5,7 @@ import {
   FaCheckCircle, FaTimes, FaCrown, FaGavel, FaLock, FaTrophy,
   FaUserShield, FaFileAlt, FaCarCrash, FaGlobe, FaChartLine,
   FaUsers, FaBuilding, FaMapMarkerAlt, FaPhone, FaEnvelope,
-  FaCalendarAlt, FaClock, FaFlag, FaKey, FaFingerprint
+  FaCalendarAlt, FaClock, FaFlag, FaKey, FaFingerprint, FaPlus
 } from 'react-icons/fa';
 import { apiUrl } from '../../utils/api';
 import './CNISection.css';
