@@ -432,7 +432,19 @@ const Navbar = () => {
 
   // Función para renderizar enlaces de navegación
   const renderNavigationLink = useCallback((link, index) => {
-    const isActive = activePath.includes(link.section);
+    // Lógica mejorada para detectar elementos activos
+    let isActive = false;
+    
+    if (location.pathname === '/' && location.hash) {
+      // Si estamos en la página principal con hash, verificar si coincide exactamente
+      isActive = location.hash === `#${link.section}`;
+    } else if (location.pathname === '/' && !location.hash) {
+      // Si estamos en la página principal sin hash, solo "Inicio" debe estar activo
+      isActive = link.section === 'home';
+    } else {
+      // Para otras páginas, verificar si el path coincide con el enlace
+      isActive = activePath === link.to;
+    }
     
     const linkStyles = {
       display: 'inline-flex',
@@ -478,7 +490,7 @@ const Navbar = () => {
         )}
       </a>
     );
-  }, [activePath, dark, handleSectionClick, closeMenu]);
+  }, [activePath, dark, handleSectionClick, closeMenu, location]);
 
   // Función para renderizar el componente de usuario/login
   const renderUserSection = useCallback(() => {
