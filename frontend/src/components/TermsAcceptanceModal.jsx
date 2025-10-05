@@ -17,12 +17,15 @@ const TermsAcceptanceModal = ({ isOpen, onAccept, onReject, user }) => {
 
   const handleScroll = (e) => {
     const { scrollTop, scrollHeight, clientHeight } = e.target;
-    const scrolled = scrollTop + clientHeight >= scrollHeight - 10;
+    const scrolled = scrollTop + clientHeight >= scrollHeight - 20; // Aumentar margen
     setHasScrolled(scrolled);
   };
 
   const handleAccept = () => {
-    if (hasScrolled && isAccepted) {
+    // Permitir aceptar si está en modo resumen O si ha scrolleado en modo completo
+    const canAccept = !showFullTerms || hasScrolled;
+    
+    if (canAccept && isAccepted) {
       // Store acceptance in localStorage with timestamp
       const acceptanceData = {
         accepted: true,
@@ -281,14 +284,14 @@ const TermsAcceptanceModal = ({ isOpen, onAccept, onReject, user }) => {
 
             <button
               onClick={handleAccept}
-              disabled={!hasScrolled || !isAccepted}
+              disabled={(!showFullTerms ? false : !hasScrolled) || !isAccepted}
               style={{
-                background: hasScrolled && isAccepted ? '#27ae60' : '#666',
+                background: ((!showFullTerms ? true : hasScrolled) && isAccepted) ? '#27ae60' : '#666',
                 color: '#fff',
                 border: 'none',
                 borderRadius: '8px',
                 padding: '12px 24px',
-                cursor: hasScrolled && isAccepted ? 'pointer' : 'not-allowed',
+                cursor: ((!showFullTerms ? true : hasScrolled) && isAccepted) ? 'pointer' : 'not-allowed',
                 fontSize: '14px',
                 fontWeight: '600',
                 display: 'flex',
@@ -303,7 +306,7 @@ const TermsAcceptanceModal = ({ isOpen, onAccept, onReject, user }) => {
           </div>
 
           {/* Status messages */}
-          {!hasScrolled && showFullTerms && (
+          {showFullTerms && !hasScrolled && (
             <p style={{
               color: '#ffc107',
               fontSize: '12px',
@@ -321,6 +324,16 @@ const TermsAcceptanceModal = ({ isOpen, onAccept, onReject, user }) => {
               margin: 0
             }}>
               Debes marcar la casilla de aceptación
+            </p>
+          )}
+          {!showFullTerms && (
+            <p style={{
+              color: '#27ae60',
+              fontSize: '12px',
+              textAlign: 'center',
+              margin: 0
+            }}>
+              Puedes aceptar directamente desde el resumen
             </p>
           )}
         </div>

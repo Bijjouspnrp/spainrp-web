@@ -1297,7 +1297,7 @@ export const ArrestarSection = ({ onRefresh }) => {
 
 // Sección Ranking (Policía)
 export const RankingSection = ({ data, message }) => {
-  if (!data || data.length === 0) {
+  if (!data || (!data.porImportePendiente && !data.porNumeroPendientes)) {
     return (
       <div className="mdt-section">
         <h3><FaTrophy /> Top Multas</h3>
@@ -1315,44 +1315,111 @@ export const RankingSection = ({ data, message }) => {
     );
   }
 
-  return (
-    <div className="mdt-section">
-      <h3><FaTrophy /> Top Multas</h3>
+  const [activeTab, setActiveTab] = useState('importe');
+
+  const renderRankingList = (rankingData, title, subtitle) => (
+    <div className="ranking-tab-content">
+      <div className="ranking-header">
+        <h4>{title}</h4>
+        <p className="ranking-subtitle">{subtitle}</p>
+      </div>
       <div className="ranking-list">
-        {data.map((user, index) => (
+        {rankingData.map((user, index) => (
           <div key={user.discordId || index} className={`ranking-item ${index < 3 ? 'top' : ''}`}>
             <div className="ranking-position">
               {index === 0 && <FaTrophy className="gold" />}
               {index === 1 && <FaTrophy className="silver" />}
               {index === 2 && <FaTrophy className="bronze" />}
-              {index > 2 && <span className="position">#{user.position || index + 1}</span>}
+              {index > 2 && <span className="position">#{user.posicion || index + 1}</span>}
             </div>
             <div className="ranking-avatar">
-              {user.displayAvatarURL ? (
-                <img 
-                  src={user.displayAvatarURL} 
-                  alt={`Avatar de ${user.username}`}
-                  className="ranking-avatar-img"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
-                  }}
-                />
-              ) : null}
-              <div className="ranking-avatar-placeholder" style={{ display: user.displayAvatarURL ? 'none' : 'flex' }}>
+              <div className="ranking-avatar-placeholder">
                 <FaUser size={20} />
               </div>
             </div>
             <div className="ranking-info">
-              <h4>{user.username || `Usuario ${user.discordId?.slice(-4) || 'N/A'}`}</h4>
+              <h4>Usuario {user.discordId?.slice(-4) || 'N/A'}</h4>
               <p className="ranking-discord-id">ID: {user.discordId}</p>
               <p className="ranking-stats">
-                {user.totalMultas || user.total || 0} multas - {user.totalCantidad || 0}€
+                {activeTab === 'importe' ? (
+                  <>
+                    {user.numPendientes || 0} multas pendientes<br/>
+                    {user.importePendiente || 0}€ pendiente
+                  </>
+                ) : (
+                  <>
+                    {user.numPendientes || 0} multas pendientes<br/>
+                    {user.importePendiente || 0}€ pendiente
+                  </>
+                )}
               </p>
             </div>
           </div>
         ))}
       </div>
+    </div>
+  );
+
+  return (
+    <div className="mdt-section">
+      <h3><FaTrophy /> Top Multas</h3>
+      
+      {/* Estadísticas generales */}
+      {data.stats && (
+        <div className="ranking-stats-overview">
+          <div className="stats-grid">
+            <div className="stat-item">
+              <span className="stat-label">Total Usuarios</span>
+              <span className="stat-value">{data.stats.totalUsuarios}</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-label">Total Multas</span>
+              <span className="stat-value">{data.stats.totalMultas}</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-label">Pendiente</span>
+              <span className="stat-value">{data.stats.totalPendiente}€</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-label">Pagado</span>
+              <span className="stat-value">{data.stats.totalPagado}€</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tabs de ranking */}
+      <div className="ranking-tabs">
+        <button 
+          className={`ranking-tab ${activeTab === 'importe' ? 'active' : ''}`}
+          onClick={() => setActiveTab('importe')}
+        >
+          Por Importe Pendiente
+        </button>
+        <button 
+          className={`ranking-tab ${activeTab === 'numero' ? 'active' : ''}`}
+          onClick={() => setActiveTab('numero')}
+        >
+          Por Número de Multas
+        </button>
+      </div>
+
+      {/* Contenido del ranking */}
+      {activeTab === 'importe' && data.porImportePendiente && 
+        renderRankingList(
+          data.porImportePendiente, 
+          "Top por Importe Pendiente", 
+          "Usuarios con mayor cantidad de dinero pendiente de pago"
+        )
+      }
+      
+      {activeTab === 'numero' && data.porNumeroPendientes && 
+        renderRankingList(
+          data.porNumeroPendientes, 
+          "Top por Número de Multas", 
+          "Usuarios con mayor cantidad de multas pendientes"
+        )
+      }
     </div>
   );
 };
