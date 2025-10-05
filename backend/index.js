@@ -7844,12 +7844,30 @@ app.get('/api/proxy/admin/stats', async (req, res) => {
   console.log('[ADMIN PROXY] GET /api/proxy/admin/stats');
   
   try {
-    // Estadísticas básicas (puedes expandir esto según necesites)
+    // Obtener estadísticas reales de la base de datos
+    const queries = [
+      'SELECT COUNT(*) as total FROM users',
+      'SELECT COUNT(*) as multas FROM multas',
+      'SELECT COUNT(*) as antecedentes FROM antecedentes',
+      'SELECT COUNT(*) as dnis FROM dni'
+    ];
+    
+    const [usersResult, multasResult, antecedentesResult, dnisResult] = await Promise.all(
+      queries.map(query => 
+        new Promise((resolve, reject) => {
+          db.get(query, (err, row) => {
+            if (err) reject(err);
+            else resolve(Object.values(row)[0]);
+          });
+        })
+      )
+    );
+    
     const stats = {
-      total_users: 0,
-      active_users: 0,
-      total_multas: 0,
-      total_arrestos: 0,
+      totalUsers: usersResult,
+      totalMultas: multasResult,
+      totalAntecedentes: antecedentesResult,
+      totalDnis: dnisResult,
       timestamp: new Date().toISOString()
     };
     
@@ -7865,10 +7883,30 @@ app.get('/api/proxy/admin/stats/records', async (req, res) => {
   console.log('[ADMIN PROXY] GET /api/proxy/admin/stats/records');
   
   try {
+    // Obtener estadísticas de multas
+    const multasQuery = `
+      SELECT 
+        COUNT(*) as total,
+        SUM(cantidad) as total_importe,
+        SUM(CASE WHEN pagada = 0 THEN cantidad ELSE 0 END) as pendientes,
+        SUM(CASE WHEN pagada = 1 THEN cantidad ELSE 0 END) as pagadas
+      FROM multas
+    `;
+    
+    const multasResult = await new Promise((resolve, reject) => {
+      db.get(multasQuery, (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+    
     const records = {
-      daily_multas: 0,
-      weekly_arrestos: 0,
-      monthly_activity: 0,
+      multas: multasResult?.total || 0,
+      antecedentes: 0, // Se obtiene de otra consulta
+      arrestos: 0, // Se obtiene de otra consulta
+      multas_importe_total: multasResult?.total_importe || 0,
+      multas_pendientes: multasResult?.pendientes || 0,
+      multas_pagadas: multasResult?.pagadas || 0,
       timestamp: new Date().toISOString()
     };
     
@@ -7885,17 +7923,24 @@ app.get('/api/proxy/admin/multas/:id', async (req, res) => {
   console.log(`[ADMIN PROXY] GET /api/proxy/admin/multas/${id}`);
   
   try {
-    // Por ahora devolver datos vacíos, pero la estructura está lista
-    const multas = {
-      usuario_id: id,
-      multas: [],
-      total_multas: 0,
-      multas_pendientes: 0,
-      multas_pagadas: 0,
-      timestamp: new Date().toISOString()
-    };
-    
-    res.json({ success: true, multas });
+    // Consultar multas del usuario
+    db.all('SELECT * FROM multas WHERE discordId = ? ORDER BY fecha DESC', [id], (err, rows) => {
+      if (err) {
+        console.error('[ADMIN PROXY] Error obteniendo multas:', err);
+        return res.status(500).json({ error: 'Error obteniendo multas', details: err.message });
+      }
+      
+      const multas = {
+        usuario_id: id,
+        multas: rows || [],
+        total_multas: rows?.length || 0,
+        multas_pendientes: rows?.filter(m => m.pagada !== 1).length || 0,
+        multas_pagadas: rows?.filter(m => m.pagada === 1).length || 0,
+        timestamp: new Date().toISOString()
+      };
+      
+      res.json({ success: true, multas });
+    });
   } catch (err) {
     console.error('[ADMIN PROXY] Error obteniendo multas:', err);
     res.status(500).json({ error: 'Error obteniendo multas', details: err.message });
@@ -7908,15 +7953,22 @@ app.get('/api/proxy/admin/inventory/:id', async (req, res) => {
   console.log(`[ADMIN PROXY] GET /api/proxy/admin/inventory/${id}`);
   
   try {
-    // Por ahora devolver datos vacíos, pero la estructura está lista
-    const inventory = {
-      usuario_id: id,
-      items: [],
-      total_items: 0,
-      timestamp: new Date().toISOString()
-    };
-    
-    res.json({ success: true, inventory });
+    // Consultar inventario del usuario
+    db.all('SELECT * FROM inventory WHERE user_id = ?', [id], (err, rows) => {
+      if (err) {
+        console.error('[ADMIN PROXY] Error obteniendo inventario:', err);
+        return res.status(500).json({ error: 'Error obteniendo inventario', details: err.message });
+      }
+      
+      const inventory = {
+        usuario_id: id,
+        items: rows || [],
+        total_items: rows?.length || 0,
+        timestamp: new Date().toISOString()
+      };
+      
+      res.json({ success: true, inventory });
+    });
   } catch (err) {
     console.error('[ADMIN PROXY] Error obteniendo inventario:', err);
     res.status(500).json({ error: 'Error obteniendo inventario', details: err.message });
