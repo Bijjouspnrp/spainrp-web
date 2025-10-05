@@ -889,37 +889,54 @@ export const MultarSection = ({ onRefresh }) => {
 
 // Sección Arrestar (Policía)
 export const ArrestarSection = ({ onRefresh }) => {
-  const [discordId, setDiscordId] = useState('');
+  const [formData, setFormData] = useState({
+    discordId: '',
+    cargos: '',
+    oficialId: '',
+    fotoUrl: ''
+  });
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState('');
+  const [arrestResult, setArrestResult] = useState(null);
 
   const handleArrest = async (e) => {
     e.preventDefault();
-    if (!discordId.trim()) {
-      setResult('❌ Debes ingresar un Discord ID');
+    
+    // Validar datos
+    if (!formData.discordId.trim() || !formData.cargos.trim() || !formData.oficialId.trim()) {
+      setResult('❌ Discord ID, cargos y oficial ID son obligatorios');
       return;
     }
 
     setLoading(true);
     setResult('');
+    setArrestResult(null);
 
     try {
-      const response = await fetch(apiUrl(`/api/proxy/admin/dni/arrestar/${discordId}`), {
-        method: 'POST'
+      const response = await fetch(apiUrl('/api/proxy/admin/arrestar'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          discordId: formData.discordId.trim(),
+          cargos: formData.cargos.trim(),
+          oficialId: formData.oficialId.trim(),
+          fotoUrl: formData.fotoUrl.trim() || undefined
+        })
       });
 
       const data = await response.json();
 
       if (response.ok && data.success) {
-        setResult('✅ DNI marcado como arrestado correctamente');
-        setDiscordId('');
+        setResult('✅ Arresto procesado correctamente');
+        setArrestResult(data);
+        setFormData({ discordId: '', cargos: '', oficialId: '', fotoUrl: '' });
         onRefresh();
       } else {
-        setResult(`❌ Error: ${data.error || 'Error marcando como arrestado'}`);
+        setResult(`❌ Error: ${data.error || 'Error procesando arresto'}`);
       }
     } catch (err) {
-      console.error('Error arrestando:', err);
-      setResult('❌ Error de conexión al marcar como arrestado');
+      console.error('Error procesando arresto:', err);
+      setResult('❌ Error de conexión al procesar arresto');
     } finally {
       setLoading(false);
     }
@@ -927,28 +944,105 @@ export const ArrestarSection = ({ onRefresh }) => {
 
   return (
     <div className="mdt-section">
-      <h3><FaLock /> Marcar como Arrestado</h3>
+      <h3><FaLock /> Procesar Arresto</h3>
       
       <form onSubmit={handleArrest} className="arrest-form">
         <div className="form-group">
           <label>Discord ID del arrestado:</label>
           <input
             type="text"
-            value={discordId}
-            onChange={(e) => setDiscordId(e.target.value)}
+            value={formData.discordId}
+            onChange={(e) => setFormData({...formData, discordId: e.target.value})}
             className="mdt-input"
+            placeholder="123456789012345678"
             required
           />
         </div>
         
+        <div className="form-group">
+          <label>Cargos (códigos del código penal):</label>
+          <input
+            type="text"
+            value={formData.cargos}
+            onChange={(e) => setFormData({...formData, cargos: e.target.value})}
+            className="mdt-input"
+            placeholder="1.1,2.2,3.3"
+            required
+          />
+          <small className="form-help">Separar múltiples cargos con comas (ej: 1.1,2.2,3.3)</small>
+        </div>
+        
+        <div className="form-group">
+          <label>ID del oficial:</label>
+          <input
+            type="text"
+            value={formData.oficialId}
+            onChange={(e) => setFormData({...formData, oficialId: e.target.value})}
+            className="mdt-input"
+            placeholder="987654321098765432"
+            required
+          />
+        </div>
+        
+        <div className="form-group">
+          <label>URL de foto (opcional):</label>
+          <input
+            type="url"
+            value={formData.fotoUrl}
+            onChange={(e) => setFormData({...formData, fotoUrl: e.target.value})}
+            className="mdt-input"
+            placeholder="https://ejemplo.com/foto.jpg"
+          />
+        </div>
+        
         <button type="submit" className="mdt-btn mdt-btn-danger" disabled={loading}>
-          {loading ? 'Procesando...' : 'Marcar como Arrestado'}
+          {loading ? 'Procesando...' : 'Procesar Arresto'}
         </button>
       </form>
 
       {result && (
         <div className={`result-message ${result.startsWith('✅') ? 'success' : 'error'}`}>
           {result}
+        </div>
+      )}
+
+      {arrestResult && (
+        <div className="arrest-result">
+          <h4>Resultado del Arresto:</h4>
+          <div className="arrest-details">
+            <div className="arrest-field">
+              <label>Nombre:</label>
+              <span>{arrestResult.nombre}</span>
+            </div>
+            <div className="arrest-field">
+              <label>DNI:</label>
+              <span>{arrestResult.dni}</span>
+            </div>
+            <div className="arrest-field">
+              <label>Roblox:</label>
+              <span>{arrestResult.roblox || 'N/A'}</span>
+            </div>
+            <div className="arrest-field">
+              <label>Cargos:</label>
+              <div className="cargos-detail" dangerouslySetInnerHTML={{ __html: arrestResult.cargos }} />
+            </div>
+            <div className="arrest-field">
+              <label>Multa Total:</label>
+              <span className="multa-total">{arrestResult.multaTotal}€</span>
+            </div>
+            <div className="arrest-field">
+              <label>Tiempo IC:</label>
+              <span className="tiempo-ic">{arrestResult.tiempoIC}</span>
+            </div>
+            <div className="arrest-field">
+              <label>Tiempo OOC:</label>
+              <span className="tiempo-ooc">{arrestResult.tiempoOOC}</span>
+            </div>
+            <div className="arrest-field">
+              <label>Fecha:</label>
+              <span>{new Date(arrestResult.fecha).toLocaleString('es-ES')}</span>
+            </div>
+          </div>
         </div>
       )}
     </div>

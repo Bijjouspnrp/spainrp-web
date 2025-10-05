@@ -6400,6 +6400,38 @@ app.post('/api/proxy/admin/pagar-multa', express.json(), async (req, res) => {
   }
 });
 
+// Proxy para MDT Policial - Arresto completo con cargos
+app.post('/api/proxy/admin/arrestar', express.json(), async (req, res) => {
+  try {
+    const proxyUrl = 'http://37.27.21.91:5021/api/proxy/admin/arrestar';
+    
+    console.log('[MDT PROXY] Realizando arresto:', req.body);
+    
+    const response = await fetch(proxyUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body)
+    });
+    
+    const data = await response.json();
+    
+    if (response.ok) {
+      console.log('[MDT PROXY] Arresto exitoso:', data);
+    } else {
+      console.error('[MDT PROXY] Error en arresto:', data);
+    }
+    
+    res.json(data);
+  } catch (err) {
+    console.error('[MDT PROXY] Error realizando arresto:', err);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Error de conexión realizando arresto',
+      details: err.message 
+    });
+  }
+});
+
 // Proxy para MDT Policial - Eliminar multa
 app.delete('/api/proxy/admin/borrar-multa', express.json(), async (req, res) => {
   try {
