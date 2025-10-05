@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaUsers, FaClock, FaServer, FaGamepad, FaGlobe, FaChevronDown, FaChevronUp, FaInfoCircle, FaRocket, FaStar, FaHeart, FaCrown, FaGamepad2 } from 'react-icons/fa';
+import { FaUsers, FaClock, FaServer, FaGamepad, FaGlobe, FaChevronDown, FaChevronUp, FaInfoCircle, FaRocket, FaStar, FaHeart, FaCrown } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { apiUrl } from '../utils/api';
 import './ERLCServer.css';
@@ -350,7 +350,7 @@ const ERLCServer = () => {
               <div className="erlc-welcome-icon-container">
                 <FaRocket className="erlc-welcome-icon rocket" />
                 <FaStar className="erlc-welcome-icon star" />
-                <FaGamepad2 className="erlc-welcome-icon gamepad" />
+                <FaGamepad className="erlc-welcome-icon gamepad" />
               </div>
               <h3>¡Bienvenido a la Sección ERLC!</h3>
             </div>
