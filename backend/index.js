@@ -8121,6 +8121,45 @@ app.get('/api/proxy/admin/inventory/:id', async (req, res) => {
   }
 });
 
+// GET /api/proxy/admin/balance/:id - Obtener balance de un usuario específico
+app.get('/api/proxy/admin/balance/:id', async (req, res) => {
+  const { id } = req.params;
+  console.log(`[ADMIN PROXY] GET /api/proxy/admin/balance/${id}`);
+  
+  try {
+    const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+    
+    // Llamar al proxy externo
+    const proxyUrl = `http://37.27.21.91:5021/api/proxy/admin/balance/${id}`;
+    console.log(`[ADMIN PROXY] Llamando a proxy externo: ${proxyUrl}`);
+    
+    const response = await fetch(proxyUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'SpainRP-Web/1.0'
+      }
+    });
+    
+    if (!response.ok) {
+      console.error(`[ADMIN PROXY] Error en proxy externo: ${response.status} ${response.statusText}`);
+      return res.status(500).json({ 
+        error: 'Error obteniendo balance', 
+        details: `Proxy externo respondió con ${response.status}` 
+      });
+    }
+    
+    const data = await response.json();
+    console.log(`[ADMIN PROXY] Datos recibidos del proxy:`, data);
+    
+    res.json(data);
+    
+  } catch (err) {
+    console.error('[ADMIN PROXY] Error llamando al proxy externo:', err);
+    res.status(500).json({ error: 'Error obteniendo balance', details: err.message });
+  }
+});
+
 server.listen(PORT, () => {
   console.log(`Backend SpainRP escuchando en puerto ${PORT}`);
   
