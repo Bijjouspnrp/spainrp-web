@@ -43,8 +43,12 @@ db.run(`CREATE TABLE IF NOT EXISTS notifications (
 router.get('/', async (req, res) => {
   try {
     console.log('[NOTIFICATIONS] GET / - Usuario:', req.user?.id);
+    console.log('[NOTIFICATIONS] Headers:', req.headers);
+    console.log('[NOTIFICATIONS] Token:', req.headers.authorization?.substring(0, 20) + '...');
+    
     const userId = req.user?.id;
     if (!userId) {
+      console.error('[NOTIFICATIONS] Usuario no autenticado');
       return res.status(401).json({ error: 'No autorizado' });
     }
 
@@ -53,6 +57,8 @@ router.get('/', async (req, res) => {
       console.error('[NOTIFICATIONS] Base de datos no disponible');
       return res.status(503).json({ error: 'Base de datos no disponible' });
     }
+    
+    console.log('[NOTIFICATIONS] Base de datos disponible, ejecutando query...');
 
     const notifications = await new Promise((resolve, reject) => {
       db.all(

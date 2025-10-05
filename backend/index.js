@@ -5664,7 +5664,11 @@ app.post('/api/admin/moderate', express.json(), async (req, res) => {
     const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
     const { action, userId, reason, time } = req.body;
     
+    console.log(`[ADMIN MODERATE] ===== INICIO =====`);
     console.log(`[ADMIN MODERATE] Acción: ${action}, Usuario: ${userId}, Motivo: ${reason}`);
+    console.log(`[ADMIN MODERATE] Guild ID: ${guildId}`);
+    console.log(`[ADMIN MODERATE] Discord Client:`, !!discordClient);
+    console.log(`[ADMIN MODERATE] Discord Ready:`, !!discordClient?.readyAt);
     
     // Verificar que el cliente Discord esté disponible y conectado
     if (!discordClient) {
