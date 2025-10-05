@@ -4919,6 +4919,19 @@ db.run(`CREATE TABLE IF NOT EXISTS visitas_empresas (
     FOREIGN KEY (empresa_id) REFERENCES empresas (id)
 )`);
 
+// Crear tabla de blog CNI
+db.run(`CREATE TABLE IF NOT EXISTS cni_blog (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    titulo TEXT NOT NULL,
+    banda TEXT NOT NULL,
+    categoria TEXT NOT NULL,
+    contenido TEXT NOT NULL,
+    imagen_url TEXT,
+    agente TEXT NOT NULL,
+    nivel_seguridad TEXT DEFAULT 'confidencial',
+    fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP
+)`);
+
 // GET /api/cni/empresas - Obtener todas las empresas
 app.get('/api/cni/empresas', (req, res) => {
   console.log('[CNI][EMPRESAS] GET /api/cni/empresas');
@@ -5117,6 +5130,80 @@ app.get('/api/cni/estadisticas', (req, res) => {
   }).catch(err => {
     console.error('[CNI][ESTADISTICAS] Error consultando estadísticas:', err);
     res.status(500).json({ error: 'Error consultando estadísticas', details: err });
+  });
+});
+
+// ===== ENDPOINTS PARA BLOG CNI =====
+
+// GET /api/cni/blog - Obtener todos los artículos del blog
+app.get('/api/cni/blog', (req, res) => {
+  console.log('[CNI][BLOG] GET /api/cni/blog');
+  
+  db.all('SELECT * FROM cni_blog ORDER BY fecha_creacion DESC', (err, rows) => {
+    if (err) {
+      console.error('[CNI][BLOG] Error consultando artículos:', err);
+      return res.status(500).json({ error: 'Error consultando artículos', details: err });
+    }
+    
+    console.log(`[CNI][BLOG] Encontrados ${rows.length} artículos`);
+    res.json({ success: true, articles: rows });
+  });
+});
+
+// POST /api/cni/blog - Crear nuevo artículo
+app.post('/api/cni/blog', (req, res) => {
+  const { titulo, banda, categoria, contenido, imagen_url, agente, nivel_seguridad } = req.body;
+  console.log('[CNI][BLOG] POST /api/cni/blog', req.body);
+  
+  if (!titulo || !banda || !contenido || !agente) {
+    return res.status(400).json({ error: 'Faltan campos obligatorios' });
+  }
+  
+  db.run(
+    'INSERT INTO cni_blog (titulo, banda, categoria, contenido, imagen_url, agente, nivel_seguridad) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [titulo, banda, categoria, contenido, imagen_url || '', agente, nivel_seguridad || 'confidencial'],
+    function(err) {
+      if (err) {
+        console.error('[CNI][BLOG] Error insertando artículo:', err);
+        return res.status(500).json({ error: 'Error creando artículo', details: err });
+      }
+      
+      console.log(`[CNI][BLOG] Artículo creado con ID: ${this.lastID}`);
+      res.json({ 
+        success: true, 
+        article: {
+          id: this.lastID,
+          titulo,
+          banda,
+          categoria,
+          contenido,
+          imagen_url: imagen_url || '',
+          agente,
+          nivel_seguridad: nivel_seguridad || 'confidencial',
+          fecha_creacion: new Date().toISOString()
+        }
+      });
+    }
+  );
+});
+
+// DELETE /api/cni/blog/:id - Eliminar artículo
+app.delete('/api/cni/blog/:id', (req, res) => {
+  const { id } = req.params;
+  console.log('[CNI][BLOG] DELETE /api/cni/blog/', id);
+  
+  db.run('DELETE FROM cni_blog WHERE id = ?', [id], function(err) {
+    if (err) {
+      console.error('[CNI][BLOG] Error eliminando artículo:', err);
+      return res.status(500).json({ error: 'Error eliminando artículo', details: err });
+    }
+    
+    if (this.changes === 0) {
+      return res.status(404).json({ error: 'Artículo no encontrado' });
+    }
+    
+    console.log(`[CNI][BLOG] Artículo ${id} eliminado`);
+    res.json({ success: true, message: 'Artículo eliminado correctamente' });
   });
 });
 

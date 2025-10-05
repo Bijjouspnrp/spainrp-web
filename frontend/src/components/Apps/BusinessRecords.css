@@ -193,3 +193,53 @@
     gap: 0.5rem;
   }
 }
+
+/* Botones de acción empresarial */
+.cni-business-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid #333;
+  flex-wrap: wrap;
+}
+
+.cni-business-actions .cni-btn {
+  flex: 1;
+  min-width: 120px;
+  padding: 8px 12px;
+  font-size: 0.9em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.cni-business-actions .cni-btn svg {
+  font-size: 0.9em;
+}
+
+/* Estados de empresa adicionales */
+.cni-result-type.bajo_investigacion {
+  background: rgba(23, 162, 184, 0.2);
+  color: #17a2b8;
+  border: 1px solid rgba(23, 162, 184, 0.3);
+}
+
+.cni-result-type.clausurada {
+  background: rgba(220, 53, 69, 0.2);
+  color: #dc3545;
+  border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+/* Responsive para botones */
+@media (max-width: 768px) {
+  .cni-business-actions {
+    flex-direction: column;
+  }
+  
+  .cni-business-actions .cni-btn {
+    min-width: auto;
+  }
+}

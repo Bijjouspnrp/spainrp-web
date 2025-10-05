@@ -10,6 +10,7 @@ import {
 import { apiUrl } from '../../utils/api';
 import './CNISection.css';
 import './BusinessRecords.css';
+import './CNIBlog.css';
 
 const CNISection = () => {
   const [user, setUser] = useState(null);
@@ -249,6 +250,12 @@ const CNISection = () => {
         >
           <FaBuilding /> Registros Empresariales
         </button>
+        <button 
+          className={`cni-tab ${activeTab === 'blog' ? 'active' : ''}`}
+          onClick={() => setActiveTab('blog')}
+        >
+          <FaFileAlt /> Archivos CNI
+        </button>
       </div>
 
       <div className="cni-content">
@@ -257,6 +264,7 @@ const CNISection = () => {
         {activeTab === 'tracking' && <TrackingTab />}
         {activeTab === 'intelligence' && <IntelligenceTab />}
         {activeTab === 'business' && <BusinessRecordsTab />}
+        {activeTab === 'blog' && <BlogTab />}
       </div>
     </div>
   );
@@ -633,10 +641,12 @@ const TrackingTab = () => {
     setLoading(true);
     try {
       // Buscar datos del usuario en múltiples fuentes
-      const [dniRes, multasRes, antecedentesRes] = await Promise.all([
+      const [dniRes, multasRes, antecedentesRes, balanceRes, inventarioRes] = await Promise.all([
         fetch(apiUrl(`/api/proxy/admin/dni/search?q=${encodeURIComponent(trackingForm.target)}`)),
         fetch(apiUrl(`/api/proxy/admin/ver-multas/${trackingForm.target}`)),
-        fetch(apiUrl(`/api/proxy/admin/antecedentes/${trackingForm.target}`))
+        fetch(apiUrl(`/api/proxy/admin/antecedentes/${trackingForm.target}`)),
+        fetch(apiUrl(`/api/proxy/admin/balance/${trackingForm.target}`)),
+        fetch(apiUrl(`/api/proxy/admin/inventory/${trackingForm.target}`))
       ]);
 
       const results = [];
@@ -680,6 +690,36 @@ const TrackingTab = () => {
             status: 'Con historial',
             details: `${antData.antecedentes.length} antecedentes registrados`,
             lastSeen: antData.antecedentes[0]?.fecha || 'Desconocido'
+          });
+        }
+      }
+
+      // Procesar Balance Financiero
+      if (balanceRes.ok) {
+        const balanceData = await balanceRes.json();
+        if (balanceData.success && balanceData.balance) {
+          const total = balanceData.balance.cash + balanceData.balance.bank;
+          results.push({
+            type: 'Finanzas',
+            status: total > 100000 ? 'Alto patrimonio' : total > 10000 ? 'Patrimonio medio' : 'Patrimonio bajo',
+            details: `Efectivo: ${balanceData.balance.cash.toLocaleString()}€ | Banco: ${balanceData.balance.bank.toLocaleString()}€ | Total: ${total.toLocaleString()}€`,
+            lastSeen: 'Activo'
+          });
+        }
+      }
+
+      // Procesar Inventario
+      if (inventarioRes.ok) {
+        const inventarioData = await inventarioRes.json();
+        if (inventarioData.success && inventarioData.inventario && inventarioData.inventario.length > 0) {
+          const itemsValiosos = inventarioData.inventario.filter(item => 
+            item.precio && item.precio > 10000
+          );
+          results.push({
+            type: 'Inventario',
+            status: itemsValiosos.length > 0 ? 'Objetos valiosos' : 'Inventario normal',
+            details: `${inventarioData.inventario.length} objetos, ${itemsValiosos.length} valiosos`,
+            lastSeen: 'Activo'
           });
         }
       }
@@ -782,6 +822,9 @@ const BusinessRecordsTab = () => {
     notas: '',
     estado: 'completada'
   });
+
+  const [selectedBusiness, setSelectedBusiness] = useState(null);
+  const [showBusinessModal, setShowBusinessModal] = useState(false);
 
   const loadBusinesses = async () => {
     try {
@@ -886,6 +929,50 @@ const BusinessRecordsTab = () => {
     } catch (err) {
       console.error('Error añadiendo visita:', err);
       setError('❌ Error de conexión al registrar visita');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Funciones de gestión empresarial
+  const handleBusinessAction = async (businessId, action, newStatus = null) => {
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    
+    try {
+      let response;
+      if (action === 'delete') {
+        response = await fetch(apiUrl(`/api/cni/empresas/${businessId}`), {
+          method: 'DELETE'
+        });
+      } else if (action === 'update') {
+        response = await fetch(apiUrl(`/api/cni/empresas/${businessId}`), {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ estado: newStatus })
+        });
+      }
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        const actionMessages = {
+          'delete': '✅ Empresa eliminada correctamente',
+          'suspendida': '⚠️ Empresa suspendida temporalmente',
+          'bajo_investigacion': '🔍 Empresa puesta bajo investigación',
+          'clausurada': '🚫 Empresa clausurada definitivamente',
+          'activa': '✅ Empresa reactivada'
+        };
+        setSuccess(actionMessages[newStatus || action]);
+        loadBusinesses();
+        loadStats();
+      } else {
+        setError(`❌ Error: ${data.error}`);
+      }
+    } catch (err) {
+      console.error('Error en acción empresarial:', err);
+      setError('❌ Error de conexión');
     } finally {
       setLoading(false);
     }
@@ -1150,6 +1237,375 @@ const BusinessRecordsTab = () => {
                       <span>{business.notas}</span>
                     </div>
                   )}
+                </div>
+                <div className="cni-business-actions">
+                  {business.estado === 'activa' && (
+                    <>
+                      <button 
+                        className="cni-btn cni-btn-warning"
+                        onClick={() => handleBusinessAction(business.id, 'update', 'suspendida')}
+                        disabled={loading}
+                      >
+                        <FaClock /> Suspender
+                      </button>
+                      <button 
+                        className="cni-btn cni-btn-info"
+                        onClick={() => handleBusinessAction(business.id, 'update', 'bajo_investigacion')}
+                        disabled={loading}
+                      >
+                        <FaSearch /> Investigar
+                      </button>
+                      <button 
+                        className="cni-btn cni-btn-danger"
+                        onClick={() => handleBusinessAction(business.id, 'update', 'clausurada')}
+                        disabled={loading}
+                      >
+                        <FaTimes /> Clausurar
+                      </button>
+                    </>
+                  )}
+                  {business.estado === 'suspendida' && (
+                    <>
+                      <button 
+                        className="cni-btn cni-btn-success"
+                        onClick={() => handleBusinessAction(business.id, 'update', 'activa')}
+                        disabled={loading}
+                      >
+                        <FaCheckCircle /> Reactivar
+                      </button>
+                      <button 
+                        className="cni-btn cni-btn-danger"
+                        onClick={() => handleBusinessAction(business.id, 'update', 'clausurada')}
+                        disabled={loading}
+                      >
+                        <FaTimes /> Clausurar
+                      </button>
+                    </>
+                  )}
+                  {business.estado === 'bajo_investigacion' && (
+                    <>
+                      <button 
+                        className="cni-btn cni-btn-success"
+                        onClick={() => handleBusinessAction(business.id, 'update', 'activa')}
+                        disabled={loading}
+                      >
+                        <FaCheckCircle /> Limpiar
+                      </button>
+                      <button 
+                        className="cni-btn cni-btn-danger"
+                        onClick={() => handleBusinessAction(business.id, 'update', 'clausurada')}
+                        disabled={loading}
+                      >
+                        <FaTimes /> Clausurar
+                      </button>
+                    </>
+                  )}
+                  <button 
+                    className="cni-btn cni-btn-danger"
+                    onClick={() => {
+                      if (window.confirm('¿Estás seguro de eliminar esta empresa? Esta acción no se puede deshacer.')) {
+                        handleBusinessAction(business.id, 'delete');
+                      }
+                    }}
+                    disabled={loading}
+                  >
+                    <FaTimes /> Eliminar
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Pestaña de Blog CNI
+const BlogTab = () => {
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [showNewArticle, setShowNewArticle] = useState(false);
+  const [newArticle, setNewArticle] = useState({
+    titulo: '',
+    banda: '',
+    categoria: 'investigacion',
+    contenido: '',
+    imagen_url: '',
+    agente: '',
+    nivel_seguridad: 'confidencial'
+  });
+
+  const loadArticles = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(apiUrl('/api/cni/blog'));
+      const data = await response.json();
+      
+      if (data.success) {
+        setArticles(data.articles);
+      } else {
+        setError('Error cargando artículos');
+      }
+    } catch (err) {
+      console.error('Error cargando artículos:', err);
+      setError('Error de conexión al cargar artículos');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddArticle = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    
+    try {
+      const response = await fetch(apiUrl('/api/cni/blog'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newArticle)
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setSuccess('✅ Artículo creado correctamente');
+        setNewArticle({ titulo: '', banda: '', categoria: 'investigacion', contenido: '', imagen_url: '', agente: '', nivel_seguridad: 'confidencial' });
+        setShowNewArticle(false);
+        loadArticles();
+      } else {
+        setError(`❌ Error: ${data.error}`);
+      }
+    } catch (err) {
+      console.error('Error creando artículo:', err);
+      setError('❌ Error de conexión al crear artículo');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteArticle = async (articleId) => {
+    if (!window.confirm('¿Estás seguro de eliminar este artículo?')) return;
+    
+    setLoading(true);
+    try {
+      const response = await fetch(apiUrl(`/api/cni/blog/${articleId}`), {
+        method: 'DELETE'
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setSuccess('✅ Artículo eliminado correctamente');
+        loadArticles();
+      } else {
+        setError(`❌ Error: ${data.error}`);
+      }
+    } catch (err) {
+      console.error('Error eliminando artículo:', err);
+      setError('❌ Error de conexión');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadArticles();
+  }, []);
+
+  return (
+    <div className="cni-section">
+      <h3><FaFileAlt /> Archivos CNI - Sistema de Inteligencia</h3>
+      
+      {error && (
+        <div className="cni-error-message">
+          {error}
+        </div>
+      )}
+      
+      {success && (
+        <div className="cni-success-message">
+          {success}
+        </div>
+      )}
+
+      <div className="cni-blog-header">
+        <button 
+          className="cni-btn cni-btn-primary"
+          onClick={() => setShowNewArticle(!showNewArticle)}
+        >
+          <FaPlus /> Nuevo Archivo
+        </button>
+      </div>
+
+      {showNewArticle && (
+        <div className="cni-section">
+          <h3><FaPlus /> Crear Nuevo Archivo</h3>
+          <form onSubmit={handleAddArticle} className="cni-form">
+            <div className="cni-form-group">
+              <label>Título del Archivo:</label>
+              <input
+                type="text"
+                className="cni-input"
+                value={newArticle.titulo}
+                onChange={(e) => setNewArticle(prev => ({ ...prev, titulo: e.target.value }))}
+                placeholder="Ej: Investigación Banda Los Zetas"
+                required
+              />
+            </div>
+            
+            <div className="cni-form-group">
+              <label>Banda/Organización:</label>
+              <input
+                type="text"
+                className="cni-input"
+                value={newArticle.banda}
+                onChange={(e) => setNewArticle(prev => ({ ...prev, banda: e.target.value }))}
+                placeholder="Nombre de la banda"
+                required
+              />
+            </div>
+
+            <div className="cni-form-group">
+              <label>Categoría:</label>
+              <select
+                className="cni-select"
+                value={newArticle.categoria}
+                onChange={(e) => setNewArticle(prev => ({ ...prev, categoria: e.target.value }))}
+              >
+                <option value="investigacion">Investigación</option>
+                <option value="operacion">Operación</option>
+                <option value="inteligencia">Inteligencia</option>
+                <option value="seguimiento">Seguimiento</option>
+                <option value="archivo">Archivo</option>
+              </select>
+            </div>
+
+            <div className="cni-form-group">
+              <label>Nivel de Seguridad:</label>
+              <select
+                className="cni-select"
+                value={newArticle.nivel_seguridad}
+                onChange={(e) => setNewArticle(prev => ({ ...prev, nivel_seguridad: e.target.value }))}
+              >
+                <option value="publico">Público</option>
+                <option value="confidencial">Confidencial</option>
+                <option value="secreto">Secreto</option>
+                <option value="ultra_secreto">Ultra Secreto</option>
+              </select>
+            </div>
+
+            <div className="cni-form-group">
+              <label>URL de Imagen:</label>
+              <input
+                type="url"
+                className="cni-input"
+                value={newArticle.imagen_url}
+                onChange={(e) => setNewArticle(prev => ({ ...prev, imagen_url: e.target.value }))}
+                placeholder="https://ejemplo.com/imagen.jpg"
+              />
+            </div>
+
+            <div className="cni-form-group">
+              <label>Agente Responsable:</label>
+              <input
+                type="text"
+                className="cni-input"
+                value={newArticle.agente}
+                onChange={(e) => setNewArticle(prev => ({ ...prev, agente: e.target.value }))}
+                placeholder="Nombre del agente"
+                required
+              />
+            </div>
+
+            <div className="cni-form-group">
+              <label>Contenido:</label>
+              <textarea
+                className="cni-textarea"
+                value={newArticle.contenido}
+                onChange={(e) => setNewArticle(prev => ({ ...prev, contenido: e.target.value }))}
+                placeholder="Detalles de la investigación, operación, etc..."
+                rows="6"
+                required
+              />
+            </div>
+
+            <div className="cni-form-actions">
+              <button type="submit" className="cni-btn cni-btn-primary" disabled={loading}>
+                {loading ? <FaSpinner className="fa-spin" /> : <FaPlus />} 
+                {loading ? 'Creando...' : 'Crear Archivo'}
+              </button>
+              <button 
+                type="button" 
+                className="cni-btn cni-btn-secondary"
+                onClick={() => setShowNewArticle(false)}
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      <div className="cni-section">
+        <h3><FaFileAlt /> Archivos Existentes ({articles.length})</h3>
+        {loading ? (
+          <div className="cni-loading">
+            <FaSpinner className="fa-spin" />
+            <p>Cargando archivos...</p>
+          </div>
+        ) : articles.length === 0 ? (
+          <div className="cni-no-data">
+            <FaFileAlt />
+            <p>No hay archivos creados</p>
+          </div>
+        ) : (
+          <div className="cni-blog-grid">
+            {articles.map(article => (
+              <div key={article.id} className="cni-blog-card">
+                <div className="cni-blog-header">
+                  <h4>{article.titulo}</h4>
+                  <span className={`cni-blog-security ${article.nivel_seguridad}`}>
+                    {article.nivel_seguridad.toUpperCase()}
+                  </span>
+                </div>
+                
+                {article.imagen_url && (
+                  <div className="cni-blog-image">
+                    <img src={article.imagen_url} alt={article.titulo} />
+                  </div>
+                )}
+                
+                <div className="cni-blog-content">
+                  <div className="cni-blog-meta">
+                    <span><FaBuilding /> {article.banda}</span>
+                    <span><FaUser /> {article.agente}</span>
+                    <span><FaCalendarAlt /> {new Date(article.fecha_creacion).toLocaleDateString('es-ES')}</span>
+                  </div>
+                  
+                  <div className="cni-blog-category">
+                    <span className={`cni-blog-category-badge ${article.categoria}`}>
+                      {article.categoria.toUpperCase()}
+                    </span>
+                  </div>
+                  
+                  <div className="cni-blog-text">
+                    <p>{article.contenido}</p>
+                  </div>
+                </div>
+                
+                <div className="cni-blog-actions">
+                  <button 
+                    className="cni-btn cni-btn-danger"
+                    onClick={() => handleDeleteArticle(article.id)}
+                    disabled={loading}
+                  >
+                    <FaTimes /> Eliminar
+                  </button>
                 </div>
               </div>
             ))}
