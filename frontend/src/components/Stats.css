@@ -30,8 +30,10 @@ body:not(.dark) .stats {
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .stat-card {
@@ -71,14 +73,17 @@ body:not(.dark) .stats {
 }
 
 .stat-number {
-  font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+  font-size: clamp(1.1rem, 1.5vw, 1.6rem);
   font-weight: 800;
   color: var(--stat-fg);
   margin-bottom: 0.5rem;
-  line-height: 1;
+  line-height: 1.1;
   word-break: break-word;
   overflow-wrap: break-word;
   hyphens: auto;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .stat-label {
@@ -88,6 +93,37 @@ body:not(.dark) .stats {
 }
 
 /* Responsive design */
+@media (min-width: 1400px) {
+  .stats-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 2rem;
+  }
+  
+  .stat-number {
+    font-size: 1.4rem;
+  }
+}
+
+@media (min-width: 1200px) and (max-width: 1399px) {
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .stat-number {
+    font-size: 1.3rem;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1199px) {
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .stat-number {
+    font-size: 1.2rem;
+  }
+}
+
 @media (max-width: 768px) {
   .stats {
     padding: 3rem 0;

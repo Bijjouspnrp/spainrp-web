@@ -247,14 +247,20 @@ export const AntecedentesSection = ({ data }) => {
       <h3><FaHistory /> Mis Antecedentes ({data.length})</h3>
       <div className="antecedentes-list">
         {data.map((antecedente, index) => (
-          <div key={index} className="antecedente-card">
+          <div key={antecedente.id || index} className="antecedente-card">
             <div className="antecedente-header">
-              <h4>{antecedente.tipo}</h4>
+              <h4>Antecedente #{antecedente.id || index + 1}</h4>
               <span className="antecedente-fecha">
                 {antecedente.fecha ? (() => {
                   try {
                     const date = new Date(antecedente.fecha);
-                    return isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString();
+                    return isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString('es-ES', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    });
                   } catch {
                     return 'N/A';
                   }
@@ -263,14 +269,53 @@ export const AntecedentesSection = ({ data }) => {
             </div>
             <div className="antecedente-info">
               <div className="antecedente-field">
-                <label>Descripción:</label>
-                <span>{antecedente.descripcion}</span>
+                <label>DNI:</label>
+                <span>{antecedente.dni || 'N/A'}</span>
               </div>
               <div className="antecedente-field">
-                <label>Gravedad:</label>
-                <span className={`gravedad ${antecedente.gravedad?.toLowerCase()}`}>
-                  {antecedente.gravedad}
-                </span>
+                <label>Nombre:</label>
+                <span>{antecedente.nombre} {antecedente.apellidos}</span>
+              </div>
+              <div className="antecedente-field">
+                <label>Cargos:</label>
+                <span className="cargos">{antecedente.cargos || 'N/A'}</span>
+              </div>
+              <div className="antecedente-field">
+                <label>Multa:</label>
+                <span className="multa-amount">{antecedente.multa || 0}€</span>
+              </div>
+              {antecedente.tiempoC && (
+                <div className="antecedente-field">
+                  <label>Tiempo Carcel:</label>
+                  <span className="tiempo-carcel">{antecedente.tiempoC}</span>
+                </div>
+              )}
+              {antecedente.tiempoOOC && (
+                <div className="antecedente-field">
+                  <label>Tiempo OOC:</label>
+                  <span className="tiempo-ooc">{antecedente.tiempoOOC}</span>
+                </div>
+              )}
+              {antecedente.tiempoIC && (
+                <div className="antecedente-field">
+                  <label>Tiempo IC:</label>
+                  <span className="tiempo-ic">{antecedente.tiempoIC}</span>
+                </div>
+              )}
+              {antecedente.fotoUrl && (
+                <div className="antecedente-field">
+                  <label>Foto:</label>
+                  <img 
+                    src={antecedente.fotoUrl} 
+                    alt="Foto del antecedente" 
+                    className="antecedente-foto"
+                    onError={(e) => e.target.style.display = 'none'}
+                  />
+                </div>
+              )}
+              <div className="antecedente-field">
+                <label>Oficial ID:</label>
+                <span className="oficial-id">{antecedente.oficialId || 'N/A'}</span>
               </div>
             </div>
           </div>
@@ -634,9 +679,30 @@ export const SearchSection = ({ onSearch }) => {
               </div>
               <div className="antecedentes-list">
                 {results.antecedentes.slice(0, 3).map((antecedente, index) => (
-                  <div key={index} className="antecedente-item">
-                    <span className="antecedente-tipo">{antecedente.tipo || 'Antecedente'}</span>
-                    <span className="antecedente-desc">{antecedente.descripcion || 'Sin descripción'}</span>
+                  <div key={antecedente.id || index} className="antecedente-item">
+                    <div className="antecedente-item-header">
+                      <span className="antecedente-id">#{antecedente.id || index + 1}</span>
+                      <span className="antecedente-fecha">
+                        {antecedente.fecha ? (() => {
+                          try {
+                            const date = new Date(antecedente.fecha);
+                            return isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString('es-ES');
+                          } catch {
+                            return 'N/A';
+                          }
+                        })() : 'N/A'}
+                      </span>
+                    </div>
+                    <div className="antecedente-item-info">
+                      <span className="antecedente-cargos">{antecedente.cargos || 'N/A'}</span>
+                      <span className="antecedente-multa">{antecedente.multa || 0}€</span>
+                      {antecedente.tiempoOOC && (
+                        <span className="antecedente-tiempo-ooc">OOC: {antecedente.tiempoOOC}</span>
+                      )}
+                      {antecedente.tiempoIC && (
+                        <span className="antecedente-tiempo-ic">IC: {antecedente.tiempoIC}</span>
+                      )}
+                    </div>
                   </div>
                 ))}
                 {results.antecedentes.length > 3 && (

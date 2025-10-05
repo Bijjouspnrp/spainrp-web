@@ -95,6 +95,7 @@ html, body, #root {
     max-width: 340px;
     box-shadow: 2px 0 16px #23272a33;
     z-index: 1002;
+    transition: left 0.3s cubic-bezier(.4,2,.6,1);
   }
   .sidebar.open {
     left: 0;
@@ -103,11 +104,29 @@ html, body, #root {
     display: block;
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.25);
+    background: rgba(0,0,0,0.5);
     z-index: 1001;
+    backdrop-filter: blur(2px);
   }
   .sidebar-overlay {
     display: none;
+  }
+  
+  /* Mejorar navegación en móvil */
+  .nav-item {
+    padding: 16px 18px;
+    font-size: 18px;
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .nav-item:active {
+    background: #1e40af;
+    transform: scale(0.98);
   }
 }
 
@@ -630,6 +649,13 @@ html, body, #root {
   border: 1px solid #e2e8f0;
 }
 
+/* Mejorar contraste del calendario */
+.calendar-section-modern {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 2px solid #e2e8f0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
 .calendar-section h2 {
   margin: 0 0 1.5rem 0;
   font-size: 1.5rem;
@@ -642,10 +668,11 @@ html, body, #root {
 
 /* Mejoras para el calendario diario */
 .daily-calendar {
-  background: #f8fafc;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
   border-radius: 0.75rem;
   padding: 1.5rem;
-  border: 1px solid #e2e8f0;
+  border: 2px solid #cbd5e1;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 .calendar-header {
