@@ -198,7 +198,7 @@ const CNISection = () => {
         <div className="cni-header-content">
           <div className="cni-logo">
             <img 
-              src="https://i.imgur.com/4G56e8C.png" 
+              src="https://media.discordapp.net/attachments/1329945759541497906/1424473452206751764/CNIescudoespaC3B1a2.png?ex=68e413c8&is=68e2c248&hm=f12f703571bbc40060329de77d8c8f6973c677806a45a1b1238a8deb9522a0b1&=" 
               alt="CNI Logo" 
               className="cni-logo-img"
               onError={(e) => {
@@ -244,12 +244,6 @@ const CNISection = () => {
           <FaChartLine /> Inteligencia
         </button>
         <button 
-          className={`cni-tab ${activeTab === 'surveillance' ? 'active' : ''}`}
-          onClick={() => setActiveTab('surveillance')}
-        >
-          <FaEye /> Vigilancia
-        </button>
-        <button 
           className={`cni-tab ${activeTab === 'business' ? 'active' : ''}`}
           onClick={() => setActiveTab('business')}
         >
@@ -262,7 +256,6 @@ const CNISection = () => {
         {activeTab === 'search' && <AdvancedSearchTab />}
         {activeTab === 'tracking' && <TrackingTab />}
         {activeTab === 'intelligence' && <IntelligenceTab />}
-        {activeTab === 'surveillance' && <SurveillanceTab />}
         {activeTab === 'business' && <BusinessRecordsTab />}
       </div>
     </div>
@@ -588,82 +581,6 @@ const AdvancedSearchTab = () => {
   );
 };
 
-// Pestaña de Rastreo
-const TrackingTab = () => {
-  const [trackingForm, setTrackingForm] = useState({
-    target: '',
-    trackingType: 'discord',
-    duration: '24'
-  });
-
-  const handleTracking = async (e) => {
-    e.preventDefault();
-    // Implementar lógica de rastreo
-    console.log('Iniciando rastreo:', trackingForm);
-  };
-
-  return (
-    <div className="cni-section">
-      <h3><FaGlobe /> Sistema de Rastreo Avanzado</h3>
-      
-      <form onSubmit={handleTracking} className="cni-form">
-        <div className="cni-form-group">
-          <label>Objetivo de Rastreo:</label>
-          <input
-            type="text"
-            value={trackingForm.target}
-            onChange={(e) => setTrackingForm({...trackingForm, target: e.target.value})}
-            className="cni-input"
-            placeholder="Discord ID, DNI, o nombre..."
-            required
-          />
-        </div>
-        
-        <div className="cni-form-group">
-          <label>Tipo de Rastreo:</label>
-          <select 
-            value={trackingForm.trackingType}
-            onChange={(e) => setTrackingForm({...trackingForm, trackingType: e.target.value})}
-            className="cni-select"
-          >
-            <option value="discord">Actividad Discord</option>
-            <option value="roblox">Actividad Roblox</option>
-            <option value="financial">Movimientos Financieros</option>
-            <option value="location">Ubicación</option>
-            <option value="communications">Comunicaciones</option>
-          </select>
-        </div>
-
-        <div className="cni-form-group">
-          <label>Duración del Rastreo (horas):</label>
-          <select 
-            value={trackingForm.duration}
-            onChange={(e) => setTrackingForm({...trackingForm, duration: e.target.value})}
-            className="cni-select"
-          >
-            <option value="1">1 Hora</option>
-            <option value="6">6 Horas</option>
-            <option value="24">24 Horas</option>
-            <option value="72">72 Horas</option>
-            <option value="168">1 Semana</option>
-          </select>
-        </div>
-        
-        <button type="submit" className="cni-btn cni-btn-warning">
-          <FaEye /> Iniciar Rastreo
-        </button>
-      </form>
-
-      <div className="cni-section">
-        <h3><FaMapMarkerAlt /> Rastreos Activos</h3>
-        <div className="cni-no-data">
-          <FaEye />
-          <p>No hay rastreos activos en este momento</p>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 // Pestaña de Inteligencia
 const IntelligenceTab = () => {
@@ -701,34 +618,133 @@ const IntelligenceTab = () => {
   );
 };
 
-// Pestaña de Vigilancia
-const SurveillanceTab = () => {
+// Pestaña de Rastreo Mejorada
+const TrackingTab = () => {
+  const [trackingForm, setTrackingForm] = useState({
+    target: '',
+    trackingType: 'all'
+  });
+  const [trackingResults, setTrackingResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const handleTrackingSearch = async () => {
+    if (!trackingForm.target.trim()) return;
+    
+    setLoading(true);
+    try {
+      // Buscar datos del usuario en múltiples fuentes
+      const [dniRes, multasRes, antecedentesRes] = await Promise.all([
+        fetch(apiUrl(`/api/proxy/admin/dni/search?q=${encodeURIComponent(trackingForm.target)}`)),
+        fetch(apiUrl(`/api/proxy/admin/ver-multas/${trackingForm.target}`)),
+        fetch(apiUrl(`/api/proxy/admin/antecedentes/${trackingForm.target}`))
+      ]);
+
+      const results = [];
+      
+      // Procesar DNI
+      if (dniRes.ok) {
+        const dniData = await dniRes.json();
+        if (dniData.dniPorNombre && dniData.dniPorNombre.length > 0) {
+          dniData.dniPorNombre.forEach(dni => {
+            results.push({
+              type: 'DNI',
+              status: dni.arrestado ? 'Arrestado' : 'Activo',
+              details: `${dni.nombre} ${dni.apellidos} - DNI: ${dni.numeroDNI}`,
+              lastSeen: dni.fecha_registro || 'Desconocido'
+            });
+          });
+        }
+      }
+
+      // Procesar Multas
+      if (multasRes.ok) {
+        const multasData = await multasRes.json();
+        if (multasData.multas && multasData.multas.length > 0) {
+          const totalMultas = multasData.multas.length;
+          const pendientes = multasData.multas.filter(m => !m.pagada).length;
+          results.push({
+            type: 'Multas',
+            status: pendientes > 0 ? 'Pendientes' : 'Al día',
+            details: `${totalMultas} multas totales, ${pendientes} pendientes`,
+            lastSeen: multasData.multas[0]?.fecha || 'Desconocido'
+          });
+        }
+      }
+
+      // Procesar Antecedentes
+      if (antecedentesRes.ok) {
+        const antData = await antecedentesRes.json();
+        if (antData.antecedentes && antData.antecedentes.length > 0) {
+          results.push({
+            type: 'Antecedentes',
+            status: 'Con historial',
+            details: `${antData.antecedentes.length} antecedentes registrados`,
+            lastSeen: antData.antecedentes[0]?.fecha || 'Desconocido'
+          });
+        }
+      }
+
+      setTrackingResults(results);
+    } catch (error) {
+      console.error('Error en búsqueda de rastreo:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="cni-section">
-      <h3><FaEye /> Sistema de Vigilancia</h3>
+      <h3><FaGlobe /> Sistema de Rastreo de Actividad</h3>
       
-      <div className="cni-nav">
-        <button className="cni-nav-btn">
-          <FaPhone /> Interceptación de Comunicaciones
-        </button>
-        <button className="cni-nav-btn">
-          <FaEnvelope /> Monitoreo de Mensajes
-        </button>
-        <button className="cni-nav-btn">
-          <FaCalendarAlt /> Seguimiento de Actividades
-        </button>
-        <button className="cni-nav-btn">
-          <FaKey /> Análisis de Accesos
-        </button>
-      </div>
-
-      <div className="cni-section">
-        <h3><FaFingerprint /> Identificación Biométrica</h3>
-        <div className="cni-no-data">
-          <FaFingerprint />
-          <p>Sistema de identificación biométrica no disponible</p>
+      <div className="cni-form">
+        <div className="cni-form-group">
+          <label>Buscar Usuario:</label>
+          <input
+            type="text"
+            className="cni-input"
+            placeholder="Discord ID, DNI, o nombre..."
+            value={trackingForm.target}
+            onChange={(e) => setTrackingForm(prev => ({ ...prev, target: e.target.value }))}
+          />
         </div>
+        
+        <button 
+          className="cni-btn cni-btn-primary"
+          onClick={handleTrackingSearch}
+          disabled={!trackingForm.target.trim() || loading}
+        >
+          {loading ? <FaSpinner className="fa-spin" /> : <FaSearch />} 
+          {loading ? 'Buscando...' : 'Buscar Actividad'}
+        </button>
       </div>
+      
+      {trackingResults.length > 0 && (
+        <div className="cni-section">
+          <h3><FaMapMarkerAlt /> Resultados de Rastreo</h3>
+          <div className="cni-search-results">
+            {trackingResults.map((result, index) => (
+              <div key={index} className="cni-result-card">
+                <div className="cni-result-header">
+                  <h5><FaUser /> {result.type}</h5>
+                  <span className={`cni-result-type ${result.status.toLowerCase().replace(' ', '-')}`}>
+                    {result.status}
+                  </span>
+                </div>
+                <div className="cni-result-info">
+                  <div className="cni-result-field">
+                    <label>Detalles:</label>
+                    <span>{result.details}</span>
+                  </div>
+                  <div className="cni-result-field">
+                    <label>Última Actividad:</label>
+                    <span>{result.lastSeen}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
