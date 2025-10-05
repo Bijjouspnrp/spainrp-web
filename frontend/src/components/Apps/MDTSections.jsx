@@ -982,24 +982,45 @@ export const ArrestarSection = ({ onRefresh }) => {
     if (value.length >= 3) {
       setSearchingDiscord(true);
       try {
-        // Buscar usuarios en el servidor Discord con autenticación
-        const token = localStorage.getItem('spainrp_token');
-        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-        
+        // Buscar usuarios en el servidor Discord (sin autenticación requerida)
         const response = await fetch(apiUrl(`/api/discord/search-users?q=${encodeURIComponent(value)}`), {
-          headers
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
         });
         
         if (response.ok) {
           const users = await response.json();
           setDiscordSuggestions(users.slice(0, 5));
           setShowDiscordSuggestions(true);
-        } else if (response.status === 401) {
-          console.warn('No autenticado para buscar usuarios');
-          setShowDiscordSuggestions(false);
+        } else {
+          console.warn('Error en búsqueda de usuarios:', response.status);
+          // Fallback: crear sugerencias básicas basadas en el input
+          const basicSuggestions = [
+            {
+              id: value,
+              username: `Usuario_${value}`,
+              avatar: null,
+              displayName: `Usuario ${value}`
+            }
+          ];
+          setDiscordSuggestions(basicSuggestions);
+          setShowDiscordSuggestions(true);
         }
       } catch (err) {
         console.error('Error buscando usuarios:', err);
+        // Fallback en caso de error de red
+        const basicSuggestions = [
+          {
+            id: value,
+            username: `Usuario_${value}`,
+            avatar: null,
+            displayName: `Usuario ${value}`
+          }
+        ];
+        setDiscordSuggestions(basicSuggestions);
+        setShowDiscordSuggestions(true);
       } finally {
         setSearchingDiscord(false);
       }

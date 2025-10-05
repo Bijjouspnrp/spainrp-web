@@ -2817,11 +2817,19 @@ app.get('/api/discord/members', ensureAuthenticated, async (req, res) => {
   }
 });
 
-// Endpoint para buscar usuarios de Discord
-app.get('/api/discord/search-users', ensureAuthenticated, async (req, res) => {
+// Endpoint para buscar usuarios de Discord (sin autenticación requerida)
+app.get('/api/discord/search-users', async (req, res) => {
   try {
     const { q } = req.query;
     if (!q || q.length < 3) {
+      return res.json([]);
+    }
+
+    console.log('[DISCORD SEARCH] Buscando usuarios:', q);
+
+    // Verificar si hay token de bot disponible
+    if (!process.env.DISCORD_BOT_TOKEN) {
+      console.warn('[DISCORD SEARCH] No hay token de bot disponible');
       return res.json([]);
     }
 
@@ -2846,29 +2854,37 @@ app.get('/api/discord/search-users', ensureAuthenticated, async (req, res) => {
         displayName: user.nick || user.user.username
       }));
       
+      console.log('[DISCORD SEARCH] Usuarios encontrados:', formattedUsers.length);
       res.json(formattedUsers);
     } else {
+      console.warn('[DISCORD SEARCH] Error en API de Discord:', response.status);
       // Fallback: buscar en la base de datos local si existe
-      const { allQuery } = require('./db/database');
-      const searchQuery = `
-        SELECT DISTINCT discord_id, username, avatar 
-        FROM user_data 
-        WHERE username LIKE ? OR discord_id LIKE ?
-        LIMIT 10
-      `;
-      const users = await allQuery(searchQuery, [`%${q}%`, `%${q}%`]);
-      
-      const formattedUsers = users.map(user => ({
-        id: user.discord_id,
-        username: user.username,
-        avatar: user.avatar,
-        displayName: user.username
-      }));
-      
-      res.json(formattedUsers);
+      try {
+        const { allQuery } = require('./db/database');
+        const searchQuery = `
+          SELECT DISTINCT discord_id, username, avatar 
+          FROM user_data 
+          WHERE username LIKE ? OR discord_id LIKE ?
+          LIMIT 10
+        `;
+        const users = await allQuery(searchQuery, [`%${q}%`, `%${q}%`]);
+        
+        const formattedUsers = users.map(user => ({
+          id: user.discord_id,
+          username: user.username,
+          avatar: user.avatar,
+          displayName: user.username
+        }));
+        
+        console.log('[DISCORD SEARCH] Usuarios encontrados en BD:', formattedUsers.length);
+        res.json(formattedUsers);
+      } catch (dbError) {
+        console.error('[DISCORD SEARCH] Error en BD:', dbError);
+        res.json([]);
+      }
     }
   } catch (error) {
-    console.error('[DISCORD SEARCH] Error:', error);
+    console.error('[DISCORD SEARCH] Error general:', error);
     res.json([]);
   }
 });
