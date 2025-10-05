@@ -6553,65 +6553,102 @@ app.get('/api/proxy/admin/top-multas', async (req, res) => {
       console.warn('[MDT PROXY] El servidor proxy devolvió HTML en lugar de JSON');
       return res.json({ 
         success: true, 
-        top: [],
+        top: {
+          porImportePendiente: [],
+          porNumeroPendientes: []
+        },
+        stats: {
+          totalUsuarios: 0,
+          totalMultas: 0,
+          totalPendiente: 0,
+          totalPagado: 0
+        },
         message: 'Ranking no disponible temporalmente'
       });
     }
     
     const data = await response.json();
     
-    // Si tenemos datos del ranking, obtener información de Discord para cada usuario
-    if (data.success && data.top && Array.isArray(data.top)) {
+    // Si tenemos datos del ranking, enriquecer con información de Discord
+    if (data.success && data.top) {
       try {
-        const enrichedTop = await Promise.all(data.top.map(async (user, index) => {
-          try {
-            // Obtener información del usuario de Discord
-            const guild = discordClient.guilds.cache.get(process.env.DISCORD_GUILD_ID);
-            if (guild) {
-              await guild.members.fetch();
-              const member = guild.members.cache.get(user.discordId);
-              
-              if (member) {
-                return {
-                  ...user,
-                  position: index + 1,
-                  username: member.user.username,
-                  discriminator: member.user.discriminator,
-                  avatar: member.user.avatar,
-                  displayAvatarURL: member.user.displayAvatarURL({ size: 64 }),
-                  totalMultas: user.total || user.totalMultas || 0,
-                  totalCantidad: user.totalCantidad || 0
-                };
+        // Enriquecer porImportePendiente
+        if (data.top.porImportePendiente && Array.isArray(data.top.porImportePendiente)) {
+          data.top.porImportePendiente = await Promise.all(data.top.porImportePendiente.map(async (user) => {
+            try {
+              const guild = discordClient.guilds.cache.get(process.env.DISCORD_GUILD_ID);
+              if (guild) {
+                await guild.members.fetch();
+                const member = guild.members.cache.get(user.discordId);
+                
+                if (member) {
+                  return {
+                    ...user,
+                    username: member.user.username,
+                    displayName: member.user.displayName || member.user.username,
+                    avatar: member.user.displayAvatarURL({ dynamic: true, size: 256 })
+                  };
+                }
               }
+              
+              // Fallback si no se encuentra en Discord
+              return {
+                ...user,
+                username: `Usuario_${user.discordId.slice(-4)}`,
+                displayName: `Usuario_${user.discordId.slice(-4)}`,
+                avatar: `https://cdn.discordapp.com/avatars/${user.discordId}/default.png`
+              };
+            } catch (memberErr) {
+              console.warn(`[MDT PROXY] Error obteniendo info de Discord para ${user.discordId}:`, memberErr.message);
+              return {
+                ...user,
+                username: `Usuario_${user.discordId.slice(-4)}`,
+                displayName: `Usuario_${user.discordId.slice(-4)}`,
+                avatar: `https://cdn.discordapp.com/avatars/${user.discordId}/default.png`
+              };
             }
-            
-            // Si no se encuentra en Discord, usar datos básicos
-            return {
-              ...user,
-              position: index + 1,
-              username: `Usuario ${user.discordId.slice(-4)}`,
-              discriminator: '0000',
-              avatar: null,
-              displayAvatarURL: null,
-              totalMultas: user.total || user.totalMultas || 0,
-              totalCantidad: user.totalCantidad || 0
-            };
-          } catch (memberErr) {
-            console.warn(`[MDT PROXY] Error obteniendo info de Discord para ${user.discordId}:`, memberErr.message);
-            return {
-              ...user,
-              position: index + 1,
-              username: `Usuario ${user.discordId.slice(-4)}`,
-              discriminator: '0000',
-              avatar: null,
-              displayAvatarURL: null,
-              totalMultas: user.total || user.totalMultas || 0,
-              totalCantidad: user.totalCantidad || 0
-            };
-          }
-        }));
+          }));
+        }
         
-        data.top = enrichedTop;
+        // Enriquecer porNumeroPendientes
+        if (data.top.porNumeroPendientes && Array.isArray(data.top.porNumeroPendientes)) {
+          data.top.porNumeroPendientes = await Promise.all(data.top.porNumeroPendientes.map(async (user) => {
+            try {
+              const guild = discordClient.guilds.cache.get(process.env.DISCORD_GUILD_ID);
+              if (guild) {
+                await guild.members.fetch();
+                const member = guild.members.cache.get(user.discordId);
+                
+                if (member) {
+                  return {
+                    ...user,
+                    username: member.user.username,
+                    displayName: member.user.displayName || member.user.username,
+                    avatar: member.user.displayAvatarURL({ dynamic: true, size: 256 })
+                  };
+                }
+              }
+              
+              // Fallback si no se encuentra en Discord
+              return {
+                ...user,
+                username: `Usuario_${user.discordId.slice(-4)}`,
+                displayName: `Usuario_${user.discordId.slice(-4)}`,
+                avatar: `https://cdn.discordapp.com/avatars/${user.discordId}/default.png`
+              };
+            } catch (memberErr) {
+              console.warn(`[MDT PROXY] Error obteniendo info de Discord para ${user.discordId}:`, memberErr.message);
+              return {
+                ...user,
+                username: `Usuario_${user.discordId.slice(-4)}`,
+                displayName: `Usuario_${user.discordId.slice(-4)}`,
+                avatar: `https://cdn.discordapp.com/avatars/${user.discordId}/default.png`
+              };
+            }
+          }));
+        }
+        
+        console.log('[MDT PROXY] Datos del ranking enriquecidos con información de Discord');
       } catch (enrichErr) {
         console.warn('[MDT PROXY] Error enriqueciendo datos del ranking:', enrichErr.message);
         // Continuar con los datos originales si hay error
@@ -6624,7 +6661,16 @@ app.get('/api/proxy/admin/top-multas', async (req, res) => {
     // Devolver respuesta de respaldo en lugar de error
     res.json({ 
       success: true, 
-      top: [],
+      top: {
+        porImportePendiente: [],
+        porNumeroPendientes: []
+      },
+      stats: {
+        totalUsuarios: 0,
+        totalMultas: 0,
+        totalPendiente: 0,
+        totalPagado: 0
+      },
       message: 'Ranking no disponible temporalmente',
       error: err.message
     });
