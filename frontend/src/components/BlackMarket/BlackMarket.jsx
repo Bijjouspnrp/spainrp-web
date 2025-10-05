@@ -1573,15 +1573,15 @@ if (!user) {
           <form onSubmit={handleQuickBalance}>
             <div style={{marginBottom: '0.8rem'}}>
               <label style={{fontWeight:700}}>ID Discord</label>
-              <input type="text" value={quickId} onChange={e => setQuickId(e.target.value)} style={{width:'100%',padding:'0.6rem',borderRadius:8,border:'1px solid #eee',marginTop:4,fontWeight:600,fontSize:'1.05rem'}} required disabled={quickLoading} />
+              <input type="text" value={quickId} onChange={e => setQuickId(e.target.value)} style={{width:'100%',padding:'0.6rem',borderRadius:8,border:'1px solid #4b5563',background:'#1a1a1a',color:'#ffffff',marginTop:4,fontWeight:600,fontSize:'1.05rem'}} required disabled={quickLoading} />
             </div>
             <div style={{marginBottom: '0.8rem'}}>
               <label style={{fontWeight:700}}>Efectivo (cash)</label>
-              <input type="number" value={quickCash} onChange={e => setQuickCash(e.target.value)} style={{width:'100%',padding:'0.6rem',borderRadius:8,border:'1px solid #eee',marginTop:4,fontWeight:600,fontSize:'1.05rem'}} required min={0} disabled={quickLoading} />
+              <input type="number" value={quickCash} onChange={e => setQuickCash(e.target.value)} style={{width:'100%',padding:'0.6rem',borderRadius:8,border:'1px solid #4b5563',background:'#1a1a1a',color:'#ffffff',marginTop:4,fontWeight:600,fontSize:'1.05rem'}} required min={0} disabled={quickLoading} />
             </div>
             <div style={{marginBottom: '0.8rem'}}>
               <label style={{fontWeight:700}}>Banco (bank)</label>
-              <input type="number" value={quickBank} onChange={e => setQuickBank(e.target.value)} style={{width:'100%',padding:'0.6rem',borderRadius:8,border:'1px solid #eee',marginTop:4,fontWeight:600,fontSize:'1.05rem'}} required min={0} disabled={quickLoading} />
+              <input type="number" value={quickBank} onChange={e => setQuickBank(e.target.value)} style={{width:'100%',padding:'0.6rem',borderRadius:8,border:'1px solid #4b5563',background:'#1a1a1a',color:'#ffffff',marginTop:4,fontWeight:600,fontSize:'1.05rem'}} required min={0} disabled={quickLoading} />
             </div>
             <button type="submit" disabled={quickLoading || !quickId || !quickCash || !quickBank} style={{
               width:'100%',

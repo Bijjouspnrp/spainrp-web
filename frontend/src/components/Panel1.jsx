@@ -386,8 +386,8 @@ const Panel1 = () => {
               <div className="card" style={{ marginBottom: '1rem' }}>
                 <h4 style={{marginTop:0}}>Crear anuncio</h4>
                 <div style={{ display: 'grid', gap: '.5rem', marginTop: '.5rem' }}>
-                  <input placeholder="Título" value={newAnn.title} onChange={(e)=>setNewAnn(a=>({...a,title:e.target.value}))} style={{ background:'transparent', border:'1px solid rgba(255,255,255,.25)', borderRadius:8, color:'#fff', padding:'.5rem .6rem' }} />
-                  <textarea placeholder="Contenido" value={newAnn.body} onChange={(e)=>setNewAnn(a=>({...a,body:e.target.value}))} style={{ background:'transparent', border:'1px solid rgba(255,255,255,.25)', borderRadius:8, color:'#fff', padding:'.5rem .6rem', minHeight:120 }} />
+                  <input placeholder="Título" value={newAnn.title} onChange={(e)=>setNewAnn(a=>({...a,title:e.target.value}))} style={{ background:'#1a1a1a', border:'1px solid #4b5563', borderRadius:8, color:'#ffffff', padding:'.5rem .6rem' }} />
+                  <textarea placeholder="Contenido" value={newAnn.body} onChange={(e)=>setNewAnn(a=>({...a,body:e.target.value}))} style={{ background:'#1a1a1a', border:'1px solid #4b5563', borderRadius:8, color:'#ffffff', padding:'.5rem .6rem', minHeight:120 }} />
                   <div className="actions" style={{justifyContent:'flex-end'}}>
                     <button className="btn btn--primary" onClick={async ()=>{ if(!newAnn.title||!newAnn.body) return; await fetch('https://spainrp-web.onrender.com/admin/announcements',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(newAnn)}); setNewAnn({title:'',body:''}); fetchAnnouncements(); }}>Publicar</button>
                   </div>
@@ -421,9 +421,9 @@ const Panel1 = () => {
               <div className="card" style={{ marginBottom: '1rem' }}>
                 <h4 style={{marginTop:0}}>Crear encuesta</h4>
                 <div style={{ display: 'grid', gap: '.5rem', marginTop: '.5rem' }}>
-                  <input placeholder="Pregunta" value={newPoll.question} onChange={(e)=>setNewPoll(p=>({...p,question:e.target.value}))} style={{ background:'transparent', border:'1px solid rgba(255,255,255,.25)', borderRadius:8, color:'#fff', padding:'.5rem .6rem' }} />
+                  <input placeholder="Pregunta" value={newPoll.question} onChange={(e)=>setNewPoll(p=>({...p,question:e.target.value}))} style={{ background:'#1a1a1a', border:'1px solid #4b5563', borderRadius:8, color:'#ffffff', padding:'.5rem .6rem' }} />
                   {newPoll.options.map((opt,idx)=> (
-                    <input key={idx} placeholder={`Opción ${idx+1}`} value={opt} onChange={(e)=>setNewPoll(p=>{ const n=[...p.options]; n[idx]=e.target.value; return {...p, options:n}; })} style={{ background:'transparent', border:'1px solid rgba(255,255,255,.25)', borderRadius:8, color:'#fff', padding:'.5rem .6rem' }} />
+                    <input key={idx} placeholder={`Opción ${idx+1}`} value={opt} onChange={(e)=>setNewPoll(p=>{ const n=[...p.options]; n[idx]=e.target.value; return {...p, options:n}; })} style={{ background:'#1a1a1a', border:'1px solid #4b5563', borderRadius:8, color:'#ffffff', padding:'.5rem .6rem' }} />
                   ))}
                   <div className="actions" style={{justifyContent:'space-between'}}>
                     <button className="btn btn--ghost" onClick={()=>setNewPoll(p=>({...p, options:[...p.options, '']}))}>Añadir opción</button>

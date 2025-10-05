@@ -758,7 +758,7 @@ const StockMarket = () => {
                     if (pendingAction.type==='sell') n = Math.min(n, cartera[pendingAction.stock.code]||1);
                     setActionQty(n);
                   }}
-                  style={{margin:'1.2rem 0 0.5rem 0',padding:'0.5rem 1.2rem',fontSize:'1.15rem',borderRadius:8,border:'2px solid #7289da',fontWeight:900,background:'#23272a',color:'#fff',textAlign:'center',width:120,outline:'none',boxShadow:'0 2px 8px #7289da22'}}
+                  style={{margin:'1.2rem 0 0.5rem 0',padding:'0.5rem 1.2rem',fontSize:'1.15rem',borderRadius:8,border:'2px solid #4b5563',fontWeight:900,background:'#1a1a1a',color:'#ffffff',textAlign:'center',width:120,outline:'none',boxShadow:'0 2px 8px rgba(0,0,0,0.3)'}}
                   autoFocus
                 />
                 <div style={{fontSize:'1.05rem',marginBottom:8}}>

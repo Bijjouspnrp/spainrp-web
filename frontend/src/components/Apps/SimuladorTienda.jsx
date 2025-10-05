@@ -474,7 +474,7 @@ const SimuladorTienda = () => {
               </div>
             )}
             <button className="comic-title" style={{background:'#7289da',color:'#fff',border:'none',borderRadius:8,padding:'0.7rem 1.5rem',fontWeight:700,margin:'0 0.5rem'}} onClick={crearSala} disabled={!discordUser}>Crear sala nueva</button>
-            <input type="text" placeholder="ID de sala" value={salaId} onChange={e=>setSalaId(e.target.value)} style={{padding:'0.6rem',borderRadius:8,border:'1px solid #eee',margin:'0 0.5rem',width:120}} disabled={!discordUser} />
+            <input type="text" placeholder="ID de sala" value={salaId} onChange={e=>setSalaId(e.target.value)} style={{padding:'0.6rem',borderRadius:8,border:'1px solid #4b5563',background:'#1a1a1a',color:'#ffffff',margin:'0 0.5rem',width:120}} disabled={!discordUser} />
             <button className="comic-title" style={{background:'#FFD700',color:'#23272a',border:'none',borderRadius:8,padding:'0.7rem 1.5rem',fontWeight:700}} onClick={unirseSala} disabled={!discordUser}>Unirse</button>
           </div>
         ) : (

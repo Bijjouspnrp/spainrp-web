@@ -590,8 +590,8 @@ const News = () => {
         </form>
         <h2 style={{marginBottom:'1.2rem',fontWeight:800,fontSize:'2rem',letterSpacing:1}}>Noticias recientes</h2>
           <div style={{display:'flex',gap:16,marginBottom:18,alignItems:'center'}}>
-            <input type="text" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar noticia, autor..." style={{flex:1,padding:'0.7rem',borderRadius:8,border:'1px solid #ddd',fontSize:'1rem'}} />
-            <select value={filterTag} onChange={e=>setFilterTag(e.target.value)} style={{padding:'0.7rem',borderRadius:8,border:'1px solid #ddd',fontSize:'1rem'}}>
+            <input type="text" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar noticia, autor..." style={{flex:1,padding:'0.7rem',borderRadius:8,border:'1px solid #4b5563',background:'#1a1a1a',color:'#ffffff',fontSize:'1rem'}} />
+            <select value={filterTag} onChange={e=>setFilterTag(e.target.value)} style={{padding:'0.7rem',borderRadius:8,border:'1px solid #4b5563',background:'#1a1a1a',color:'#ffffff',fontSize:'1rem'}}>
               <option value="">Todas las etiquetas</option>
               {[...new Set(news.flatMap(n=>n.tags||[]))].map((tag,i)=>(<option key={i} value={tag}>{tag}</option>))}
             </select>
@@ -652,7 +652,7 @@ const News = () => {
                 <div style={{marginTop:8}}>
                   <div style={{fontWeight:700,marginBottom:4}}>Comentarios</div>
                   <div style={{display:'flex',gap:8,marginBottom:8}}>
-                      <input type="text" value={commentInput} onChange={e=>setCommentInput(e.target.value)} placeholder="Escribe un comentario..." style={{flex:1,padding:'0.5rem',borderRadius:8,border:'1px solid #ddd',fontSize:'1rem'}} />
+                      <input type="text" value={commentInput} onChange={e=>setCommentInput(e.target.value)} placeholder="Escribe un comentario..." style={{flex:1,padding:'0.5rem',borderRadius:8,border:'1px solid #4b5563',background:'#1a1a1a',color:'#ffffff',fontSize:'1rem'}} />
                       <button style={{background:'#7289da',color:'#fff',border:'none',borderRadius:8,padding:'0.5rem 1.2rem',fontWeight:700,fontSize:'1rem',cursor:'pointer',boxShadow:'0 2px 8px #7289da44'}} onClick={()=>handleComment(n.id)}>
                         Enviar
                       </button>
