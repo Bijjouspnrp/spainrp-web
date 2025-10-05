@@ -88,27 +88,48 @@ const CNISection = () => {
   // Cargar estadísticas de la base de datos
   const loadDatabaseStats = async () => {
     try {
-      const [statsRes, recordsRes] = await Promise.all([
-        fetch(apiUrl('/api/proxy/admin/stats')),
-        fetch(apiUrl('/api/proxy/admin/stats/records'))
-      ]);
+      // Usar el nuevo endpoint del dashboard CNI
+      const dashboardRes = await fetch(apiUrl('/api/cni/dashboard'));
+      
+      if (dashboardRes.ok) {
+        const dashboardData = await dashboardRes.json();
+        console.log('[CNI] Dashboard data received:', dashboardData);
+        
+        if (dashboardData.success && dashboardData.cni) {
+          const cniData = dashboardData.cni.dashboard;
+          setDatabaseStats(prev => ({
+            ...prev,
+            totalUsers: cniData.baseDatos?.totalUsuarios || 0,
+            totalMultas: cniData.multas?.total || 0,
+            totalAntecedentes: cniData.baseDatos?.antecedentes || 0,
+            totalArrestos: cniData.baseDatos?.arrestos || 0
+          }));
+        }
+      } else {
+        console.warn('[CNI] Dashboard endpoint not available, using fallback');
+        // Fallback a los endpoints individuales si el dashboard no está disponible
+        const [statsRes, recordsRes] = await Promise.all([
+          fetch(apiUrl('/api/proxy/admin/stats')),
+          fetch(apiUrl('/api/proxy/admin/stats/records'))
+        ]);
 
-      if (statsRes.ok) {
-        const statsData = await statsRes.json();
-        setDatabaseStats(prev => ({
-          ...prev,
-          totalUsers: statsData.stats?.totalUsers || 0
-        }));
-      }
+        if (statsRes.ok) {
+          const statsData = await statsRes.json();
+          setDatabaseStats(prev => ({
+            ...prev,
+            totalUsers: statsData.stats?.totalUsers || 0
+          }));
+        }
 
-      if (recordsRes.ok) {
-        const recordsData = await recordsRes.json();
-        setDatabaseStats(prev => ({
-          ...prev,
-          totalMultas: recordsData.records?.multas || 0,
-          totalAntecedentes: recordsData.records?.antecedentes || 0,
-          totalArrestos: recordsData.records?.arrestos || 0
-        }));
+        if (recordsRes.ok) {
+          const recordsData = await recordsRes.json();
+          setDatabaseStats(prev => ({
+            ...prev,
+            totalMultas: recordsData.records?.multas || 0,
+            totalAntecedentes: recordsData.records?.antecedentes || 0,
+            totalArrestos: recordsData.records?.arrestos || 0
+          }));
+        }
       }
 
       // Cargar DNIs registrados
