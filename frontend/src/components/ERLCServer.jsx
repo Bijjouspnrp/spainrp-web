@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaUsers, FaClock, FaServer, FaGamepad, FaGlobe, FaChevronDown, FaChevronUp, FaInfoCircle } from 'react-icons/fa';
+import { FaUsers, FaClock, FaServer, FaGamepad, FaGlobe, FaChevronDown, FaChevronUp, FaInfoCircle, FaRocket, FaStar, FaHeart, FaCrown, FaGamepadAlt } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { apiUrl } from '../utils/api';
 import './ERLCServer.css';
@@ -347,17 +347,27 @@ const ERLCServer = () => {
         <div className="erlc-welcome-modal-overlay">
           <div className="erlc-welcome-modal">
             <div className="erlc-welcome-header">
-              <FaServer className="erlc-welcome-icon" />
+              <div className="erlc-welcome-icon-container">
+                <FaRocket className="erlc-welcome-icon rocket" />
+                <FaStar className="erlc-welcome-icon star" />
+                <FaGamepadAlt className="erlc-welcome-icon gamepad" />
+              </div>
               <h3>¡Bienvenido a la Sección ERLC!</h3>
             </div>
             <div className="erlc-welcome-content">
-              <p>
-                Aquí puedes ver los datos en tiempo real del servidor privado de ERLC. 
-                <strong> Propietario: BijjouPro08</strong>
-              </p>
-              <p>
-                Recuerda que puedes unirte a nuestra comunidad de Roblox para no perderte de nada:
-              </p>
+              <div className="erlc-welcome-feature">
+                <FaServer className="feature-icon" />
+                <p>
+                  Aquí puedes ver los datos en tiempo real del servidor privado de ERLC. 
+                  <strong> Propietario: BijjouPro08</strong>
+                </p>
+              </div>
+              <div className="erlc-welcome-feature">
+                <FaHeart className="feature-icon" />
+                <p>
+                  Recuerda que puedes unirte a nuestra comunidad de Roblox para no perderte de nada:
+                </p>
+              </div>
               <a 
                 href="https://www.roblox.com/es/communities/975983786/SpainRP-Espa-ol#!/about" 
                 target="_blank" 
@@ -365,6 +375,7 @@ const ERLCServer = () => {
                 className="erlc-community-link"
               >
                 <FaGlobe />
+                <FaCrown />
                 Unirse a la Comunidad de Roblox
               </a>
             </div>

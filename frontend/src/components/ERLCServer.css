@@ -667,15 +667,39 @@ body:not(.dark) .erlc-error {
 
 .erlc-welcome-header {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   padding: 24px 24px 16px 24px;
   border-bottom: 1px solid rgba(114, 137, 218, 0.2);
+  text-align: center;
+}
+
+.erlc-welcome-icon-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
 }
 
 .erlc-welcome-icon {
-  font-size: 24px;
-  color: #7289da;
+  font-size: 28px;
+  transition: all 0.3s ease;
+}
+
+.erlc-welcome-icon.rocket {
+  color: #ff6b6b;
+  animation: rocketFloat 2s ease-in-out infinite;
+}
+
+.erlc-welcome-icon.star {
+  color: #ffd700;
+  animation: starTwinkle 1.5s ease-in-out infinite;
+}
+
+.erlc-welcome-icon.gamepad {
+  color: #4ecdc4;
+  animation: gamepadBounce 2.5s ease-in-out infinite;
 }
 
 .erlc-welcome-header h3 {
@@ -691,9 +715,34 @@ body:not(.dark) .erlc-error {
   line-height: 1.6;
 }
 
-.erlc-welcome-content p {
-  margin: 0 0 16px 0;
+.erlc-welcome-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: rgba(114, 137, 218, 0.05);
+  border-radius: 8px;
+  border-left: 3px solid #7289da;
+  transition: all 0.3s ease;
+}
+
+.erlc-welcome-feature:hover {
+  background: rgba(114, 137, 218, 0.1);
+  transform: translateX(4px);
+}
+
+.feature-icon {
+  font-size: 20px;
+  color: #7289da;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.erlc-welcome-feature p {
+  margin: 0;
   font-size: 1rem;
+  line-height: 1.5;
 }
 
 .erlc-welcome-content strong {
@@ -704,22 +753,47 @@ body:not(.dark) .erlc-error {
 .erlc-community-link {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   background: linear-gradient(135deg, #7289da, #5865f2);
   color: white;
   text-decoration: none;
-  padding: 12px 20px;
-  border-radius: 8px;
+  padding: 14px 24px;
+  border-radius: 12px;
   font-weight: 600;
   transition: all 0.3s ease;
-  margin-top: 8px;
+  margin-top: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.erlc-community-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.erlc-community-link:hover::before {
+  left: 100%;
 }
 
 .erlc-community-link:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(114, 137, 218, 0.4);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 12px 25px rgba(114, 137, 218, 0.5);
   color: white;
   text-decoration: none;
+}
+
+.erlc-community-link svg:first-child {
+  animation: globeRotate 3s linear infinite;
+}
+
+.erlc-community-link svg:last-child {
+  animation: crownBounce 2s ease-in-out infinite;
 }
 
 .erlc-welcome-actions {
@@ -758,6 +832,67 @@ body:not(.dark) .erlc-error {
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes rocketFloat {
+  0%, 100% {
+    transform: translateY(0) rotate(-5deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(5deg);
+  }
+}
+
+@keyframes starTwinkle {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  25% {
+    transform: scale(1.2) rotate(90deg);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(0.9) rotate(180deg);
+    opacity: 1;
+  }
+  75% {
+    transform: scale(1.1) rotate(270deg);
+    opacity: 0.9;
+  }
+}
+
+@keyframes gamepadBounce {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  25% {
+    transform: translateY(-4px) scale(1.1);
+  }
+  50% {
+    transform: translateY(-8px) scale(1.05);
+  }
+  75% {
+    transform: translateY(-4px) scale(1.1);
+  }
+}
+
+@keyframes globeRotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes crownBounce {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-3px) scale(1.1);
   }
 }
 
