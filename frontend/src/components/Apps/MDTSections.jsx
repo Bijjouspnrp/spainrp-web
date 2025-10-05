@@ -1297,6 +1297,11 @@ export const ArrestarSection = ({ onRefresh }) => {
 
 // Sección Ranking (Policía)
 export const RankingSection = ({ data, message }) => {
+  console.log('RankingSection - Datos recibidos:', data);
+  console.log('RankingSection - data.top:', data?.top);
+  console.log('RankingSection - porImportePendiente:', data?.top?.porImportePendiente);
+  console.log('RankingSection - porNumeroPendientes:', data?.top?.porNumeroPendientes);
+  
   if (!data || (!data.top?.porImportePendiente && !data.top?.porNumeroPendientes)) {
     return (
       <div className="mdt-section">
