@@ -5669,6 +5669,7 @@ app.post('/api/admin/moderate', express.json(), async (req, res) => {
     console.log(`[ADMIN MODERATE] Guild ID: ${guildId}`);
     console.log(`[ADMIN MODERATE] Discord Client:`, !!discordClient);
     console.log(`[ADMIN MODERATE] Discord Ready:`, !!discordClient?.readyAt);
+    console.log(`[ADMIN MODERATE] Guilds disponibles:`, discordClient?.guilds?.cache?.size || 0);
     
     // Verificar que el cliente Discord esté disponible y conectado
     if (!discordClient) {
@@ -5693,6 +5694,9 @@ app.post('/api/admin/moderate', express.json(), async (req, res) => {
       return res.status(404).json({ error: 'Servidor no encontrado' });
     }
     
+    console.log(`[ADMIN MODERATE] Servidor encontrado: ${guild.name}`);
+    console.log(`[ADMIN MODERATE] Bot permissions:`, guild.members.me?.permissions?.toArray() || 'No permissions');
+    
     try {
       await guild.members.fetch();
     } catch (fetchError) {
@@ -5712,11 +5716,13 @@ app.post('/api/admin/moderate', express.json(), async (req, res) => {
     switch (action) {
       case 'ban':
         try {
+          console.log(`[ADMIN MODERATE] Intentando banear usuario: ${member.user.username} (${userId})`);
           await member.ban({ 
             reason: reason || 'Baneado desde panel admin',
             deleteMessageDays: 7
           });
           result = `Usuario ${member.user.username} (${userId}) baneado exitosamente.`;
+          console.log(`[ADMIN MODERATE] Usuario baneado exitosamente: ${member.user.username}`);
         } catch (banError) {
           console.error('[ADMIN MODERATE] Error baneando usuario:', banError);
           return res.status(500).json({ error: 'Error baneando usuario', details: banError.message });
@@ -5725,8 +5731,10 @@ app.post('/api/admin/moderate', express.json(), async (req, res) => {
         
       case 'kick':
         try {
+          console.log(`[ADMIN MODERATE] Intentando kickear usuario: ${member.user.username} (${userId})`);
           await member.kick(reason || 'Kickeado desde panel admin');
           result = `Usuario ${member.user.username} (${userId}) kickeado exitosamente.`;
+          console.log(`[ADMIN MODERATE] Usuario kickeado exitosamente: ${member.user.username}`);
         } catch (kickError) {
           console.error('[ADMIN MODERATE] Error kickeando usuario:', kickError);
           return res.status(500).json({ error: 'Error kickeando usuario', details: kickError.message });
@@ -5735,12 +5743,14 @@ app.post('/api/admin/moderate', express.json(), async (req, res) => {
         
       case 'mute':
         try {
+          console.log(`[ADMIN MODERATE] Intentando mutear usuario: ${member.user.username} (${userId})`);
           // Buscar rol de mute
           let muteRole = guild.roles.cache.find(r => 
             r.name.toLowerCase().includes('mute') || 
             r.name.toLowerCase().includes('silenciado') ||
             r.name.toLowerCase() === 'muted'
           );
+          console.log(`[ADMIN MODERATE] Rol de mute encontrado:`, muteRole?.name || 'No encontrado');
           
           if (!muteRole) {
             try {
@@ -5777,30 +5787,32 @@ app.post('/api/admin/moderate', express.json(), async (req, res) => {
           }
           
           await member.roles.add(muteRole.id, reason || 'Muteado desde panel admin');
+          
+          // Programar desmute si hay tiempo especificado
+          if (time && parseInt(time) > 0) {
+            setTimeout(async () => {
+              try {
+                await member.roles.remove(muteRole.id, 'Desmute automático');
+                console.log(`[ADMIN MODERATE] Desmute automático para ${userId}`);
+              } catch (e) {
+                console.error('[ADMIN MODERATE] Error en desmute automático:', e);
+              }
+            }, parseInt(time) * 60000);
+          }
+          
+          result = `Usuario ${member.user.username} (${userId}) muteado exitosamente.`;
         } catch (muteError) {
           console.error('[ADMIN MODERATE] Error muteando usuario:', muteError);
           return res.status(500).json({ error: 'Error muteando usuario', details: muteError.message });
         }
-        
-        // Programar desmute si hay tiempo especificado
-        if (time && parseInt(time) > 0) {
-          setTimeout(async () => {
-            try {
-              await member.roles.remove(muteRole.id, 'Desmute automático');
-              console.log(`[ADMIN MODERATE] Desmute automático para ${userId}`);
-            } catch (e) {
-              console.error('[ADMIN MODERATE] Error en desmute automático:', e);
-            }
-          }, parseInt(time) * 60000);
-        }
-        
-        result = `Usuario ${member.user.username} (${userId}) muteado exitosamente.`;
         break;
         
       case 'unban':
         try {
+          console.log(`[ADMIN MODERATE] Intentando desbanear usuario: ${userId}`);
           await guild.members.unban(userId, reason || 'Desbaneado desde panel admin');
           result = `Usuario ${userId} desbaneado exitosamente.`;
+          console.log(`[ADMIN MODERATE] Usuario desbaneado exitosamente: ${userId}`);
         } catch (unbanError) {
           console.error('[ADMIN MODERATE] Error desbaneando usuario:', unbanError);
           return res.status(500).json({ error: 'Error desbaneando usuario', details: unbanError.message });
