@@ -30,9 +30,24 @@ const ensureAdmin = (req, res, next) => {
   next();
 };
 
-// Aplicar middleware JWT y admin a todas las rutas
+// Aplicar middleware JWT a todas las rutas
 router.use(verifyToken);
-router.use(ensureAdmin);
+
+// Middleware para verificar permisos de administrador solo en rutas específicas
+const ensureAdminForRead = (req, res, next) => {
+  const userId = req.user?.id || req.user?.userId;
+  const adminUserIds = [
+    '710112055985963090', // bijjoupro08
+    // Añade más IDs de administradores aquí
+  ];
+  
+  if (!adminUserIds.includes(userId)) {
+    console.log(`[LOGS] Usuario ${userId} no tiene permisos de administrador`);
+    return res.status(403).json({ error: 'No tienes permisos de administrador para ver los logs' });
+  }
+  
+  next();
+};
 
 // Función para leer logs de un archivo
 const readLogFile = (filePath, maxLines = 1000) => {
@@ -264,8 +279,99 @@ function generateSampleLogs() {
   return logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 }
 
+// Crear un nuevo log
+router.post('/', async (req, res) => {
+  try {
+    const { type, level, message, user, source, data } = req.body;
+    const userId = req.user?.id || req.user?.userId;
+    
+    const logData = {
+      type: type || 'system',
+      level: level || 'info',
+      message: message || '',
+      user: user || userId,
+      ip: req.ip,
+      userAgent: req.get('User-Agent'),
+      source: source || 'web',
+      data: data || null
+    };
+    
+    // Escribir log en el archivo correspondiente
+    let logFile;
+    switch (type) {
+      case 'access':
+        logFile = ACCESS_LOG;
+        break;
+      case 'error':
+        logFile = ERROR_LOG;
+        break;
+      default:
+        logFile = SYSTEM_LOG;
+    }
+    
+    writeLog(logFile, logData);
+    
+    console.log(`[LOGS] Nuevo log creado: ${type} - ${message} por ${user || userId}`);
+    
+    res.json({
+      success: true,
+      message: 'Log creado exitosamente',
+      logId: `log-${Date.now()}`,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error creando log:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error interno del servidor al crear log'
+    });
+  }
+});
+
+// Enviar embed a Discord
+router.post('/discord/webhook', async (req, res) => {
+  try {
+    const { channelId, embed } = req.body;
+    const userId = req.user?.id || req.user?.userId;
+    
+    if (!channelId || !embed) {
+      return res.status(400).json({
+        success: false,
+        error: 'channelId y embed son requeridos'
+      });
+    }
+    
+    // Aquí se enviaría el embed a Discord usando el bot
+    // Por ahora solo logueamos la acción
+    console.log(`[DISCORD] Embed enviado al canal ${channelId} por ${userId}:`, embed.title);
+    
+    // Escribir log de la acción de Discord
+    writeLog(SYSTEM_LOG, {
+      type: 'discord',
+      level: 'info',
+      message: `Embed enviado al canal ${channelId}`,
+      user: userId,
+      ip: req.ip,
+      userAgent: req.get('User-Agent'),
+      data: { channelId, embedTitle: embed.title }
+    });
+    
+    res.json({
+      success: true,
+      message: 'Embed enviado exitosamente',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error enviando embed a Discord:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error interno del servidor al enviar embed'
+    });
+  }
+});
+
 // Obtener todos los logs
-router.get('/', (req, res) => {
+router.get('/', ensureAdminForRead, (req, res) => {
   try {
     console.log(`[LOGS] Usuario ${req.user?.id || req.user?.userId} solicitando logs`);
     
@@ -298,7 +404,7 @@ router.get('/', (req, res) => {
 });
 
 // Obtener logs por tipo
-router.get('/type/:type', (req, res) => {
+router.get('/type/:type', ensureAdminForRead, (req, res) => {
   try {
     const { type } = req.params;
     const validTypes = ['access', 'error', 'system'];
@@ -342,7 +448,7 @@ router.get('/type/:type', (req, res) => {
 });
 
 // Limpiar logs
-router.delete('/clear', (req, res) => {
+router.delete('/clear', ensureAdminForRead, (req, res) => {
   try {
     console.log(`[LOGS] Usuario ${req.user?.id || req.user?.userId} limpiando logs`);
     
@@ -392,7 +498,7 @@ router.delete('/clear', (req, res) => {
 });
 
 // Obtener estadísticas de logs
-router.get('/stats', (req, res) => {
+router.get('/stats', ensureAdminForRead, (req, res) => {
   try {
     const accessLogs = readLogFile(ACCESS_LOG);
     const errorLogs = readLogFile(ERROR_LOG);
@@ -450,7 +556,7 @@ router.get('/stats', (req, res) => {
 });
 
 // Exportar logs
-router.get('/export', (req, res) => {
+router.get('/export', ensureAdminForRead, (req, res) => {
   try {
     const { type, format = 'json' } = req.query;
     

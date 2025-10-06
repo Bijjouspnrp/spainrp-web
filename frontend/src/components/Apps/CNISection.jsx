@@ -10,6 +10,8 @@ import {
   FaCog, FaExpand, FaCompress, FaAngleRight, FaAngleLeft
 } from 'react-icons/fa';
 import { apiUrl } from '../../utils/api';
+import loggingService from '../../utils/loggingService';
+import discordService from '../../utils/discordService';
 import './CNISection.css';
 import './BusinessRecords.css';
 import './CNIBlog.css';
@@ -736,6 +738,16 @@ const AdvancedSearchTab = () => {
       
       if (searchData.success) {
         setResults(searchData);
+        
+        // Logging de la búsqueda CNI
+        const userId = localStorage.getItem('spainrp_user_id') || 'unknown';
+        const resultsArray = [
+          ...(searchData.dniPorNombre || []),
+          ...(searchData.discordUsers || [])
+        ];
+        
+        await loggingService.logCNISearch(userId, 'advanced', searchForm.query, resultsArray);
+        await discordService.sendCNISearchEmbed(userId, 'advanced', searchForm.query, resultsArray);
       }
     } catch (err) {
       console.error('Error en búsqueda:', err);
@@ -1345,6 +1357,11 @@ const BusinessRecordsTab = () => {
         setNewBusiness({ nombre: '', tipo: '', propietario: '', ubicacion: '', estado: 'activa', notas: '', agente_registro: '' });
         loadBusinesses();
         loadStats();
+
+        // Logging del registro empresarial
+        const userId = localStorage.getItem('spainrp_user_id') || 'unknown';
+        await loggingService.logBusinessRecord(userId, newBusiness.nombre, newBusiness.tipo, 'create');
+        await discordService.sendBusinessRecordEmbed(userId, newBusiness.nombre, newBusiness.tipo, 'create');
       } else {
         setError(`Error: ${data.error}`);
       }
@@ -1377,6 +1394,20 @@ const BusinessRecordsTab = () => {
         loadVisits();
         loadBusinesses();
         loadStats();
+
+        // Logging de la visita empresarial
+        const userId = localStorage.getItem('spainrp_user_id') || 'unknown';
+        const businessName = businesses.find(b => b.id === newVisit.empresa_id)?.nombre || 'Unknown';
+        await loggingService.logBusinessVisit(userId, businessName, 'visit', {
+          fecha: newVisit.fecha_visita,
+          notas: newVisit.notas,
+          estado: newVisit.estado
+        });
+        await discordService.sendBusinessVisitEmbed(userId, businessName, 'visit', {
+          fecha: newVisit.fecha_visita,
+          notas: newVisit.notas,
+          estado: newVisit.estado
+        });
       } else {
         setError(`Error: ${data.error}`);
       }
@@ -1995,6 +2026,11 @@ const BlogTab = () => {
         setShowNewArticle(false);
         console.log('[CNI][BLOG] 🔄 Recargando lista de artículos...');
         loadArticles();
+
+        // Logging del artículo de blog
+        const userId = localStorage.getItem('spainrp_user_id') || 'unknown';
+        await loggingService.logBlogArticle(userId, newArticle.titulo, 'create');
+        await discordService.sendBlogArticleEmbed(userId, newArticle.titulo, 'create');
       } else {
         console.log('[CNI][BLOG] ❌ Error en creación:', data.error);
         setError(`Error: ${data.error}`);

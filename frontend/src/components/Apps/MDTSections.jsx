@@ -7,6 +7,8 @@ import {
 } from 'react-icons/fa';
 import { apiUrl } from '../../utils/api';
 import codigoPenal from '../../utils/codigoPenal';
+import loggingService from '../../utils/loggingService';
+import discordService from '../../utils/discordService';
 
 // Sección DNI
 export const DNISection = ({ data }) => {
@@ -962,6 +964,18 @@ export const SearchSection = ({ onSearch }) => {
         setError('ℹ️ No se encontraron datos para este usuario');
       }
 
+      // Logging de la búsqueda
+      const userId = localStorage.getItem('spainrp_user_id') || 'unknown';
+      const resultsArray = [
+        searchResults.dni,
+        ...searchResults.antecedentes,
+        ...searchResults.multas,
+        ...searchResults.inventario
+      ].filter(Boolean);
+      
+      await loggingService.logSearch(userId, searchType, searchValue, resultsArray);
+      await discordService.sendSearchEmbed(userId, searchType, searchValue, resultsArray);
+
     } catch (err) {
       console.error('Error en búsqueda:', err);
       setError('❌ Error de conexión en la búsqueda');
@@ -1249,6 +1263,12 @@ export const MultarSection = ({ onRefresh }) => {
         setResult('✅ Multa aplicada correctamente');
         setFormData({ discordId: '', motivo: '', cantidad: '', descripcion: '' });
         onRefresh();
+
+        // Logging de la multa
+        const userId = localStorage.getItem('spainrp_user_id') || 'unknown';
+        const fineId = data.fineId || data.id || 'unknown';
+        await loggingService.logFine(userId, formData.discordId.trim(), cantidad, formData.motivo.trim(), fineId);
+        await discordService.sendFineEmbed(userId, formData.discordId.trim(), cantidad, formData.motivo.trim(), fineId);
       } else {
         setResult(`❌ Error: ${data.error || 'Error aplicando multa'}`);
       }
@@ -1378,6 +1398,17 @@ export const ArrestarSection = ({ onRefresh }) => {
         setSelectedCargos([]);
         setCargosInput('');
         onRefresh();
+
+        // Logging del arresto
+        const userId = localStorage.getItem('spainrp_user_id') || 'unknown';
+        const arrestId = data.arrestId || data.id || 'unknown';
+        const charges = selectedCargos.map(cargo => cargo.text);
+        const totalFine = data.sanciones?.multa || 0;
+        const icTime = data.sanciones?.tiempoIC || 0;
+        const oocTime = data.sanciones?.tiempoOOC || 0;
+        
+        await loggingService.logArrest(userId, formData.discordId.trim(), charges, totalFine, icTime, oocTime, arrestId);
+        await discordService.sendArrestEmbed(userId, formData.discordId.trim(), charges, totalFine, icTime, oocTime, arrestId);
       } else {
         setResult(`❌ Error: ${data.error || 'Error procesando arresto'}`);
       }
