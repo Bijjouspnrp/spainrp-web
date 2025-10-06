@@ -773,6 +773,8 @@ export const InventarioSection = ({ data }) => {
       return <FaFileAlt />;
     } else if (itemId.includes('car') || itemId.includes('vehicle') || itemId.includes('vehiculo') || itemId.includes('coche')) {
       return <FaCar />;
+    } else if (itemId.includes('crash') || itemId.includes('accident') || itemId.includes('choque') || itemId.includes('accidente')) {
+      return <FaCarCrash />;
     } else {
       return <FaFileAlt />;
     }
