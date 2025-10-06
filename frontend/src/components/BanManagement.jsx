@@ -294,11 +294,29 @@ const BanManagement = () => {
     setShowBanModal(true);
   };
 
-  const filteredIPs = ips.filter(ip => 
-    ip.ip.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (ip.userId && ip.userId.includes(searchTerm)) ||
-    (ip.username && ip.username.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredIPs = ips.filter(ip => {
+    // Filtro de búsqueda de texto
+    const matchesSearch = ip.ip.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (ip.userId && ip.userId.includes(searchTerm)) ||
+      (ip.username && ip.username.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (ip.country && ip.country.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (ip.city && ip.city.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (ip.isp && ip.isp.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    // Filtro de geolocalización
+    let matchesGeo = true;
+    if (filterType === 'high-accuracy') {
+      matchesGeo = ip.latitude && ip.longitude;
+    } else if (filterType === 'medium-accuracy') {
+      matchesGeo = ip.city && ip.city !== 'Unknown' && (!ip.latitude || !ip.longitude);
+    } else if (filterType === 'low-accuracy') {
+      matchesGeo = ip.country && ip.country !== 'Unknown' && (!ip.city || ip.city === 'Unknown');
+    } else if (filterType === 'no-location') {
+      matchesGeo = (!ip.country || ip.country === 'Unknown');
+    }
+    
+    return matchesSearch && matchesGeo;
+  });
 
   const filteredBans = bans.filter(ban => 
     ban.value.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -377,6 +395,26 @@ const BanManagement = () => {
               <div className="stat-number">{stats.totalIPs || 0}</div>
               <div className="stat-label">Total IPs</div>
               <div className="stat-trend">+8% esta semana</div>
+            </div>
+          </div>
+          <div className="stat-card success">
+            <div className="stat-icon">
+              <FaGlobe />
+            </div>
+            <div className="stat-content">
+              <div className="stat-number">{ips.filter(ip => ip.latitude && ip.longitude).length}</div>
+              <div className="stat-label">Con GPS</div>
+              <div className="stat-trend">Alta precisión</div>
+            </div>
+          </div>
+          <div className="stat-card warning">
+            <div className="stat-icon">
+              <FaFlag />
+            </div>
+            <div className="stat-content">
+              <div className="stat-number">{ips.filter(ip => ip.country && ip.country !== 'Unknown').length}</div>
+              <div className="stat-label">Con Ubicación</div>
+              <div className="stat-trend">Geolocalizadas</div>
             </div>
           </div>
         </div>
@@ -515,6 +553,20 @@ const BanManagement = () => {
           </div>
           
           <div className="filter-group">
+            <label>Geolocalización</label>
+            <select 
+              value={filterType} 
+              onChange={(e) => setFilterType(e.target.value)}
+            >
+              <option value="all">Todas</option>
+              <option value="high-accuracy">Alta precisión (GPS)</option>
+              <option value="medium-accuracy">Precisión media (Ciudad)</option>
+              <option value="low-accuracy">Precisión baja (País)</option>
+              <option value="no-location">Sin ubicación</option>
+            </select>
+          </div>
+          
+          <div className="filter-group">
             <label>Ordenar por</label>
             <select 
               value={sortBy} 
@@ -572,6 +624,11 @@ const BanManagement = () => {
                             <span>DM</span>
                           </div>
                         )}
+                        {ip.country && ip.country !== 'Unknown' && (
+                          <div className="location-accuracy" title="Precisión de geolocalización">
+                            {ip.latitude && ip.longitude ? '🎯' : '📍'}
+                          </div>
+                        )}
                         <button 
                           className="copy-btn"
                           onClick={() => copyToClipboard(ip.ip)}
@@ -622,18 +679,49 @@ const BanManagement = () => {
                         </div>
                       </div>
                       
-                      <div className="location-info">
+                      <div className="location-info" title={`Ubicación: ${ip.country || 'Unknown'}${ip.city ? `, ${ip.city}` : ''}${ip.region && ip.region !== 'Unknown' ? `, ${ip.region}` : ''}${ip.timezone && ip.timezone !== 'Unknown' ? ` (${ip.timezone})` : ''}${ip.latitude && ip.longitude ? ` - Coordenadas: ${ip.latitude.toFixed(4)}, ${ip.longitude.toFixed(4)}` : ''}`}>
                         <FaGlobe />
-                        <span>{ip.country || 'Unknown'} {ip.city && `- ${ip.city}`}</span>
+                        <div className="location-details">
+                          <div className="location-main">
+                            {ip.country || 'Unknown'} 
+                            {ip.countryCode && ` (${ip.countryCode})`}
+                            {ip.city && ` - ${ip.city}`}
+                          </div>
+                          {ip.region && ip.region !== 'Unknown' && (
+                            <div className="location-region">
+                              {ip.region}
+                            </div>
+                          )}
+                          {ip.timezone && ip.timezone !== 'Unknown' && (
+                            <div className="location-timezone">
+                              🕐 {ip.timezone}
+                            </div>
+                          )}
+                          {ip.latitude && ip.longitude && (
+                            <div className="location-coordinates">
+                              📍 {ip.latitude.toFixed(4)}, {ip.longitude.toFixed(4)}
+                            </div>
+                          )}
+                        </div>
                       </div>
                       
                       <div className="device-info">
-                        <span className="device-badge">
-                          {ip.userAgent?.includes('Mobile') ? '📱' : '💻'} 
-                          {ip.userAgent?.includes('Chrome') ? 'Chrome' : 
-                           ip.userAgent?.includes('Firefox') ? 'Firefox' : 
-                           ip.userAgent?.includes('Safari') ? 'Safari' : 'Browser'}
-                        </span>
+                        <div className="device-details">
+                          <span className="device-badge">
+                            {ip.device === 'Mobile' ? '📱' : 
+                             ip.device === 'Tablet' ? '📱' : 
+                             ip.device === 'Server/API' ? '🖥️' : '💻'} 
+                            {ip.browser || 'Unknown Browser'}
+                          </span>
+                          <span className="os-badge">
+                            {ip.os || 'Unknown OS'}
+                          </span>
+                        </div>
+                        {ip.isp && ip.isp !== 'Unknown' && (
+                          <div className="isp-info" title={`Proveedor de Internet: ${ip.isp}`}>
+                            🌐 {ip.isp.length > 30 ? `${ip.isp.substring(0, 30)}...` : ip.isp}
+                          </div>
+                        )}
                       </div>
                     </div>
                     
@@ -648,6 +736,11 @@ const BanManagement = () => {
                           {formatDuration(ip.lastSeen)} ago
                         </span>
                       </div>
+                      {ip.country && ip.country !== 'Unknown' && (
+                        <div className="geo-quality" title={`Calidad de geolocalización: ${ip.latitude && ip.longitude ? 'Alta (coordenadas GPS)' : ip.city && ip.city !== 'Unknown' ? 'Media (ciudad)' : 'Baja (país)'}`}>
+                          {ip.latitude && ip.longitude ? '🎯' : ip.city && ip.city !== 'Unknown' ? '📍' : '🌍'}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}

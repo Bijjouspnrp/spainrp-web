@@ -1130,3 +1130,137 @@
     padding: 0.75rem 1rem;
   }
 }
+
+/* === GEOLOCATION STYLES === */
+.location-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.location-main {
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 0.95rem;
+}
+
+.location-region {
+  font-size: 0.85rem;
+  color: #4a5568;
+  font-style: italic;
+}
+
+.location-timezone {
+  font-size: 0.8rem;
+  color: #718096;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.location-coordinates {
+  font-size: 0.8rem;
+  color: #4299e1;
+  font-family: 'Courier New', monospace;
+  background: rgba(66, 153, 225, 0.1);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  display: inline-block;
+  margin-top: 0.25rem;
+}
+
+.location-accuracy {
+  font-size: 1.2rem;
+  margin-left: 0.5rem;
+  cursor: help;
+}
+
+.device-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.device-badge {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 0.3rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.os-badge {
+  background: linear-gradient(135deg, #f093fb, #f5576c);
+  color: white;
+  padding: 0.3rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.isp-info {
+  font-size: 0.8rem;
+  color: #4a5568;
+  background: rgba(74, 85, 104, 0.1);
+  padding: 0.3rem 0.6rem;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+  cursor: help;
+}
+
+.geo-quality {
+  font-size: 1.2rem;
+  cursor: help;
+  margin-left: auto;
+}
+
+/* === STAT CARDS === */
+.stat-card.success {
+  background: linear-gradient(135deg, #48bb78, #38a169);
+}
+
+.stat-card.warning {
+  background: linear-gradient(135deg, #ed8936, #dd6b20);
+}
+
+/* === RESPONSIVE GEOLOCATION === */
+@media (max-width: 768px) {
+  .location-details {
+    gap: 0.2rem;
+  }
+  
+  .location-main {
+    font-size: 0.9rem;
+  }
+  
+  .location-region {
+    font-size: 0.8rem;
+  }
+  
+  .location-timezone,
+  .location-coordinates {
+    font-size: 0.75rem;
+  }
+  
+  .device-details {
+    gap: 0.3rem;
+  }
+  
+  .device-badge,
+  .os-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+  
+  .isp-info {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+  
+  .geo-quality {
+    font-size: 1rem;
+  }
+}
