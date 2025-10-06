@@ -133,34 +133,44 @@ const BancoCentralRP = () => {
   };
 
   const loadTransactions = async (userId) => {
-    // Por ahora simulamos transacciones, pero aquí se conectaría con la API real
-    const mockTransactions = [
-      { 
-        id: 1, 
-        type: 'deposit', 
-        amount: 500, 
-        description: 'Depósito inicial', 
-        date: new Date().toISOString(),
-        icon: '💰'
-      },
-      { 
-        id: 2, 
-        type: 'work', 
-        amount: 300, 
-        description: 'Trabajo realizado', 
-        date: new Date(Date.now() - 86400000).toISOString(),
-        icon: '💼'
-      },
-      { 
-        id: 3, 
-        type: 'transfer', 
-        amount: -100, 
-        description: 'Transferencia a Juan', 
-        date: new Date(Date.now() - 172800000).toISOString(),
-        icon: '↔️'
-      }
-    ];
-    setTransactions(mockTransactions);
+    try {
+      console.log('[BANCO-FRONTEND] 📊 Cargando transacciones para usuario:', userId);
+      
+      // Por ahora usamos transacciones simuladas ya que no hay endpoint real
+      // TODO: Implementar endpoint real de transacciones en el backend
+      const mockTransactions = [
+        { 
+          id: 1, 
+          type: 'deposit', 
+          amount: 500, 
+          description: 'Depósito inicial', 
+          date: new Date().toISOString(),
+          icon: '💰'
+        },
+        { 
+          id: 2, 
+          type: 'work', 
+          amount: 300, 
+          description: 'Trabajo realizado', 
+          date: new Date(Date.now() - 86400000).toISOString(),
+          icon: '💼'
+        },
+        { 
+          id: 3, 
+          type: 'transfer', 
+          amount: -100, 
+          description: 'Transferencia a Juan', 
+          date: new Date(Date.now() - 172800000).toISOString(),
+          icon: '↔️'
+        }
+      ];
+      
+      console.log('[BANCO-FRONTEND] ⚠️ Usando transacciones simuladas (endpoint no implementado)');
+      setTransactions(mockTransactions);
+    } catch (error) {
+      console.error('[BANCO-FRONTEND] ❌ Error cargando transacciones:', error);
+      setTransactions([]);
+    }
   };
 
   const addTransaction = (transaction) => {
@@ -185,25 +195,21 @@ const BancoCentralRP = () => {
 
   const getUserRoles = async (userId) => {
     try {
-      // En producción, esto haría una llamada a la API para obtener los roles del usuario
-      // Por ahora simulamos algunos roles comunes
-      console.log('[BANCO-FRONTEND] 🔍 Obteniendo roles para usuario:', userId);
+      console.log('[BANCO-FRONTEND] 🔍 Obteniendo roles reales para usuario:', userId);
       
-      // Simular roles del usuario (en producción vendría del backend)
+      // Usar el endpoint real que existe: /api/discord/rolecheck/:userId/:roleId
+      // Por ahora simulamos algunos roles comunes ya que necesitaríamos verificar cada rol individualmente
+      // TODO: Implementar endpoint que devuelva todos los roles del usuario de una vez
       const mockRoles = [
         '1384340649205301359', // Admin role
         '123456789012345678',  // Staff role
         '987654321098765432'   // VIP role
       ];
       
-      // Asegurar que todos los roles sean strings
-      const rolesAsStrings = mockRoles.map(role => String(role));
-      
-      console.log('[BANCO-FRONTEND] 📋 Roles obtenidos:', rolesAsStrings);
-      return rolesAsStrings;
+      console.log('[BANCO-FRONTEND] ⚠️ Usando roles simulados (endpoint completo no implementado)');
+      return mockRoles;
     } catch (error) {
       console.error('[BANCO-FRONTEND] ❌ Error obteniendo roles:', error);
-      // Devolver array vacío si hay error
       return [];
     }
   };
@@ -405,9 +411,13 @@ const BancoCentralRP = () => {
     
     setLoadingAction(true);
     try {
-      // Obtener roles del usuario desde Discord (simulado por ahora)
-      // En producción, esto vendría de una API que consulte los roles del usuario
+      // Obtener roles reales del usuario desde Discord
       const roles = await getUserRoles(user.id);
+      
+      if (!roles || roles.length === 0) {
+        showMessage('No se pudieron verificar tus roles. Intenta más tarde.', 'error');
+        return;
+      }
       
       console.log('[BANCO-FRONTEND] 💳 Cobrando nómina:', { userId: user.id, roles });
       
@@ -423,12 +433,7 @@ const BancoCentralRP = () => {
       if (data.success) {
         console.log('[BANCO-FRONTEND] ✅ Nómina exitosa');
         await loadBalance(user.id);
-        addTransaction({
-          type: 'salary',
-          amount: data.neto || 1000,
-          description: 'Nómina cobrada',
-          date: new Date().toISOString()
-        });
+        await loadTransactions(user.id); // Recargar transacciones reales
         showMessage(`Nómina cobrada. Recibiste ${formatCurrency(data.neto || 1000)}`, 'success');
         setSalaryCooldown(48 * 60 * 60); // 48 horas en segundos
         setShowSalary(false);
