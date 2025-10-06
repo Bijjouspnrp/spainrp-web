@@ -3,12 +3,10 @@ import {
   FaIdCard, FaMoneyBillWave, FaHistory, FaClipboardList, 
   FaSearch, FaGavel, FaLock, FaTrophy, FaEye, 
   FaEdit, FaTrash, FaCheckCircle, FaTimes, FaExclamationTriangle,
-  FaUser, FaFileAlt, FaShieldAlt, FaSpinner, FaDiscord
+  FaUser, FaFileAlt, FaCarCrash, FaShieldAlt, FaSpinner
 } from 'react-icons/fa';
 import { apiUrl } from '../../utils/api';
 import codigoPenal from '../../utils/codigoPenal';
-import loggingService from '../../utils/loggingService';
-import discordService from '../../utils/discordService';
 
 // Sección DNI
 export const DNISection = ({ data }) => {
@@ -225,14 +223,14 @@ export const MultasSection = ({ data, userId, onRefresh }) => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        setResult('Multa pagada correctamente');
+        setResult('✅ Multa pagada correctamente');
         onRefresh();
       } else {
-        setResult(`Error: ${data.error || 'Error pagando multa'}`);
+        setResult(`❌ Error: ${data.error || 'Error pagando multa'}`);
       }
     } catch (err) {
       console.error('Error pagando multa:', err);
-      setResult('Error de conexión al pagar multa');
+      setResult('❌ Error de conexión al pagar multa');
     } finally {
       setPaying(null);
     }
@@ -292,8 +290,8 @@ export const MultasSection = ({ data, userId, onRefresh }) => {
             <h4>¡Excelente ciudadano! 🏆</h4>
             <p>Has pagado todas tus multas correctamente. ¡Sigue así! Tu cumplimiento de las normas es un ejemplo para la comunidad.</p>
             <div className="message-stats">
-              <span>{multasPagadas} multas pagadas</span>
-              <span>{totalPagado.toLocaleString('es-ES')}€ abonados</span>
+              <span>✅ {multasPagadas} multas pagadas</span>
+              <span>💰 {totalPagado.toLocaleString('es-ES')}€ abonados</span>
             </div>
           </div>
         </div>
@@ -305,7 +303,7 @@ export const MultasSection = ({ data, userId, onRefresh }) => {
             <FaExclamationTriangle />
           </div>
           <div className="message-content">
-            <h4>Atención: Multas Pendientes</h4>
+            <h4>⚠️ Atención: Multas Pendientes</h4>
             <p>Tienes <strong>{multasPendientes}</strong> multa{multasPendientes > 1 ? 's' : ''} pendiente{multasPendientes > 1 ? 's' : ''} por un total de <strong>{totalPendiente.toLocaleString('es-ES')}€</strong>.</p>
             <p className="warning-text">
               <strong>Importante:</strong> Si no pagas tus multas en el plazo establecido, podrías enfrentar consecuencias legales más graves, incluyendo la posibilidad de un juicio. 
@@ -604,6 +602,7 @@ export const InventarioSection = ({ data }) => {
       'bm_lock': 'Candado',
       'bm_key': 'Llave',
       'bm_chain': 'Cadena',
+      'bm_rope': 'Cuerda',
       'bm_wire': 'Cable',
       'bm_cord': 'Cordón',
       'bm_string': 'Cuerda',
@@ -752,22 +751,27 @@ export const InventarioSection = ({ data }) => {
     return itemNames[itemId] || itemId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
-  // Función para obtener el icono del item basado en el item_id - v5.0 - SIMPLIFICADO
+  // Función para obtener el icono del item basado en el item_id
   const getItemIcon = (itemId) => {
-    // Versión simplificada sin iconos problemáticos
-    if (itemId && typeof itemId === 'string') {
-      const lowerId = itemId.toLowerCase();
-      if (lowerId.includes('money') || lowerId.includes('wallet')) {
-        return <FaMoneyBillWave />;
-      } else if (lowerId.includes('id') || lowerId.includes('keys')) {
-        return <FaIdCard />;
-      } else if (lowerId.includes('drug') || lowerId.includes('cocaine')) {
-        return <FaExclamationTriangle />;
-      } else if (lowerId.includes('weapon') || lowerId.includes('gun')) {
-        return <FaShieldAlt />;
-      }
+    if (itemId.includes('ak_47') || itemId.includes('m4a1') || itemId.includes('glock') || itemId.includes('usp') || itemId.includes('knife')) {
+      return <FaShieldAlt />;
+    } else if (itemId.includes('vest') || itemId.includes('helmet') || itemId.includes('ammo')) {
+      return <FaShieldAlt />;
+    } else if (itemId.includes('medkit') || itemId.includes('bandage') || itemId.includes('painkillers')) {
+      return <FaShieldAlt />;
+    } else if (itemId.includes('phone') || itemId.includes('laptop') || itemId.includes('tablet')) {
+      return <FaFileAlt />;
+    } else if (itemId.includes('keys') || itemId.includes('wallet') || itemId.includes('id')) {
+      return <FaIdCard />;
+    } else if (itemId.includes('drugs') || itemId.includes('cocaine') || itemId.includes('marijuana')) {
+      return <FaExclamationTriangle />;
+    } else if (itemId.includes('money') || itemId.includes('wallet')) {
+      return <FaMoneyBillWave />;
+    } else if (itemId.includes('food') || itemId.includes('drink') || itemId.includes('sandwich')) {
+      return <FaFileAlt />;
+    } else {
+      return <FaFileAlt />;
     }
-    return <FaFileAlt />;
   };
 
   return (
@@ -803,9 +807,9 @@ export const SearchSection = ({ onSearch }) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [searchingSuggestions, setSearchingSuggestions] = useState(false);
 
-  // Función para buscar sugerencias - v2.0
+  // Función para buscar sugerencias
   const searchSuggestions = async (query) => {
-    if (!query || query.trim().length < 2) {
+    if (query.length < 2) {
       setSuggestions([]);
       setShowSuggestions(false);
       return;
@@ -847,7 +851,7 @@ export const SearchSection = ({ onSearch }) => {
     setSearchValue(value);
     setError('');
     
-    if (searchType === 'nombre' && value.trim().length >= 2) {
+    if (searchType === 'nombre') {
       searchSuggestions(value);
     } else {
       setSuggestions([]);
@@ -957,18 +961,6 @@ export const SearchSection = ({ onSearch }) => {
       } else {
         setError('ℹ️ No se encontraron datos para este usuario');
       }
-
-      // Logging de la búsqueda
-      const userId = localStorage.getItem('spainrp_user_id') || 'unknown';
-      const resultsArray = [
-        searchResults.dni,
-        ...searchResults.antecedentes,
-        ...searchResults.multas,
-        ...searchResults.inventario
-      ].filter(Boolean);
-      
-      await loggingService.logSearch(userId, searchType, searchValue, resultsArray);
-      await discordService.sendSearchEmbed(userId, searchType, searchValue, resultsArray);
 
     } catch (err) {
       console.error('Error en búsqueda:', err);
@@ -1257,12 +1249,6 @@ export const MultarSection = ({ onRefresh }) => {
         setResult('✅ Multa aplicada correctamente');
         setFormData({ discordId: '', motivo: '', cantidad: '', descripcion: '' });
         onRefresh();
-
-        // Logging de la multa
-        const userId = localStorage.getItem('spainrp_user_id') || 'unknown';
-        const fineId = data.fineId || data.id || 'unknown';
-        await loggingService.logFine(userId, formData.discordId.trim(), cantidad, formData.motivo.trim(), fineId);
-        await discordService.sendFineEmbed(userId, formData.discordId.trim(), cantidad, formData.motivo.trim(), fineId);
       } else {
         setResult(`❌ Error: ${data.error || 'Error aplicando multa'}`);
       }
@@ -1392,17 +1378,6 @@ export const ArrestarSection = ({ onRefresh }) => {
         setSelectedCargos([]);
         setCargosInput('');
         onRefresh();
-
-        // Logging del arresto
-        const userId = localStorage.getItem('spainrp_user_id') || 'unknown';
-        const arrestId = data.arrestId || data.id || 'unknown';
-        const charges = selectedCargos.map(cargo => cargo.text);
-        const totalFine = data.sanciones?.multa || 0;
-        const icTime = data.sanciones?.tiempoIC || 0;
-        const oocTime = data.sanciones?.tiempoOOC || 0;
-        
-        await loggingService.logArrest(userId, formData.discordId.trim(), charges, totalFine, icTime, oocTime, arrestId);
-        await discordService.sendArrestEmbed(userId, formData.discordId.trim(), charges, totalFine, icTime, oocTime, arrestId);
       } else {
         setResult(`❌ Error: ${data.error || 'Error procesando arresto'}`);
       }
@@ -1552,7 +1527,6 @@ export const ArrestarSection = ({ onRefresh }) => {
                   >
                     <div className="suggestion-avatar">
                       <img src={user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : '/assets/spainrplogo.png'} alt="Avatar" />
-                      <FaDiscord className="discord-icon" />
                     </div>
                     <div className="suggestion-info">
                       <div className="suggestion-name">{user.username}</div>
@@ -1747,7 +1721,7 @@ export const ArrestarSection = ({ onRefresh }) => {
           <div className="arrest-status">
             <div className="status-success">
               <FaCheckCircle className="status-icon" />
-              <span>Arresto registrado exitosamente en la  </span>
+              <span>Arresto registrado exitosamente en la base de datos</span>
             </div>
           </div>
         </div>

@@ -7,11 +7,9 @@ import {
   FaUsers, FaBuilding, FaMapMarkerAlt, FaPhone, FaEnvelope,
   FaCalendarAlt, FaClock, FaFlag, FaKey, FaFingerprint, FaPlus,
   FaBars, FaChevronDown, FaChevronUp, FaQuestionCircle, FaInfoCircle,
-  FaCog, FaExpand, FaCompress, FaAngleRight, FaAngleLeft, FaDiscord
+  FaCog, FaExpand, FaCompress, FaAngleRight, FaAngleLeft
 } from 'react-icons/fa';
 import { apiUrl } from '../../utils/api';
-import loggingService from '../../utils/loggingService';
-import discordService from '../../utils/discordService';
 import './CNISection.css';
 import './BusinessRecords.css';
 import './CNIBlog.css';
@@ -97,10 +95,14 @@ const CNISection = () => {
           }
         }
 
-        // Esperar un poco para que los datos se carguen completamente
+        // Simular tiempo de carga para mostrar la pantalla de carga
+        const minTime = 4000; // 4 segundos mínimo
+        const maxTime = 5000; // 5 segundos máximo
+        const randomTime = Math.random() * (maxTime - minTime) + minTime;
+        
         setTimeout(() => {
           setLoading(false);
-        }, 1000);
+        }, randomTime);
       } catch (err) {
         setError('Error verificando permisos CNI');
         setLoading(false);
@@ -159,24 +161,66 @@ const CNISection = () => {
   // Cargar estadísticas de la base de datos
   const loadDatabaseStats = async () => {
     try {
-      // Valores simulados para evitar errores de API
-      setDatabaseStats({
-        totalUsers: 1250,
-        totalDNIs: 1100,
-        totalMultas: 450,
-        totalAntecedentes: 89,
-        totalArrestos: 23
-      });
+      // Usar el nuevo endpoint del dashboard CNI
+      const dashboardRes = await fetch(apiUrl('/api/cni/dashboard'));
+      
+      if (dashboardRes.ok) {
+        const dashboardData = await dashboardRes.json();
+        console.log('[CNI] Dashboard data received:', dashboardData);
+        
+        if (dashboardData.success && dashboardData.cni) {
+          const cniData = dashboardData.cni.dashboard;
+          setDatabaseStats(prev => ({
+            ...prev,
+            totalUsers: cniData.baseDatos?.totalUsuarios || 0,
+            totalDNIs: cniData.baseDatos?.dnisRegistrados || 0,
+            totalMultas: cniData.multas?.total || 0,
+            totalAntecedentes: cniData.baseDatos?.antecedentes || 0,
+            totalArrestos: cniData.baseDatos?.arrestos || 0
+          }));
+        }
+      } else {
+        console.warn('[CNI] Dashboard endpoint not available, using fallback');
+        // Fallback a los endpoints individuales si el dashboard no está disponible
+        const [statsRes, recordsRes] = await Promise.all([
+          fetch(apiUrl('/api/proxy/admin/stats')),
+          fetch(apiUrl('/api/proxy/admin/stats/records'))
+        ]);
+
+        if (statsRes.ok) {
+          const statsData = await statsRes.json();
+          setDatabaseStats(prev => ({
+            ...prev,
+            totalUsers: statsData.stats?.totalUsers || 0
+          }));
+        }
+
+        if (recordsRes.ok) {
+          const recordsData = await recordsRes.json();
+          setDatabaseStats(prev => ({
+            ...prev,
+            totalMultas: recordsData.records?.multas || 0,
+            totalAntecedentes: recordsData.records?.antecedentes || 0,
+            totalArrestos: recordsData.records?.arrestos || 0
+          }));
+        }
+      }
+
+      // Cargar DNIs registrados
+      try {
+        const dnisRes = await fetch(apiUrl('/api/proxy/admin/dni/search?q='));
+        if (dnisRes.ok) {
+          const dnisData = await dnisRes.json();
+          setDatabaseStats(prev => ({
+            ...prev,
+            totalDNIs: dnisData.dniPorNombre?.length || 0
+          }));
+        }
+      } catch (err) {
+        console.error('Error cargando DNIs:', err);
+      }
     } catch (err) {
       console.error('Error cargando estadísticas:', err);
-      // Valores por defecto
-      setDatabaseStats({
-        totalUsers: 0,
-        totalDNIs: 0,
-        totalMultas: 0,
-        totalAntecedentes: 0,
-        totalArrestos: 0
-      });
     }
   };
 
@@ -692,16 +736,6 @@ const AdvancedSearchTab = () => {
       
       if (searchData.success) {
         setResults(searchData);
-        
-        // Logging de la búsqueda CNI
-        const userId = localStorage.getItem('spainrp_user_id') || 'unknown';
-        const resultsArray = [
-          ...(searchData.dniPorNombre || []),
-          ...(searchData.discordUsers || [])
-        ];
-        
-        await loggingService.logCNISearch(userId, 'advanced', searchForm.query, resultsArray);
-        await discordService.sendCNISearchEmbed(userId, 'advanced', searchForm.query, resultsArray);
       }
     } catch (err) {
       console.error('Error en búsqueda:', err);
@@ -1311,11 +1345,6 @@ const BusinessRecordsTab = () => {
         setNewBusiness({ nombre: '', tipo: '', propietario: '', ubicacion: '', estado: 'activa', notas: '', agente_registro: '' });
         loadBusinesses();
         loadStats();
-
-        // Logging del registro empresarial
-        const userId = localStorage.getItem('spainrp_user_id') || 'unknown';
-        await loggingService.logBusinessRecord(userId, newBusiness.nombre, newBusiness.tipo, 'create');
-        await discordService.sendBusinessRecordEmbed(userId, newBusiness.nombre, newBusiness.tipo, 'create');
       } else {
         setError(`Error: ${data.error}`);
       }
@@ -1348,20 +1377,6 @@ const BusinessRecordsTab = () => {
         loadVisits();
         loadBusinesses();
         loadStats();
-
-        // Logging de la visita empresarial
-        const userId = localStorage.getItem('spainrp_user_id') || 'unknown';
-        const businessName = businesses.find(b => b.id === newVisit.empresa_id)?.nombre || 'Unknown';
-        await loggingService.logBusinessVisit(userId, businessName, 'visit', {
-          fecha: newVisit.fecha_visita,
-          notas: newVisit.notas,
-          estado: newVisit.estado
-        });
-        await discordService.sendBusinessVisitEmbed(userId, businessName, 'visit', {
-          fecha: newVisit.fecha_visita,
-          notas: newVisit.notas,
-          estado: newVisit.estado
-        });
       } else {
         setError(`Error: ${data.error}`);
       }
@@ -1980,11 +1995,6 @@ const BlogTab = () => {
         setShowNewArticle(false);
         console.log('[CNI][BLOG] 🔄 Recargando lista de artículos...');
         loadArticles();
-
-        // Logging del artículo de blog
-        const userId = localStorage.getItem('spainrp_user_id') || 'unknown';
-        await loggingService.logBlogArticle(userId, newArticle.titulo, 'create');
-        await discordService.sendBlogArticleEmbed(userId, newArticle.titulo, 'create');
       } else {
         console.log('[CNI][BLOG] ❌ Error en creación:', data.error);
         setError(`Error: ${data.error}`);
