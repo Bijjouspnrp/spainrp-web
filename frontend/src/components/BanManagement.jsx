@@ -35,7 +35,9 @@ import {
   FaCopy,
   FaEdit,
   FaList,
-  FaTh
+  FaTh,
+  FaTrashAlt,
+  FaKey
 } from 'react-icons/fa';
 import './BanManagement.css';
 
@@ -67,8 +69,8 @@ const BanManagement = () => {
     total: 0,
     pages: 0
   });
-  const [viewMode, setViewMode] = useState('grid'); // grid, list, compact
-  const [connectionStatus, setConnectionStatus] = useState('connected'); // connected, disconnected, error
+  const [viewMode, setViewMode] = useState('grid');
+  const [connectionStatus, setConnectionStatus] = useState('connected');
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -120,7 +122,7 @@ const BanManagement = () => {
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-    // Aquí podrías agregar una notificación toast
+    success('✅ Copiado al portapapeles', 2000);
   };
 
   const handleSelectAll = () => {
@@ -243,10 +245,8 @@ const BanManagement = () => {
         loadBans();
         loadStats();
         
-        // Mostrar feedback de éxito
         success(`✅ Ban aplicado correctamente`, 4000);
         
-        // Mostrar información sobre notificación DM
         if (type === 'discord') {
           info(`📨 Se envió una notificación DM al usuario baneado`, 6000);
         } else if (type === 'ip') {
@@ -254,7 +254,6 @@ const BanManagement = () => {
         }
       } else {
         const errorData = await response.json();
-        // Mostrar mensaje específico para auto-ban
         if (errorData.error === 'No puedes banearte a ti mismo') {
           error(`❌ ${errorData.error}\n\n${errorData.message}`, 8000);
         } else {
@@ -306,14 +305,11 @@ const BanManagement = () => {
         const result = await response.json();
         console.log('[BAN MANAGEMENT] ✅ Resultado del desbaneo:', result);
         
-        // Recargar datos
         console.log('[BAN MANAGEMENT] 🔄 Recargando datos...');
         await Promise.all([loadBans(), loadStats()]);
         
-        // Mostrar feedback de éxito
         success(`✅ ${banType} "${value}" desbaneado correctamente`, 4000);
         
-        // Mostrar información sobre notificación DM
         if (type === 'discord') {
           info(`📨 Se envió una notificación DM al usuario desbaneado`, 6000);
         } else if (type === 'ip') {
@@ -344,7 +340,6 @@ const BanManagement = () => {
   };
 
   const filteredIPs = ips.filter(ip => {
-    // Filtro de búsqueda de texto
     const matchesSearch = ip.ip.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (ip.userId && ip.userId.includes(searchTerm)) ||
       (ip.username && ip.username.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -352,7 +347,6 @@ const BanManagement = () => {
       (ip.city && ip.city.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (ip.isp && ip.isp.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    // Filtro de geolocalización
     let matchesGeo = true;
     if (filterType === 'high-accuracy') {
       matchesGeo = ip.latitude && ip.longitude;
@@ -374,7 +368,7 @@ const BanManagement = () => {
 
   return (
     <div className="ban-management">
-      {/* Header mejorado */}
+      {/* Header */}
       <div className="ban-header">
         <div className="header-content">
           <div className="header-title">
@@ -417,7 +411,7 @@ const BanManagement = () => {
         </div>
       </div>
 
-      {/* Estadísticas colapsables */}
+      {/* Estadísticas */}
       {showStats && (
         <div className="ban-stats">
           <div className="stat-card primary">
@@ -427,7 +421,6 @@ const BanManagement = () => {
             <div className="stat-content">
               <div className="stat-number">{stats.activeIPs || 0}</div>
               <div className="stat-label">IPs Activas</div>
-              <div className="stat-trend">+12% esta semana</div>
             </div>
           </div>
           <div className="stat-card danger">
@@ -437,7 +430,6 @@ const BanManagement = () => {
             <div className="stat-content">
               <div className="stat-number">{stats.ipBans || 0}</div>
               <div className="stat-label">IPs Baneadas</div>
-              <div className="stat-trend">+3% esta semana</div>
             </div>
           </div>
           <div className="stat-card warning">
@@ -447,7 +439,6 @@ const BanManagement = () => {
             <div className="stat-content">
               <div className="stat-number">{stats.discordBans || 0}</div>
               <div className="stat-label">Usuarios Baneados</div>
-              <div className="stat-trend">+1% esta semana</div>
             </div>
           </div>
           <div className="stat-card info">
@@ -457,33 +448,12 @@ const BanManagement = () => {
             <div className="stat-content">
               <div className="stat-number">{stats.totalIPs || 0}</div>
               <div className="stat-label">Total IPs</div>
-              <div className="stat-trend">+8% esta semana</div>
-            </div>
-          </div>
-          <div className="stat-card success">
-            <div className="stat-icon">
-              <FaGlobe />
-            </div>
-            <div className="stat-content">
-              <div className="stat-number">{ips.filter(ip => ip.latitude && ip.longitude).length}</div>
-              <div className="stat-label">Con GPS</div>
-              <div className="stat-trend">Alta precisión</div>
-            </div>
-          </div>
-          <div className="stat-card warning">
-            <div className="stat-icon">
-              <FaFlag />
-            </div>
-            <div className="stat-content">
-              <div className="stat-number">{ips.filter(ip => ip.country && ip.country !== 'Unknown').length}</div>
-              <div className="stat-label">Con Ubicación</div>
-              <div className="stat-trend">Geolocalizadas</div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Tabs mejoradas */}
+      {/* Tabs */}
       <div className="ban-tabs">
         <div className="tab-nav">
           <button 
@@ -503,36 +473,9 @@ const BanManagement = () => {
             <span className="tab-count">{bans.length}</span>
           </button>
         </div>
-        
-        {/* Controles de vista */}
-        <div className="view-controls">
-          <div className="view-modes">
-            <button 
-              className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
-              onClick={() => setViewMode('grid')}
-              title="Vista de cuadrícula"
-            >
-              <FaTh />
-            </button>
-            <button 
-              className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
-              onClick={() => setViewMode('list')}
-              title="Vista de lista"
-            >
-              <FaList />
-            </button>
-            <button 
-              className={`view-btn ${viewMode === 'compact' ? 'active' : ''}`}
-              onClick={() => setViewMode('compact')}
-              title="Vista compacta"
-            >
-              <FaServer />
-            </button>
-          </div>
-        </div>
       </div>
 
-      {/* Barra de herramientas mejorada */}
+      {/* Barra de herramientas */}
       <div className="toolbar">
         <div className="toolbar-left">
           <div className="search-container">
@@ -553,31 +496,9 @@ const BanManagement = () => {
               </button>
             )}
           </div>
-          
-          <button 
-            className={`filter-btn ${showFilters ? 'active' : ''}`}
-            onClick={() => setShowFilters(!showFilters)}
-          >
-            <FaFilter />
-            Filtros
-            {showFilters && <FaChevronUp />}
-            {!showFilters && <FaChevronDown />}
-          </button>
         </div>
 
         <div className="toolbar-right">
-          {selectedItems.length > 0 && (
-            <div className="selection-actions">
-              <span className="selection-count">
-                {selectedItems.length} seleccionados
-              </span>
-              <button className="btn-danger">
-                <FaTrash />
-                Eliminar
-              </button>
-            </div>
-          )}
-          
           <button 
             className="btn-primary"
             onClick={() => setShowBanModal(true)}
@@ -588,76 +509,10 @@ const BanManagement = () => {
         </div>
       </div>
 
-      {/* Panel de filtros */}
-      {showFilters && (
-        <div className="filters-panel">
-          <div className="filter-group">
-            <label>Tipo</label>
-            <select 
-              value={filterType} 
-              onChange={(e) => setFilterType(e.target.value)}
-            >
-              <option value="all">Todos</option>
-              <option value="ip">Solo IPs</option>
-              <option value="discord">Solo Discord</option>
-            </select>
-          </div>
-          
-          <div className="filter-group">
-            <label>Estado</label>
-            <select 
-              value={filterStatus} 
-              onChange={(e) => setFilterStatus(e.target.value)}
-            >
-              <option value="all">Todos</option>
-              <option value="active">Activos</option>
-              <option value="banned">Baneados</option>
-            </select>
-          </div>
-          
-          <div className="filter-group">
-            <label>Geolocalización</label>
-            <select 
-              value={filterType} 
-              onChange={(e) => setFilterType(e.target.value)}
-            >
-              <option value="all">Todas</option>
-              <option value="high-accuracy">Alta precisión (GPS)</option>
-              <option value="medium-accuracy">Precisión media (Ciudad)</option>
-              <option value="low-accuracy">Precisión baja (País)</option>
-              <option value="no-location">Sin ubicación</option>
-            </select>
-          </div>
-          
-          <div className="filter-group">
-            <label>Ordenar por</label>
-            <select 
-              value={sortBy} 
-              onChange={(e) => setSortBy(e.target.value)}
-            >
-              <option value="lastSeen">Última visita</option>
-              <option value="visitCount">Número de visitas</option>
-              <option value="ip">Dirección IP</option>
-              <option value="bannedAt">Fecha de ban</option>
-            </select>
-          </div>
-          
-          <div className="filter-group">
-            <button 
-              className={`sort-btn ${sortOrder === 'desc' ? 'active' : ''}`}
-              onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
-            >
-              <FaSort />
-              {sortOrder === 'desc' ? 'Descendente' : 'Ascendente'}
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Contenido principal */}
       <div className="ban-content">
         {activeTab === 'ips' ? (
-          <div className={`ips-container ${viewMode}`}>
+          <div className="ips-container">
             {loading ? (
               <div className="loading-state">
                 <div className="spinner"></div>
@@ -676,22 +531,11 @@ const BanManagement = () => {
             ) : (
               <div className="ips-grid">
                 {filteredIPs.map(ip => (
-                  <div key={ip.ip} className={`ip-card ${viewMode}`}>
+                  <div key={ip.ip} className="ip-card">
                     <div className="card-header">
                       <div className="card-title">
                         <FaGlobe />
                         <span className="ip-address">{ip.ip}</span>
-                        {ip.userId && (
-                          <div className="dm-indicator" title="Notificaciones DM habilitadas">
-                            <FaDiscord />
-                            <span>DM</span>
-                          </div>
-                        )}
-                        {ip.country && ip.country !== 'Unknown' && (
-                          <div className="location-accuracy" title="Precisión de geolocalización">
-                            {ip.latitude && ip.longitude ? '🎯' : '📍'}
-                          </div>
-                        )}
                         <button 
                           className="copy-btn"
                           onClick={() => copyToClipboard(ip.ip)}
@@ -701,11 +545,6 @@ const BanManagement = () => {
                         </button>
                       </div>
                       <div className="card-actions">
-                        <input 
-                          type="checkbox"
-                          checked={selectedItems.includes(ip.ip)}
-                          onChange={() => handleSelectItem(ip.ip)}
-                        />
                         <button 
                           className="btn-ban"
                           onClick={() => handleBanIP(ip.ip)}
@@ -742,7 +581,7 @@ const BanManagement = () => {
                         </div>
                       </div>
                       
-                      <div className="location-info" title={`Ubicación: ${ip.country || 'Unknown'}${ip.city ? `, ${ip.city}` : ''}${ip.region && ip.region !== 'Unknown' ? `, ${ip.region}` : ''}${ip.timezone && ip.timezone !== 'Unknown' ? ` (${ip.timezone})` : ''}${ip.latitude && ip.longitude ? ` - Coordenadas: ${ip.latitude.toFixed(4)}, ${ip.longitude.toFixed(4)}` : ''}`}>
+                      <div className="location-info">
                         <FaGlobe />
                         <div className="location-details">
                           <div className="location-main">
@@ -750,41 +589,18 @@ const BanManagement = () => {
                             {ip.countryCode && ` (${ip.countryCode})`}
                             {ip.city && ` - ${ip.city}`}
                           </div>
-                          {ip.region && ip.region !== 'Unknown' && (
-                            <div className="location-region">
-                              {ip.region}
-                            </div>
-                          )}
-                          {ip.timezone && ip.timezone !== 'Unknown' && (
-                            <div className="location-timezone">
-                              🕐 {ip.timezone}
-                            </div>
-                          )}
-                          {ip.latitude && ip.longitude && (
-                            <div className="location-coordinates">
-                              📍 {ip.latitude.toFixed(4)}, {ip.longitude.toFixed(4)}
-                            </div>
-                          )}
                         </div>
                       </div>
                       
                       <div className="device-info">
                         <div className="device-details">
                           <span className="device-badge">
-                            {ip.device === 'Mobile' ? '📱' : 
-                             ip.device === 'Tablet' ? '📱' : 
-                             ip.device === 'Server/API' ? '🖥️' : '💻'} 
                             {ip.browser || 'Unknown Browser'}
                           </span>
                           <span className="os-badge">
                             {ip.os || 'Unknown OS'}
                           </span>
                         </div>
-                        {ip.isp && ip.isp !== 'Unknown' && (
-                          <div className="isp-info" title={`Proveedor de Internet: ${ip.isp}`}>
-                            🌐 {ip.isp.length > 30 ? `${ip.isp.substring(0, 30)}...` : ip.isp}
-                          </div>
-                        )}
                       </div>
                     </div>
                     
@@ -799,11 +615,6 @@ const BanManagement = () => {
                           {formatDuration(ip.lastSeen)} ago
                         </span>
                       </div>
-                      {ip.country && ip.country !== 'Unknown' && (
-                        <div className="geo-quality" title={`Calidad de geolocalización: ${ip.latitude && ip.longitude ? 'Alta (coordenadas GPS)' : ip.city && ip.city !== 'Unknown' ? 'Media (ciudad)' : 'Baja (país)'}`}>
-                          {ip.latitude && ip.longitude ? '🎯' : ip.city && ip.city !== 'Unknown' ? '📍' : '🌍'}
-                        </div>
-                      )}
                     </div>
                   </div>
                 ))}
@@ -811,7 +622,7 @@ const BanManagement = () => {
             )}
           </div>
         ) : (
-          <div className={`bans-container ${viewMode}`}>
+          <div className="bans-container">
             {loading ? (
               <div className="loading-state">
                 <div className="spinner"></div>
@@ -833,7 +644,7 @@ const BanManagement = () => {
             ) : (
               <div className="bans-grid">
                 {filteredBans.map(ban => (
-                  <div key={`${ban.type}-${ban.value}`} className={`ban-card ${viewMode}`}>
+                  <div key={`${ban.type}-${ban.value}`} className="ban-card">
                     <div className="card-header">
                       <div className="ban-type-badge">
                         {ban.type === 'ip' ? <FaGlobe /> : <FaUser />}
@@ -844,47 +655,12 @@ const BanManagement = () => {
                       </div>
                       <div className="ban-value">
                         <span className="ban-value-text">{ban.value}</span>
-                        {ban.type === 'discord' && (
-                          <div className="dm-indicator" title="Notificaciones DM enviadas">
-                            <FaDiscord />
-                            <span>DM</span>
-                          </div>
-                        )}
-                        {ban.type === 'ip' && (
-                          <div className="dm-indicator muted" title="Notificaciones DM (si hay usuario asociado)">
-                            <FaEnvelope />
-                            <span>DM?</span>
-                          </div>
-                        )}
                         <button 
                           className="copy-btn"
-                          onClick={() => {
-                            copyToClipboard(ban.value);
-                            success('✅ Copiado al portapapeles', 2000);
-                          }}
+                          onClick={() => copyToClipboard(ban.value)}
                           title="Copiar"
                         >
                           <FaCopy />
-                        </button>
-                      </div>
-                      <div className="card-actions">
-                        <input 
-                          type="checkbox"
-                          checked={selectedItems.includes(ban.value)}
-                          onChange={() => handleSelectItem(ban.value)}
-                        />
-                        <button 
-                          className="btn-unban"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleUnban(ban.type, ban.value);
-                          }}
-                          title={`Desbanear ${ban.type === 'ip' ? 'IP' : 'Usuario Discord'}: ${ban.value}`}
-                          disabled={loading}
-                        >
-                          <FaUnlock />
-                          <span>Desbanear</span>
                         </button>
                       </div>
                     </div>
@@ -933,6 +709,7 @@ const BanManagement = () => {
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
+                          console.log('🚀 Botón de desbanear clickeado:', ban.type, ban.value);
                           handleUnban(ban.type, ban.value);
                         }}
                         title={`Desbanear ${ban.type === 'ip' ? 'IP' : 'Usuario Discord'}: ${ban.value}`}
@@ -950,43 +727,7 @@ const BanManagement = () => {
         )}
       </div>
 
-      {/* Paginación */}
-      {pagination.pages > 1 && (
-        <div className="pagination">
-          <button 
-            className="page-btn"
-            disabled={pagination.page === 1}
-            onClick={() => setPagination({...pagination, page: pagination.page - 1})}
-          >
-            Anterior
-          </button>
-          
-          <div className="page-numbers">
-            {Array.from({length: Math.min(5, pagination.pages)}, (_, i) => {
-              const page = i + 1;
-              return (
-                <button
-                  key={page}
-                  className={`page-number ${pagination.page === page ? 'active' : ''}`}
-                  onClick={() => setPagination({...pagination, page})}
-                >
-                  {page}
-                </button>
-              );
-            })}
-          </div>
-          
-          <button 
-            className="page-btn"
-            disabled={pagination.page === pagination.pages}
-            onClick={() => setPagination({...pagination, page: pagination.page + 1})}
-          >
-            Siguiente
-          </button>
-        </div>
-      )}
-
-      {/* Modal de nuevo ban mejorado */}
+      {/* Modal de nuevo ban */}
       {showBanModal && (
         <div className="modal-overlay">
           <div className="modal">
