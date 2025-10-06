@@ -3,7 +3,7 @@ import {
   FaIdCard, FaMoneyBillWave, FaHistory, FaClipboardList, 
   FaSearch, FaGavel, FaLock, FaTrophy, FaEye, 
   FaEdit, FaTrash, FaCheckCircle, FaTimes, FaExclamationTriangle,
-  FaUser, FaFileAlt, FaCarCrash, FaShieldAlt, FaSpinner, FaDiscord
+  FaUser, FaFileAlt, FaCarCrash, FaShieldAlt, FaSpinner, FaDiscord, FaCar
 } from 'react-icons/fa';
 import { apiUrl } from '../../utils/api';
 import codigoPenal from '../../utils/codigoPenal';
@@ -771,6 +771,8 @@ export const InventarioSection = ({ data }) => {
       return <FaMoneyBillWave />;
     } else if (itemId.includes('food') || itemId.includes('drink') || itemId.includes('sandwich')) {
       return <FaFileAlt />;
+    } else if (itemId.includes('car') || itemId.includes('vehicle') || itemId.includes('vehiculo') || itemId.includes('coche')) {
+      return <FaCar />;
     } else {
       return <FaFileAlt />;
     }

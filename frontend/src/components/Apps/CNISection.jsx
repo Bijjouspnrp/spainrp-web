@@ -210,7 +210,7 @@ const CNISection = () => {
 
       // Cargar DNIs registrados
       try {
-        const dnisRes = await fetch(apiUrl('/api/proxy/admin/dni/search?q='));
+        const dnisRes = await fetch(apiUrl('/api/proxy/admin/dni/search?q=all'));
         if (dnisRes.ok) {
           const dnisData = await dnisRes.json();
           setDatabaseStats(prev => ({
