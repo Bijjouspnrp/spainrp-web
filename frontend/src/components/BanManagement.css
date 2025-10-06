@@ -1489,6 +1489,9 @@
   align-items: center;
   gap: 0.5rem;
   box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  font-size: 0.875rem;
+  min-width: 120px;
+  justify-content: center;
 }
 
 .btn-unban:hover:not(:disabled) {
@@ -1502,6 +1505,57 @@
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
+}
+
+/* Botón de desbanear grande */
+.ban-actions-footer {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: center;
+}
+
+.btn-unban-large {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  font-size: 1rem;
+  min-width: 200px;
+  justify-content: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.btn-unban-large:hover:not(:disabled) {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+}
+
+.btn-unban-large:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.btn-unban-large:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-unban-large svg {
+  font-size: 1.1rem;
 }
 
 /* Responsive Design for Ban Cards */
@@ -1531,5 +1585,16 @@
   
   .ban-reason svg {
     font-size: 1rem;
+  }
+  
+  .btn-unban-large {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+    min-width: 160px;
+  }
+  
+  .ban-actions-footer {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
   }
 }

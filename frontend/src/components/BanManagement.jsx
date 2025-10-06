@@ -274,32 +274,44 @@ const BanManagement = () => {
     const confirmMessage = `¿Estás seguro de que quieres desbanear ${banType} "${value}"?\n\nEsta acción no se puede deshacer.`;
     
     if (!confirm(confirmMessage)) {
+      console.log('[BAN MANAGEMENT] Desbaneo cancelado por el usuario');
       return;
     }
 
     setLoading(true);
     try {
-      console.log(`[BAN MANAGEMENT] Desbaneando ${type}: ${value}`);
+      console.log(`[BAN MANAGEMENT] 🚀 Iniciando desbaneo de ${type}: ${value}`);
       
-      const response = await fetch(apiUrl(`/api/admin/ban/${type}/${value}`), {
+      const url = apiUrl(`/api/admin/ban/${type}/${value}`);
+      console.log(`[BAN MANAGEMENT] URL de desbaneo:`, url);
+      
+      const token = localStorage.getItem('spainrp_token');
+      console.log(`[BAN MANAGEMENT] Token disponible:`, token ? 'Sí' : 'No');
+      
+      const response = await fetch(url, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('spainrp_token')}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
 
-      console.log(`[BAN MANAGEMENT] Respuesta del servidor:`, response.status, response.statusText);
+      console.log(`[BAN MANAGEMENT] 📡 Respuesta del servidor:`, {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok
+      });
 
       if (response.ok) {
         const result = await response.json();
-        console.log('[BAN MANAGEMENT] Resultado del desbaneo:', result);
+        console.log('[BAN MANAGEMENT] ✅ Resultado del desbaneo:', result);
         
         // Recargar datos
+        console.log('[BAN MANAGEMENT] 🔄 Recargando datos...');
         await Promise.all([loadBans(), loadStats()]);
         
         // Mostrar feedback de éxito
-        success(`✅ ${banType} desbaneado correctamente`, 4000);
+        success(`✅ ${banType} "${value}" desbaneado correctamente`, 4000);
         
         // Mostrar información sobre notificación DM
         if (type === 'discord') {
@@ -309,14 +321,15 @@ const BanManagement = () => {
         }
       } else {
         const errorData = await response.json();
-        console.error('[BAN MANAGEMENT] Error del servidor:', errorData);
-        error(`❌ Error: ${errorData.error || errorData.message || 'Error desconocido'}`, 5000);
+        console.error('[BAN MANAGEMENT] ❌ Error del servidor:', errorData);
+        error(`❌ Error desbaneando ${banType}: ${errorData.error || errorData.message || 'Error desconocido'}`, 5000);
       }
     } catch (error) {
-      console.error('[BAN MANAGEMENT] Error unbanning:', error);
-      error('❌ Error de conexión al remover el ban', 5000);
+      console.error('[BAN MANAGEMENT] ❌ Error de conexión:', error);
+      error(`❌ Error de conexión al desbanear ${banType}`, 5000);
     } finally {
       setLoading(false);
+      console.log('[BAN MANAGEMENT] 🏁 Proceso de desbaneo finalizado');
     }
   };
 
@@ -862,11 +875,16 @@ const BanManagement = () => {
                         />
                         <button 
                           className="btn-unban"
-                          onClick={() => handleUnban(ban.type, ban.value)}
-                          title="Desbanear"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleUnban(ban.type, ban.value);
+                          }}
+                          title={`Desbanear ${ban.type === 'ip' ? 'IP' : 'Usuario Discord'}: ${ban.value}`}
                           disabled={loading}
                         >
                           <FaUnlock />
+                          <span>Desbanear</span>
                         </button>
                       </div>
                     </div>
@@ -906,6 +924,23 @@ const BanManagement = () => {
                           {ban.isActive === 1 ? 'ACTIVO' : 'INACTIVO'}
                         </div>
                       </div>
+                    </div>
+                    
+                    {/* Botón de desbanear prominente */}
+                    <div className="ban-actions-footer">
+                      <button 
+                        className="btn-unban-large"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleUnban(ban.type, ban.value);
+                        }}
+                        title={`Desbanear ${ban.type === 'ip' ? 'IP' : 'Usuario Discord'}: ${ban.value}`}
+                        disabled={loading}
+                      >
+                        <FaUnlock />
+                        <span>Desbanear {ban.type === 'ip' ? 'IP' : 'Usuario'}</span>
+                      </button>
                     </div>
                   </div>
                 ))}
