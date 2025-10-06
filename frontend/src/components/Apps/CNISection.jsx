@@ -7,7 +7,7 @@ import {
   FaUsers, FaBuilding, FaMapMarkerAlt, FaPhone, FaEnvelope,
   FaCalendarAlt, FaClock, FaFlag, FaKey, FaFingerprint, FaPlus,
   FaBars, FaChevronDown, FaChevronUp, FaQuestionCircle, FaInfoCircle,
-  FaCog, FaExpand, FaCompress, FaAngleRight, FaAngleLeft
+  FaCog, FaExpand, FaCompress, FaAngleRight, FaAngleLeft, FaDiscord
 } from 'react-icons/fa';
 import { apiUrl } from '../../utils/api';
 import loggingService from '../../utils/loggingService';

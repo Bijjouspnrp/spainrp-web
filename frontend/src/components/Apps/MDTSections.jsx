@@ -3,7 +3,7 @@ import {
   FaIdCard, FaMoneyBillWave, FaHistory, FaClipboardList, 
   FaSearch, FaGavel, FaLock, FaTrophy, FaEye, 
   FaEdit, FaTrash, FaCheckCircle, FaTimes, FaExclamationTriangle,
-  FaUser, FaFileAlt, FaCarCrash, FaShieldAlt, FaSpinner
+  FaUser, FaFileAlt, FaCarCrash, FaShieldAlt, FaSpinner, FaDiscord
 } from 'react-icons/fa';
 import { apiUrl } from '../../utils/api';
 import codigoPenal from '../../utils/codigoPenal';
@@ -811,7 +811,7 @@ export const SearchSection = ({ onSearch }) => {
 
   // Función para buscar sugerencias
   const searchSuggestions = async (query) => {
-    if (query.length < 2) {
+    if (!query || query.trim().length < 2) {
       setSuggestions([]);
       setShowSuggestions(false);
       return;
@@ -853,7 +853,7 @@ export const SearchSection = ({ onSearch }) => {
     setSearchValue(value);
     setError('');
     
-    if (searchType === 'nombre') {
+    if (searchType === 'nombre' && value.trim().length >= 2) {
       searchSuggestions(value);
     } else {
       setSuggestions([]);
