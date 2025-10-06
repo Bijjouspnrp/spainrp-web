@@ -3,7 +3,7 @@ import {
   FaIdCard, FaMoneyBillWave, FaHistory, FaClipboardList, 
   FaSearch, FaGavel, FaLock, FaTrophy, FaEye, 
   FaEdit, FaTrash, FaCheckCircle, FaTimes, FaExclamationTriangle,
-  FaUser, FaFileAlt, FaCarCrash, FaShieldAlt, FaSpinner, FaDiscord, FaCar
+  FaUser, FaFileAlt, FaShieldAlt, FaSpinner, FaDiscord
 } from 'react-icons/fa';
 import { apiUrl } from '../../utils/api';
 import codigoPenal from '../../utils/codigoPenal';
@@ -752,21 +752,19 @@ export const InventarioSection = ({ data }) => {
     return itemNames[itemId] || itemId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
-  // Función para obtener el icono del item basado en el item_id - v4.0 - CACHE BUST
+  // Función para obtener el icono del item basado en el item_id - v5.0 - SIMPLIFICADO
   const getItemIcon = (itemId) => {
-    // Simplificado para evitar errores de cache
+    // Versión simplificada sin iconos problemáticos
     if (itemId && typeof itemId === 'string') {
       const lowerId = itemId.toLowerCase();
-      if (lowerId.includes('car') || lowerId.includes('vehicle') || lowerId.includes('vehiculo')) {
-        return <FaCar />;
-      } else if (lowerId.includes('crash') || lowerId.includes('accident')) {
-        return <FaCarCrash />;
-      } else if (lowerId.includes('money') || lowerId.includes('wallet')) {
+      if (lowerId.includes('money') || lowerId.includes('wallet')) {
         return <FaMoneyBillWave />;
       } else if (lowerId.includes('id') || lowerId.includes('keys')) {
         return <FaIdCard />;
       } else if (lowerId.includes('drug') || lowerId.includes('cocaine')) {
         return <FaExclamationTriangle />;
+      } else if (lowerId.includes('weapon') || lowerId.includes('gun')) {
+        return <FaShieldAlt />;
       }
     }
     return <FaFileAlt />;
