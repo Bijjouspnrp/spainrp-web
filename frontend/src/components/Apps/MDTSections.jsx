@@ -225,14 +225,14 @@ export const MultasSection = ({ data, userId, onRefresh }) => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        setResult('✅ Multa pagada correctamente');
+        setResult('Multa pagada correctamente');
         onRefresh();
       } else {
-        setResult(`❌ Error: ${data.error || 'Error pagando multa'}`);
+        setResult(`Error: ${data.error || 'Error pagando multa'}`);
       }
     } catch (err) {
       console.error('Error pagando multa:', err);
-      setResult('❌ Error de conexión al pagar multa');
+      setResult('Error de conexión al pagar multa');
     } finally {
       setPaying(null);
     }
@@ -292,8 +292,8 @@ export const MultasSection = ({ data, userId, onRefresh }) => {
             <h4>¡Excelente ciudadano! 🏆</h4>
             <p>Has pagado todas tus multas correctamente. ¡Sigue así! Tu cumplimiento de las normas es un ejemplo para la comunidad.</p>
             <div className="message-stats">
-              <span>✅ {multasPagadas} multas pagadas</span>
-              <span>💰 {totalPagado.toLocaleString('es-ES')}€ abonados</span>
+              <span>{multasPagadas} multas pagadas</span>
+              <span>{totalPagado.toLocaleString('es-ES')}€ abonados</span>
             </div>
           </div>
         </div>
@@ -305,7 +305,7 @@ export const MultasSection = ({ data, userId, onRefresh }) => {
             <FaExclamationTriangle />
           </div>
           <div className="message-content">
-            <h4>⚠️ Atención: Multas Pendientes</h4>
+            <h4>Atención: Multas Pendientes</h4>
             <p>Tienes <strong>{multasPendientes}</strong> multa{multasPendientes > 1 ? 's' : ''} pendiente{multasPendientes > 1 ? 's' : ''} por un total de <strong>{totalPendiente.toLocaleString('es-ES')}€</strong>.</p>
             <p className="warning-text">
               <strong>Importante:</strong> Si no pagas tus multas en el plazo establecido, podrías enfrentar consecuencias legales más graves, incluyendo la posibilidad de un juicio. 
@@ -753,7 +753,7 @@ export const InventarioSection = ({ data }) => {
     return itemNames[itemId] || itemId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
-  // Función para obtener el icono del item basado en el item_id
+  // Función para obtener el icono del item basado en el item_id - v3.0
   const getItemIcon = (itemId) => {
     if (itemId.includes('ak_47') || itemId.includes('m4a1') || itemId.includes('glock') || itemId.includes('usp') || itemId.includes('knife')) {
       return <FaShieldAlt />;
@@ -1757,7 +1757,7 @@ export const ArrestarSection = ({ onRefresh }) => {
           <div className="arrest-status">
             <div className="status-success">
               <FaCheckCircle className="status-icon" />
-              <span>Arresto registrado exitosamente en la base de datos</span>
+              <span>Arresto registrado exitosamente en la  </span>
             </div>
           </div>
         </div>

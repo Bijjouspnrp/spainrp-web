@@ -98,8 +98,8 @@ const CNISection = () => {
         }
 
         // Simular tiempo de carga para mostrar la pantalla de carga
-        const minTime = 4000; // 4 segundos mínimo
-        const maxTime = 5000; // 5 segundos máximo
+        const minTime = 2000; // 2 segundos mínimo
+        const maxTime = 3000; // 3 segundos máximo
         const randomTime = Math.random() * (maxTime - minTime) + minTime;
         
         setTimeout(() => {
