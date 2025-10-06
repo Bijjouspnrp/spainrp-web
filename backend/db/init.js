@@ -200,6 +200,34 @@ function initializeDatabase() {
               last_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
               is_online INTEGER DEFAULT 1
             )`
+          },
+          {
+            name: 'ip_tracking',
+            sql: `CREATE TABLE IF NOT EXISTS ip_tracking (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              ip TEXT NOT NULL,
+              userId TEXT,
+              username TEXT,
+              discriminator TEXT,
+              avatar TEXT,
+              userAgent TEXT,
+              browser TEXT,
+              os TEXT,
+              device TEXT,
+              country TEXT,
+              countryCode TEXT,
+              city TEXT,
+              region TEXT,
+              timezone TEXT,
+              latitude REAL,
+              longitude REAL,
+              isp TEXT,
+              firstSeen TEXT,
+              lastSeen TEXT,
+              visitCount INTEGER DEFAULT 1,
+              isActive INTEGER DEFAULT 1,
+              UNIQUE(ip)
+            )`
           }
         ];
 

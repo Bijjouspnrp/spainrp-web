@@ -2436,8 +2436,8 @@ async function trackIP(req, userId = null) {
     const userAgent = req.headers['user-agent'] || 'Unknown';
     const now = new Date().toISOString();
     
-    // Extraer información del dispositivo del User-Agent
-    const deviceInfo = parseUserAgent(userAgent, req);
+    // Extraer información del dispositivo del User-Agent con geolocalización
+    const deviceInfo = await parseUserAgent(userAgent, req, ip);
     
     // Obtener información adicional del usuario si está disponible
     let userInfo = null;
@@ -2474,7 +2474,19 @@ async function trackIP(req, userId = null) {
       userId, 
       userInfo,
       userAgent: userAgent.substring(0, 50) + '...',
-      device: deviceInfo
+      device: {
+        browser: deviceInfo.browser,
+        os: deviceInfo.os,
+        device: deviceInfo.device,
+        country: deviceInfo.country,
+        countryCode: deviceInfo.countryCode,
+        city: deviceInfo.city,
+        region: deviceInfo.region,
+        timezone: deviceInfo.timezone,
+        latitude: deviceInfo.latitude,
+        longitude: deviceInfo.longitude,
+        isp: deviceInfo.isp
+      }
     });
     
     // Verificar si la IP ya existe
@@ -2484,33 +2496,213 @@ async function trackIP(req, userId = null) {
     );
     
     if (existing) {
-      // Actualizar IP existente
+      // Actualizar IP existente con información completa de geolocalización
       await runQuery(
-        'UPDATE ip_tracking SET lastSeen = ?, visitCount = visitCount + 1, userId = COALESCE(?, userId), username = COALESCE(?, username), discriminator = COALESCE(?, discriminator), avatar = COALESCE(?, avatar), isActive = 1, userAgent = ?, country = ?, city = ? WHERE ip = ?',
-        [now, userId, userInfo?.username, userInfo?.discriminator, userInfo?.avatar, userAgent, deviceInfo.country, deviceInfo.city, ip]
+        `UPDATE ip_tracking SET 
+          lastSeen = ?, 
+          visitCount = visitCount + 1, 
+          userId = COALESCE(?, userId), 
+          username = COALESCE(?, username), 
+          discriminator = COALESCE(?, discriminator), 
+          avatar = COALESCE(?, avatar), 
+          isActive = 1, 
+          userAgent = ?, 
+          browser = ?, 
+          os = ?, 
+          device = ?, 
+          country = ?, 
+          countryCode = ?, 
+          city = ?, 
+          region = ?, 
+          timezone = ?, 
+          latitude = ?, 
+          longitude = ?, 
+          isp = ? 
+        WHERE ip = ?`,
+        [
+          now, userId, userInfo?.username, userInfo?.discriminator, userInfo?.avatar, 
+          userAgent, deviceInfo.browser, deviceInfo.os, deviceInfo.device,
+          deviceInfo.country, deviceInfo.countryCode, deviceInfo.city, 
+          deviceInfo.region, deviceInfo.timezone, deviceInfo.latitude, 
+          deviceInfo.longitude, deviceInfo.isp, ip
+        ]
       );
-      console.log('[IP TRACKING] IP actualizada:', ip);
+      console.log('[IP TRACKING] IP actualizada con geolocalización:', ip);
     } else {
-      // Crear nueva entrada de IP
+      // Crear nueva entrada de IP con información completa de geolocalización
       await runQuery(
-        'INSERT INTO ip_tracking (ip, userId, username, discriminator, avatar, userAgent, country, city, firstSeen, lastSeen, visitCount, isActive) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1)',
-        [ip, userId, userInfo?.username, userInfo?.discriminator, userInfo?.avatar, userAgent, deviceInfo.country, deviceInfo.city, now, now]
+        `INSERT INTO ip_tracking (
+          ip, userId, username, discriminator, avatar, userAgent, 
+          browser, os, device, country, countryCode, city, region, 
+          timezone, latitude, longitude, isp, firstSeen, lastSeen, 
+          visitCount, isActive
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1)`,
+        [
+          ip, userId, userInfo?.username, userInfo?.discriminator, userInfo?.avatar, 
+          userAgent, deviceInfo.browser, deviceInfo.os, deviceInfo.device,
+          deviceInfo.country, deviceInfo.countryCode, deviceInfo.city, 
+          deviceInfo.region, deviceInfo.timezone, deviceInfo.latitude, 
+          deviceInfo.longitude, deviceInfo.isp, now, now
+        ]
       );
-      console.log('[IP TRACKING] Nueva IP registrada:', ip);
+      console.log('[IP TRACKING] Nueva IP registrada con geolocalización:', ip);
     }
   } catch (error) {
     console.error('[IP TRACKING] Error tracking IP:', error);
   }
 }
 
+// Función para obtener información de geolocalización de una IP
+async function getIPLocation(ip) {
+  try {
+    // Verificar si es una IP local o privada
+    if (isLocalIP(ip)) {
+      return {
+        country: 'Local',
+        countryCode: 'LOC',
+        city: 'Local Network',
+        region: 'Local',
+        timezone: 'Local',
+        latitude: null,
+        longitude: null,
+        isp: 'Local Network'
+      };
+    }
+
+    // Intentar múltiples servicios de geolocalización para mayor precisión
+    const services = [
+      // Servicio 1: ipapi.co (gratuito, 1000 requests/día)
+      async () => {
+        const response = await fetch(`https://ipapi.co/${ip}/json/`);
+        if (response.ok) {
+          const data = await response.json();
+          return {
+            country: data.country_name || 'Unknown',
+            countryCode: data.country_code || 'Unknown',
+            city: data.city || 'Unknown',
+            region: data.region || 'Unknown',
+            timezone: data.timezone || 'Unknown',
+            latitude: data.latitude,
+            longitude: data.longitude,
+            isp: data.org || 'Unknown'
+          };
+        }
+        throw new Error('ipapi.co failed');
+      },
+      
+      // Servicio 2: ip-api.com (gratuito, 1000 requests/minuto)
+      async () => {
+        const response = await fetch(`http://ip-api.com/json/${ip}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.status === 'success') {
+            return {
+              country: data.country || 'Unknown',
+              countryCode: data.countryCode || 'Unknown',
+              city: data.city || 'Unknown',
+              region: data.regionName || 'Unknown',
+              timezone: data.timezone || 'Unknown',
+              latitude: data.lat,
+              longitude: data.lon,
+              isp: data.isp || 'Unknown'
+            };
+          }
+        }
+        throw new Error('ip-api.com failed');
+      },
+      
+      // Servicio 3: ipinfo.io (gratuito, 50,000 requests/mes)
+      async () => {
+        const response = await fetch(`https://ipinfo.io/${ip}/json`);
+        if (response.ok) {
+          const data = await response.json();
+          const [city, region] = (data.city || 'Unknown').split(',');
+          return {
+            country: data.country || 'Unknown',
+            countryCode: data.country || 'Unknown',
+            city: city || 'Unknown',
+            region: region || data.region || 'Unknown',
+            timezone: data.timezone || 'Unknown',
+            latitude: data.loc ? data.loc.split(',')[0] : null,
+            longitude: data.loc ? data.loc.split(',')[1] : null,
+            isp: data.org || 'Unknown'
+          };
+        }
+        throw new Error('ipinfo.io failed');
+      }
+    ];
+
+    // Intentar cada servicio hasta que uno funcione
+    for (const service of services) {
+      try {
+        const result = await service();
+        console.log(`[IP LOCATION] Información obtenida para ${ip}:`, result);
+        return result;
+      } catch (error) {
+        console.log(`[IP LOCATION] Servicio falló para ${ip}:`, error.message);
+        continue;
+      }
+    }
+
+    // Si todos los servicios fallan, devolver datos por defecto
+    console.log(`[IP LOCATION] Todos los servicios fallaron para ${ip}, usando datos por defecto`);
+    return {
+      country: 'Unknown',
+      countryCode: 'Unknown',
+      city: 'Unknown',
+      region: 'Unknown',
+      timezone: 'Unknown',
+      latitude: null,
+      longitude: null,
+      isp: 'Unknown'
+    };
+
+  } catch (error) {
+    console.error(`[IP LOCATION] Error obteniendo ubicación para ${ip}:`, error);
+    return {
+      country: 'Unknown',
+      countryCode: 'Unknown',
+      city: 'Unknown',
+      region: 'Unknown',
+      timezone: 'Unknown',
+      latitude: null,
+      longitude: null,
+      isp: 'Unknown'
+    };
+  }
+}
+
+// Función para verificar si una IP es local o privada
+function isLocalIP(ip) {
+  const localRanges = [
+    /^127\./, // 127.0.0.0/8
+    /^10\./, // 10.0.0.0/8
+    /^172\.(1[6-9]|2[0-9]|3[0-1])\./, // 172.16.0.0/12
+    /^192\.168\./, // 192.168.0.0/16
+    /^::1$/, // IPv6 localhost
+    /^fc00:/, // IPv6 private
+    /^fe80:/, // IPv6 link-local
+    /^0\.0\.0\.0$/, // 0.0.0.0
+    /^localhost$/i
+  ];
+  
+  return localRanges.some(range => range.test(ip));
+}
+
 // Función para parsear User-Agent y extraer información del dispositivo
-function parseUserAgent(userAgent, req = null) {
+async function parseUserAgent(userAgent, req = null, ip = null) {
   const info = {
     browser: 'Unknown',
     os: 'Unknown',
     device: 'Unknown',
-    country: req?.headers['cf-ipcountry'] || 'Unknown',
-    city: req?.headers['cf-ipcity'] || 'Unknown'
+    country: 'Unknown',
+    countryCode: 'Unknown',
+    city: 'Unknown',
+    region: 'Unknown',
+    timezone: 'Unknown',
+    latitude: null,
+    longitude: null,
+    isp: 'Unknown'
   };
   
   // Detectar navegador
@@ -2519,6 +2711,12 @@ function parseUserAgent(userAgent, req = null) {
   else if (userAgent.includes('Safari')) info.browser = 'Safari';
   else if (userAgent.includes('Edge')) info.browser = 'Edge';
   else if (userAgent.includes('Opera')) info.browser = 'Opera';
+  else if (userAgent.includes('Go-http-client')) info.browser = 'Go HTTP Client';
+  else if (userAgent.includes('curl')) info.browser = 'cURL';
+  else if (userAgent.includes('wget')) info.browser = 'Wget';
+  else if (userAgent.includes('Python')) info.browser = 'Python HTTP';
+  else if (userAgent.includes('Java')) info.browser = 'Java HTTP';
+  else if (userAgent.includes('Postman')) info.browser = 'Postman';
   
   // Detectar sistema operativo
   if (userAgent.includes('Windows')) info.os = 'Windows';
@@ -2526,13 +2724,35 @@ function parseUserAgent(userAgent, req = null) {
   else if (userAgent.includes('Linux')) info.os = 'Linux';
   else if (userAgent.includes('Android')) info.os = 'Android';
   else if (userAgent.includes('iOS')) info.os = 'iOS';
+  else if (userAgent.includes('Ubuntu')) info.os = 'Ubuntu';
+  else if (userAgent.includes('CentOS')) info.os = 'CentOS';
+  else if (userAgent.includes('Debian')) info.os = 'Debian';
   
   // Detectar tipo de dispositivo
   if (userAgent.includes('Mobile')) info.device = 'Mobile';
   else if (userAgent.includes('Tablet')) info.device = 'Tablet';
   else if (userAgent.includes('Desktop')) info.device = 'Desktop';
   else if (userAgent.includes('Bot')) info.device = 'Bot';
+  else if (userAgent.includes('Spider')) info.device = 'Spider';
+  else if (userAgent.includes('Crawler')) info.device = 'Crawler';
+  else if (userAgent.includes('Go-http-client')) info.device = 'Server/API';
   else info.device = 'Desktop';
+  
+  // Obtener información de geolocalización si se proporciona IP
+  if (ip) {
+    try {
+      const locationInfo = await getIPLocation(ip);
+      Object.assign(info, locationInfo);
+    } catch (error) {
+      console.error('[IP LOCATION] Error obteniendo ubicación:', error);
+    }
+  } else if (req) {
+    // Fallback a headers de Cloudflare si están disponibles
+    info.country = req.headers['cf-ipcountry'] || 'Unknown';
+    info.city = req.headers['cf-ipcity'] || 'Unknown';
+    info.region = req.headers['cf-ipregion'] || 'Unknown';
+    info.timezone = req.headers['cf-timezone'] || 'Unknown';
+  }
   
   return info;
 }
