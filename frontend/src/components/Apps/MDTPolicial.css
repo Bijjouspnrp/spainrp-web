@@ -2,10 +2,16 @@
 
 .mdt-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  background: 
+    linear-gradient(135deg, rgba(26, 26, 26, 0.9) 0%, rgba(45, 45, 45, 0.95) 100%),
+    radial-gradient(circle at 20% 80%, rgba(74, 144, 226, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(220, 38, 38, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.03) 0%, transparent 70%);
   color: #ffffff;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   padding-top: 80px; /* Compensar altura de la navbar */
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
 }
 
 .mdt-loading, .mdt-error {
@@ -34,14 +40,20 @@
 }
 
 .mdt-header {
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  background: 
+    linear-gradient(135deg, rgba(30, 58, 138, 0.9) 0%, rgba(30, 64, 175, 0.95) 100%),
+    radial-gradient(circle at 20% 20%, rgba(251, 191, 36, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
   border-bottom: 3px solid #fbbf24;
   box-shadow: 
-    0 4px 20px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(251, 191, 36, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    0 4px 20px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(251, 191, 36, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
   position: relative;
   overflow: hidden;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
 }
 
 .mdt-header::before {
@@ -165,16 +177,21 @@
 }
 
 .mdt-section {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
+  background: 
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%),
+    radial-gradient(circle at 30% 20%, rgba(74, 144, 226, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+  border-radius: 20px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
-  border: 1px solid rgba(74, 144, 226, 0.2);
+  border: 1px solid rgba(74, 144, 226, 0.3);
   box-shadow: 
-    0 4px 20px rgba(0, 0, 0, 0.2),
-    0 0 0 1px rgba(74, 144, 226, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
+    0 4px 20px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(74, 144, 226, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   position: relative;
   overflow: hidden;
   animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
@@ -229,11 +246,13 @@
 }
 
 .citizen-nav-btn, .police-nav-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(74, 144, 226, 0.3);
+  background: 
+    linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.06) 100%),
+    radial-gradient(circle at 50% 0%, rgba(74, 144, 226, 0.1) 0%, transparent 60%);
+  border: 1px solid rgba(74, 144, 226, 0.4);
   color: #ffffff;
   padding: 0.8rem 1.2rem;
-  border-radius: 12px;
+  border-radius: 14px;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
@@ -243,8 +262,12 @@
   position: relative;
   overflow: hidden;
   box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(74, 144, 226, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
 }
 
 .citizen-nav-btn::before, .police-nav-btn::before {
@@ -365,14 +388,18 @@
 
 /* DNI Card Real - Frente */
 .dni-card-real {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border-radius: 16px;
+  background: 
+    linear-gradient(135deg, rgba(248, 249, 250, 0.95) 0%, rgba(233, 236, 239, 0.9) 100%),
+    radial-gradient(circle at 20% 20%, rgba(220, 38, 38, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.3) 0%, transparent 50%);
+  border-radius: 20px;
   padding: 0;
   border: 2px solid #dc2626;
   box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(220, 38, 38, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(220, 38, 38, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
   max-width: 600px;
   width: 100%;
   margin: 0 auto;
@@ -383,6 +410,8 @@
   opacity: 0;
   transform: translateY(30px);
   animation-fill-mode: forwards;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
 }
 
 .dni-card-real::before {
@@ -996,16 +1025,21 @@
 }
 
 .multa-card {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+  background: 
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%),
+    radial-gradient(circle at 20% 20%, rgba(220, 38, 38, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+  border-radius: 16px;
   padding: 1.5rem;
   border-left: 4px solid #dc2626;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.2),
-    0 0 0 1px rgba(220, 38, 38, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(5px);
+    0 4px 16px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(220, 38, 38, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   position: relative;
   overflow: hidden;
   animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
