@@ -809,7 +809,7 @@ export const SearchSection = ({ onSearch }) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [searchingSuggestions, setSearchingSuggestions] = useState(false);
 
-  // Función para buscar sugerencias
+  // Función para buscar sugerencias - v2.0
   const searchSuggestions = async (query) => {
     if (!query || query.trim().length < 2) {
       setSuggestions([]);
