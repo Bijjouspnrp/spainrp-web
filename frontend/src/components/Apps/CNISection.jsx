@@ -97,14 +97,8 @@ const CNISection = () => {
           }
         }
 
-        // Simular tiempo de carga para mostrar la pantalla de carga
-        const minTime = 2000; // 2 segundos mínimo
-        const maxTime = 3000; // 3 segundos máximo
-        const randomTime = Math.random() * (maxTime - minTime) + minTime;
-        
-        setTimeout(() => {
-          setLoading(false);
-        }, randomTime);
+        // Carga inmediata sin delay artificial
+        setLoading(false);
       } catch (err) {
         setError('Error verificando permisos CNI');
         setLoading(false);

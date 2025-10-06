@@ -604,7 +604,6 @@ export const InventarioSection = ({ data }) => {
       'bm_lock': 'Candado',
       'bm_key': 'Llave',
       'bm_chain': 'Cadena',
-      'bm_rope': 'Cuerda',
       'bm_wire': 'Cable',
       'bm_cord': 'Cordón',
       'bm_string': 'Cuerda',
@@ -753,31 +752,24 @@ export const InventarioSection = ({ data }) => {
     return itemNames[itemId] || itemId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
-  // Función para obtener el icono del item basado en el item_id - v3.0
+  // Función para obtener el icono del item basado en el item_id - v4.0 - CACHE BUST
   const getItemIcon = (itemId) => {
-    if (itemId.includes('ak_47') || itemId.includes('m4a1') || itemId.includes('glock') || itemId.includes('usp') || itemId.includes('knife')) {
-      return <FaShieldAlt />;
-    } else if (itemId.includes('vest') || itemId.includes('helmet') || itemId.includes('ammo')) {
-      return <FaShieldAlt />;
-    } else if (itemId.includes('medkit') || itemId.includes('bandage') || itemId.includes('painkillers')) {
-      return <FaShieldAlt />;
-    } else if (itemId.includes('phone') || itemId.includes('laptop') || itemId.includes('tablet')) {
-      return <FaFileAlt />;
-    } else if (itemId.includes('keys') || itemId.includes('wallet') || itemId.includes('id')) {
-      return <FaIdCard />;
-    } else if (itemId.includes('drugs') || itemId.includes('cocaine') || itemId.includes('marijuana')) {
-      return <FaExclamationTriangle />;
-    } else if (itemId.includes('money') || itemId.includes('wallet')) {
-      return <FaMoneyBillWave />;
-    } else if (itemId.includes('food') || itemId.includes('drink') || itemId.includes('sandwich')) {
-      return <FaFileAlt />;
-    } else if (itemId.includes('car') || itemId.includes('vehicle') || itemId.includes('vehiculo') || itemId.includes('coche')) {
-      return <FaCar />;
-    } else if (itemId.includes('crash') || itemId.includes('accident') || itemId.includes('choque') || itemId.includes('accidente')) {
-      return <FaCarCrash />;
-    } else {
-      return <FaFileAlt />;
+    // Simplificado para evitar errores de cache
+    if (itemId && typeof itemId === 'string') {
+      const lowerId = itemId.toLowerCase();
+      if (lowerId.includes('car') || lowerId.includes('vehicle') || lowerId.includes('vehiculo')) {
+        return <FaCar />;
+      } else if (lowerId.includes('crash') || lowerId.includes('accident')) {
+        return <FaCarCrash />;
+      } else if (lowerId.includes('money') || lowerId.includes('wallet')) {
+        return <FaMoneyBillWave />;
+      } else if (lowerId.includes('id') || lowerId.includes('keys')) {
+        return <FaIdCard />;
+      } else if (lowerId.includes('drug') || lowerId.includes('cocaine')) {
+        return <FaExclamationTriangle />;
+      }
     }
+    return <FaFileAlt />;
   };
 
   return (
