@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   FaEye, FaSearch, FaDatabase, FaUser, FaIdCard, FaMoneyBillWave, 
   FaHistory, FaClipboardList, FaShieldAlt, FaSpinner, FaExclamationTriangle,
   FaCheckCircle, FaTimes, FaCrown, FaGavel, FaLock, FaTrophy,
   FaUserShield, FaFileAlt, FaCarCrash, FaGlobe, FaChartLine,
   FaUsers, FaBuilding, FaMapMarkerAlt, FaPhone, FaEnvelope,
-  FaCalendarAlt, FaClock, FaFlag, FaKey, FaFingerprint, FaPlus
+  FaCalendarAlt, FaClock, FaFlag, FaKey, FaFingerprint, FaPlus,
+  FaBars, FaChevronDown, FaChevronUp, FaQuestionCircle, FaInfoCircle,
+  FaCog, FaExpand, FaCompress, FaAngleRight, FaAngleLeft
 } from 'react-icons/fa';
 import { apiUrl } from '../../utils/api';
 import './CNISection.css';
@@ -18,6 +20,13 @@ const CNISection = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('database');
   const [error, setError] = useState(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
+  const [cniAgents, setCniAgents] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestionRef = useRef(null);
 
   // Estados para funcionalidades CNI
   const [searchData, setSearchData] = useState({
@@ -86,7 +95,14 @@ const CNISection = () => {
           }
         }
 
-        setLoading(false);
+        // Simular tiempo de carga para mostrar la pantalla de carga
+        const minTime = 4000; // 4 segundos mínimo
+        const maxTime = 5000; // 5 segundos máximo
+        const randomTime = Math.random() * (maxTime - minTime) + minTime;
+        
+        setTimeout(() => {
+          setLoading(false);
+        }, randomTime);
       } catch (err) {
         setError('Error verificando permisos CNI');
         setLoading(false);
@@ -94,6 +110,52 @@ const CNISection = () => {
     };
 
     checkAuth();
+  }, []);
+
+  // Cargar agentes CNI para autocompletado
+  const loadCniAgents = async () => {
+    try {
+      // Simular carga de agentes CNI (en producción vendría de la API)
+      const agents = [
+        'BijjouPro08', 'nanobox_32', 'RA_ESTE', 'lichandro56',
+        'LAFROGCRAZI', 'Elgato21053', 'Mimi (YoSoySergiox)', 'The441884',
+        'amigo_dedoc', 'Secret_Agent', 'nicogamer2220', 'Director_CNI'
+      ];
+      setCniAgents(agents);
+    } catch (err) {
+      console.error('Error cargando agentes CNI:', err);
+    }
+  };
+
+  // Función de autocompletado
+  const handleAgentInput = (value, setter) => {
+    setter(value);
+    if (value.length > 1) {
+      const filtered = cniAgents.filter(agent => 
+        agent.toLowerCase().includes(value.toLowerCase())
+      );
+      setSuggestions(filtered);
+      setShowSuggestions(true);
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+
+  // Seleccionar sugerencia
+  const selectSuggestion = (agent, setter) => {
+    setter(agent);
+    setShowSuggestions(false);
+  };
+
+  // Cerrar sugerencias al hacer click fuera
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (suggestionRef.current && !suggestionRef.current.contains(event.target)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   // Cargar estadísticas de la base de datos
@@ -165,16 +227,35 @@ const CNISection = () => {
   useEffect(() => {
     if (isCNI) {
       loadDatabaseStats();
+      loadCniAgents();
     }
   }, [isCNI]);
 
   if (loading) {
     return (
       <div className="cni-loading">
-        <div className="cni-spinner"></div>
-        <h2>Centro Nacional de Inteligencia</h2>
-        <p>Verificando credenciales de acceso...</p>
-        <p>Inicializando sistemas de inteligencia...</p>
+        <div className="cni-loading-logo">
+          <img 
+            src="https://media.discordapp.net/attachments/1329945759541497906/1424473452206751764/CNIescudoespaC3B1a2.png?ex=68e413c8&is=68e2c248&hm=f12f703571bbc40060329de77d8c8f6973c677806a45a1b1238a8deb9522a0b1&=" 
+            alt="CNI Logo" 
+            className="cni-loading-logo-img"
+            onError={(e) => {
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = 'flex';
+            }}
+          />
+          <div className="cni-loading-logo-fallback" style={{display: 'none'}}>
+            <FaEye />
+          </div>
+        </div>
+        <div className="cni-loading-content">
+          <h2>Centro Nacional de Inteligencia</h2>
+          <p>Verificando credenciales de acceso...</p>
+          <p>Inicializando sistemas de inteligencia...</p>
+          <div className="cni-loading-progress">
+            <div className="cni-loading-bar"></div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -204,29 +285,29 @@ const CNISection = () => {
   }
 
   return (
-    <div className="cni-container">
+    <div className={`cni-container ${isFullscreen ? 'fullscreen' : ''}`}>
       {/* Modal de Bienvenida CNI */}
       {showWelcomeModal && (
         <div className="cni-welcome-modal-overlay">
           <div className="cni-welcome-modal">
             <div className="cni-welcome-header">
               <FaShieldAlt className="cni-welcome-icon" />
-              <h2>🎉 ¡Bienvenido al Centro Nacional de Inteligencia!</h2>
+              <h2><FaCheckCircle /> ¡Bienvenido al Centro Nacional de Inteligencia!</h2>
             </div>
             
             <div className="cni-welcome-content">
               <div className="cni-welcome-section">
-                <h3>🆕 Nuevas Funcionalidades Disponibles</h3>
+                <h3><FaPlus /> Nuevas Funcionalidades Disponibles</h3>
                 <ul>
-                  <li><strong>🔍 Sistema de Rastreo Avanzado</strong> - Rastrea movimientos financieros, inventarios y actividad completa</li>
-                  <li><strong>🏢 Gestión Empresarial Completa</strong> - Suspender, investigar, clausurar y eliminar empresas</li>
-                  <li><strong>📝 Archivos CNI</strong> - Sistema de blog para documentar investigaciones de bandas</li>
-                  <li><strong>💰 Análisis Financiero</strong> - Supervisión de patrimonios y movimientos sospechosos</li>
+                  <li><strong><FaSearch /> Sistema de Rastreo Avanzado</strong> - Rastrea movimientos financieros, inventarios y actividad completa</li>
+                  <li><strong><FaBuilding /> Gestión Empresarial Completa</strong> - Suspender, investigar, clausurar y eliminar empresas</li>
+                  <li><strong><FaFileAlt /> Archivos CNI</strong> - Sistema de blog para documentar investigaciones de bandas</li>
+                  <li><strong><FaMoneyBillWave /> Análisis Financiero</strong> - Supervisión de patrimonios y movimientos sospechosos</li>
                 </ul>
               </div>
 
               <div className="cni-welcome-section">
-                <h3>🎯 Misión del CNI en SpainRP</h3>
+                <h3><FaGlobe /> Misión del CNI en SpainRP</h3>
                 <div className="cni-mission-cards">
                   <div className="cni-mission-card">
                     <FaBuilding />
@@ -247,7 +328,7 @@ const CNISection = () => {
               </div>
 
               <div className="cni-welcome-section">
-                <h3>👨‍💻 Desarrollado por BijjouPro08</h3>
+                <h3><FaCog /> Desarrollado por BijjouPro08</h3>
                 <p>Este sistema de inteligencia ha sido desarrollado específicamente para las necesidades del CNI de SpainRP, proporcionando herramientas avanzadas de investigación y supervisión.</p>
               </div>
             </div>
@@ -284,62 +365,148 @@ const CNISection = () => {
             </div>
             <h1>CNI - Centro Nacional de Inteligencia</h1>
           </div>
-          <div className="cni-user-info">
-            <span className="cni-user-name">{user?.username}</span>
-            <span className="cni-cni-badge">AGENTE CNI</span>
+          
+          <div className="cni-header-controls">
+            <div className="cni-user-info">
+              <span className="cni-user-name">{user?.username}</span>
+              <span className="cni-cni-badge">AGENTE CNI</span>
+            </div>
+            
+            <div className="cni-control-buttons">
+              <button 
+                className="cni-control-btn"
+                onClick={() => setShowHelp(!showHelp)}
+                title="Ayuda del Sistema"
+              >
+                <FaQuestionCircle />
+              </button>
+              <button 
+                className="cni-control-btn"
+                onClick={() => setIsFullscreen(!isFullscreen)}
+                title={isFullscreen ? "Salir de Pantalla Completa" : "Pantalla Completa"}
+              >
+                {isFullscreen ? <FaCompress /> : <FaExpand />}
+              </button>
+              <button 
+                className="cni-control-btn cni-mobile-menu-btn"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                title="Menú"
+              >
+                <FaBars />
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="cni-tabs">
-        <button 
-          className={`cni-tab ${activeTab === 'database' ? 'active' : ''}`}
-          onClick={() => setActiveTab('database')}
-        >
-          <FaDatabase /> Base de Datos
-        </button>
-        <button 
-          className={`cni-tab ${activeTab === 'search' ? 'active' : ''}`}
-          onClick={() => setActiveTab('search')}
-        >
-          <FaSearch /> Búsqueda Avanzada
-        </button>
-        <button 
-          className={`cni-tab ${activeTab === 'tracking' ? 'active' : ''}`}
-          onClick={() => setActiveTab('tracking')}
-        >
-          <FaGlobe /> Rastreo
-        </button>
-        <button 
-          className={`cni-tab ${activeTab === 'players' ? 'active' : ''}`}
-          onClick={() => setActiveTab('players')}
-        >
-          <FaUsers /> Ciudadanos en Ciudad
-        </button>
-        <button 
-          className={`cni-tab ${activeTab === 'vehicles' ? 'active' : ''}`}
-          onClick={() => setActiveTab('vehicles')}
-        >
-          <FaCarCrash /> Vehículos en Ciudad
-        </button>
-        <button 
-          className={`cni-tab ${activeTab === 'intelligence' ? 'active' : ''}`}
-          onClick={() => setActiveTab('intelligence')}
-        >
-          <FaChartLine /> Inteligencia
-        </button>
-        <button 
-          className={`cni-tab ${activeTab === 'business' ? 'active' : ''}`}
-          onClick={() => setActiveTab('business')}
-        >
-          <FaBuilding /> Registros Empresariales
-        </button>
-        <button 
-          className={`cni-tab ${activeTab === 'blog' ? 'active' : ''}`}
-          onClick={() => setActiveTab('blog')}
-        >
-          <FaFileAlt /> Archivos CNI
-        </button>
+      {/* Menú de Ayuda */}
+      {showHelp && (
+        <div className="cni-help-panel">
+          <div className="cni-help-content">
+            <h3><FaInfoCircle /> Guía del Sistema CNI</h3>
+            <div className="cni-help-sections">
+              <div className="cni-help-section">
+                <h4><FaDatabase /> Base de Datos</h4>
+                <p>Acceso completo a todos los registros del servidor. Búsquedas rápidas por DNI, Discord ID, multas y antecedentes.</p>
+              </div>
+              <div className="cni-help-section">
+                <h4><FaGlobe /> Rastreo</h4>
+                <p>Sistema de rastreo avanzado para analizar actividad completa de usuarios: finanzas, inventario, antecedentes.</p>
+              </div>
+              <div className="cni-help-section">
+                <h4><FaUsers /> Ciudadanos/Vehículos</h4>
+                <p>Monitoreo en tiempo real de jugadores y vehículos conectados al servidor.</p>
+              </div>
+              <div className="cni-help-section">
+                <h4><FaBuilding /> Empresas</h4>
+                <p>Gestión completa del registro empresarial: crear, suspender, investigar y clausurar empresas.</p>
+              </div>
+            </div>
+            <button 
+              className="cni-btn cni-btn-primary"
+              onClick={() => setShowHelp(false)}
+            >
+              <FaCheckCircle /> Entendido
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className={`cni-tabs ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+        <div className="cni-tabs-container">
+          <button 
+            className={`cni-tab ${activeTab === 'database' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('database');
+              setIsMobileMenuOpen(false);
+            }}
+          >
+            <FaDatabase /> <span>Base de Datos</span>
+          </button>
+          <button 
+            className={`cni-tab ${activeTab === 'search' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('search');
+              setIsMobileMenuOpen(false);
+            }}
+          >
+            <FaSearch /> <span>Búsqueda Avanzada</span>
+          </button>
+          <button 
+            className={`cni-tab ${activeTab === 'tracking' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('tracking');
+              setIsMobileMenuOpen(false);
+            }}
+          >
+            <FaGlobe /> <span>Rastreo</span>
+          </button>
+          <button 
+            className={`cni-tab ${activeTab === 'players' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('players');
+              setIsMobileMenuOpen(false);
+            }}
+          >
+            <FaUsers /> <span>Ciudadanos</span>
+          </button>
+          <button 
+            className={`cni-tab ${activeTab === 'vehicles' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('vehicles');
+              setIsMobileMenuOpen(false);
+            }}
+          >
+            <FaCarCrash /> <span>Vehículos</span>
+          </button>
+          <button 
+            className={`cni-tab ${activeTab === 'intelligence' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('intelligence');
+              setIsMobileMenuOpen(false);
+            }}
+          >
+            <FaChartLine /> <span>Inteligencia</span>
+          </button>
+          <button 
+            className={`cni-tab ${activeTab === 'business' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('business');
+              setIsMobileMenuOpen(false);
+            }}
+          >
+            <FaBuilding /> <span>Empresas</span>
+          </button>
+          <button 
+            className={`cni-tab ${activeTab === 'blog' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('blog');
+              setIsMobileMenuOpen(false);
+            }}
+          >
+            <FaFileAlt /> <span>Archivos CNI</span>
+          </button>
+        </div>
       </div>
 
       <div className="cni-content">
@@ -863,10 +1030,10 @@ const TrackingTab = () => {
       console.log(`[CNI][RASTREO] 🎯 Búsqueda completada. Resultados: ${results.length}`);
       console.log('[CNI][RASTREO] 📊 Resultados finales:', results);
       setTrackingResults(results);
-      setSuccess(`✅ Rastreo completado. Encontrados ${results.length} tipos de datos.`);
+      setSuccess(`Rastreo completado. Encontrados ${results.length} tipos de datos.`);
     } catch (error) {
       console.error('[CNI][RASTREO] ❌ Error en búsqueda de rastreo:', error);
-      setError('❌ Error de conexión durante el rastreo');
+      setError('Error de conexión durante el rastreo');
     } finally {
       setLoading(false);
       console.log('[CNI][RASTREO] ✅ Proceso de rastreo finalizado');
@@ -1040,16 +1207,16 @@ const BusinessRecordsTab = () => {
       const data = await response.json();
       
       if (data.success) {
-        setSuccess('✅ Empresa registrada correctamente');
+        setSuccess('Empresa registrada correctamente');
         setNewBusiness({ nombre: '', tipo: '', propietario: '', ubicacion: '', estado: 'activa', notas: '', agente_registro: '' });
         loadBusinesses();
         loadStats();
       } else {
-        setError(`❌ Error: ${data.error}`);
+        setError(`Error: ${data.error}`);
       }
     } catch (err) {
       console.error('Error añadiendo empresa:', err);
-      setError('❌ Error de conexión al registrar empresa');
+      setError('Error de conexión al registrar empresa');
     } finally {
       setLoading(false);
     }
@@ -1071,17 +1238,17 @@ const BusinessRecordsTab = () => {
       const data = await response.json();
       
       if (data.success) {
-        setSuccess('✅ Visita registrada correctamente');
+        setSuccess('Visita registrada correctamente');
         setNewVisit({ empresa_id: '', agente: '', fecha_visita: '', notas: '', estado: 'completada' });
         loadVisits();
         loadBusinesses();
         loadStats();
       } else {
-        setError(`❌ Error: ${data.error}`);
+        setError(`Error: ${data.error}`);
       }
     } catch (err) {
       console.error('Error añadiendo visita:', err);
-      setError('❌ Error de conexión al registrar visita');
+      setError('Error de conexión al registrar visita');
     } finally {
       setLoading(false);
     }
@@ -1094,31 +1261,31 @@ const BusinessRecordsTab = () => {
     // Confirmaciones específicas para cada acción
     const confirmations = {
       'delete': {
-        title: '⚠️ CONFIRMACIÓN CRÍTICA',
+        title: 'CONFIRMACIÓN CRÍTICA',
         message: '¿Estás seguro de ELIMINAR PERMANENTEMENTE esta empresa? Esta acción NO se puede deshacer y se perderán todos los datos asociados.',
         confirmText: 'SÍ, ELIMINAR DEFINITIVAMENTE',
         cancelText: 'Cancelar'
       },
       'suspendida': {
-        title: '⚠️ Suspender Empresa',
+        title: 'Suspender Empresa',
         message: '¿Confirmas la SUSPENSIÓN TEMPORAL de esta empresa? La empresa quedará inactiva hasta nueva orden.',
         confirmText: 'SÍ, SUSPENDER',
         cancelText: 'Cancelar'
       },
       'bajo_investigacion': {
-        title: '🔍 Poner Bajo Investigación',
+        title: 'Poner Bajo Investigación',
         message: '¿Confirmas poner esta empresa BAJO INVESTIGACIÓN? Se iniciará un protocolo de supervisión especial.',
         confirmText: 'SÍ, INVESTIGAR',
         cancelText: 'Cancelar'
       },
       'clausurada': {
-        title: '🚫 Clausurar Empresa',
+        title: 'Clausurar Empresa',
         message: '¿Confirmas la CLAUSURA DEFINITIVA de esta empresa? Esta acción es IRREVERSIBLE.',
         confirmText: 'SÍ, CLAUSURAR',
         cancelText: 'Cancelar'
       },
       'activa': {
-        title: '✅ Reactivar Empresa',
+        title: 'Reactivar Empresa',
         message: '¿Confirmas REACTIVAR esta empresa? Se restaurará su estado operativo normal.',
         confirmText: 'SÍ, REACTIVAR',
         cancelText: 'Cancelar'
@@ -1171,11 +1338,11 @@ const BusinessRecordsTab = () => {
       
       if (data.success) {
         const actionMessages = {
-          'delete': '✅ Empresa eliminada correctamente',
-          'suspendida': '⚠️ Empresa suspendida temporalmente',
-          'bajo_investigacion': '🔍 Empresa puesta bajo investigación',
-          'clausurada': '🚫 Empresa clausurada definitivamente',
-          'activa': '✅ Empresa reactivada'
+          'delete': 'Empresa eliminada correctamente',
+          'suspendida': 'Empresa suspendida temporalmente',
+          'bajo_investigacion': 'Empresa puesta bajo investigación',
+          'clausurada': 'Empresa clausurada definitivamente',
+          'activa': 'Empresa reactivada'
         };
         const message = actionMessages[newStatus || action];
         console.log(`[CNI][EMPRESAS] ✅ Acción exitosa: ${message}`);
@@ -1185,11 +1352,11 @@ const BusinessRecordsTab = () => {
         loadStats();
       } else {
         console.log(`[CNI][EMPRESAS] ❌ Error en respuesta: ${data.error}`);
-        setError(`❌ Error: ${data.error}`);
+        setError(`Error: ${data.error}`);
       }
     } catch (err) {
       console.error('[CNI][EMPRESAS] ❌ Error en acción empresarial:', err);
-      setError('❌ Error de conexión');
+      setError('Error de conexión');
     } finally {
       setLoading(false);
       console.log('[CNI][EMPRESAS] ✅ Proceso de acción empresarial finalizado');
@@ -1310,13 +1477,29 @@ const BusinessRecordsTab = () => {
             </div>
             <div className="cni-form-group">
               <label>Agente CNI:</label>
-              <input
-                type="text"
-                value={newBusiness.agente_registro}
-                onChange={(e) => setNewBusiness({...newBusiness, agente_registro: e.target.value})}
-                className="cni-input"
-                placeholder="Nombre del agente CNI"
-              />
+              <div className="cni-autocomplete-container" ref={suggestionRef}>
+                <input
+                  type="text"
+                  value={newBusiness.agente_registro}
+                  onChange={(e) => handleAgentInput(e.target.value, (value) => setNewBusiness({...newBusiness, agente_registro: value}))}
+                  className="cni-input"
+                  placeholder="Nombre del agente CNI"
+                  autoComplete="off"
+                />
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="cni-suggestions-dropdown">
+                    {suggestions.map((agent, index) => (
+                      <div 
+                        key={index}
+                        className="cni-suggestion-item"
+                        onClick={() => selectSuggestion(agent, (value) => setNewBusiness({...newBusiness, agente_registro: value}))}
+                      >
+                        <FaUser /> {agent}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           <div className="cni-form-group">
@@ -1357,13 +1540,30 @@ const BusinessRecordsTab = () => {
             </div>
             <div className="cni-form-group">
               <label>Agente CNI:</label>
-              <input
-                type="text"
-                value={newVisit.agente}
-                onChange={(e) => setNewVisit({...newVisit, agente: e.target.value})}
-                className="cni-input"
-                required
-              />
+              <div className="cni-autocomplete-container" ref={suggestionRef}>
+                <input
+                  type="text"
+                  value={newVisit.agente}
+                  onChange={(e) => handleAgentInput(e.target.value, (value) => setNewVisit({...newVisit, agente: value}))}
+                  className="cni-input"
+                  placeholder="Nombre del agente CNI"
+                  autoComplete="off"
+                  required
+                />
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="cni-suggestions-dropdown">
+                    {suggestions.map((agent, index) => (
+                      <div 
+                        key={index}
+                        className="cni-suggestion-item"
+                        onClick={() => selectSuggestion(agent, (value) => setNewVisit({...newVisit, agente: value}))}
+                      >
+                        <FaUser /> {agent}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
             <div className="cni-form-group">
               <label>Fecha:</label>
@@ -1598,14 +1798,14 @@ const BlogTab = () => {
       
       if (data.success) {
         console.log('[CNI][BLOG] ✅ Artículo creado exitosamente');
-        setSuccess('✅ Artículo creado correctamente');
+        setSuccess('Artículo creado correctamente');
         setNewArticle({ titulo: '', banda: '', categoria: 'investigacion', contenido: '', imagen_url: '', agente: '', nivel_seguridad: 'confidencial' });
         setShowNewArticle(false);
         console.log('[CNI][BLOG] 🔄 Recargando lista de artículos...');
         loadArticles();
       } else {
         console.log('[CNI][BLOG] ❌ Error en creación:', data.error);
-        setError(`❌ Error: ${data.error}`);
+        setError(`Error: ${data.error}`);
       }
     } catch (err) {
       console.error('[CNI][BLOG] ❌ Error creando artículo:', err);
@@ -1637,16 +1837,16 @@ const BlogTab = () => {
       
       if (data.success) {
         console.log('[CNI][BLOG] ✅ Artículo eliminado exitosamente');
-        setSuccess('✅ Artículo eliminado correctamente');
+        setSuccess('Artículo eliminado correctamente');
         console.log('[CNI][BLOG] 🔄 Recargando lista de artículos...');
         loadArticles();
       } else {
         console.log('[CNI][BLOG] ❌ Error en eliminación:', data.error);
-        setError(`❌ Error: ${data.error}`);
+        setError(`Error: ${data.error}`);
       }
     } catch (err) {
       console.error('[CNI][BLOG] ❌ Error eliminando artículo:', err);
-      setError('❌ Error de conexión');
+      setError('Error de conexión');
     } finally {
       setLoading(false);
       console.log('[CNI][BLOG] ✅ Proceso de eliminación finalizado');
@@ -1752,14 +1952,30 @@ const BlogTab = () => {
 
             <div className="cni-form-group">
               <label>Agente Responsable:</label>
-              <input
-                type="text"
-                className="cni-input"
-                value={newArticle.agente}
-                onChange={(e) => setNewArticle(prev => ({ ...prev, agente: e.target.value }))}
-                placeholder="Nombre del agente"
-                required
-              />
+              <div className="cni-autocomplete-container" ref={suggestionRef}>
+                <input
+                  type="text"
+                  className="cni-input"
+                  value={newArticle.agente}
+                  onChange={(e) => handleAgentInput(e.target.value, (value) => setNewArticle(prev => ({ ...prev, agente: value })))}
+                  placeholder="Nombre del agente"
+                  autoComplete="off"
+                  required
+                />
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="cni-suggestions-dropdown">
+                    {suggestions.map((agent, index) => (
+                      <div 
+                        key={index}
+                        className="cni-suggestion-item"
+                        onClick={() => selectSuggestion(agent, (value) => setNewArticle(prev => ({ ...prev, agente: value })))}
+                      >
+                        <FaUser /> {agent}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="cni-form-group">
@@ -1880,14 +2096,14 @@ const PlayersInCityTab = () => {
         console.log(`[CNI][JUGADORES] ✅ Cargados ${data.players.length} jugadores`);
         setPlayers(data.players);
         setLastUpdate(new Date());
-        setSuccess(`✅ ${data.players.length} jugadores detectados en la ciudad`);
+        setSuccess(`${data.players.length} jugadores detectados en la ciudad`);
       } else {
         console.log('[CNI][JUGADORES] ❌ Error en respuesta:', data.error);
-        setError(`❌ Error: ${data.error}`);
+        setError(`Error: ${data.error}`);
       }
     } catch (err) {
       console.error('[CNI][JUGADORES] ❌ Error cargando jugadores:', err);
-      setError('❌ Error de conexión al cargar jugadores');
+      setError('Error de conexión al cargar jugadores');
     } finally {
       setLoading(false);
       console.log('[CNI][JUGADORES] ✅ Carga de jugadores finalizada');
@@ -2074,14 +2290,14 @@ const VehiclesInCityTab = () => {
         console.log(`[CNI][VEHÍCULOS] ✅ Cargados ${data.vehicles.length} vehículos`);
         setVehicles(data.vehicles);
         setLastUpdate(new Date());
-        setSuccess(`✅ ${data.vehicles.length} vehículos detectados en la ciudad`);
+        setSuccess(`${data.vehicles.length} vehículos detectados en la ciudad`);
       } else {
         console.log('[CNI][VEHÍCULOS] ❌ Error en respuesta:', data.error);
-        setError(`❌ Error: ${data.error}`);
+        setError(`Error: ${data.error}`);
       }
     } catch (err) {
       console.error('[CNI][VEHÍCULOS] ❌ Error cargando vehículos:', err);
-      setError('❌ Error de conexión al cargar vehículos');
+      setError('Error de conexión al cargar vehículos');
     } finally {
       setLoading(false);
       console.log('[CNI][VEHÍCULOS] ✅ Carga de vehículos finalizada');
