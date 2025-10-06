@@ -23,10 +23,6 @@ const CNISection = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const [cniAgents, setCniAgents] = useState([]);
-  const [suggestions, setSuggestions] = useState([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const suggestionRef = useRef(null);
 
   // Estados para funcionalidades CNI
   const [searchData, setSearchData] = useState({
@@ -117,50 +113,6 @@ const CNISection = () => {
   }, []);
 
   // Cargar agentes CNI para autocompletado
-  const loadCniAgents = async () => {
-    try {
-      // Simular carga de agentes CNI (en producción vendría de la API)
-      const agents = [
-        'BijjouPro08', 'nanobox_32', 'RA_ESTE', 'lichandro56',
-        'LAFROGCRAZI', 'Elgato21053', 'Mimi (YoSoySergiox)', 'The441884',
-        'amigo_dedoc', 'Secret_Agent', 'nicogamer2220', 'Director_CNI'
-      ];
-      setCniAgents(agents);
-    } catch (err) {
-      console.error('Error cargando agentes CNI:', err);
-    }
-  };
-
-  // Función de autocompletado
-  const handleAgentInput = (value, setter) => {
-    setter(value);
-    if (value.length > 1) {
-      const filtered = cniAgents.filter(agent => 
-        agent.toLowerCase().includes(value.toLowerCase())
-      );
-      setSuggestions(filtered);
-      setShowSuggestions(true);
-    } else {
-      setShowSuggestions(false);
-    }
-  };
-
-  // Seleccionar sugerencia
-  const selectSuggestion = (agent, setter) => {
-    setter(agent);
-    setShowSuggestions(false);
-  };
-
-  // Cerrar sugerencias al hacer click fuera
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (suggestionRef.current && !suggestionRef.current.contains(event.target)) {
-        setShowSuggestions(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   // Cargar estadísticas de la base de datos
   const loadDatabaseStats = async () => {
@@ -231,7 +183,6 @@ const CNISection = () => {
   useEffect(() => {
     if (isCNI) {
       loadDatabaseStats();
-      loadCniAgents();
     }
   }, [isCNI]);
 
@@ -1129,6 +1080,12 @@ const BusinessRecordsTab = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   
+  // Estados para autocompletado
+  const [cniAgents, setCniAgents] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestionRef = useRef(null);
+  
   const [newBusiness, setNewBusiness] = useState({
     nombre: '',
     tipo: '',
@@ -1149,6 +1106,56 @@ const BusinessRecordsTab = () => {
 
   const [selectedBusiness, setSelectedBusiness] = useState(null);
   const [showBusinessModal, setShowBusinessModal] = useState(false);
+
+  // Cargar agentes CNI para autocompletado
+  const loadCniAgents = async () => {
+    try {
+      const agents = [
+        'BijjouPro08', 'nanobox_32', 'RA_ESTE', 'lichandro56',
+        'LAFROGCRAZI', 'Elgato21053', 'Mimi (YoSoySergiox)', 'The441884',
+        'amigo_dedoc', 'Secret_Agent', 'nicogamer2220', 'Director_CNI'
+      ];
+      setCniAgents(agents);
+    } catch (err) {
+      console.error('Error cargando agentes CNI:', err);
+    }
+  };
+
+  // Manejar input de agente con autocompletado
+  const handleAgentInput = (value, setter) => {
+    setter(value);
+    if (value.length > 1) {
+      const filtered = cniAgents.filter(agent => 
+        agent.toLowerCase().includes(value.toLowerCase())
+      );
+      setSuggestions(filtered);
+      setShowSuggestions(true);
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+
+  // Seleccionar sugerencia
+  const selectSuggestion = (agent, setter) => {
+    setter(agent);
+    setShowSuggestions(false);
+  };
+
+  // Cerrar sugerencias al hacer click fuera
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (suggestionRef.current && !suggestionRef.current.contains(event.target)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Cargar agentes al montar el componente
+  useEffect(() => {
+    loadCniAgents();
+  }, []);
 
   const loadBusinesses = async () => {
     try {
@@ -1746,6 +1753,13 @@ const BlogTab = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showNewArticle, setShowNewArticle] = useState(false);
+  
+  // Estados para autocompletado
+  const [cniAgents, setCniAgents] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestionRef = useRef(null);
+  
   const [newArticle, setNewArticle] = useState({
     titulo: '',
     banda: '',
@@ -1755,6 +1769,56 @@ const BlogTab = () => {
     agente: '',
     nivel_seguridad: 'confidencial'
   });
+
+  // Cargar agentes CNI para autocompletado
+  const loadCniAgents = async () => {
+    try {
+      const agents = [
+        'BijjouPro08', 'nanobox_32', 'RA_ESTE', 'lichandro56',
+        'LAFROGCRAZI', 'Elgato21053', 'Mimi (YoSoySergiox)', 'The441884',
+        'amigo_dedoc', 'Secret_Agent', 'nicogamer2220', 'Director_CNI'
+      ];
+      setCniAgents(agents);
+    } catch (err) {
+      console.error('Error cargando agentes CNI:', err);
+    }
+  };
+
+  // Manejar input de agente con autocompletado
+  const handleAgentInput = (value, setter) => {
+    setter(value);
+    if (value.length > 1) {
+      const filtered = cniAgents.filter(agent => 
+        agent.toLowerCase().includes(value.toLowerCase())
+      );
+      setSuggestions(filtered);
+      setShowSuggestions(true);
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+
+  // Seleccionar sugerencia
+  const selectSuggestion = (agent, setter) => {
+    setter(agent);
+    setShowSuggestions(false);
+  };
+
+  // Cerrar sugerencias al hacer click fuera
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (suggestionRef.current && !suggestionRef.current.contains(event.target)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Cargar agentes al montar el componente
+  useEffect(() => {
+    loadCniAgents();
+  }, []);
 
   const loadArticles = async () => {
     console.log('[CNI][BLOG] 📚 Cargando artículos del blog...');
