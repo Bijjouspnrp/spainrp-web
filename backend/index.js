@@ -2429,13 +2429,167 @@ async function sendBanNotification(userId, banType, reason, expiresAt, bannedBy)
   }
 }
 
-// Función para trackear IP
-async function trackIP(req, userId = null) {
+// Cache para evitar tracking excesivo de la misma IP
+const ipTrackingCache = new Map();
+const IP_TRACKING_COOLDOWN = 30000; // 30 segundos entre trackings de la misma IP
+const IP_TRACKING_BATCH_SIZE = 3; // Procesar máximo 3 IPs por lote
+const IP_TRACKING_BATCH_DELAY = 5000; // 5 segundos entre lotes
+
+// Cola de procesamiento de IPs
+const ipProcessingQueue = [];
+let isProcessingQueue = false;
+
+// Procesador de cola periódico
+setInterval(() => {
+  if (ipProcessingQueue.length > 0 && !isProcessingQueue) {
+    console.log(`[IP TRACKING] 🔄 Procesador periódico: ${ipProcessingQueue.length} IPs en cola`);
+    processIPQueue().catch(err => {
+      console.error('[IP TRACKING] ❌ Error en procesador periódico:', err);
+    });
+  }
+}, 10000); // Ejecutar cada 10 segundos
+
+// Limpiador de IPs inactivas (cada 1 hora)
+setInterval(async () => {
+  try {
+    const { runQuery } = require('./db/database');
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    
+    const result = await runQuery(
+      'DELETE FROM ip_tracking WHERE lastSeen < ? AND isActive = 0',
+      [oneDayAgo]
+    );
+    
+    if (result.changes > 0) {
+      console.log(`[IP TRACKING] 🧹 Limpieza: ${result.changes} IPs inactivas eliminadas`);
+    }
+  } catch (error) {
+    console.error('[IP TRACKING] ❌ Error en limpieza de IPs:', error);
+  }
+}, 3600000); // Ejecutar cada 1 hora
+
+// Función para procesar la cola de IPs
+async function processIPQueue() {
+  if (isProcessingQueue || ipProcessingQueue.length === 0) {
+    return;
+  }
+  
+  isProcessingQueue = true;
+  console.log(`[IP TRACKING] 🔄 Procesando cola de ${ipProcessingQueue.length} IPs`);
+  
+  while (ipProcessingQueue.length > 0) {
+    const batch = ipProcessingQueue.splice(0, IP_TRACKING_BATCH_SIZE);
+    
+    console.log(`[IP TRACKING] 📦 Procesando lote de ${batch.length} IPs`);
+    
+    // Procesar lote en paralelo
+    const promises = batch.map(ipData => processSingleIP(ipData));
+    await Promise.allSettled(promises);
+    
+    // Esperar antes del siguiente lote
+    if (ipProcessingQueue.length > 0) {
+      console.log(`[IP TRACKING] ⏳ Esperando ${IP_TRACKING_BATCH_DELAY}ms antes del siguiente lote`);
+      await new Promise(resolve => setTimeout(resolve, IP_TRACKING_BATCH_DELAY));
+    }
+  }
+  
+  isProcessingQueue = false;
+  console.log('[IP TRACKING] ✅ Cola de procesamiento completada');
+}
+
+// Función para procesar una IP individual
+async function processSingleIP(ipData) {
   try {
     const { getQuery, runQuery } = require('./db/database');
+    const { ip, userId, userInfo, userAgent, deviceInfo, now } = ipData;
+    
+    // Verificar si la IP ya existe
+    const existing = await getQuery(
+      'SELECT * FROM ip_tracking WHERE ip = ?',
+      [ip]
+    );
+    
+    if (existing) {
+      // Actualizar IP existente
+      await runQuery(
+        `UPDATE ip_tracking SET 
+          lastSeen = ?, 
+          visitCount = visitCount + 1, 
+          userId = COALESCE(?, userId), 
+          username = COALESCE(?, username), 
+          discriminator = COALESCE(?, discriminator), 
+          avatar = COALESCE(?, avatar), 
+          isActive = 1, 
+          userAgent = ?, 
+          browser = ?, 
+          os = ?, 
+          device = ?, 
+          country = ?, 
+          countryCode = ?, 
+          city = ?, 
+          region = ?, 
+          timezone = ?, 
+          latitude = ?, 
+          longitude = ?, 
+          isp = ? 
+        WHERE ip = ?`,
+        [
+          now, userId, userInfo?.username, userInfo?.discriminator, userInfo?.avatar, 
+          userAgent, deviceInfo.browser, deviceInfo.os, deviceInfo.device,
+          deviceInfo.country, deviceInfo.countryCode, deviceInfo.city, 
+          deviceInfo.region, deviceInfo.timezone, deviceInfo.latitude, 
+          deviceInfo.longitude, deviceInfo.isp, ip
+        ]
+      );
+      console.log(`[IP TRACKING] ✅ IP actualizada: ${ip}`);
+    } else {
+      // Crear nueva entrada de IP
+      await runQuery(
+        `INSERT INTO ip_tracking (
+          ip, userId, username, discriminator, avatar, userAgent, 
+          browser, os, device, country, countryCode, city, region, 
+          timezone, latitude, longitude, isp, firstSeen, lastSeen, 
+          visitCount, isActive
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1)`,
+        [
+          ip, userId, userInfo?.username, userInfo?.discriminator, userInfo?.avatar, 
+          userAgent, deviceInfo.browser, deviceInfo.os, deviceInfo.device,
+          deviceInfo.country, deviceInfo.countryCode, deviceInfo.city, 
+          deviceInfo.region, deviceInfo.timezone, deviceInfo.latitude, 
+          deviceInfo.longitude, deviceInfo.isp, now, now
+        ]
+      );
+      console.log(`[IP TRACKING] ✅ Nueva IP registrada: ${ip}`);
+    }
+  } catch (error) {
+    console.error(`[IP TRACKING] ❌ Error procesando IP ${ipData.ip}:`, error.message);
+  }
+}
+
+// Función para trackear IP con throttling y batching
+async function trackIP(req, userId = null) {
+  try {
     const ip = getRealIP(req);
     const userAgent = req.headers['user-agent'] || 'Unknown';
     const now = new Date().toISOString();
+    
+    // Verificar cooldown para evitar tracking excesivo
+    const lastTracked = ipTrackingCache.get(ip);
+    if (lastTracked && (now - lastTracked) < IP_TRACKING_COOLDOWN) {
+      console.log(`[IP TRACKING] ⏳ Cooldown activo para IP ${ip}, saltando tracking`);
+      return;
+    }
+    
+    // Marcar como trackeada
+    ipTrackingCache.set(ip, new Date().getTime());
+    
+    // Limpiar cache antiguo (más de 1 hora)
+    const oneHourAgo = new Date().getTime() - 3600000;
+    for (const [cachedIp, timestamp] of ipTrackingCache.entries()) {
+      if (timestamp < oneHourAgo) {
+        ipTrackingCache.delete(cachedIp);
+      }
+    }
     
     // Extraer información del dispositivo del User-Agent con geolocalización
     const deviceInfo = await parseUserAgent(userAgent, req, ip);
@@ -2470,83 +2624,39 @@ async function trackIP(req, userId = null) {
       }
     }
     
-    console.log('[IP TRACKING] Registrando IP:', { 
+    console.log('[IP TRACKING] 📊 Agregando IP a cola:', { 
       ip, 
       userId, 
-      userInfo,
-      userAgent: userAgent.substring(0, 50) + '...',
+      userInfo: userInfo ? 'Disponible' : 'No disponible',
+      userAgent: userAgent.substring(0, 30) + '...',
       device: {
         browser: deviceInfo.browser,
         os: deviceInfo.os,
         device: deviceInfo.device,
         country: deviceInfo.country,
-        countryCode: deviceInfo.countryCode,
         city: deviceInfo.city,
-        region: deviceInfo.region,
-        timezone: deviceInfo.timezone,
-        latitude: deviceInfo.latitude,
-        longitude: deviceInfo.longitude,
         isp: deviceInfo.isp
       }
     });
     
-    // Verificar si la IP ya existe
-    const existing = await getQuery(
-      'SELECT * FROM ip_tracking WHERE ip = ?',
-      [ip]
-    );
+    // Agregar a la cola de procesamiento
+    ipProcessingQueue.push({
+      ip,
+      userId,
+      userInfo,
+      userAgent,
+      deviceInfo,
+      now
+    });
     
-    if (existing) {
-      // Actualizar IP existente con información completa de geolocalización
-      await runQuery(
-        `UPDATE ip_tracking SET 
-          lastSeen = ?, 
-          visitCount = visitCount + 1, 
-          userId = COALESCE(?, userId), 
-          username = COALESCE(?, username), 
-          discriminator = COALESCE(?, discriminator), 
-          avatar = COALESCE(?, avatar), 
-          isActive = 1, 
-          userAgent = ?, 
-          browser = ?, 
-          os = ?, 
-          device = ?, 
-          country = ?, 
-          countryCode = ?, 
-          city = ?, 
-          region = ?, 
-          timezone = ?, 
-          latitude = ?, 
-          longitude = ?, 
-          isp = ? 
-        WHERE ip = ?`,
-        [
-          now, userId, userInfo?.username, userInfo?.discriminator, userInfo?.avatar, 
-          userAgent, deviceInfo.browser, deviceInfo.os, deviceInfo.device,
-          deviceInfo.country, deviceInfo.countryCode, deviceInfo.city, 
-          deviceInfo.region, deviceInfo.timezone, deviceInfo.latitude, 
-          deviceInfo.longitude, deviceInfo.isp, ip
-        ]
-      );
-      console.log('[IP TRACKING] IP actualizada con geolocalización:', ip);
-    } else {
-      // Crear nueva entrada de IP con información completa de geolocalización
-      await runQuery(
-        `INSERT INTO ip_tracking (
-          ip, userId, username, discriminator, avatar, userAgent, 
-          browser, os, device, country, countryCode, city, region, 
-          timezone, latitude, longitude, isp, firstSeen, lastSeen, 
-          visitCount, isActive
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1)`,
-        [
-          ip, userId, userInfo?.username, userInfo?.discriminator, userInfo?.avatar, 
-          userAgent, deviceInfo.browser, deviceInfo.os, deviceInfo.device,
-          deviceInfo.country, deviceInfo.countryCode, deviceInfo.city, 
-          deviceInfo.region, deviceInfo.timezone, deviceInfo.latitude, 
-          deviceInfo.longitude, deviceInfo.isp, now, now
-        ]
-      );
-      console.log('[IP TRACKING] Nueva IP registrada con geolocalización:', ip);
+    // Iniciar procesamiento de la cola si no está en proceso
+    if (!isProcessingQueue) {
+      // Usar setTimeout para no bloquear la respuesta
+      setTimeout(() => {
+        processIPQueue().catch(err => {
+          console.error('[IP TRACKING] ❌ Error procesando cola:', err);
+        });
+      }, 100);
     }
   } catch (error) {
     console.error('[IP TRACKING] Error tracking IP:', error);
