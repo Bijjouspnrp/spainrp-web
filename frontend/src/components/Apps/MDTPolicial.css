@@ -36,7 +36,22 @@
 .mdt-header {
   background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
   border-bottom: 3px solid #fbbf24;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(251, 191, 36, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.mdt-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.6), transparent);
 }
 
 .mdt-header-content {
@@ -109,10 +124,27 @@
   font-weight: 600;
   cursor: pointer;
   border-bottom: 3px solid transparent;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.mdt-tab::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(74, 144, 226, 0.1), transparent);
+  transition: left 0.6s ease;
+}
+
+.mdt-tab:hover::before {
+  left: 100%;
 }
 
 .mdt-tab:hover {
@@ -134,11 +166,32 @@
 
 .mdt-section {
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(74, 144, 226, 0.2);
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(74, 144, 226, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+  animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+  transform: translateY(20px);
+  animation-fill-mode: forwards;
+}
+
+.mdt-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(74, 144, 226, 0.5), transparent);
+  border-radius: 16px 16px 0 0;
 }
 
 .mdt-section h3 {
@@ -177,16 +230,36 @@
 
 .citizen-nav-btn, .police-nav-btn {
   background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(74, 144, 226, 0.3);
   color: #ffffff;
   padding: 0.8rem 1.2rem;
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   gap: 0.5rem;
   font-weight: 600;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.citizen-nav-btn::before, .police-nav-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(74, 144, 226, 0.2), transparent);
+  transition: left 0.6s ease;
+}
+
+.citizen-nav-btn:hover::before, .police-nav-btn:hover::before {
+  left: 100%;
 }
 
 .citizen-nav-btn:hover, .police-nav-btn:hover {
@@ -293,16 +366,23 @@
 /* DNI Card Real - Frente */
 .dni-card-real {
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 0;
   border: 2px solid #dc2626;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(220, 38, 38, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   max-width: 600px;
   width: 100%;
   margin: 0 auto;
   position: relative;
   overflow: hidden;
   aspect-ratio: 1.6 / 1;
+  animation: slideInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+  transform: translateY(30px);
+  animation-fill-mode: forwards;
 }
 
 .dni-card-real::before {
@@ -917,10 +997,38 @@
 
 .multa-card {
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 1.5rem;
   border-left: 4px solid #dc2626;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(220, 38, 38, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  position: relative;
+  overflow: hidden;
+  animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+  transform: translateY(20px);
+  animation-fill-mode: forwards;
+}
+
+.multa-card:nth-child(1) { animation-delay: 0.1s; }
+.multa-card:nth-child(2) { animation-delay: 0.2s; }
+.multa-card:nth-child(3) { animation-delay: 0.3s; }
+.multa-card:nth-child(4) { animation-delay: 0.4s; }
+.multa-card:nth-child(5) { animation-delay: 0.5s; }
+.multa-card:nth-child(6) { animation-delay: 0.6s; }
+
+.multa-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(220, 38, 38, 0.4), transparent);
 }
 
 .multa-card.pagada {
