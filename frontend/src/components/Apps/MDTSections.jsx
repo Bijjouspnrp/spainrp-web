@@ -1558,6 +1558,7 @@ export const ArrestarSection = ({ onRefresh }) => {
                   >
                     <div className="suggestion-avatar">
                       <img src={user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : '/assets/spainrplogo.png'} alt="Avatar" />
+                      <FaDiscord className="discord-icon" />
                     </div>
                     <div className="suggestion-info">
                       <div className="suggestion-name">{user.username}</div>
