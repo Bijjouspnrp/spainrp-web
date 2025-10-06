@@ -748,6 +748,21 @@ const AdvancedSearchTab = () => {
     <div className="cni-section">
       <h3><FaSearch /> Búsqueda Avanzada de Inteligencia</h3>
       
+      {/* Aviso de Desarrollo */}
+      <div className="cni-development-notice">
+        <div className="cni-notice-icon">
+          <FaCog />
+        </div>
+        <div className="cni-notice-content">
+          <h4>🚧 Sección en Desarrollo</h4>
+          <p>Esta funcionalidad está siendo desarrollada activamente y puede presentar inconsistencias o no funcionar correctamente en algunos casos.</p>
+          <p>Pedimos paciencia mientras trabajamos para ofrecerte la mejor experiencia de búsqueda avanzada.</p>
+          <div className="cni-notice-developer">
+            <strong>Desarrollador:</strong> BijjouPro08
+          </div>
+        </div>
+      </div>
+      
       <form onSubmit={handleSearch} className="cni-form">
         <div className="cni-form-group">
           <label>Término de Búsqueda:</label>
@@ -836,6 +851,68 @@ const AdvancedSearchTab = () => {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Feedback cuando no hay resultados */}
+      {!loading && results && (!results.dniPorNombre || results.dniPorNombre.length === 0) && searchForm.query && (
+        <div className="cni-no-results">
+          <div className="cni-no-results-icon">
+            <FaSearch />
+          </div>
+          <div className="cni-no-results-content">
+            <h4>No se encontraron resultados</h4>
+            <p>No se encontraron registros que coincidan con tu búsqueda: <strong>"{searchForm.query}"</strong></p>
+            <div className="cni-no-results-suggestions">
+              <h5>Sugerencias para mejorar tu búsqueda:</h5>
+              <ul>
+                <li>Verifica que el término de búsqueda esté escrito correctamente</li>
+                <li>Intenta con un término de búsqueda más general</li>
+                <li>Usa solo el nombre o apellido en lugar del nombre completo</li>
+                <li>Verifica que el usuario esté registrado en el sistema</li>
+              </ul>
+            </div>
+            <button 
+              className="cni-btn cni-btn-secondary"
+              onClick={() => setSearchForm({...searchForm, query: ''})}
+            >
+              <FaTimes /> Limpiar Búsqueda
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Feedback cuando no se ha realizado búsqueda */}
+      {!loading && !searchForm.query && (
+        <div className="cni-search-prompt">
+          <div className="cni-search-prompt-icon">
+            <FaSearch />
+          </div>
+          <div className="cni-search-prompt-content">
+            <h4>Realiza una búsqueda avanzada</h4>
+            <p>Utiliza el formulario superior para buscar ciudadanos, vehículos o registros en la base de datos del CNI.</p>
+            <div className="cni-search-tips">
+              <h5>Tipos de búsqueda disponibles:</h5>
+              <div className="cni-search-tips-grid">
+                <div className="cni-search-tip">
+                  <FaIdCard />
+                  <span>DNI y Nombres</span>
+                </div>
+                <div className="cni-search-tip">
+                  <FaDiscord />
+                  <span>Discord ID</span>
+                </div>
+                <div className="cni-search-tip">
+                  <FaCar />
+                  <span>Vehículos</span>
+                </div>
+                <div className="cni-search-tip">
+                  <FaBuilding />
+                  <span>Empresas</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
