@@ -21,6 +21,7 @@ const robloxRoutes = require('./routes/roblox');
 const adminRecordsRoutes = require('./routes/adminRecords');
 const notificationRoutes = require('./routes/notifications');
 const logsRoutes = require('./routes/logs');
+const { migrateDatabase } = require('./db/migrate');
 const session = require('express-session');
 const passport = require('passport');
 const multer = require('multer');
@@ -8512,17 +8513,30 @@ app.get('/api/proxy/admin/balance/:id', async (req, res) => {
   }
 });
 
-server.listen(PORT, () => {
-  console.log(`Backend SpainRP escuchando en puerto ${PORT}`);
-  
-  // Iniciar el bot de Discord solo si hay token
-  if (TOKEN) {
-    console.log('🤖 Iniciando bot de Discord...');
-    discordClient.login(TOKEN).catch(err => {
-      console.error('❌ Error iniciando el bot de Discord:', err);
-      console.error('🔧 Verifica que DISCORD_BOT_TOKEN sea válido y que el bot tenga permisos');
+// Ejecutar migración de base de datos antes de iniciar el servidor
+migrateDatabase()
+  .then(() => {
+    console.log('✅ Migración de base de datos completada');
+    
+    server.listen(PORT, () => {
+      console.log(`Backend SpainRP escuchando en puerto ${PORT}`);
+      
+      // Iniciar el bot de Discord solo si hay token
+      if (TOKEN) {
+        console.log('🤖 Iniciando bot de Discord...');
+        discordClient.login(TOKEN).catch(err => {
+          console.error('❌ Error iniciando el bot de Discord:', err);
+          console.error('🔧 Verifica que DISCORD_BOT_TOKEN sea válido y que el bot tenga permisos');
+        });
+      } else {
+        console.warn('⚠️ DISCORD_BOT_TOKEN no configurado. Funcionalidades de Discord deshabilitadas.');
+      }
     });
-  } else {
-    console.warn('⚠️ DISCORD_BOT_TOKEN no configurado. Funcionalidades de Discord deshabilitadas.');
-  }
-});
+  })
+  .catch((err) => {
+    console.error('❌ Error en migración de base de datos:', err);
+    console.error('🔄 Reiniciando en 5 segundos...');
+    setTimeout(() => {
+      process.exit(1);
+    }, 5000);
+  });
