@@ -2,7 +2,7 @@ import { apiUrl } from './api';
 
 class DiscordService {
   constructor() {
-    this.webhookUrl = apiUrl('/api/discord/webhook');
+    this.webhookUrl = apiUrl('/api/logs/discord/webhook');
     this.logChannelId = '1384341721638240367';
   }
 
