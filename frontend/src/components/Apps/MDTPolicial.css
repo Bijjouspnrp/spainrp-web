@@ -2,16 +2,10 @@
 
 .mdt-container {
   min-height: 100vh;
-  background: 
-    linear-gradient(135deg, rgba(26, 26, 26, 0.9) 0%, rgba(45, 45, 45, 0.95) 100%),
-    radial-gradient(circle at 20% 80%, rgba(74, 144, 226, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(220, 38, 38, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.03) 0%, transparent 70%);
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
   color: #ffffff;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   padding-top: 80px; /* Compensar altura de la navbar */
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
 }
 
 .mdt-loading, .mdt-error {
@@ -40,30 +34,9 @@
 }
 
 .mdt-header {
-  background: 
-    linear-gradient(135deg, rgba(30, 58, 138, 0.9) 0%, rgba(30, 64, 175, 0.95) 100%),
-    radial-gradient(circle at 20% 20%, rgba(251, 191, 36, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
   border-bottom: 3px solid #fbbf24;
-  box-shadow: 
-    0 4px 20px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(251, 191, 36, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
-  position: relative;
-  overflow: hidden;
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-}
-
-.mdt-header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.6), transparent);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .mdt-header-content {
@@ -136,27 +109,10 @@
   font-weight: 600;
   cursor: pointer;
   border-bottom: 3px solid transparent;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.mdt-tab::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(74, 144, 226, 0.1), transparent);
-  transition: left 0.6s ease;
-}
-
-.mdt-tab:hover::before {
-  left: 100%;
 }
 
 .mdt-tab:hover {
@@ -177,38 +133,12 @@
 }
 
 .mdt-section {
-  background: 
-    linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%),
-    radial-gradient(circle at 30% 20%, rgba(74, 144, 226, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
-  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
-  border: 1px solid rgba(74, 144, 226, 0.3);
-  box-shadow: 
-    0 4px 20px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(74, 144, 226, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  position: relative;
-  overflow: hidden;
-  animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 0;
-  transform: translateY(20px);
-  animation-fill-mode: forwards;
-}
-
-.mdt-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(74, 144, 226, 0.5), transparent);
-  border-radius: 16px 16px 0 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 .mdt-section h3 {
@@ -246,43 +176,17 @@
 }
 
 .citizen-nav-btn, .police-nav-btn {
-  background: 
-    linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.06) 100%),
-    radial-gradient(circle at 50% 0%, rgba(74, 144, 226, 0.1) 0%, transparent 60%);
-  border: 1px solid rgba(74, 144, 226, 0.4);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   color: #ffffff;
   padding: 0.8rem 1.2rem;
-  border-radius: 14px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   font-weight: 600;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(74, 144, 226, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-}
-
-.citizen-nav-btn::before, .police-nav-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(74, 144, 226, 0.2), transparent);
-  transition: left 0.6s ease;
-}
-
-.citizen-nav-btn:hover::before, .police-nav-btn:hover::before {
-  left: 100%;
 }
 
 .citizen-nav-btn:hover, .police-nav-btn:hover {
@@ -388,30 +292,17 @@
 
 /* DNI Card Real - Frente */
 .dni-card-real {
-  background: 
-    linear-gradient(135deg, rgba(248, 249, 250, 0.95) 0%, rgba(233, 236, 239, 0.9) 100%),
-    radial-gradient(circle at 20% 20%, rgba(220, 38, 38, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.3) 0%, transparent 50%);
-  border-radius: 20px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
   padding: 0;
   border: 2px solid #dc2626;
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(220, 38, 38, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   max-width: 600px;
   width: 100%;
   margin: 0 auto;
   position: relative;
   overflow: hidden;
   aspect-ratio: 1.6 / 1;
-  animation: slideInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 0;
-  transform: translateY(30px);
-  animation-fill-mode: forwards;
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
 }
 
 .dni-card-real::before {
@@ -1025,44 +916,11 @@
 }
 
 .multa-card {
-  background: 
-    linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%),
-    radial-gradient(circle at 20% 20%, rgba(220, 38, 38, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
   padding: 1.5rem;
   border-left: 4px solid #dc2626;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(220, 38, 38, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  position: relative;
-  overflow: hidden;
-  animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 0;
-  transform: translateY(20px);
-  animation-fill-mode: forwards;
-}
-
-.multa-card:nth-child(1) { animation-delay: 0.1s; }
-.multa-card:nth-child(2) { animation-delay: 0.2s; }
-.multa-card:nth-child(3) { animation-delay: 0.3s; }
-.multa-card:nth-child(4) { animation-delay: 0.4s; }
-.multa-card:nth-child(5) { animation-delay: 0.5s; }
-.multa-card:nth-child(6) { animation-delay: 0.6s; }
-
-.multa-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(220, 38, 38, 0.4), transparent);
+  transition: all 0.3s ease;
 }
 
 .multa-card.pagada {
@@ -1926,113 +1784,7 @@
   text-overflow: ellipsis;
 }
 
-/* Responsive - Tablets e iPads */
-@media (max-width: 1024px) and (min-width: 769px) {
-  .mdt-container {
-    padding-top: 70px;
-  }
-
-  .mdt-header-content {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.5rem 2rem;
-  }
-
-  .mdt-header h1 {
-    font-size: 1.8rem;
-  }
-
-  .mdt-tabs {
-    padding: 0 1.5rem;
-    overflow-x: auto;
-  }
-
-  .mdt-tab {
-    padding: 0.8rem 1.2rem;
-    font-size: 0.9rem;
-    white-space: nowrap;
-  }
-
-  .mdt-content {
-    padding: 1.5rem;
-  }
-
-  .mdt-section {
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .search-inputs {
-    flex-direction: row;
-    align-items: center;
-    gap: 1rem;
-  }
-
-  .dni-info, .multa-info {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-  }
-
-  .inventario-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-  }
-
-  .citizen-nav, .police-nav {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  .citizen-nav-btn, .police-nav-btn {
-    flex: 1;
-    min-width: 120px;
-    justify-content: center;
-  }
-
-  .summary-stats {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-  }
-
-  .ranking-list {
-    grid-template-columns: 1fr;
-  }
-
-  .ranking-item {
-    padding: 1rem;
-  }
-
-  .dni-card-real {
-    max-width: 500px;
-    aspect-ratio: 1.5 / 1;
-  }
-
-  .dni-content {
-    padding: 0.8rem;
-    gap: 1rem;
-  }
-
-  .dni-photo-container {
-    width: 70px;
-    height: 90px;
-  }
-
-  .dni-name-text {
-    font-size: 1rem;
-  }
-
-  .dni-detail-row {
-    font-size: 0.75rem;
-  }
-
-  .dni-date-row {
-    font-size: 0.7rem;
-  }
-}
-
-/* Responsive - Móviles */
+/* Responsive */
 @media (max-width: 768px) {
   .mdt-header-content {
     flex-direction: column;

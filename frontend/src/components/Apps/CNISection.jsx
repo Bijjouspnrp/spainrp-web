@@ -95,14 +95,18 @@ const CNISection = () => {
           }
         }
 
-        // Simular tiempo de carga para mostrar la pantalla de carga
-        const minTime = 4000; // 4 segundos mínimo
-        const maxTime = 5000; // 5 segundos máximo
-        const randomTime = Math.random() * (maxTime - minTime) + minTime;
+        // Calcular duración de carga basada en la velocidad del dispositivo
+        const deviceSpeed = navigator.hardwareConcurrency || 4; // Núcleos de CPU como indicador
+        const baseDelay = 4000; // 4 segundos base
+        const speedMultiplier = Math.max(0.5, Math.min(2, 8 / deviceSpeed)); // Entre 0.5x y 2x
+        const loadingDelay = Math.round(baseDelay * speedMultiplier);
         
+        console.log(`[CNI] Dispositivo detectado: ${deviceSpeed} núcleos, duración de carga: ${loadingDelay}ms`);
+        
+        // Esperar un poco para que los datos se carguen completamente
         setTimeout(() => {
           setLoading(false);
-        }, randomTime);
+        }, loadingDelay);
       } catch (err) {
         setError('Error verificando permisos CNI');
         setLoading(false);
@@ -748,21 +752,6 @@ const AdvancedSearchTab = () => {
     <div className="cni-section">
       <h3><FaSearch /> Búsqueda Avanzada de Inteligencia</h3>
       
-      {/* Aviso de Desarrollo */}
-      <div className="cni-development-notice">
-        <div className="cni-notice-icon">
-          <FaCog />
-        </div>
-        <div className="cni-notice-content">
-          <h4>🚧 Sección en Desarrollo</h4>
-          <p>Esta funcionalidad está siendo desarrollada activamente y puede presentar errores o no funcionar correctamente en algunos casos.</p>
-          <p>Pedimos paciencia mientras trabajamos para ofrecerte la mejor experiencia de búsqueda avanzada.</p>
-          <div className="cni-notice-developer">
-            <strong>Desarrollador:</strong> BijjouPro08
-          </div>
-        </div>
-      </div>
-      
       <form onSubmit={handleSearch} className="cni-form">
         <div className="cni-form-group">
           <label>Término de Búsqueda:</label>
@@ -851,68 +840,6 @@ const AdvancedSearchTab = () => {
               </div>
             </div>
           ))}
-        </div>
-      )}
-
-      {/* Feedback cuando no hay resultados */}
-      {!loading && results && (!results.dniPorNombre || results.dniPorNombre.length === 0) && searchForm.query && (
-        <div className="cni-no-results">
-          <div className="cni-no-results-icon">
-            <FaSearch />
-          </div>
-          <div className="cni-no-results-content">
-            <h4>No se encontraron resultados</h4>
-            <p>No se encontraron registros que coincidan con tu búsqueda: <strong>"{searchForm.query}"</strong></p>
-            <div className="cni-no-results-suggestions">
-              <h5>Sugerencias para mejorar tu búsqueda:</h5>
-              <ul>
-                <li>Verifica que el término de búsqueda esté escrito correctamente</li>
-                <li>Intenta con un término de búsqueda más general</li>
-                <li>Se recomienda el uso de la ID de Discord en lugar del nombre o apellido</li>
-                <li>Verifica que el usuario esté registrado en el sistema</li>
-              </ul>
-            </div>
-            <button 
-              className="cni-btn cni-btn-secondary"
-              onClick={() => setSearchForm({...searchForm, query: ''})}
-            >
-              <FaTimes /> Limpiar Búsqueda
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Feedback cuando no se ha realizado búsqueda */}
-      {!loading && !searchForm.query && (
-        <div className="cni-search-prompt">
-          <div className="cni-search-prompt-icon">
-            <FaSearch />
-          </div>
-          <div className="cni-search-prompt-content">
-            <h4>Realiza una búsqueda avanzada</h4>
-            <p>Utiliza el formulario superior para buscar ciudadanos, vehículos o registros en la base de datos del CNI.</p>
-            <div className="cni-search-tips">
-              <h5>Tipos de búsqueda disponibles:</h5>
-              <div className="cni-search-tips-grid">
-                <div className="cni-search-tip">
-                  <FaIdCard />
-                  <span>DNI y Nombres</span>
-                </div>
-                <div className="cni-search-tip">
-                  <FaDiscord />
-                  <span>Discord ID</span>
-                </div>
-                <div className="cni-search-tip">
-                  <FaCar />
-                  <span>Vehículos</span>
-                </div>
-                <div className="cni-search-tip">
-                  <FaBuilding />
-                  <span>Empresas</span>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       )}
     </div>
@@ -1202,12 +1129,6 @@ const BusinessRecordsTab = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   
-  // Estados para autocompletado
-  const [cniAgents, setCniAgents] = useState([]);
-  const [suggestions, setSuggestions] = useState([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const suggestionRef = useRef(null);
-  
   const [newBusiness, setNewBusiness] = useState({
     nombre: '',
     tipo: '',
@@ -1228,57 +1149,6 @@ const BusinessRecordsTab = () => {
 
   const [selectedBusiness, setSelectedBusiness] = useState(null);
   const [showBusinessModal, setShowBusinessModal] = useState(false);
-
-  // Cargar agentes CNI para autocompletado
-  const loadCniAgents = async () => {
-    try {
-      // Simular carga de agentes CNI (en producción vendría de la API)
-      const agents = [
-        'BijjouPro08', 'nanobox_32', 'RA_ESTE', 'lichandro56',
-        'LAFROGCRAZI', 'Elgato21053', 'Mimi (YoSoySergiox)', 'The441884',
-        'amigo_dedoc', 'Secret_Agent', 'nicogamer2220', 'Director_CNI'
-      ];
-      setCniAgents(agents);
-    } catch (err) {
-      console.error('Error cargando agentes CNI:', err);
-    }
-  };
-
-  // Manejar input de agente con autocompletado
-  const handleAgentInput = (value, setter) => {
-    setter(value);
-    if (value.length > 1) {
-      const filtered = cniAgents.filter(agent => 
-        agent.toLowerCase().includes(value.toLowerCase())
-      );
-      setSuggestions(filtered);
-      setShowSuggestions(true);
-    } else {
-      setShowSuggestions(false);
-    }
-  };
-
-  // Seleccionar sugerencia
-  const selectSuggestion = (agent, setter) => {
-    setter(agent);
-    setShowSuggestions(false);
-  };
-
-  // Cerrar sugerencias al hacer click fuera
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (suggestionRef.current && !suggestionRef.current.contains(event.target)) {
-        setShowSuggestions(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // Cargar agentes al montar el componente
-  useEffect(() => {
-    loadCniAgents();
-  }, []);
 
   const loadBusinesses = async () => {
     try {
@@ -1876,13 +1746,6 @@ const BlogTab = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showNewArticle, setShowNewArticle] = useState(false);
-  
-  // Estados para autocompletado
-  const [cniAgents, setCniAgents] = useState([]);
-  const [suggestions, setSuggestions] = useState([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const suggestionRef = useRef(null);
-  
   const [newArticle, setNewArticle] = useState({
     titulo: '',
     banda: '',
@@ -1892,57 +1755,6 @@ const BlogTab = () => {
     agente: '',
     nivel_seguridad: 'confidencial'
   });
-
-  // Cargar agentes CNI para autocompletado
-  const loadCniAgents = async () => {
-    try {
-      // Simular carga de agentes CNI (en producción vendría de la API)
-      const agents = [
-        'BijjouPro08', 'nanobox_32', 'RA_ESTE', 'lichandro56',
-        'LAFROGCRAZI', 'Elgato21053', 'Mimi (YoSoySergiox)', 'The441884',
-        'amigo_dedoc', 'Secret_Agent', 'nicogamer2220', 'Director_CNI'
-      ];
-      setCniAgents(agents);
-    } catch (err) {
-      console.error('Error cargando agentes CNI:', err);
-    }
-  };
-
-  // Manejar input de agente con autocompletado
-  const handleAgentInput = (value, setter) => {
-    setter(value);
-    if (value.length > 1) {
-      const filtered = cniAgents.filter(agent => 
-        agent.toLowerCase().includes(value.toLowerCase())
-      );
-      setSuggestions(filtered);
-      setShowSuggestions(true);
-    } else {
-      setShowSuggestions(false);
-    }
-  };
-
-  // Seleccionar sugerencia
-  const selectSuggestion = (agent, setter) => {
-    setter(agent);
-    setShowSuggestions(false);
-  };
-
-  // Cerrar sugerencias al hacer click fuera
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (suggestionRef.current && !suggestionRef.current.contains(event.target)) {
-        setShowSuggestions(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // Cargar agentes al montar el componente
-  useEffect(() => {
-    loadCniAgents();
-  }, []);
 
   const loadArticles = async () => {
     console.log('[CNI][BLOG] 📚 Cargando artículos del blog...');
