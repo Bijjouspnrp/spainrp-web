@@ -755,7 +755,7 @@ const AdvancedSearchTab = () => {
         </div>
         <div className="cni-notice-content">
           <h4>🚧 Sección en Desarrollo</h4>
-          <p>Esta funcionalidad está siendo desarrollada activamente y puede presentar inconsistencias o no funcionar correctamente en algunos casos.</p>
+          <p>Esta funcionalidad está siendo desarrollada activamente y puede presentar errores o no funcionar correctamente en algunos casos.</p>
           <p>Pedimos paciencia mientras trabajamos para ofrecerte la mejor experiencia de búsqueda avanzada.</p>
           <div className="cni-notice-developer">
             <strong>Desarrollador:</strong> BijjouPro08
@@ -868,7 +868,7 @@ const AdvancedSearchTab = () => {
               <ul>
                 <li>Verifica que el término de búsqueda esté escrito correctamente</li>
                 <li>Intenta con un término de búsqueda más general</li>
-                <li>Usa solo el nombre o apellido en lugar del nombre completo</li>
+                <li>Se recomienda el uso de la ID de Discord en lugar del nombre o apellido</li>
                 <li>Verifica que el usuario esté registrado en el sistema</li>
               </ul>
             </div>
