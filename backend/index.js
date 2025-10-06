@@ -5144,6 +5144,134 @@ app.get('/api/cni/dashboard', async (req, res) => {
   }
 });
 
+// ===== ENDPOINTS PARA RASTREO CNI - JUGADORES Y VEHÍCULOS =====
+
+// GET /api/cni/tracking/players - Obtener jugadores actualmente en el servidor
+app.get('/api/cni/tracking/players', async (req, res) => {
+  console.log('[CNI][RASTREO] 👥 GET /api/cni/tracking/players - Obteniendo jugadores en servidor');
+  const startTime = Date.now();
+  const requestId = Math.random().toString(36).substr(2, 9);
+  
+  try {
+    const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+    
+    const API_URL = 'https://api.policeroleplay.community/v1/server/players';
+    const SERVER_KEY = 'vgNwEFZzjbtMhsxvLPlp-TmDsImkTdeynQPbxlHANzllQUkSHvbSStOsRPrJN';
+    
+    console.log(`[CNI][RASTREO] 🔍 [${requestId}] Consultando jugadores en servidor...`);
+    console.log(`[CNI][RASTREO] 📡 URL: ${API_URL}`);
+    
+    const response = await fetch(API_URL, {
+      method: 'GET',
+      headers: {
+        'server-key': SERVER_KEY,
+        'Accept': '*/*',
+        'User-Agent': 'SpainRP-CNI/1.0'
+      }
+    });
+    
+    const responseTime = Date.now() - startTime;
+    console.log(`[CNI][RASTREO] ⏱️ [${requestId}] Respuesta recibida en ${responseTime}ms - Status: ${response.status}`);
+    
+    if (!response.ok) {
+      console.error(`[CNI][RASTREO] ❌ [${requestId}] Error en API: ${response.status} ${response.statusText}`);
+      return res.status(response.status).json({
+        success: false,
+        error: `Error obteniendo jugadores: ${response.status} ${response.statusText}`,
+        requestId: requestId,
+        responseTime: responseTime
+      });
+    }
+    
+    const players = await response.json();
+    console.log(`[CNI][RASTREO] ✅ [${requestId}] Jugadores obtenidos: ${players.length}`);
+    console.log(`[CNI][RASTREO] 📊 [${requestId}] Detalles:`, players.map(p => `${p.Player} (${p.Team})`));
+    
+    res.json({
+      success: true,
+      players: players,
+      count: players.length,
+      requestId: requestId,
+      responseTime: responseTime,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (err) {
+    const responseTime = Date.now() - startTime;
+    console.error(`[CNI][RASTREO] ❌ [${requestId}] Error obteniendo jugadores:`, err);
+    res.status(500).json({
+      success: false,
+      error: 'Error de conexión obteniendo jugadores',
+      details: err.message,
+      requestId: requestId,
+      responseTime: responseTime
+    });
+  }
+});
+
+// GET /api/cni/tracking/vehicles - Obtener vehículos actualmente en el servidor
+app.get('/api/cni/tracking/vehicles', async (req, res) => {
+  console.log('[CNI][RASTREO] 🚗 GET /api/cni/tracking/vehicles - Obteniendo vehículos en servidor');
+  const startTime = Date.now();
+  const requestId = Math.random().toString(36).substr(2, 9);
+  
+  try {
+    const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+    
+    const API_URL = 'https://api.policeroleplay.community/v1/server/vehicles';
+    const SERVER_KEY = 'vgNwEFZzjbtMhsxvLPlp-TmDsImkTdeynQPbxlHANzllQUkSHvbSStOsRPrJN';
+    
+    console.log(`[CNI][RASTREO] 🔍 [${requestId}] Consultando vehículos en servidor...`);
+    console.log(`[CNI][RASTREO] 📡 URL: ${API_URL}`);
+    
+    const response = await fetch(API_URL, {
+      method: 'GET',
+      headers: {
+        'server-key': SERVER_KEY,
+        'Accept': '*/*',
+        'User-Agent': 'SpainRP-CNI/1.0'
+      }
+    });
+    
+    const responseTime = Date.now() - startTime;
+    console.log(`[CNI][RASTREO] ⏱️ [${requestId}] Respuesta recibida en ${responseTime}ms - Status: ${response.status}`);
+    
+    if (!response.ok) {
+      console.error(`[CNI][RASTREO] ❌ [${requestId}] Error en API: ${response.status} ${response.statusText}`);
+      return res.status(response.status).json({
+        success: false,
+        error: `Error obteniendo vehículos: ${response.status} ${response.statusText}`,
+        requestId: requestId,
+        responseTime: responseTime
+      });
+    }
+    
+    const vehicles = await response.json();
+    console.log(`[CNI][RASTREO] ✅ [${requestId}] Vehículos obtenidos: ${vehicles.length}`);
+    console.log(`[CNI][RASTREO] 📊 [${requestId}] Detalles:`, vehicles.map(v => `${v.Name} (${v.Owner})`));
+    
+    res.json({
+      success: true,
+      vehicles: vehicles,
+      count: vehicles.length,
+      requestId: requestId,
+      responseTime: responseTime,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (err) {
+    const responseTime = Date.now() - startTime;
+    console.error(`[CNI][RASTREO] ❌ [${requestId}] Error obteniendo vehículos:`, err);
+    res.status(500).json({
+      success: false,
+      error: 'Error de conexión obteniendo vehículos',
+      details: err.message,
+      requestId: requestId,
+      responseTime: responseTime
+    });
+  }
+});
+
 // Endpoint para obtener estado del servidor ERLC
 app.get('/api/erlc/server-status', async (req, res) => {
   console.log('[ERLC API] 🚀 Endpoint /api/erlc/server-status llamado');

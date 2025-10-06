@@ -638,79 +638,115 @@ body:not(.dark) .erlc-error {
   }
 }
 
-/* Modal de Bienvenida ERLC */
+/* Modal de Bienvenida ERLC - Diseño Moderno */
 .erlc-welcome-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.85);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10000;
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(8px);
+  animation: erlcOverlayFadeIn 0.4s ease-out;
 }
 
 .erlc-welcome-modal {
-  background: linear-gradient(135deg, #1a1a2e, #16213e);
-  border: 2px solid #7289da;
-  border-radius: 16px;
-  max-width: 500px;
+  background: linear-gradient(145deg, #0f0f23, #1a1a2e, #16213e);
+  border: 1px solid rgba(114, 137, 218, 0.3);
+  border-radius: 24px;
+  max-width: 520px;
   width: 90%;
   max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-  animation: erlcModalSlideIn 0.3s ease-out;
+  overflow: hidden;
+  box-shadow: 
+    0 25px 50px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(114, 137, 218, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  animation: erlcModalSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+
+.erlc-welcome-modal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
+  background-size: 200% 100%;
+  animation: erlcGradientShift 3s ease-in-out infinite;
 }
 
 .erlc-welcome-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-  padding: 24px 24px 16px 24px;
-  border-bottom: 1px solid rgba(114, 137, 218, 0.2);
+  gap: 20px;
+  padding: 32px 32px 24px 32px;
   text-align: center;
-}
-
-.erlc-welcome-icon-container {
-  display: flex;
-  align-items: center;
-  gap: 12px;
   position: relative;
 }
 
-.erlc-welcome-icon {
-  font-size: 28px;
-  transition: all 0.3s ease;
+.erlc-welcome-logo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #7289da, #5865f2);
+  border-radius: 50%;
+  box-shadow: 
+    0 8px 32px rgba(114, 137, 218, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  animation: erlcLogoFloat 3s ease-in-out infinite;
 }
 
-.erlc-welcome-icon.rocket {
-  color: #ff6b6b;
-  animation: rocketFloat 2s ease-in-out infinite;
+.erlc-welcome-main-icon {
+  font-size: 32px;
+  color: white;
+  z-index: 2;
+  position: relative;
 }
 
-.erlc-welcome-icon.star {
-  color: #ffd700;
-  animation: starTwinkle 1.5s ease-in-out infinite;
-}
-
-.erlc-welcome-icon.gamepad {
-  color: #4ecdc4;
-  animation: gamepadBounce 2.5s ease-in-out infinite;
+.erlc-welcome-pulse {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  border: 2px solid rgba(114, 137, 218, 0.3);
+  border-radius: 50%;
+  animation: erlcPulse 2s ease-in-out infinite;
 }
 
 .erlc-welcome-header h3 {
   margin: 0;
   color: #fff;
-  font-size: 1.4rem;
-  font-weight: 700;
+  font-size: 1.8rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #fff, #e0e0e0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.erlc-welcome-subtitle {
+  margin: 0;
+  color: #a0a0a0;
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
 }
 
 .erlc-welcome-content {
-  padding: 20px 24px;
+  padding: 0 32px 24px 32px;
   color: #e0e0e0;
   line-height: 1.6;
 }
@@ -718,52 +754,88 @@ body:not(.dark) .erlc-error {
 .erlc-welcome-feature {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 16px;
-  padding: 12px;
-  background: rgba(114, 137, 218, 0.05);
-  border-radius: 8px;
-  border-left: 3px solid #7289da;
-  transition: all 0.3s ease;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(114, 137, 218, 0.08), rgba(86, 101, 242, 0.05));
+  border-radius: 16px;
+  border: 1px solid rgba(114, 137, 218, 0.15);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.erlc-welcome-feature::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #ff6b6b, #4ecdc4);
+  border-radius: 0 4px 4px 0;
 }
 
 .erlc-welcome-feature:hover {
-  background: rgba(114, 137, 218, 0.1);
-  transform: translateX(4px);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(114, 137, 218, 0.15);
+  border-color: rgba(114, 137, 218, 0.3);
 }
 
-.feature-icon {
+.erlc-feature-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #7289da, #5865f2);
+  border-radius: 12px;
+  color: white;
   font-size: 20px;
-  color: #7289da;
-  margin-top: 2px;
   flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(114, 137, 218, 0.3);
+  transition: all 0.3s ease;
 }
 
-.erlc-welcome-feature p {
+.erlc-welcome-feature:hover .erlc-feature-icon {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(114, 137, 218, 0.4);
+}
+
+.erlc-feature-text h4 {
+  margin: 0 0 8px 0;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.erlc-feature-text p {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.95rem;
   line-height: 1.5;
+  color: #b0b0b0;
 }
 
-.erlc-welcome-content strong {
-  color: #7289da;
-  font-weight: 600;
+.erlc-welcome-cta {
+  margin-top: 24px;
+  text-align: center;
 }
 
 .erlc-community-link {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  background: linear-gradient(135deg, #7289da, #5865f2);
+  gap: 12px;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
   color: white;
   text-decoration: none;
-  padding: 14px 24px;
-  border-radius: 12px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  margin-top: 16px;
+  padding: 16px 28px;
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  box-shadow: 0 8px 24px rgba(255, 107, 107, 0.3);
 }
 
 .erlc-community-link::before {
@@ -773,8 +845,8 @@ body:not(.dark) .erlc-error {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s ease;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.6s ease;
 }
 
 .erlc-community-link:hover::before {
@@ -783,55 +855,116 @@ body:not(.dark) .erlc-error {
 
 .erlc-community-link:hover {
   transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 12px 25px rgba(114, 137, 218, 0.5);
+  box-shadow: 0 16px 32px rgba(255, 107, 107, 0.4);
   color: white;
   text-decoration: none;
 }
 
-.erlc-community-link svg:first-child {
-  animation: globeRotate 3s linear infinite;
+.erlc-link-arrow {
+  font-size: 1.2rem;
+  transition: transform 0.3s ease;
 }
 
-.erlc-community-link svg:last-child {
-  animation: crownBounce 2s ease-in-out infinite;
+.erlc-community-link:hover .erlc-link-arrow {
+  transform: translateX(4px);
 }
 
 .erlc-welcome-actions {
-  padding: 16px 24px 24px 24px;
+  padding: 24px 32px 32px 32px;
   display: flex;
   justify-content: center;
 }
 
 .erlc-welcome-btn {
-  background: linear-gradient(135deg, #7289da, #5865f2);
+  background: linear-gradient(135deg, #4ecdc4, #44a08d);
   color: white;
   border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 1rem;
+  padding: 16px 32px;
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 1.1rem;
   cursor: pointer;
-  transition: all 0.3s ease;
-  min-width: 120px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 140px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(78, 205, 196, 0.3);
 }
 
 .erlc-welcome-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(114, 137, 218, 0.4);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 16px 32px rgba(78, 205, 196, 0.4);
 }
 
 .erlc-welcome-btn:active {
-  transform: translateY(0);
+  transform: translateY(-1px) scale(1.02);
+}
+
+.erlc-btn-shine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.6s ease;
+}
+
+.erlc-welcome-btn:hover .erlc-btn-shine {
+  left: 100%;
+}
+
+/* Animaciones del Modal ERLC */
+@keyframes erlcOverlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes erlcModalSlideIn {
   from {
     opacity: 0;
-    transform: scale(0.9) translateY(-20px);
+    transform: scale(0.8) translateY(-30px) rotateX(10deg);
   }
   to {
     opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: scale(1) translateY(0) rotateX(0deg);
+  }
+}
+
+@keyframes erlcGradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes erlcLogoFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(5deg);
+  }
+}
+
+@keyframes erlcPulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
   }
 }
 

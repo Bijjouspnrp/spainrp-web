@@ -311,6 +311,18 @@ const CNISection = () => {
           <FaGlobe /> Rastreo
         </button>
         <button 
+          className={`cni-tab ${activeTab === 'players' ? 'active' : ''}`}
+          onClick={() => setActiveTab('players')}
+        >
+          <FaUsers /> Ciudadanos en Ciudad
+        </button>
+        <button 
+          className={`cni-tab ${activeTab === 'vehicles' ? 'active' : ''}`}
+          onClick={() => setActiveTab('vehicles')}
+        >
+          <FaCarCrash /> Vehículos en Ciudad
+        </button>
+        <button 
           className={`cni-tab ${activeTab === 'intelligence' ? 'active' : ''}`}
           onClick={() => setActiveTab('intelligence')}
         >
@@ -334,6 +346,8 @@ const CNISection = () => {
         {activeTab === 'database' && <DatabaseTab stats={databaseStats} />}
         {activeTab === 'search' && <AdvancedSearchTab />}
         {activeTab === 'tracking' && <TrackingTab />}
+        {activeTab === 'players' && <PlayersInCityTab />}
+        {activeTab === 'vehicles' && <VehiclesInCityTab />}
         {activeTab === 'intelligence' && <IntelligenceTab />}
         {activeTab === 'business' && <BusinessRecordsTab />}
         {activeTab === 'blog' && <BlogTab />}
@@ -706,6 +720,8 @@ const TrackingTab = () => {
   });
   const [trackingResults, setTrackingResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const handleTrackingSearch = async () => {
     if (!trackingForm.target.trim()) return;
@@ -860,6 +876,18 @@ const TrackingTab = () => {
   return (
     <div className="cni-section">
       <h3><FaGlobe /> Sistema de Rastreo de Actividad</h3>
+      
+      {error && (
+        <div className="cni-error-message">
+          {error}
+        </div>
+      )}
+      
+      {success && (
+        <div className="cni-success-message">
+          {success}
+        </div>
+      )}
       
       <div className="cni-form">
         <div className="cni-form-group">
@@ -1824,6 +1852,385 @@ const BlogTab = () => {
           </div>
         )}
       </div>
+    </div>
+  );
+};
+
+// Pestaña de Jugadores en Ciudad
+const PlayersInCityTab = () => {
+  const [players, setPlayers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [lastUpdate, setLastUpdate] = useState(null);
+
+  const loadPlayers = async () => {
+    console.log('[CNI][JUGADORES] 👥 Cargando jugadores en ciudad...');
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    
+    try {
+      const response = await fetch(apiUrl('/api/cni/tracking/players'));
+      console.log('[CNI][JUGADORES] 📡 Respuesta recibida:', response.status, response.statusText);
+      const data = await response.json();
+      console.log('[CNI][JUGADORES] 📋 Datos recibidos:', data);
+      
+      if (data.success) {
+        console.log(`[CNI][JUGADORES] ✅ Cargados ${data.players.length} jugadores`);
+        setPlayers(data.players);
+        setLastUpdate(new Date());
+        setSuccess(`✅ ${data.players.length} jugadores detectados en la ciudad`);
+      } else {
+        console.log('[CNI][JUGADORES] ❌ Error en respuesta:', data.error);
+        setError(`❌ Error: ${data.error}`);
+      }
+    } catch (err) {
+      console.error('[CNI][JUGADORES] ❌ Error cargando jugadores:', err);
+      setError('❌ Error de conexión al cargar jugadores');
+    } finally {
+      setLoading(false);
+      console.log('[CNI][JUGADORES] ✅ Carga de jugadores finalizada');
+    }
+  };
+
+  const getTeamIcon = (team) => {
+    switch (team.toLowerCase()) {
+      case 'police':
+        return <FaShieldAlt />;
+      case 'medical':
+        return <FaUserShield />;
+      case 'fire':
+        return <FaCarCrash />;
+      case 'civilian':
+        return <FaUser />;
+      default:
+        return <FaUser />;
+    }
+  };
+
+  const getTeamColor = (team) => {
+    switch (team.toLowerCase()) {
+      case 'police':
+        return '#3b82f6';
+      case 'medical':
+        return '#10b981';
+      case 'fire':
+        return '#f59e0b';
+      case 'civilian':
+        return '#6b7280';
+      default:
+        return '#6b7280';
+    }
+  };
+
+  const getPermissionColor = (permission) => {
+    switch (permission.toLowerCase()) {
+      case 'server owner':
+        return '#dc2626';
+      case 'server administrator':
+        return '#f59e0b';
+      case 'server moderator':
+        return '#8b5cf6';
+      case 'normal':
+        return '#6b7280';
+      default:
+        return '#6b7280';
+    }
+  };
+
+  useEffect(() => {
+    loadPlayers();
+  }, []);
+
+  return (
+    <div className="cni-section">
+      <h3><FaUsers /> Ciudadanos Detectados en la Ciudad</h3>
+      
+      {error && (
+        <div className="cni-error-message">
+          {error}
+        </div>
+      )}
+      
+      {success && (
+        <div className="cni-success-message">
+          {success}
+        </div>
+      )}
+
+      <div className="cni-section-header">
+        <div className="cni-stats-overview">
+          <div className="cni-stat-item">
+            <span className="cni-stat-label">Total Ciudadanos</span>
+            <span className="cni-stat-value">{players.length}</span>
+          </div>
+          <div className="cni-stat-item">
+            <span className="cni-stat-label">Última Actualización</span>
+            <span className="cni-stat-value">
+              {lastUpdate ? lastUpdate.toLocaleTimeString('es-ES') : 'Nunca'}
+            </span>
+          </div>
+        </div>
+        
+        <button 
+          className="cni-btn cni-btn-primary"
+          onClick={loadPlayers}
+          disabled={loading}
+        >
+          {loading ? <FaSpinner className="fa-spin" /> : <FaUsers />}
+          {loading ? 'Actualizando...' : 'Actualizar Lista'}
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="cni-loading">
+          <FaSpinner className="fa-spin" />
+          <p>Obteniendo datos de ciudadanos en tiempo real...</p>
+        </div>
+      ) : players.length === 0 ? (
+        <div className="cni-no-data">
+          <FaUsers />
+          <p>No hay ciudadanos detectados en la ciudad</p>
+          <p>La ciudad puede estar vacía o hay un problema de conexión con las detecciones</p>
+        </div>
+      ) : (
+        <div className="cni-players-grid">
+          {players.map((player, index) => (
+            <div key={index} className="cni-player-card">
+              <div className="cni-player-header">
+                <div className="cni-player-avatar">
+                  {getTeamIcon(player.Team)}
+                </div>
+                <div className="cni-player-info">
+                  <h4>{player.Player.split(':')[0]}</h4>
+                  <p className="cni-player-id">ID: {player.Player.split(':')[1]}</p>
+                </div>
+                <div className="cni-player-badges">
+                  <span 
+                    className="cni-team-badge"
+                    style={{ backgroundColor: getTeamColor(player.Team) }}
+                  >
+                    {player.Team}
+                  </span>
+                  <span 
+                    className="cni-permission-badge"
+                    style={{ backgroundColor: getPermissionColor(player.Permission) }}
+                  >
+                    {player.Permission}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="cni-player-details">
+                {player.Callsign && (
+                  <div className="cni-player-field">
+                    <label>Indicativo:</label>
+                    <span>{player.Callsign}</span>
+                  </div>
+                )}
+                <div className="cni-player-field">
+                  <label>Equipo:</label>
+                  <span style={{ color: getTeamColor(player.Team) }}>
+                    {player.Team}
+                  </span>
+                </div>
+                <div className="cni-player-field">
+                  <label>Permisos:</label>
+                  <span style={{ color: getPermissionColor(player.Permission) }}>
+                    {player.Permission}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Pestaña de Vehículos en Ciudad
+const VehiclesInCityTab = () => {
+  const [vehicles, setVehicles] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [lastUpdate, setLastUpdate] = useState(null);
+
+  const loadVehicles = async () => {
+    console.log('[CNI][VEHÍCULOS] 🚗 Cargando vehículos en ciudad...');
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    
+    try {
+      const response = await fetch(apiUrl('/api/cni/tracking/vehicles'));
+      console.log('[CNI][VEHÍCULOS] 📡 Respuesta recibida:', response.status, response.statusText);
+      const data = await response.json();
+      console.log('[CNI][VEHÍCULOS] 📋 Datos recibidos:', data);
+      
+      if (data.success) {
+        console.log(`[CNI][VEHÍCULOS] ✅ Cargados ${data.vehicles.length} vehículos`);
+        setVehicles(data.vehicles);
+        setLastUpdate(new Date());
+        setSuccess(`✅ ${data.vehicles.length} vehículos detectados en la ciudad`);
+      } else {
+        console.log('[CNI][VEHÍCULOS] ❌ Error en respuesta:', data.error);
+        setError(`❌ Error: ${data.error}`);
+      }
+    } catch (err) {
+      console.error('[CNI][VEHÍCULOS] ❌ Error cargando vehículos:', err);
+      setError('❌ Error de conexión al cargar vehículos');
+    } finally {
+      setLoading(false);
+      console.log('[CNI][VEHÍCULOS] ✅ Carga de vehículos finalizada');
+    }
+  };
+
+  const getVehicleIcon = (name) => {
+    if (name.toLowerCase().includes('police') || name.toLowerCase().includes('interceptor')) {
+      return <FaShieldAlt />;
+    } else if (name.toLowerCase().includes('ambulance') || name.toLowerCase().includes('medical')) {
+      return <FaUserShield />;
+    } else if (name.toLowerCase().includes('fire') || name.toLowerCase().includes('truck')) {
+      return <FaCarCrash />;
+    } else {
+      return <FaCarCrash />;
+    }
+  };
+
+  const getVehicleType = (name) => {
+    if (name.toLowerCase().includes('police') || name.toLowerCase().includes('interceptor')) {
+      return 'Policial';
+    } else if (name.toLowerCase().includes('ambulance') || name.toLowerCase().includes('medical')) {
+      return 'Médico';
+    } else if (name.toLowerCase().includes('fire') || name.toLowerCase().includes('truck')) {
+      return 'Bomberos';
+    } else {
+      return 'Civil';
+    }
+  };
+
+  const getVehicleColor = (name) => {
+    if (name.toLowerCase().includes('police') || name.toLowerCase().includes('interceptor')) {
+      return '#3b82f6';
+    } else if (name.toLowerCase().includes('ambulance') || name.toLowerCase().includes('medical')) {
+      return '#10b981';
+    } else if (name.toLowerCase().includes('fire') || name.toLowerCase().includes('truck')) {
+      return '#f59e0b';
+    } else {
+      return '#6b7280';
+    }
+  };
+
+  useEffect(() => {
+    loadVehicles();
+  }, []);
+
+  return (
+    <div className="cni-section">
+      <h3><FaCarCrash /> Vehículos Actualmente en la Ciudad</h3>
+      
+      {error && (
+        <div className="cni-error-message">
+          {error}
+        </div>
+      )}
+      
+      {success && (
+        <div className="cni-success-message">
+          {success}
+        </div>
+      )}
+
+      <div className="cni-section-header">
+        <div className="cni-stats-overview">
+          <div className="cni-stat-item">
+            <span className="cni-stat-label">Total Vehículos</span>
+            <span className="cni-stat-value">{vehicles.length}</span>
+          </div>
+          <div className="cni-stat-item">
+            <span className="cni-stat-label">Última Actualización</span>
+            <span className="cni-stat-value">
+              {lastUpdate ? lastUpdate.toLocaleTimeString('es-ES') : 'Nunca'}
+            </span>
+          </div>
+        </div>
+        
+        <button 
+          className="cni-btn cni-btn-primary"
+          onClick={loadVehicles}
+          disabled={loading}
+        >
+          {loading ? <FaSpinner className="fa-spin" /> : <FaCarCrash />}
+          {loading ? 'Actualizando...' : 'Actualizar Lista'}
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="cni-loading">
+          <FaSpinner className="fa-spin" />
+          <p>Obteniendo datos de vehículos en tiempo real...</p>
+        </div>
+      ) : vehicles.length === 0 ? (
+        <div className="cni-no-data">
+          <FaCarCrash />
+          <p>No hay vehículos detectados en la ciudad</p>
+          <p>La ciudad puede estar vacía o hay un problema de conexión con las detecciones</p>
+        </div>
+      ) : (
+        <div className="cni-vehicles-grid">
+          {vehicles.map((vehicle, index) => (
+            <div key={index} className="cni-vehicle-card">
+              <div className="cni-vehicle-header">
+                <div className="cni-vehicle-icon">
+                  {getVehicleIcon(vehicle.Name)}
+                </div>
+                <div className="cni-vehicle-info">
+                  <h4>{vehicle.Name}</h4>
+                  <p className="cni-vehicle-owner">Propietario: {vehicle.Owner}</p>
+                </div>
+                <div className="cni-vehicle-badges">
+                  <span 
+                    className="cni-vehicle-type-badge"
+                    style={{ backgroundColor: getVehicleColor(vehicle.Name) }}
+                  >
+                    {getVehicleType(vehicle.Name)}
+                  </span>
+                  <span 
+                    className="cni-vehicle-texture-badge"
+                    style={{ backgroundColor: '#6b7280' }}
+                  >
+                    {vehicle.Texture}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="cni-vehicle-details">
+                <div className="cni-vehicle-field">
+                  <label>Modelo:</label>
+                  <span>{vehicle.Name}</span>
+                </div>
+                <div className="cni-vehicle-field">
+                  <label>Propietario:</label>
+                  <span>{vehicle.Owner}</span>
+                </div>
+                <div className="cni-vehicle-field">
+                  <label>Tipo:</label>
+                  <span style={{ color: getVehicleColor(vehicle.Name) }}>
+                    {getVehicleType(vehicle.Name)}
+                  </span>
+                </div>
+                <div className="cni-vehicle-field">
+                  <label>Textura:</label>
+                  <span>{vehicle.Texture}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

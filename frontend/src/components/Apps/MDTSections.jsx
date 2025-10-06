@@ -10,6 +10,9 @@ import codigoPenal from '../../utils/codigoPenal';
 
 // Sección DNI
 export const DNISection = ({ data }) => {
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+
   if (!data || !data.dni) {
     return (
       <div className="mdt-section">
@@ -24,87 +27,176 @@ export const DNISection = ({ data }) => {
 
   const dni = data.dni;
 
+  const handleFlip = () => {
+    setIsFlipped(!isFlipped);
+  };
+
   return (
     <div className="mdt-section">
-      <h3><FaIdCard /> Mi DNI</h3>
-      <div className="dni-card-real">
-        <div className="dni-header-real">
-          <div className="dni-logo">
-            <span className="dni-logo-text">ESPAÑA</span>
-          </div>
-          <div className="dni-title">
-            <span className="dni-title-text">DOCUMENTO NACIONAL DE IDENTIDAD</span>
-          </div>
+      <div className="dni-section-header">
+        <h3><FaIdCard /> Mi DNI</h3>
+        <div className="dni-controls">
+          <button 
+            className="dni-flip-btn"
+            onClick={handleFlip}
+            title={isFlipped ? "Ver frente" : "Ver reverso"}
+          >
+            <FaEye />
+            {isFlipped ? "Frente" : "Reverso"}
+          </button>
         </div>
-        
-        <div className="dni-content">
-          <div className="dni-photo-section">
-            <div className="dni-photo-container">
-              {dni.robloxAvatar ? (
-                <img 
-                  src={dni.robloxAvatar} 
-                  alt="Foto DNI" 
-                  className="dni-photo"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
-                  }}
-                />
-              ) : null}
-              <div className="dni-photo-placeholder" style={{ display: dni.robloxAvatar ? 'none' : 'flex' }}>
-                <FaUser size={40} />
+      </div>
+      
+      <div className="dni-container">
+        <div 
+          className={`dni-card-interactive ${isFlipped ? 'flipped' : ''} ${isHovered ? 'hovered' : ''}`}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
+          {/* Frente del DNI */}
+          <div className="dni-card-front">
+            <div className="dni-header-real">
+              <div className="dni-logo">
+                <span className="dni-logo-text">ESPAÑA</span>
               </div>
-            </div>
-            <div className="dni-number">
-              <span className="dni-number-text">{dni.numeroDNI}</span>
-            </div>
-          </div>
-          
-          <div className="dni-info-real">
-            <div className="dni-name-section">
-              <div className="dni-name">
-                <span className="dni-name-text">{dni.nombre} {dni.apellidos}</span>
-              </div>
-              <div className="dni-roblox">
-                <span className="dni-roblox-text">Roblox: {dni.robloxUser || 'N/A'}</span>
+              <div className="dni-title">
+                <span className="dni-title-text">DOCUMENTO NACIONAL DE IDENTIDAD</span>
               </div>
             </div>
             
-            <div className="dni-details">
-              <div className="dni-detail-row">
-                <span className="dni-detail-label">NACIMIENTO:</span>
-                <span className="dni-detail-value">{dni.fechaNacimiento}</span>
+            <div className="dni-content">
+              <div className="dni-photo-section">
+                <div className="dni-photo-container">
+                  {dni.robloxAvatar ? (
+                    <img 
+                      src={dni.robloxAvatar} 
+                      alt="Foto DNI" 
+                      className="dni-photo"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div className="dni-photo-placeholder" style={{ display: dni.robloxAvatar ? 'none' : 'flex' }}>
+                    <FaUser size={40} />
+                  </div>
+                </div>
+                <div className="dni-number">
+                  <span className="dni-number-text">{dni.numeroDNI}</span>
+                </div>
               </div>
-              <div className="dni-detail-row">
-                <span className="dni-detail-label">SEXO:</span>
-                <span className="dni-detail-value">{dni.sexo}</span>
-              </div>
-              <div className="dni-detail-row">
-                <span className="dni-detail-label">NACIONALIDAD:</span>
-                <span className="dni-detail-value">{dni.nacionalidad}</span>
-              </div>
-              <div className="dni-detail-row">
-                <span className="dni-detail-label">PROFESIÓN:</span>
-                <span className="dni-detail-value">{dni.trabajo || 'N/A'}</span>
+              
+              <div className="dni-info-real">
+                <div className="dni-name-section">
+                  <div className="dni-name">
+                    <span className="dni-name-text">{dni.nombre} {dni.apellidos}</span>
+                  </div>
+                  <div className="dni-roblox">
+                    <span className="dni-roblox-text">Roblox: {dni.robloxUser || 'N/A'}</span>
+                  </div>
+                </div>
+                
+                <div className="dni-details">
+                  <div className="dni-detail-row">
+                    <span className="dni-detail-label">NACIMIENTO:</span>
+                    <span className="dni-detail-value">{dni.fechaNacimiento}</span>
+                  </div>
+                  <div className="dni-detail-row">
+                    <span className="dni-detail-label">SEXO:</span>
+                    <span className="dni-detail-value">{dni.sexo}</span>
+                  </div>
+                  <div className="dni-detail-row">
+                    <span className="dni-detail-label">NACIONALIDAD:</span>
+                    <span className="dni-detail-value">{dni.nacionalidad}</span>
+                  </div>
+                  <div className="dni-detail-row">
+                    <span className="dni-detail-label">PROFESIÓN:</span>
+                    <span className="dni-detail-value">{dni.trabajo || 'N/A'}</span>
+                  </div>
+                </div>
+                
+                <div className="dni-dates">
+                  <div className="dni-date-row">
+                    <span className="dni-date-label">EXPEDICIÓN:</span>
+                    <span className="dni-date-value">{dni.fechaEmision}</span>
+                  </div>
+                  <div className="dni-date-row">
+                    <span className="dni-date-label">VÁLIDO HASTA:</span>
+                    <span className="dni-date-value">{dni.caducidad}</span>
+                  </div>
+                </div>
               </div>
             </div>
             
-            <div className="dni-dates">
-              <div className="dni-date-row">
-                <span className="dni-date-label">EXPEDICIÓN:</span>
-                <span className="dni-date-value">{dni.fechaEmision}</span>
-              </div>
-              <div className="dni-date-row">
-                <span className="dni-date-label">VÁLIDO HASTA:</span>
-                <span className="dni-date-value">{dni.caducidad}</span>
+            <div className="dni-footer">
+              <div className={`dni-status-real ${dni.arrestado ? 'arrestado' : 'activo'}`}>
+                {dni.arrestado ? 'ARRESTADO' : 'VÁLIDO'}
               </div>
             </div>
           </div>
-        </div>
-        
-        <div className="dni-footer">
-          <div className={`dni-status-real ${dni.arrestado ? 'arrestado' : 'activo'}`}>
-            {dni.arrestado ? 'ARRESTADO' : 'VÁLIDO'}
+
+          {/* Reverso del DNI */}
+          <div className="dni-card-back">
+            <div className="dni-back-header">
+              <div className="dni-back-logo">
+                <span className="dni-back-logo-text">ESPAÑA</span>
+              </div>
+              <div className="dni-back-title">
+                <span className="dni-back-title-text">DOCUMENTO NACIONAL DE IDENTIDAD</span>
+              </div>
+            </div>
+            
+            <div className="dni-back-content">
+              <div className="dni-back-info">
+                <div className="dni-back-section">
+                  <h4>Información Adicional</h4>
+                  <div className="dni-back-details">
+                    <div className="dni-back-field">
+                      <span className="dni-back-label">Número de DNI:</span>
+                      <span className="dni-back-value">{dni.numeroDNI}</span>
+                    </div>
+                    <div className="dni-back-field">
+                      <span className="dni-back-label">Estado:</span>
+                      <span className={`dni-back-value ${dni.arrestado ? 'arrestado' : 'activo'}`}>
+                        {dni.arrestado ? 'ARRESTADO' : 'ACTIVO'}
+                      </span>
+                    </div>
+                    <div className="dni-back-field">
+                      <span className="dni-back-label">Usuario Roblox:</span>
+                      <span className="dni-back-value">{dni.robloxUser || 'No verificado'}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="dni-back-section">
+                  <h4>Datos de Expedición</h4>
+                  <div className="dni-back-details">
+                    <div className="dni-back-field">
+                      <span className="dni-back-label">Fecha de Emisión:</span>
+                      <span className="dni-back-value">{dni.fechaEmision}</span>
+                    </div>
+                    <div className="dni-back-field">
+                      <span className="dni-back-label">Fecha de Caducidad:</span>
+                      <span className="dni-back-value">{dni.caducidad}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="dni-back-footer">
+                <div className="dni-back-qr">
+                  <div className="qr-placeholder">
+                    <FaIdCard size={40} />
+                    <span>QR Code</span>
+                  </div>
+                </div>
+                <div className="dni-back-signature">
+                  <span>Firma del titular</span>
+                  <div className="signature-line"></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -156,9 +248,74 @@ export const MultasSection = ({ data, userId, onRefresh }) => {
     );
   }
 
+  // Calcular estadísticas de multas
+  const multasPagadas = data.filter(multa => multa.pagada).length;
+  const multasPendientes = data.filter(multa => !multa.pagada).length;
+  const totalPagado = data.filter(multa => multa.pagada).reduce((sum, multa) => sum + (multa.cantidad || multa.multa || 0), 0);
+  const totalPendiente = data.filter(multa => !multa.pagada).reduce((sum, multa) => sum + (multa.cantidad || multa.multa || 0), 0);
+
   return (
     <div className="mdt-section">
       <h3><FaMoneyBillWave /> Mis Multas ({data.length})</h3>
+      
+      {/* Resumen de multas */}
+      <div className="multas-summary">
+        <div className="summary-stats">
+          <div className="stat-item">
+            <span className="stat-label">Pagadas</span>
+            <span className="stat-value success">{multasPagadas}</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-label">Pendientes</span>
+            <span className="stat-value warning">{multasPendientes}</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-label">Total Pagado</span>
+            <span className="stat-value success">{totalPagado.toLocaleString('es-ES')}€</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-label">Total Pendiente</span>
+            <span className="stat-value danger">{totalPendiente.toLocaleString('es-ES')}€</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Mensaje motivacional o de advertencia */}
+      {multasPendientes === 0 && multasPagadas > 0 && (
+        <div className="multas-message good-citizen">
+          <div className="message-icon">
+            <FaCheckCircle />
+          </div>
+          <div className="message-content">
+            <h4>¡Excelente ciudadano! 🏆</h4>
+            <p>Has pagado todas tus multas correctamente. ¡Sigue así! Tu cumplimiento de las normas es un ejemplo para la comunidad.</p>
+            <div className="message-stats">
+              <span>✅ {multasPagadas} multas pagadas</span>
+              <span>💰 {totalPagado.toLocaleString('es-ES')}€ abonados</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {multasPendientes > 0 && (
+        <div className="multas-message warning-citizen">
+          <div className="message-icon">
+            <FaExclamationTriangle />
+          </div>
+          <div className="message-content">
+            <h4>⚠️ Atención: Multas Pendientes</h4>
+            <p>Tienes <strong>{multasPendientes}</strong> multa{multasPendientes > 1 ? 's' : ''} pendiente{multasPendientes > 1 ? 's' : ''} por un total de <strong>{totalPendiente.toLocaleString('es-ES')}€</strong>.</p>
+            <p className="warning-text">
+              <strong>Importante:</strong> Si no pagas tus multas en el plazo establecido, podrías enfrentar consecuencias legales más graves, incluyendo la posibilidad de un juicio. 
+              Te recomendamos pagar cuanto antes para evitar problemas mayores.
+            </p>
+            <div className="message-actions">
+              <span className="action-text">💡 Haz clic en "Pagar Multa" para cada multa pendiente</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="multas-list">
         {data.map((multa, index) => (
           <div key={index} className={`multa-card ${multa.pagada ? 'pagada' : 'pendiente'}`}>
@@ -340,6 +497,283 @@ export const InventarioSection = ({ data }) => {
     );
   }
 
+  // Función para obtener el nombre del item basado en el item_id
+  const getItemName = (itemId) => {
+    const itemNames = {
+      'bm_ak_47': 'AK-47',
+      'bm_m4a1': 'M4A1',
+      'bm_glock': 'Glock',
+      'bm_usp': 'USP',
+      'bm_knife': 'Cuchillo',
+      'bm_vest': 'Chaleco',
+      'bm_helmet': 'Casco',
+      'bm_ammo': 'Munición',
+      'bm_medkit': 'Botiquín',
+      'bm_phone': 'Teléfono',
+      'bm_keys': 'Llaves',
+      'bm_wallet': 'Cartera',
+      'bm_id': 'Documentos',
+      'bm_drugs': 'Drogas',
+      'bm_money': 'Dinero',
+      'bm_food': 'Comida',
+      'bm_drink': 'Bebida',
+      'bm_cigarettes': 'Cigarrillos',
+      'bm_lighter': 'Encendedor',
+      'bm_rope': 'Cuerda',
+      'bm_tools': 'Herramientas',
+      'bm_bandage': 'Vendaje',
+      'bm_painkillers': 'Analgésicos',
+      'bm_energy_drink': 'Bebida Energética',
+      'bm_sandwich': 'Sándwich',
+      'bm_water': 'Agua',
+      'bm_coffee': 'Café',
+      'bm_beer': 'Cerveza',
+      'bm_whiskey': 'Whiskey',
+      'bm_vodka': 'Vodka',
+      'bm_cocaine': 'Cocaína',
+      'bm_marijuana': 'Marihuana',
+      'bm_heroin': 'Heroína',
+      'bm_meth': 'Metanfetamina',
+      'bm_lsd': 'LSD',
+      'bm_ecstasy': 'Éxtasis',
+      'bm_weed': 'Hierba',
+      'bm_crack': 'Crack',
+      'bm_pills': 'Pastillas',
+      'bm_syringe': 'Jeringa',
+      'bm_scale': 'Báscula',
+      'bm_bag': 'Bolsa',
+      'bm_backpack': 'Mochila',
+      'bm_duffel': 'Bolsa de Deporte',
+      'bm_suitcase': 'Maleta',
+      'bm_briefcase': 'Maletín',
+      'bm_laptop': 'Laptop',
+      'bm_tablet': 'Tablet',
+      'bm_camera': 'Cámara',
+      'bm_watch': 'Reloj',
+      'bm_ring': 'Anillo',
+      'bm_necklace': 'Collar',
+      'bm_bracelet': 'Pulsera',
+      'bm_earrings': 'Aretes',
+      'bm_glasses': 'Gafas',
+      'bm_hat': 'Sombrero',
+      'bm_cap': 'Gorra',
+      'bm_shirt': 'Camisa',
+      'bm_pants': 'Pantalones',
+      'bm_shoes': 'Zapatos',
+      'bm_jacket': 'Chaqueta',
+      'bm_coat': 'Abrigo',
+      'bm_dress': 'Vestido',
+      'bm_skirt': 'Falda',
+      'bm_underwear': 'Ropa Interior',
+      'bm_socks': 'Calcetines',
+      'bm_belt': 'Cinturón',
+      'bm_tie': 'Corbata',
+      'bm_scarf': 'Bufanda',
+      'bm_gloves': 'Guantes',
+      'bm_umbrella': 'Paraguas',
+      'bm_sunglasses': 'Gafas de Sol',
+      'bm_mask': 'Máscara',
+      'bm_wig': 'Peluca',
+      'bm_makeup': 'Maquillaje',
+      'bm_perfume': 'Perfume',
+      'bm_deodorant': 'Desodorante',
+      'bm_shampoo': 'Champú',
+      'bm_soap': 'Jabón',
+      'bm_toothbrush': 'Cepillo de Dientes',
+      'bm_toothpaste': 'Pasta de Dientes',
+      'bm_towel': 'Toalla',
+      'bm_razor': 'Navaja de Afeitar',
+      'bm_comb': 'Peine',
+      'bm_mirror': 'Espejo',
+      'bm_brush': 'Cepillo',
+      'bm_nail_clipper': 'Cortauñas',
+      'bm_tweezers': 'Pinzas',
+      'bm_scissors': 'Tijeras',
+      'bm_needle': 'Aguja',
+      'bm_thread': 'Hilo',
+      'bm_button': 'Botón',
+      'bm_zipper': 'Cremallera',
+      'bm_velcro': 'Velcro',
+      'bm_snap': 'Broche',
+      'bm_hook': 'Gancho',
+      'bm_eyelet': 'Ojal',
+      'bm_buckle': 'Hebilla',
+      'bm_clasp': 'Cierre',
+      'bm_lock': 'Candado',
+      'bm_key': 'Llave',
+      'bm_chain': 'Cadena',
+      'bm_rope': 'Cuerda',
+      'bm_wire': 'Cable',
+      'bm_cord': 'Cordón',
+      'bm_string': 'Cuerda',
+      'bm_tape': 'Cinta',
+      'bm_glue': 'Pegamento',
+      'bm_cement': 'Cemento',
+      'bm_putty': 'Masilla',
+      'bm_sealant': 'Sellador',
+      'bm_adhesive': 'Adhesivo',
+      'bm_sticker': 'Pegatina',
+      'bm_label': 'Etiqueta',
+      'bm_tag': 'Etiqueta',
+      'bm_badge': 'Insignia',
+      'bm_pin': 'Pin',
+      'bm_brooch': 'Broche',
+      'bm_clip': 'Clip',
+      'bm_paperclip': 'Clip de Papel',
+      'bm_binder': 'Carpeta',
+      'bm_folder': 'Carpeta',
+      'bm_file': 'Archivo',
+      'bm_document': 'Documento',
+      'bm_paper': 'Papel',
+      'bm_notebook': 'Cuaderno',
+      'bm_diary': 'Diario',
+      'bm_journal': 'Revista',
+      'bm_magazine': 'Revista',
+      'bm_newspaper': 'Periódico',
+      'bm_book': 'Libro',
+      'bm_novel': 'Novela',
+      'bm_textbook': 'Libro de Texto',
+      'bm_dictionary': 'Diccionario',
+      'bm_encyclopedia': 'Enciclopedia',
+      'bm_atlas': 'Atlas',
+      'bm_map': 'Mapa',
+      'bm_globe': 'Globo',
+      'bm_compass': 'Brújula',
+      'bm_gps': 'GPS',
+      'bm_radio': 'Radio',
+      'bm_walkie_talkie': 'Walkie Talkie',
+      'bm_cb_radio': 'Radio CB',
+      'bm_ham_radio': 'Radio Ham',
+      'bm_satellite_phone': 'Teléfono Satelital',
+      'bm_cell_phone': 'Teléfono Celular',
+      'bm_smartphone': 'Smartphone',
+      'bm_pager': 'Buscapersonas',
+      'bm_fax': 'Fax',
+      'bm_telephone': 'Teléfono',
+      'bm_intercom': 'Intercomunicador',
+      'bm_speaker': 'Altavoz',
+      'bm_microphone': 'Micrófono',
+      'bm_headphones': 'Auriculares',
+      'bm_earphones': 'Auriculares',
+      'bm_earbuds': 'Auriculares',
+      'bm_speaker_system': 'Sistema de Altavoces',
+      'bm_sound_system': 'Sistema de Sonido',
+      'bm_stereo': 'Estéreo',
+      'bm_boombox': 'Radiocasete',
+      'bm_cassette_player': 'Reproductor de Casete',
+      'bm_cd_player': 'Reproductor de CD',
+      'bm_dvd_player': 'Reproductor de DVD',
+      'bm_blu_ray_player': 'Reproductor de Blu-ray',
+      'bm_vcr': 'VCR',
+      'bm_dvr': 'DVR',
+      'bm_set_top_box': 'Decodificador',
+      'bm_streaming_device': 'Dispositivo de Streaming',
+      'bm_game_console': 'Consola de Juegos',
+      'bm_handheld_gaming': 'Consola Portátil',
+      'bm_virtual_reality': 'Realidad Virtual',
+      'bm_augmented_reality': 'Realidad Aumentada',
+      'bm_mixed_reality': 'Realidad Mixta',
+      'bm_artificial_intelligence': 'Inteligencia Artificial',
+      'bm_machine_learning': 'Aprendizaje Automático',
+      'bm_deep_learning': 'Aprendizaje Profundo',
+      'bm_neural_network': 'Red Neuronal',
+      'bm_algorithm': 'Algoritmo',
+      'bm_program': 'Programa',
+      'bm_software': 'Software',
+      'bm_application': 'Aplicación',
+      'bm_app': 'App',
+      'bm_website': 'Sitio Web',
+      'bm_webpage': 'Página Web',
+      'bm_blog': 'Blog',
+      'bm_forum': 'Foro',
+      'bm_chat': 'Chat',
+      'bm_message': 'Mensaje',
+      'bm_email': 'Correo Electrónico',
+      'bm_instant_message': 'Mensaje Instantáneo',
+      'bm_text_message': 'Mensaje de Texto',
+      'bm_voice_message': 'Mensaje de Voz',
+      'bm_video_message': 'Mensaje de Video',
+      'bm_photo': 'Foto',
+      'bm_picture': 'Imagen',
+      'bm_image': 'Imagen',
+      'bm_selfie': 'Selfie',
+      'bm_portrait': 'Retrato',
+      'bm_landscape': 'Paisaje',
+      'bm_nature': 'Naturaleza',
+      'bm_animal': 'Animal',
+      'bm_pet': 'Mascota',
+      'bm_dog': 'Perro',
+      'bm_cat': 'Gato',
+      'bm_bird': 'Pájaro',
+      'bm_fish': 'Pez',
+      'bm_hamster': 'Hámster',
+      'bm_rabbit': 'Conejo',
+      'bm_guinea_pig': 'Cobaya',
+      'bm_mouse': 'Ratón',
+      'bm_rat': 'Rata',
+      'bm_gerbil': 'Gerbo',
+      'bm_ferret': 'Hurón',
+      'bm_chinchilla': 'Chinchilla',
+      'bm_hedgehog': 'Erizo',
+      'bm_sugar_glider': 'Petauro del Azúcar',
+      'bm_skunk': 'Mofeta',
+      'bm_raccoon': 'Mapache',
+      'bm_opposum': 'Zarigüeya',
+      'bm_squirrel': 'Ardilla',
+      'bm_chipmunk': 'Ardilla Listada',
+      'bm_groundhog': 'Marmota',
+      'bm_beaver': 'Castor',
+      'bm_otter': 'Nutria',
+      'bm_weasel': 'Comadreja',
+      'bm_stoat': 'Armiño',
+      'bm_mink': 'Visón',
+      'bm_marten': 'Marta',
+      'bm_fisher': 'Pescador',
+      'bm_wolverine': 'Glotón',
+      'bm_badger': 'Tejón',
+      'bm_skunk': 'Mofeta',
+      'bm_raccoon': 'Mapache',
+      'bm_opposum': 'Zarigüeya',
+      'bm_squirrel': 'Ardilla',
+      'bm_chipmunk': 'Ardilla Listada',
+      'bm_groundhog': 'Marmota',
+      'bm_beaver': 'Castor',
+      'bm_otter': 'Nutria',
+      'bm_weasel': 'Comadreja',
+      'bm_stoat': 'Armiño',
+      'bm_mink': 'Visón',
+      'bm_marten': 'Marta',
+      'bm_fisher': 'Pescador',
+      'bm_wolverine': 'Glotón',
+      'bm_badger': 'Tejón'
+    };
+    
+    return itemNames[itemId] || itemId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
+
+  // Función para obtener el icono del item basado en el item_id
+  const getItemIcon = (itemId) => {
+    if (itemId.includes('ak_47') || itemId.includes('m4a1') || itemId.includes('glock') || itemId.includes('usp') || itemId.includes('knife')) {
+      return <FaShieldAlt />;
+    } else if (itemId.includes('vest') || itemId.includes('helmet') || itemId.includes('ammo')) {
+      return <FaShieldAlt />;
+    } else if (itemId.includes('medkit') || itemId.includes('bandage') || itemId.includes('painkillers')) {
+      return <FaShieldAlt />;
+    } else if (itemId.includes('phone') || itemId.includes('laptop') || itemId.includes('tablet')) {
+      return <FaFileAlt />;
+    } else if (itemId.includes('keys') || itemId.includes('wallet') || itemId.includes('id')) {
+      return <FaIdCard />;
+    } else if (itemId.includes('drugs') || itemId.includes('cocaine') || itemId.includes('marijuana')) {
+      return <FaExclamationTriangle />;
+    } else if (itemId.includes('money') || itemId.includes('wallet')) {
+      return <FaMoneyBillWave />;
+    } else if (itemId.includes('food') || itemId.includes('drink') || itemId.includes('sandwich')) {
+      return <FaFileAlt />;
+    } else {
+      return <FaFileAlt />;
+    }
+  };
+
   return (
     <div className="mdt-section">
       <h3><FaClipboardList /> Mi Inventario ({data.length})</h3>
@@ -347,12 +781,13 @@ export const InventarioSection = ({ data }) => {
         {data.map((item, index) => (
           <div key={index} className="inventario-item">
             <div className="item-icon">
-              <FaFileAlt />
+              {getItemIcon(item.item_id || item.nombre)}
             </div>
             <div className="item-info">
-              <h4>{item.nombre}</h4>
+              <h4>{getItemName(item.item_id || item.nombre)}</h4>
               <p>Cantidad: {item.cantidad}</p>
               {item.descripcion && <p>{item.descripcion}</p>}
+              <p className="item-id">ID: {item.item_id || item.nombre}</p>
             </div>
           </div>
         ))}

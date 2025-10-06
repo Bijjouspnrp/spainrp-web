@@ -3,6 +3,7 @@ import { FaUsers, FaClock, FaServer, FaGamepad, FaGlobe, FaChevronDown, FaChevro
 import { motion } from 'framer-motion';
 import { apiUrl } from '../utils/api';
 import './ERLCServer.css';
+import useIntersectionObserver from '../hooks/useIntersectionObserver';
 
 const ERLCServer = () => {
   const [serverData, setServerData] = useState(null);
@@ -14,14 +15,22 @@ const ERLCServer = () => {
     join: false
   });
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  
+  // Usar intersection observer para detectar cuando la sección entra en el viewport
+  const { ref: sectionRef, hasIntersected } = useIntersectionObserver({
+    threshold: 0.3, // Se activa cuando el 30% de la sección es visible
+    rootMargin: '0px 0px -50px 0px' // Se activa un poco antes de que sea completamente visible
+  });
 
-  // Mostrar modal de bienvenida la primera vez
+  // Mostrar modal de bienvenida solo cuando la sección entra en el viewport por primera vez
   useEffect(() => {
-    const hasSeenERLCWelcome = localStorage.getItem('erlc_welcome_seen');
-    if (!hasSeenERLCWelcome) {
-      setShowWelcomeModal(true);
+    if (hasIntersected) {
+      const hasSeenERLCWelcome = localStorage.getItem('erlc_welcome_seen');
+      if (!hasSeenERLCWelcome) {
+        setShowWelcomeModal(true);
+      }
     }
-  }, []);
+  }, [hasIntersected]);
 
   useEffect(() => {
     const fetchServerData = async () => {
@@ -144,7 +153,7 @@ const ERLCServer = () => {
 
   if (loading) {
     return (
-      <section className="erlc-server" id="erlc">
+      <section className="erlc-server" id="erlc" ref={sectionRef}>
         <div className="erlc-container">
           <div className="erlc-header">
             <div className="erlc-logo">
@@ -166,7 +175,7 @@ const ERLCServer = () => {
 
   if (error) {
     return (
-      <section className="erlc-server" id="erlc">
+      <section className="erlc-server" id="erlc" ref={sectionRef}>
         <div className="erlc-container">
           <div className="erlc-header">
             <div className="erlc-logo">
@@ -187,7 +196,7 @@ const ERLCServer = () => {
   }
 
   return (
-    <section className="erlc-server" id="erlc">
+    <section className="erlc-server" id="erlc" ref={sectionRef}>
       <div className="erlc-container">
         <motion.div 
           className="erlc-header"
@@ -347,37 +356,48 @@ const ERLCServer = () => {
         <div className="erlc-welcome-modal-overlay">
           <div className="erlc-welcome-modal">
             <div className="erlc-welcome-header">
-              <div className="erlc-welcome-icon-container">
-                <FaRocket className="erlc-welcome-icon rocket" />
-                <FaStar className="erlc-welcome-icon star" />
-                <FaGamepad className="erlc-welcome-icon gamepad" />
+              <div className="erlc-welcome-logo">
+                <FaServer className="erlc-welcome-main-icon" />
+                <div className="erlc-welcome-pulse"></div>
               </div>
               <h3>¡Bienvenido a la Sección ERLC!</h3>
+              <p className="erlc-welcome-subtitle">Servidor de Emergency Response Liberty City</p>
             </div>
             <div className="erlc-welcome-content">
               <div className="erlc-welcome-feature">
-                <FaServer className="feature-icon" />
-                <p>
-                  Aquí puedes ver los datos en tiempo real del servidor privado de ERLC. 
-                  <strong> Propietario: BijjouPro08</strong>
-                </p>
+                <div className="erlc-feature-icon">
+                  <FaServer />
+                </div>
+                <div className="erlc-feature-text">
+                  <h4>Datos en Tiempo Real</h4>
+                  <p>
+                    Revisa el estado del servidor, jugadores online, cola de espera y más información actualizada al instante.
+                  </p>
+                </div>
               </div>
               <div className="erlc-welcome-feature">
-                <FaHeart className="feature-icon" />
-                <p>
-                  Recuerda que puedes unirte a nuestra comunidad de Roblox para no perderte de nada:
-                </p>
+                <div className="erlc-feature-icon">
+                  <FaGamepad />
+                </div>
+                <div className="erlc-feature-text">
+                  <h4>Experiencia Completa</h4>
+                  <p>
+                    Únete a nuestra comunidad de Roblox y participa en el mejor servidor de roleplay  en español.
+                  </p>
+                </div>
               </div>
-              <a 
-                href="https://www.roblox.com/es/communities/975983786/SpainRP-Espa-ol#!/about" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="erlc-community-link"
-              >
-                <FaGlobe />
-                <FaCrown />
-                Unirse a la Comunidad de Roblox
-              </a>
+              <div className="erlc-welcome-cta">
+                <a 
+                  href="https://www.roblox.com/es/communities/975983786/SpainRP-Espa-ol#!/about" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="erlc-community-link"
+                >
+                  <FaGlobe />
+                  <span>Unirse a la Comunidad</span>
+                  <div className="erlc-link-arrow">→</div>
+                </a>
+              </div>
             </div>
             <div className="erlc-welcome-actions">
               <button 
@@ -387,7 +407,8 @@ const ERLCServer = () => {
                   setShowWelcomeModal(false);
                 }}
               >
-                ¡Entendido!
+                <span>¡Entendido!</span>
+                <div className="erlc-btn-shine"></div>
               </button>
             </div>
           </div>

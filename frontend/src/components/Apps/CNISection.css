@@ -1447,3 +1447,364 @@
     padding: 15px 20px 20px;
   }
 }
+
+/* ===== ESTILOS PARA NUEVAS PESTAÑAS DE RASTREO ===== */
+
+/* Estilos para Jugadores en Ciudad */
+.cni-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.cni-stats-overview {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.cni-stat-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  min-width: 150px;
+}
+
+.cni-stat-label {
+  display: block;
+  font-size: 0.9rem;
+  color: #9ca3af;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.cni-stat-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #8a2be2;
+}
+
+.cni-players-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.cni-player-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.cni-player-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #8a2be2, #4c1d95, #8a2be2);
+  background-size: 200% 100%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+.cni-player-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(138, 43, 226, 0.3);
+  border-color: rgba(138, 43, 226, 0.5);
+}
+
+.cni-player-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.cni-player-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8a2be2, #4c1d95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: white;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(138, 43, 226, 0.3);
+}
+
+.cni-player-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.cni-player-info h4 {
+  margin: 0 0 0.3rem 0;
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cni-player-id {
+  margin: 0;
+  color: #9ca3af;
+  font-size: 0.8rem;
+  font-family: 'Courier New', monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cni-player-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.cni-team-badge,
+.cni-permission-badge {
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.cni-player-details {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.cni-player-field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cni-player-field:last-child {
+  border-bottom: none;
+}
+
+.cni-player-field label {
+  font-size: 0.9rem;
+  color: #9ca3af;
+  font-weight: 500;
+  min-width: 80px;
+}
+
+.cni-player-field span {
+  font-size: 0.9rem;
+  color: #ffffff;
+  font-weight: 500;
+  text-align: right;
+}
+
+/* Estilos para Vehículos en Ciudad */
+.cni-vehicles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.cni-vehicle-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.cni-vehicle-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #8a2be2, #4c1d95, #8a2be2);
+  background-size: 200% 100%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+.cni-vehicle-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(138, 43, 226, 0.3);
+  border-color: rgba(138, 43, 226, 0.5);
+}
+
+.cni-vehicle-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.cni-vehicle-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8a2be2, #4c1d95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: white;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(138, 43, 226, 0.3);
+}
+
+.cni-vehicle-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.cni-vehicle-info h4 {
+  margin: 0 0 0.3rem 0;
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cni-vehicle-owner {
+  margin: 0;
+  color: #9ca3af;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cni-vehicle-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.cni-vehicle-type-badge,
+.cni-vehicle-texture-badge {
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.cni-vehicle-details {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.cni-vehicle-field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cni-vehicle-field:last-child {
+  border-bottom: none;
+}
+
+.cni-vehicle-field label {
+  font-size: 0.9rem;
+  color: #9ca3af;
+  font-weight: 500;
+  min-width: 80px;
+}
+
+.cni-vehicle-field span {
+  font-size: 0.9rem;
+  color: #ffffff;
+  font-weight: 500;
+  text-align: right;
+}
+
+/* Animaciones */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Responsive para nuevas pestañas */
+@media (max-width: 768px) {
+  .cni-section-header {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+  
+  .cni-stats-overview {
+    justify-content: center;
+  }
+  
+  .cni-players-grid,
+  .cni-vehicles-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .cni-player-card,
+  .cni-vehicle-card {
+    padding: 1rem;
+  }
+  
+  .cni-player-header,
+  .cni-vehicle-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.8rem;
+  }
+  
+  .cni-player-badges,
+  .cni-vehicle-badges {
+    align-items: center;
+    flex-direction: row;
+    justify-content: center;
+  }
+  
+  .cni-player-field,
+  .cni-vehicle-field {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+  }
+  
+  .cni-player-field span,
+  .cni-vehicle-field span {
+    text-align: left;
+  }
+}

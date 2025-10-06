@@ -24,6 +24,7 @@ import {
 // Permite usar nombre o ID. Si es nombre, busca el ID en la API de Roblox
 
 import { useEffect, useState } from 'react';
+import useIntersectionObserver from '../hooks/useIntersectionObserver';
 
 // Mueve staffMembers fuera del componente para evitar recreación en cada render
 const staffMembers = [
@@ -125,7 +126,18 @@ const staffMembers = [
     icon: <FaUserTie />,
     medals: [
       { icon: <FaGem />, text: "Developer Confianza SpainRP", color: "#8e44ad" },
-      { icon: <FaTrophy />, text: "Primeros Miembros SpainRP", color: "#ffd700" }
+      { icon: <FaTrophy />, text: "OG", color: "#800020" }
+    ]
+  },
+  {
+    name: "Staff Incógnito",
+    role: "???",
+    robloxUserId: "Vacio",
+    color: "#2c3e50",
+    icon: <FaShieldAlt />,
+    medals: [
+      { icon: <FaShieldAlt />, text: "Pendiente", color: "#2c3e50" },
+      { icon: <FaStar />, text: "Anónimo", color: "#95a5a6" }
     ]
   }
 ];
@@ -315,14 +327,22 @@ function StaffMemberCard({ member, resolvedId, getRoleColor }) {
 }
 const StaffSection = () => {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  
+  // Usar intersection observer para detectar cuando la sección entra en el viewport
+  const { ref: sectionRef, hasIntersected } = useIntersectionObserver({
+    threshold: 0.3, // Se activa cuando el 30% de la sección es visible
+    rootMargin: '0px 0px -50px 0px' // Se activa un poco antes de que sea completamente visible
+  });
 
-  // Mostrar modal de bienvenida la primera vez
+  // Mostrar modal de bienvenida solo cuando la sección entra en el viewport por primera vez
   useEffect(() => {
-    const hasSeenStaffWelcome = localStorage.getItem('staff_welcome_seen');
-    if (!hasSeenStaffWelcome) {
-      setShowWelcomeModal(true);
+    if (hasIntersected) {
+      const hasSeenStaffWelcome = localStorage.getItem('staff_welcome_seen');
+      if (!hasSeenStaffWelcome) {
+        setShowWelcomeModal(true);
+      }
     }
-  }, []);
+  }, [hasIntersected]);
 
   const getRoleColor = (role) => {
     const roleColors = {
@@ -335,6 +355,7 @@ const StaffSection = () => {
       'benjanaessens1234': '#e67e22',
       'EricPGarrido': '#9b59b6',
       'Benj4XP': '#8e44ad',
+      '???': '#2c3e50',
       'Soporte': '#45b7d1',
       'Eventos': '#96ceb4',
       'Constructor': '#feca57'
@@ -405,7 +426,7 @@ const StaffSection = () => {
   }, []);
 
   return (
-    <section id="staff" className="staff-section">
+    <section id="staff" className="staff-section" ref={sectionRef}>
       <div className="container">
         <div className="staff-header">
           <h2 className="staff-title">
