@@ -1311,6 +1311,25 @@ db.run(`CREATE TABLE IF NOT EXISTS bans (
     console.log('[DB] Tabla bans creada/verificada correctamente');
   }
 });
+
+// Crear tabla web_bans para el nuevo sistema de bans
+db.run(`CREATE TABLE IF NOT EXISTS web_bans (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  type TEXT NOT NULL,
+  value TEXT NOT NULL,
+  reason TEXT NOT NULL,
+  bannedBy TEXT NOT NULL,
+  bannedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  expiresAt DATETIME,
+  isActive INTEGER DEFAULT 1,
+  UNIQUE(type, value)
+)`, (err) => {
+  if (err) {
+    console.error('[DB] Error creando tabla web_bans:', err);
+  } else {
+    console.log('[DB] Tabla web_bans creada/verificada correctamente');
+  }
+});
 // Las tablas principales se inicializan automáticamente en database.js
 // --- ENDPOINTS COMENTARIOS Y REACCIONES DE NOTICIAS ---
 // GET: comentarios de una noticia
@@ -2475,12 +2494,19 @@ async function processIPQueue() {
   }
   
   isProcessingQueue = true;
-  console.log(`[IP TRACKING] 🔄 Procesando cola de ${ipProcessingQueue.length} IPs`);
+  
+  // Log solo si hay muchas IPs en cola
+  if (ipProcessingQueue.length > 10) {
+    console.log(`[IP TRACKING] 🔄 Procesando cola de ${ipProcessingQueue.length} IPs`);
+  }0.
   
   while (ipProcessingQueue.length > 0) {
     const batch = ipProcessingQueue.splice(0, IP_TRACKING_BATCH_SIZE);
     
-    console.log(`[IP TRACKING] 📦 Procesando lote de ${batch.length} IPs`);
+    // Log solo en modo debug
+    if (process.env.DEBUG_IP_TRACKING === 'true') {
+      console.log(`[IP TRACKING] 📦 Procesando lote de ${batch.length} IPs`);
+    }
     
     // Procesar lote en paralelo
     const promises = batch.map(ipData => processSingleIP(ipData));
@@ -2488,13 +2514,16 @@ async function processIPQueue() {
     
     // Esperar antes del siguiente lote
     if (ipProcessingQueue.length > 0) {
-      console.log(`[IP TRACKING] ⏳ Esperando ${IP_TRACKING_BATCH_DELAY}ms antes del siguiente lote`);
       await new Promise(resolve => setTimeout(resolve, IP_TRACKING_BATCH_DELAY));
     }
   }
   
   isProcessingQueue = false;
-  console.log('[IP TRACKING] ✅ Cola de procesamiento completada');
+  
+  // Log solo si había muchas IPs
+  if (ipProcessingQueue.length > 10) {
+    console.log('[IP TRACKING] ✅ Cola de procesamiento completada');
+  }
 }
 
 // Función para procesar una IP individual
@@ -2541,7 +2570,10 @@ async function processSingleIP(ipData) {
           deviceInfo.longitude, deviceInfo.isp, ip
         ]
       );
-      console.log(`[IP TRACKING] ✅ IP actualizada: ${ip}`);
+      // Log solo en modo debug
+      if (process.env.DEBUG_IP_TRACKING === 'true') {
+        console.log(`[IP TRACKING] ✅ IP actualizada: ${ip}`);
+      }
     } else {
       // Crear nueva entrada de IP
       await runQuery(
@@ -2576,7 +2608,10 @@ async function trackIP(req, userId = null) {
     // Verificar cooldown para evitar tracking excesivo
     const lastTracked = ipTrackingCache.get(ip);
     if (lastTracked && (now - lastTracked) < IP_TRACKING_COOLDOWN) {
-      console.log(`[IP TRACKING] ⏳ Cooldown activo para IP ${ip}, saltando tracking`);
+      // Log solo en modo debug
+      if (process.env.DEBUG_IP_TRACKING === 'true') {
+        console.log(`[IP TRACKING] ⏳ Cooldown activo para IP ${ip}, saltando tracking`);
+      }
       return;
     }
     
@@ -2624,20 +2659,19 @@ async function trackIP(req, userId = null) {
       }
     }
     
-    console.log('[IP TRACKING] 📊 Agregando IP a cola:', { 
-      ip, 
-      userId, 
-      userInfo: userInfo ? 'Disponible' : 'No disponible',
-      userAgent: userAgent.substring(0, 30) + '...',
-      device: {
-        browser: deviceInfo.browser,
-        os: deviceInfo.os,
-        device: deviceInfo.device,
-        country: deviceInfo.country,
-        city: deviceInfo.city,
-        isp: deviceInfo.isp
-      }
-    });
+    // Log solo en modo debug o para IPs nuevas
+    if (process.env.DEBUG_IP_TRACKING === 'true') {
+      console.log('[IP TRACKING] 📊 Agregando IP a cola:', { 
+        ip, 
+        userId, 
+        userInfo: userInfo ? 'Disponible' : 'No disponible',
+        device: {
+          browser: deviceInfo.browser,
+          country: deviceInfo.country,
+          city: deviceInfo.city
+        }
+      });
+    }
     
     // Agregar a la cola de procesamiento
     ipProcessingQueue.push({
@@ -8263,6 +8297,8 @@ app.delete('/api/admin/ban/:type/:value', ensureAuthOrJWT, ensureExclusiveAdmin,
   try {
     const { runQuery } = require('./db/database');
     const { type, value } = req.params;
+    
+    console.log(`[BAN ADMIN] DELETE request - Type: ${type}, Value: ${value}, User: ${req.user?.id}`);
     
     if (!['ip', 'discord'].includes(type)) {
       return res.status(400).json({ error: 'Tipo de ban inválido' });

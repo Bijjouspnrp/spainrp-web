@@ -36,8 +36,22 @@ db.run(`CREATE TABLE IF NOT EXISTS notifications (
     type TEXT DEFAULT 'info',
     priority TEXT DEFAULT 'normal',
     read INTEGER DEFAULT 0,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 )`);
+
+// Migrar tabla existente si usa created_at
+db.run(`ALTER TABLE notifications ADD COLUMN createdAt DATETIME DEFAULT CURRENT_TIMESTAMP`, (err) => {
+  if (err && !err.message.includes('duplicate column name')) {
+    console.error('[NOTIFICATIONS] Error agregando columna createdAt:', err);
+  }
+});
+
+// Copiar datos de created_at a createdAt si existe
+db.run(`UPDATE notifications SET createdAt = created_at WHERE created_at IS NOT NULL AND createdAt IS NULL`, (err) => {
+  if (err) {
+    console.log('[NOTIFICATIONS] No hay datos que migrar o columna created_at no existe');
+  }
+});
 
 // Obtener notificaciones del usuario
 router.get('/', async (req, res) => {
@@ -62,7 +76,7 @@ router.get('/', async (req, res) => {
 
     const notifications = await new Promise((resolve, reject) => {
       db.all(
-        'SELECT * FROM notifications WHERE userId = ? OR userId IS NULL ORDER BY created_at DESC LIMIT 50',
+        'SELECT * FROM notifications WHERE userId = ? OR userId IS NULL ORDER BY createdAt DESC LIMIT 50',
         [userId],
         (err, rows) => {
           if (err) {
