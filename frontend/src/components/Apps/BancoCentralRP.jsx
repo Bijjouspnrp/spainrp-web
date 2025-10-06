@@ -136,37 +136,35 @@ const BancoCentralRP = () => {
     try {
       console.log('[BANCO-FRONTEND] 📊 Cargando transacciones para usuario:', userId);
       
-      // Por ahora usamos transacciones simuladas ya que no hay endpoint real
-      // TODO: Implementar endpoint real de transacciones en el backend
-      const mockTransactions = [
-        { 
-          id: 1, 
-          type: 'deposit', 
-          amount: 500, 
-          description: 'Depósito inicial', 
-          date: new Date().toISOString(),
-          icon: '💰'
-        },
-        { 
-          id: 2, 
-          type: 'work', 
-          amount: 300, 
-          description: 'Trabajo realizado', 
-          date: new Date(Date.now() - 86400000).toISOString(),
-          icon: '💼'
-        },
-        { 
-          id: 3, 
-          type: 'transfer', 
-          amount: -100, 
-          description: 'Transferencia a Juan', 
-          date: new Date(Date.now() - 172800000).toISOString(),
-          icon: '↔️'
-        }
-      ];
+      // Primero intentar cargar desde localStorage
+      const localTransactions = localStorage.getItem(`transactions_${userId}`);
+      if (localTransactions) {
+        const parsed = JSON.parse(localTransactions);
+        console.log('[BANCO-FRONTEND] ✅ Transacciones cargadas desde localStorage:', parsed.length);
+        setTransactions(parsed.map(tx => ({
+          ...tx,
+          icon: getTransactionIcon(tx.type)
+        })));
+        return;
+      }
       
-      console.log('[BANCO-FRONTEND] ⚠️ Usando transacciones simuladas (endpoint no implementado)');
-      setTransactions(mockTransactions);
+      // Si no hay en localStorage, intentar desde la API
+      const response = await authFetch(`/api/proxy/transactions/${userId}`);
+      const data = await response.json();
+      
+      if (data.success && data.transactions && data.transactions.length > 0) {
+        console.log('[BANCO-FRONTEND] ✅ Transacciones cargadas desde API:', data.transactions.length);
+        const transactionsWithIcons = data.transactions.map(tx => ({
+          ...tx,
+          icon: getTransactionIcon(tx.type)
+        }));
+        setTransactions(transactionsWithIcons);
+        // Guardar en localStorage para futuras cargas
+        localStorage.setItem(`transactions_${userId}`, JSON.stringify(transactionsWithIcons));
+      } else {
+        console.log('[BANCO-FRONTEND] ⚠️ No hay transacciones disponibles');
+        setTransactions([]);
+      }
     } catch (error) {
       console.error('[BANCO-FRONTEND] ❌ Error cargando transacciones:', error);
       setTransactions([]);
@@ -179,7 +177,17 @@ const BancoCentralRP = () => {
       id: Date.now(),
       icon: getTransactionIcon(transaction.type)
     };
-    setTransactions(prev => [newTransaction, ...prev.slice(0, 9)]); // Mantener solo 10 transacciones
+    
+    setTransactions(prev => {
+      const updated = [newTransaction, ...prev.slice(0, 9)]; // Mantener solo 10 transacciones
+      
+      // Guardar en localStorage si hay un usuario
+      if (user?.id) {
+        localStorage.setItem(`transactions_${user.id}`, JSON.stringify(updated));
+      }
+      
+      return updated;
+    });
   };
 
   const getTransactionIcon = (type) => {
@@ -197,17 +205,16 @@ const BancoCentralRP = () => {
     try {
       console.log('[BANCO-FRONTEND] 🔍 Obteniendo roles reales para usuario:', userId);
       
-      // Usar el endpoint real que existe: /api/discord/rolecheck/:userId/:roleId
-      // Por ahora simulamos algunos roles comunes ya que necesitaríamos verificar cada rol individualmente
-      // TODO: Implementar endpoint que devuelva todos los roles del usuario de una vez
-      const mockRoles = [
-        '1384340649205301359', // Admin role
-        '123456789012345678',  // Staff role
-        '987654321098765432'   // VIP role
-      ];
+      const response = await authFetch(`/api/discord/user-roles/${userId}`);
+      const data = await response.json();
       
-      console.log('[BANCO-FRONTEND] ⚠️ Usando roles simulados (endpoint completo no implementado)');
-      return mockRoles;
+      if (data.success && data.roles) {
+        console.log('[BANCO-FRONTEND] ✅ Roles obtenidos:', data.roles);
+        return data.roles;
+      } else {
+        console.log('[BANCO-FRONTEND] ⚠️ No se pudieron obtener roles del usuario');
+        return [];
+      }
     } catch (error) {
       console.error('[BANCO-FRONTEND] ❌ Error obteniendo roles:', error);
       return [];

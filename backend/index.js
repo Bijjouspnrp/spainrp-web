@@ -4381,6 +4381,54 @@ app.post('/api/proxy/withdraw', express.json(), async (req, res) => {
   }
 });
 
+// Obtener transacciones de un usuario
+app.get('/api/proxy/transactions/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    console.log(`[BANCO] [transactions-user] GET request para usuario:`, userId);
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'userId requerido' });
+    }
+    
+    // Intentar obtener transacciones desde la API de economía
+    const economiaUrl = `${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/admin/transactions/${userId}`;
+    
+    console.log(`[BANCO] [transactions-user] Calling economia API: ${economiaUrl}`);
+    
+    const response = await fetch(economiaUrl, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    
+    console.log(`[BANCO] [transactions-user] Economia API response status: ${response.status}`);
+    
+    if (response.ok) {
+      const data = await response.json();
+      console.log(`[BANCO] [transactions-user] Transacciones obtenidas:`, data.transactions?.length || 0);
+      res.json(data);
+    } else {
+      // Si no hay endpoint en la API de economía, devolver transacciones vacías
+      console.log(`[BANCO] [transactions-user] API de economía no disponible, devolviendo array vacío`);
+      res.json({ 
+        success: true, 
+        transactions: [],
+        message: 'No hay transacciones disponibles'
+      });
+    }
+    
+  } catch (error) {
+    console.error('[BANCO] [transactions-user] Exception:', error);
+    console.error('[BANCO] [transactions-user] Error stack:', error.stack);
+    
+    // En caso de error, devolver array vacío
+    res.json({ 
+      success: true, 
+      transactions: [],
+      message: 'Error al cargar transacciones'
+    });
+  }
+});
 
 // Utilidad para validar admin en tiempo real usando discordClient local
 async function isAdminUser(userId) {
@@ -6768,6 +6816,40 @@ app.get('/api/discord/rolecheck/:userId/:roleId', async (req, res) => {
   } catch (err) {
     console.error('[MDT] Error verificando rol:', err);
     res.status(500).json({ error: 'Error verificando rol' });
+  }
+});
+
+// Obtener todos los roles de un usuario
+app.get('/api/discord/user-roles/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    if (!discordClient || !discordClient.readyAt) {
+      return res.status(503).json({ error: 'Bot de Discord no disponible' });
+    }
+    
+    const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
+    const guild = discordClient.guilds.cache.get(guildId);
+    
+    if (!guild) {
+      return res.status(404).json({ error: 'Servidor no encontrado' });
+    }
+    
+    await guild.members.fetch();
+    const member = guild.members.cache.get(userId);
+    
+    if (!member) {
+      return res.json({ success: true, roles: [] });
+    }
+    
+    const roles = member.roles.cache.map(role => role.id);
+    console.log(`[DISCORD] Roles obtenidos para usuario ${userId}:`, roles);
+    
+    res.json({ success: true, roles });
+    
+  } catch (err) {
+    console.error('[DISCORD] Error obteniendo roles:', err);
+    res.status(500).json({ error: 'Error obteniendo roles' });
   }
 });
 
