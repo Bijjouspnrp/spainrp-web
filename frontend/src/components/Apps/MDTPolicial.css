@@ -1926,7 +1926,113 @@
   text-overflow: ellipsis;
 }
 
-/* Responsive */
+/* Responsive - Tablets e iPads */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .mdt-container {
+    padding-top: 70px;
+  }
+
+  .mdt-header-content {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+  }
+
+  .mdt-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .mdt-tabs {
+    padding: 0 1.5rem;
+    overflow-x: auto;
+  }
+
+  .mdt-tab {
+    padding: 0.8rem 1.2rem;
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+
+  .mdt-content {
+    padding: 1.5rem;
+  }
+
+  .mdt-section {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .search-inputs {
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .dni-info, .multa-info {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .inventario-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .citizen-nav, .police-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .citizen-nav-btn, .police-nav-btn {
+    flex: 1;
+    min-width: 120px;
+    justify-content: center;
+  }
+
+  .summary-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+
+  .ranking-list {
+    grid-template-columns: 1fr;
+  }
+
+  .ranking-item {
+    padding: 1rem;
+  }
+
+  .dni-card-real {
+    max-width: 500px;
+    aspect-ratio: 1.5 / 1;
+  }
+
+  .dni-content {
+    padding: 0.8rem;
+    gap: 1rem;
+  }
+
+  .dni-photo-container {
+    width: 70px;
+    height: 90px;
+  }
+
+  .dni-name-text {
+    font-size: 1rem;
+  }
+
+  .dni-detail-row {
+    font-size: 0.75rem;
+  }
+
+  .dni-date-row {
+    font-size: 0.7rem;
+  }
+}
+
+/* Responsive - Móviles */
 @media (max-width: 768px) {
   .mdt-header-content {
     flex-direction: column;
@@ -2652,18 +2758,6 @@
   border-radius: 50%;
   margin-right: 12px;
   flex-shrink: 0;
-  position: relative;
-}
-
-.discord-icon {
-  position: absolute;
-  bottom: -2px;
-  right: -2px;
-  font-size: 12px;
-  color: #5865f2;
-  background: white;
-  border-radius: 50%;
-  padding: 2px;
 }
 
 .suggestion-avatar img {

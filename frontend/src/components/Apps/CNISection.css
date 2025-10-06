@@ -1133,6 +1133,98 @@
 }
 
 /* Responsive */
+/* Responsive - Tablets e iPads */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .cni-container {
+    padding: 1.5rem;
+    margin: 1rem;
+    border-radius: 16px;
+  }
+
+  .cni-header-content {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+  }
+
+  .cni-header h1 {
+    font-size: 2rem;
+  }
+
+  .cni-header-actions {
+    flex-direction: row;
+    gap: 1rem;
+  }
+
+  .cni-tabs {
+    padding: 0 1rem;
+    overflow-x: auto;
+  }
+
+  .cni-tab {
+    padding: 0.8rem 1.2rem;
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+
+  .cni-content {
+    padding: 1.5rem;
+  }
+
+  .cni-section {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .cni-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .cni-form-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .cni-business-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .cni-visit-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .cni-article-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .cni-player-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .cni-vehicle-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .cni-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .cni-nav-btn {
+    flex: 1;
+    min-width: 120px;
+  }
+}
+
+/* Responsive - Móviles */
 @media (max-width: 768px) {
   .cni-header-content {
     flex-direction: column;
@@ -1156,6 +1248,20 @@
 
   .cni-stats-grid {
     grid-template-columns: 1fr;
+  }
+
+  .cni-business-grid,
+  .cni-visit-grid,
+  .cni-article-grid,
+  .cni-player-grid,
+  .cni-vehicle-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .cni-form-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
   }
 }
 

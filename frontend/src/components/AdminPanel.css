@@ -576,6 +576,72 @@
 }
 
 /* Responsive */
+/* Responsive - Tablets e iPads */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .admin-panel-container {
+    padding-top: 80px;
+  }
+
+  .admin-header {
+    padding: 1.2rem 1.5rem;
+  }
+
+  .admin-title h1 {
+    font-size: 1.8rem;
+  }
+
+  .admin-layout {
+    flex-direction: column;
+  }
+  
+  .admin-sidebar {
+    width: 100%;
+    position: static;
+    transform: none;
+    border-right: none;
+    border-bottom: 1px solid rgba(114, 137, 218, 0.2);
+  }
+  
+  .admin-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+
+  .admin-main-content {
+    padding: 1.5rem;
+  }
+
+  .admin-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .admin-card {
+    padding: 1.5rem;
+  }
+
+  .admin-table-container {
+    overflow-x: auto;
+  }
+
+  .admin-table {
+    min-width: 600px;
+  }
+
+  .admin-form-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .admin-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
+
 @media (max-width: 1200px) {
   .admin-layout {
     flex-direction: column;
