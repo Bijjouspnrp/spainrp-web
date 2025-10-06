@@ -68,6 +68,7 @@ const BanManagement = () => {
     pages: 0
   });
   const [viewMode, setViewMode] = useState('grid'); // grid, list, compact
+  const [connectionStatus, setConnectionStatus] = useState('connected'); // connected, disconnected, error
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -77,6 +78,20 @@ const BanManagement = () => {
     } else {
       loadBans();
     }
+  }, [activeTab]);
+
+  // Auto-refresh cada 30 segundos
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (activeTab === 'ips') {
+        loadIPs();
+      } else {
+        loadBans();
+      }
+      loadStats();
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, [activeTab]);
 
   // Funciones de utilidad
@@ -173,6 +188,7 @@ const BanManagement = () => {
   const loadBans = async () => {
     try {
       setLoading(true);
+      setConnectionStatus('connected');
       const response = await fetch(apiUrl('/api/admin/ban/bans'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('spainrp_token')}`,
@@ -182,10 +198,19 @@ const BanManagement = () => {
 
       if (response.ok) {
         const data = await response.json();
+        console.log('[BAN MANAGEMENT] Bans cargados:', data);
         setBans(data.bans || []);
+        setConnectionStatus('connected');
+      } else {
+        const errorData = await response.json();
+        console.error('[BAN MANAGEMENT] Error cargando bans:', errorData);
+        setConnectionStatus('error');
+        error(`❌ Error cargando bans: ${errorData.error || 'Error desconocido'}`, 5000);
       }
     } catch (error) {
-      console.error('Error loading bans:', error);
+      console.error('[BAN MANAGEMENT] Error loading bans:', error);
+      setConnectionStatus('disconnected');
+      error('❌ Error de conexión al cargar bans', 5000);
     } finally {
       setLoading(false);
     }
@@ -245,12 +270,17 @@ const BanManagement = () => {
   };
 
   const handleUnban = async (type, value) => {
-    if (!confirm(`¿Estás seguro de que quieres desbanear ${type} ${value}?`)) {
+    const banType = type === 'ip' ? 'IP' : 'Usuario Discord';
+    const confirmMessage = `¿Estás seguro de que quieres desbanear ${banType} "${value}"?\n\nEsta acción no se puede deshacer.`;
+    
+    if (!confirm(confirmMessage)) {
       return;
     }
 
     setLoading(true);
     try {
+      console.log(`[BAN MANAGEMENT] Desbaneando ${type}: ${value}`);
+      
       const response = await fetch(apiUrl(`/api/admin/ban/${type}/${value}`), {
         method: 'DELETE',
         headers: {
@@ -259,12 +289,17 @@ const BanManagement = () => {
         }
       });
 
+      console.log(`[BAN MANAGEMENT] Respuesta del servidor:`, response.status, response.statusText);
+
       if (response.ok) {
-        loadBans();
-        loadStats();
+        const result = await response.json();
+        console.log('[BAN MANAGEMENT] Resultado del desbaneo:', result);
+        
+        // Recargar datos
+        await Promise.all([loadBans(), loadStats()]);
         
         // Mostrar feedback de éxito
-        success(`✅ Ban removido correctamente`, 4000);
+        success(`✅ ${banType} desbaneado correctamente`, 4000);
         
         // Mostrar información sobre notificación DM
         if (type === 'discord') {
@@ -274,11 +309,12 @@ const BanManagement = () => {
         }
       } else {
         const errorData = await response.json();
-        error(`❌ Error: ${errorData.error}`, 5000);
+        console.error('[BAN MANAGEMENT] Error del servidor:', errorData);
+        error(`❌ Error: ${errorData.error || errorData.message || 'Error desconocido'}`, 5000);
       }
     } catch (error) {
-      console.error('Error unbanning:', error);
-      error('❌ Error al remover el ban', 5000);
+      console.error('[BAN MANAGEMENT] Error unbanning:', error);
+      error('❌ Error de conexión al remover el ban', 5000);
     } finally {
       setLoading(false);
     }
@@ -336,6 +372,13 @@ const BanManagement = () => {
             </div>
           </div>
           <div className="header-actions">
+            <div className="connection-status">
+              <div className={`status-dot ${connectionStatus}`}></div>
+              <span className="status-text">
+                {connectionStatus === 'connected' ? 'Conectado' : 
+                 connectionStatus === 'disconnected' ? 'Desconectado' : 'Error'}
+              </span>
+            </div>
             <button 
               className="btn-icon"
               onClick={() => setShowStats(!showStats)}
@@ -345,7 +388,14 @@ const BanManagement = () => {
             </button>
             <button 
               className="btn-icon"
-              onClick={() => window.location.reload()}
+              onClick={() => {
+                if (activeTab === 'ips') {
+                  loadIPs();
+                } else {
+                  loadBans();
+                }
+                loadStats();
+              }}
               title="Recargar datos"
             >
               <FaRedo />
@@ -775,9 +825,12 @@ const BanManagement = () => {
                       <div className="ban-type-badge">
                         {ban.type === 'ip' ? <FaGlobe /> : <FaUser />}
                         <span>{ban.type === 'ip' ? 'IP' : 'Discord'}</span>
+                        {ban.isActive === 1 && (
+                          <span className="active-badge">ACTIVO</span>
+                        )}
                       </div>
                       <div className="ban-value">
-                        {ban.value}
+                        <span className="ban-value-text">{ban.value}</span>
                         {ban.type === 'discord' && (
                           <div className="dm-indicator" title="Notificaciones DM enviadas">
                             <FaDiscord />
@@ -792,7 +845,10 @@ const BanManagement = () => {
                         )}
                         <button 
                           className="copy-btn"
-                          onClick={() => copyToClipboard(ban.value)}
+                          onClick={() => {
+                            copyToClipboard(ban.value);
+                            success('✅ Copiado al portapapeles', 2000);
+                          }}
                           title="Copiar"
                         >
                           <FaCopy />
@@ -808,6 +864,7 @@ const BanManagement = () => {
                           className="btn-unban"
                           onClick={() => handleUnban(ban.type, ban.value)}
                           title="Desbanear"
+                          disabled={loading}
                         >
                           <FaUnlock />
                         </button>
@@ -817,7 +874,7 @@ const BanManagement = () => {
                     <div className="card-content">
                       <div className="ban-reason">
                         <FaExclamationTriangle />
-                        <span>{ban.reason}</span>
+                        <span>{ban.reason || 'Sin razón especificada'}</span>
                       </div>
                       
                       <div className="ban-meta">
@@ -825,12 +882,29 @@ const BanManagement = () => {
                           <FaClock />
                           <span>Baneado: {formatDate(ban.bannedAt)}</span>
                         </div>
-                        {ban.expiresAt && (
+                        {ban.bannedBy && (
+                          <div className="ban-admin">
+                            <FaUser />
+                            <span>Por: {ban.bannedBy}</span>
+                          </div>
+                        )}
+                        {ban.expiresAt ? (
                           <div className="ban-expires">
                             <FaClock />
                             <span>Expira: {formatDate(ban.expiresAt)}</span>
                           </div>
+                        ) : (
+                          <div className="ban-permanent">
+                            <FaBan />
+                            <span>Permanente</span>
+                          </div>
                         )}
+                      </div>
+                      
+                      <div className="ban-status">
+                        <div className={`status-indicator ${ban.isActive === 1 ? 'active' : 'inactive'}`}>
+                          {ban.isActive === 1 ? 'ACTIVO' : 'INACTIVO'}
+                        </div>
                       </div>
                     </div>
                   </div>
