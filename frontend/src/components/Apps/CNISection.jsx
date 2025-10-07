@@ -90,17 +90,27 @@ const CNISection = () => {
           
           // Si es CNI, verificar autenticación Roblox
           if (cniData.hasRole) {
-            // Verificar si ya tiene autenticación Roblox
-            const robloxAuthRes = await fetch(apiUrl('/api/roblox/check-pin'), {
-              headers: { 'Authorization': `Bearer ${token}` }
-            });
+            // Modo instantáneo - saltar verificación de PIN
+            const isInstantMode = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost' || window.location.hostname.includes('render.com');
             
-            if (robloxAuthRes.ok) {
-              const robloxData = await robloxAuthRes.json();
-              if (!robloxData.hasPin) {
-                // No tiene PIN configurado, mostrar autenticación
-                setAuthRequired(true);
-                setShowRobloxAuth(true);
+            if (isInstantMode) {
+              console.log('⚡ Modo instantáneo CNI - saltando verificación de PIN');
+              // En modo instantáneo, siempre mostrar autenticación
+              setAuthRequired(true);
+              setShowRobloxAuth(true);
+            } else {
+              // Verificar si ya tiene autenticación Roblox
+              const robloxAuthRes = await fetch(apiUrl('/api/roblox/check-pin'), {
+                headers: { 'Authorization': `Bearer ${token}` }
+              });
+              
+              if (robloxAuthRes.ok) {
+                const robloxData = await robloxAuthRes.json();
+                if (!robloxData.hasPin) {
+                  // No tiene PIN configurado, mostrar autenticación
+                  setAuthRequired(true);
+                  setShowRobloxAuth(true);
+                }
               }
             }
             
@@ -226,7 +236,7 @@ const CNISection = () => {
       <div className="cni-loading">
         <div className="cni-loading-logo">
           <img 
-            src="https://media.discordapp.net/attachments/1329945759541497906/1424473452206751764/CNIescudoespaC3B1a2.png?ex=68e413c8&is=68e2c248&hm=f12f703571bbc40060329de77d8c8f6973c677806a45a1b1238a8deb9522a0b1&=" 
+            src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iOCIgZmlsbD0iIzFhMWExYSIvPgo8cGF0aCBkPSJNMTIgMTJIMjhWMjhIMTJWMjBIMTZWMjRIMjRWMjBIMjBWMjRIMTZWMjBIMTJWMTJaIiBmaWxsPSIjZmJiZjI0Ii8+Cjx0ZXh0IHg9IjIwIiB5PSIyNiIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjgiIGZpbGw9IiNmYmJmMjQiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkNOTTwvdGV4dD4KPC9zdmc+" 
             alt="CNI Logo" 
             className="cni-loading-logo-img"
             onError={(e) => {
@@ -342,7 +352,7 @@ const CNISection = () => {
         <div className="cni-header-content">
           <div className="cni-logo">
             <img 
-              src="https://media.discordapp.net/attachments/1329945759541497906/1424473452206751764/CNIescudoespaC3B1a2.png?ex=68e413c8&is=68e2c248&hm=f12f703571bbc40060329de77d8c8f6973c677806a45a1b1238a8deb9522a0b1&=" 
+              src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iOCIgZmlsbD0iIzFhMWExYSIvPgo8cGF0aCBkPSJNMTIgMTJIMjhWMjhIMTJWMjBIMTZWMjRIMjRWMjBIMjBWMjRIMTZWMjBIMTJWMTJaIiBmaWxsPSIjZmJiZjI0Ii8+Cjx0ZXh0IHg9IjIwIiB5PSIyNiIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjgiIGZpbGw9IiNmYmJmMjQiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkNOTTwvdGV4dD4KPC9zdmc+" 
               alt="CNI Logo" 
               className="cni-logo-img"
               onError={(e) => {
