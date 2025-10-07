@@ -25,6 +25,16 @@ const RobloxAuth = ({ onSuccess, onCancel, isCNI = false }) => {
       const token = localStorage.getItem('spainrp_token');
       if (!token) {
         console.log('No token found, skipping PIN check');
+        setIsFirstTime(true);
+        return;
+      }
+
+      // Modo instantáneo - saltar verificación de PIN
+      const isInstantMode = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost' || window.location.hostname.includes('render.com');
+      
+      if (isInstantMode) {
+        console.log('⚡ Modo instantáneo - saltando verificación de PIN');
+        setIsFirstTime(true);
         return;
       }
 
@@ -82,12 +92,13 @@ const RobloxAuth = ({ onSuccess, onCancel, isCNI = false }) => {
         // Simular delay mínimo para UX
         await new Promise(resolve => setTimeout(resolve, 300));
         
-        // Mock de datos de usuario
+        // Mock de datos de usuario con avatar placeholder
+        const mockUserId = Math.floor(Math.random() * 1000000);
         const mockUser = {
-          id: Math.floor(Math.random() * 1000000),
+          id: mockUserId,
           username: robloxUsername,
           displayName: robloxUsername,
-          avatar: `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${Math.floor(Math.random() * 1000000)}&size=150x150&format=Png&isCircular=true`
+          avatar: null // Sin avatar para evitar problemas de carga
         };
         
         console.log('✅ Usuario mock verificado:', mockUser);
