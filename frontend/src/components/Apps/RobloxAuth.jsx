@@ -23,6 +23,11 @@ const RobloxAuth = ({ onSuccess, onCancel, isCNI = false }) => {
   const checkExistingPin = async () => {
     try {
       const token = localStorage.getItem('spainrp_token');
+      if (!token) {
+        console.log('No token found, skipping PIN check');
+        return;
+      }
+
       const response = await fetch(apiUrl('/api/roblox/check-pin'), {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -34,9 +39,16 @@ const RobloxAuth = ({ onSuccess, onCancel, isCNI = false }) => {
         } else {
           setIsFirstTime(true);
         }
+      } else if (response.status === 401) {
+        console.log('Token inválido, usuario necesita autenticación');
+        setIsFirstTime(true);
+      } else {
+        console.log('Error verificando PIN, continuando sin autenticación previa');
+        setIsFirstTime(true);
       }
     } catch (err) {
       console.error('Error verificando PIN:', err);
+      setIsFirstTime(true);
     }
   };
 
@@ -49,18 +61,31 @@ const RobloxAuth = ({ onSuccess, onCancel, isCNI = false }) => {
 
     setLoading(true);
     setError('');
+    setSuccess('');
 
     try {
       const token = localStorage.getItem('spainrp_token');
+      if (!token) {
+        setError('Sesión expirada. Por favor, recarga la página.');
+        setLoading(false);
+        return;
+      }
+
+      // Timeout de 15 segundos para la verificación
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+
       const response = await fetch(apiUrl('/api/roblox/verify-user'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ username: robloxUsername })
+        body: JSON.stringify({ username: robloxUsername }),
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
       const data = await response.json();
 
       if (response.ok) {
@@ -75,7 +100,11 @@ const RobloxAuth = ({ onSuccess, onCancel, isCNI = false }) => {
         setError(data.message || 'Error verificando usuario de Roblox');
       }
     } catch (err) {
-      setError('Error de conexión. Inténtalo de nuevo.');
+      if (err.name === 'AbortError') {
+        setError('Timeout: La verificación tardó demasiado. Inténtalo de nuevo.');
+      } else {
+        setError('Error de conexión. Inténtalo de nuevo.');
+      }
     } finally {
       setLoading(false);
     }
@@ -211,9 +240,16 @@ const RobloxAuth = ({ onSuccess, onCancel, isCNI = false }) => {
               
               <div className="auth-actions">
                 <button type="submit" className="auth-btn auth-btn-primary" disabled={loading}>
-                  {loading ? 'Verificando...' : 'Verificar Usuario'}
+                  {loading ? (
+                    <>
+                      <div className="auth-spinner"></div>
+                      Verificando usuario en Roblox...
+                    </>
+                  ) : (
+                    'Verificar Usuario'
+                  )}
                 </button>
-                <button type="button" className="auth-btn auth-btn-secondary" onClick={onCancel}>
+                <button type="button" className="auth-btn auth-btn-secondary" onClick={onCancel} disabled={loading}>
                   Cancelar
                 </button>
               </div>

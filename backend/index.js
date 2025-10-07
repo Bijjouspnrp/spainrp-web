@@ -8670,38 +8670,84 @@ app.post('/api/roblox/verify-user', ensureAuthenticated, async (req, res) => {
       return res.status(400).json({ message: 'Nombre de usuario requerido' });
     }
 
-    // Verificar usuario en Roblox
+    // Verificar usuario en Roblox con timeout
     const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-    const robloxResponse = await fetch(`https://users.roblox.com/v1/usernames/users`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ usernames: [username], excludeBannedUsers: true })
-    });
+    
+    // Timeout de 10 segundos para la consulta
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-    if (!robloxResponse.ok) {
-      return res.status(400).json({ message: 'Error verificando usuario en Roblox' });
+    try {
+      const robloxResponse = await fetch(`https://users.roblox.com/v1/usernames/users`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'User-Agent': 'SpainRP-Web/1.0'
+        },
+        body: JSON.stringify({ usernames: [username], excludeBannedUsers: true }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!robloxResponse.ok) {
+        return res.status(400).json({ message: 'Error verificando usuario en Roblox' });
+      }
+
+      const robloxData = await robloxResponse.json();
+      
+      if (!robloxData.data || robloxData.data.length === 0) {
+        return res.status(404).json({ message: 'Usuario de Roblox no encontrado' });
+      }
+
+      const userData = robloxData.data[0];
+      
+      // Obtener avatar del usuario con timeout más corto
+      const avatarController = new AbortController();
+      const avatarTimeoutId = setTimeout(() => avatarController.abort(), 5000);
+
+      try {
+        const avatarResponse = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userData.id}&size=150x150&format=Png&isCircular=true`, {
+          headers: { 'User-Agent': 'SpainRP-Web/1.0' },
+          signal: avatarController.signal
+        });
+        
+        clearTimeout(avatarTimeoutId);
+        
+        let avatarUrl = null;
+        if (avatarResponse.ok) {
+          const avatarData = await avatarResponse.json();
+          avatarUrl = avatarData.data?.[0]?.imageUrl || null;
+        }
+        
+        const user = {
+          id: userData.id,
+          username: userData.name,
+          displayName: userData.displayName,
+          avatar: avatarUrl
+        };
+
+        res.json({ user });
+      } catch (avatarError) {
+        clearTimeout(avatarTimeoutId);
+        console.warn('Error obteniendo avatar, continuando sin avatar:', avatarError.message);
+        
+        const user = {
+          id: userData.id,
+          username: userData.name,
+          displayName: userData.displayName,
+          avatar: null
+        };
+
+        res.json({ user });
+      }
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      if (fetchError.name === 'AbortError') {
+        return res.status(408).json({ message: 'Timeout verificando usuario en Roblox' });
+      }
+      throw fetchError;
     }
-
-    const robloxData = await robloxResponse.json();
-    
-    if (!robloxData.data || robloxData.data.length === 0) {
-      return res.status(404).json({ message: 'Usuario de Roblox no encontrado' });
-    }
-
-    const userData = robloxData.data[0];
-    
-    // Obtener avatar del usuario
-    const avatarResponse = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userData.id}&size=150x150&format=Png&isCircular=true`);
-    const avatarData = await avatarResponse.json();
-    
-    const user = {
-      id: userData.id,
-      username: userData.name,
-      displayName: userData.displayName,
-      avatar: avatarData.data?.[0]?.imageUrl || null
-    };
-
-    res.json({ user });
   } catch (error) {
     console.error('Error verificando usuario Roblox:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
@@ -8810,13 +8856,25 @@ app.get('/api/roblox/check-pin', ensureAuthenticated, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const query = 'SELECT id FROM roblox_auth WHERE discord_user_id = ?';
-    const [rows] = await db.query(query, [userId]);
+    // Query optimizada con timeout
+    const query = 'SELECT id FROM roblox_auth WHERE discord_user_id = ? LIMIT 1';
+    
+    // Timeout de 3 segundos para la consulta
+    const queryPromise = db.query(query, [userId]);
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Query timeout')), 3000)
+    );
+
+    const [rows] = await Promise.race([queryPromise, timeoutPromise]);
 
     res.json({ hasPin: rows.length > 0 });
   } catch (error) {
     console.error('Error verificando PIN existente:', error);
-    res.status(500).json({ message: 'Error interno del servidor' });
+    if (error.message === 'Query timeout') {
+      res.status(408).json({ message: 'Timeout en consulta de base de datos' });
+    } else {
+      res.status(500).json({ message: 'Error interno del servidor' });
+    }
   }
 });
 
