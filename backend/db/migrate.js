@@ -31,6 +31,21 @@ function migrateDatabase() {
       }
     });
 
+    // Verificar si la tabla roblox_auth existe
+    db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='roblox_auth'", (err, row) => {
+      if (err) {
+        console.error('[MIGRATION] Error verificando tabla roblox_auth:', err);
+        return;
+      }
+
+      if (!row) {
+        console.log('[MIGRATION] Tabla roblox_auth no existe, creándola...');
+        createRobloxAuthTable();
+      } else {
+        console.log('[MIGRATION] Tabla roblox_auth ya existe');
+      }
+    });
+
     function createTable() {
       const createTableSQL = `
         CREATE TABLE IF NOT EXISTS ip_tracking (
@@ -130,6 +145,31 @@ function migrateDatabase() {
             resolve();
           }
         });
+      });
+    }
+
+    function createRobloxAuthTable() {
+      const createRobloxAuthSQL = `
+        CREATE TABLE IF NOT EXISTS roblox_auth (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          discord_user_id TEXT NOT NULL UNIQUE,
+          roblox_user_id TEXT NOT NULL,
+          roblox_username TEXT NOT NULL,
+          roblox_display_name TEXT,
+          roblox_avatar TEXT,
+          pin_hash TEXT NOT NULL,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          last_access DATETIME
+        )
+      `;
+
+      db.run(createRobloxAuthSQL, (err) => {
+        if (err) {
+          console.error('[MIGRATION] Error creando tabla roblox_auth:', err);
+        } else {
+          console.log('[MIGRATION] ✅ Tabla roblox_auth creada correctamente');
+        }
       });
     }
   });

@@ -13,6 +13,7 @@ import { apiUrl } from '../../utils/api';
 import './CNISection.css';
 import './BusinessRecords.css';
 import './CNIBlog.css';
+import RobloxAuth from './RobloxAuth';
 
 const CNISection = () => {
   const [user, setUser] = useState(null);
@@ -23,6 +24,11 @@ const CNISection = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  
+  // Estados para autenticación Roblox
+  const [showRobloxAuth, setShowRobloxAuth] = useState(false);
+  const [robloxUser, setRobloxUser] = useState(null);
+  const [authRequired, setAuthRequired] = useState(false);
 
   // Estados para funcionalidades CNI
   const [searchData, setSearchData] = useState({
@@ -82,8 +88,23 @@ const CNISection = () => {
           const cniData = await cniRes.json();
           setIsCNI(cniData.hasRole);
           
-          // Mostrar modal de bienvenida solo la primera vez
+          // Si es CNI, verificar autenticación Roblox
           if (cniData.hasRole) {
+            // Verificar si ya tiene autenticación Roblox
+            const robloxAuthRes = await fetch(apiUrl('/api/roblox/check-pin'), {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (robloxAuthRes.ok) {
+              const robloxData = await robloxAuthRes.json();
+              if (!robloxData.hasPin) {
+                // No tiene PIN configurado, mostrar autenticación
+                setAuthRequired(true);
+                setShowRobloxAuth(true);
+              }
+            }
+            
+            // Mostrar modal de bienvenida solo la primera vez
             const hasSeenWelcome = localStorage.getItem('cni-welcome-seen');
             if (!hasSeenWelcome) {
               setShowWelcomeModal(true);
@@ -111,6 +132,20 @@ const CNISection = () => {
 
     checkAuth();
   }, []);
+
+  // Funciones para manejar autenticación Roblox
+  const handleRobloxAuthSuccess = (userData) => {
+    setRobloxUser(userData);
+    setShowRobloxAuth(false);
+    setAuthRequired(false);
+  };
+
+  const handleRobloxAuthCancel = () => {
+    setShowRobloxAuth(false);
+    setAuthRequired(false);
+    // Redirigir a la página principal o cerrar sesión
+    window.location.href = '/';
+  };
 
   // Cargar agentes CNI para autocompletado
 
@@ -2514,6 +2549,15 @@ const VehiclesInCityTab = () => {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Componente de autenticación Roblox */}
+      {showRobloxAuth && (
+        <RobloxAuth 
+          onSuccess={handleRobloxAuthSuccess}
+          onCancel={handleRobloxAuthCancel}
+          isCNI={true}
+        />
       )}
     </div>
   );

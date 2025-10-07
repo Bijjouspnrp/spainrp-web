@@ -13,6 +13,7 @@ import {
   SearchSection, MultarSection, ArrestarSection, RankingSection 
 } from './MDTSections';
 import CNISection from './CNISection';
+import RobloxAuth from './RobloxAuth';
 
 const MDTPolicial = () => {
   const [user, setUser] = useState(null);
@@ -21,6 +22,11 @@ const MDTPolicial = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('citizen');
   const [error, setError] = useState(null);
+  
+  // Estados para autenticación Roblox
+  const [showRobloxAuth, setShowRobloxAuth] = useState(false);
+  const [robloxUser, setRobloxUser] = useState(null);
+  const [authRequired, setAuthRequired] = useState(false);
 
   // Estados para ciudadanos
   const [citizenData, setCitizenData] = useState({
@@ -175,6 +181,34 @@ const MDTPolicial = () => {
     }
   }, [user, isPolice]);
 
+  // Función para manejar el cambio de pestaña
+  const handleTabChange = (tab) => {
+    if ((tab === 'police' && isPolice) || (tab === 'cni' && isCNI)) {
+      // Verificar si necesita autenticación Roblox
+      if (!robloxUser) {
+        setAuthRequired(true);
+        setShowRobloxAuth(true);
+        return;
+      }
+    }
+    setActiveTab(tab);
+  };
+
+  // Función para manejar autenticación Roblox exitosa
+  const handleRobloxAuthSuccess = (userData) => {
+    setRobloxUser(userData);
+    setShowRobloxAuth(false);
+    setAuthRequired(false);
+  };
+
+  // Función para cancelar autenticación Roblox
+  const handleRobloxAuthCancel = () => {
+    setShowRobloxAuth(false);
+    setAuthRequired(false);
+    // Volver a la pestaña de ciudadano
+    setActiveTab('citizen');
+  };
+
   if (loading) {
     return (
       <div className="mdt-loading">
@@ -215,14 +249,14 @@ const MDTPolicial = () => {
       <div className="mdt-tabs">
         <button 
           className={`mdt-tab ${activeTab === 'citizen' ? 'active' : ''}`}
-          onClick={() => setActiveTab('citizen')}
+          onClick={() => handleTabChange('citizen')}
         >
           <FaUser /> Ciudadano
         </button>
         {isPolice && (
           <button 
             className={`mdt-tab ${activeTab === 'police' ? 'active' : ''}`}
-            onClick={() => setActiveTab('police')}
+            onClick={() => handleTabChange('police')}
           >
             <FaShieldAlt /> Policía
           </button>
@@ -230,7 +264,7 @@ const MDTPolicial = () => {
         {isCNI && (
           <button 
             className={`mdt-tab ${activeTab === 'cni' ? 'active' : ''}`}
-            onClick={() => setActiveTab('cni')}
+            onClick={() => handleTabChange('cni')}
           >
             <FaEye /> CNI
           </button>
@@ -256,6 +290,15 @@ const MDTPolicial = () => {
           <CNISection />
         )}
       </div>
+
+      {/* Componente de autenticación Roblox */}
+      {showRobloxAuth && (
+        <RobloxAuth 
+          onSuccess={handleRobloxAuthSuccess}
+          onCancel={handleRobloxAuthCancel}
+          isCNI={activeTab === 'cni'}
+        />
+      )}
     </div>
   );
 };

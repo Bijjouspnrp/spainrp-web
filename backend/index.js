@@ -8659,6 +8659,167 @@ app.get('/api/proxy/admin/balance/:id', async (req, res) => {
   }
 });
 
+// ===== RUTAS DE AUTENTICACIÓN ROBLOX Y PIN =====
+
+// POST /api/roblox/verify-user - Verificar usuario de Roblox
+app.post('/api/roblox/verify-user', ensureAuthenticated, async (req, res) => {
+  try {
+    const { username } = req.body;
+    
+    if (!username) {
+      return res.status(400).json({ message: 'Nombre de usuario requerido' });
+    }
+
+    // Verificar usuario en Roblox
+    const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+    const robloxResponse = await fetch(`https://users.roblox.com/v1/usernames/users`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ usernames: [username], excludeBannedUsers: true })
+    });
+
+    if (!robloxResponse.ok) {
+      return res.status(400).json({ message: 'Error verificando usuario en Roblox' });
+    }
+
+    const robloxData = await robloxResponse.json();
+    
+    if (!robloxData.data || robloxData.data.length === 0) {
+      return res.status(404).json({ message: 'Usuario de Roblox no encontrado' });
+    }
+
+    const userData = robloxData.data[0];
+    
+    // Obtener avatar del usuario
+    const avatarResponse = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userData.id}&size=150x150&format=Png&isCircular=true`);
+    const avatarData = await avatarResponse.json();
+    
+    const user = {
+      id: userData.id,
+      username: userData.name,
+      displayName: userData.displayName,
+      avatar: avatarData.data?.[0]?.imageUrl || null
+    };
+
+    res.json({ user });
+  } catch (error) {
+    console.error('Error verificando usuario Roblox:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+});
+
+// POST /api/roblox/setup-pin - Configurar PIN de seguridad
+app.post('/api/roblox/setup-pin', ensureAuthenticated, async (req, res) => {
+  try {
+    const { username, pin, userData } = req.body;
+    const userId = req.user.id;
+
+    if (!username || !pin || !userData) {
+      return res.status(400).json({ message: 'Datos requeridos faltantes' });
+    }
+
+    if (pin.length < 4 || pin.length > 8) {
+      return res.status(400).json({ message: 'PIN debe tener entre 4 y 8 dígitos' });
+    }
+
+    // Verificar que el PIN solo contenga números
+    if (!/^\d+$/.test(pin)) {
+      return res.status(400).json({ message: 'PIN solo puede contener números' });
+    }
+
+    // Hash del PIN
+    const bcrypt = require('bcrypt');
+    const hashedPin = await bcrypt.hash(pin, 10);
+
+    // Guardar en base de datos
+    const query = `
+      INSERT INTO roblox_auth (discord_user_id, roblox_user_id, roblox_username, roblox_display_name, roblox_avatar, pin_hash, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
+      ON DUPLICATE KEY UPDATE
+      roblox_user_id = VALUES(roblox_user_id),
+      roblox_username = VALUES(roblox_username),
+      roblox_display_name = VALUES(roblox_display_name),
+      roblox_avatar = VALUES(roblox_avatar),
+      pin_hash = VALUES(pin_hash),
+      updated_at = NOW()
+    `;
+
+    await db.query(query, [
+      userId,
+      userData.id,
+      userData.username,
+      userData.displayName,
+      userData.avatar,
+      hashedPin
+    ]);
+
+    res.json({ message: 'PIN configurado correctamente' });
+  } catch (error) {
+    console.error('Error configurando PIN:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+});
+
+// POST /api/roblox/verify-pin - Verificar PIN de seguridad
+app.post('/api/roblox/verify-pin', ensureAuthenticated, async (req, res) => {
+  try {
+    const { pin } = req.body;
+    const userId = req.user.id;
+
+    if (!pin) {
+      return res.status(400).json({ message: 'PIN requerido' });
+    }
+
+    // Obtener datos del usuario
+    const query = 'SELECT * FROM roblox_auth WHERE discord_user_id = ?';
+    const [rows] = await db.query(query, [userId]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'No se encontró configuración de PIN' });
+    }
+
+    const authData = rows[0];
+
+    // Verificar PIN
+    const bcrypt = require('bcrypt');
+    const isValidPin = await bcrypt.compare(pin, authData.pin_hash);
+
+    if (!isValidPin) {
+      return res.status(401).json({ message: 'PIN incorrecto' });
+    }
+
+    // Actualizar último acceso
+    await db.query('UPDATE roblox_auth SET last_access = NOW() WHERE discord_user_id = ?', [userId]);
+
+    const user = {
+      id: authData.roblox_user_id,
+      username: authData.roblox_username,
+      displayName: authData.roblox_display_name,
+      avatar: authData.roblox_avatar
+    };
+
+    res.json({ user });
+  } catch (error) {
+    console.error('Error verificando PIN:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+});
+
+// GET /api/roblox/check-pin - Verificar si el usuario tiene PIN configurado
+app.get('/api/roblox/check-pin', ensureAuthenticated, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const query = 'SELECT id FROM roblox_auth WHERE discord_user_id = ?';
+    const [rows] = await db.query(query, [userId]);
+
+    res.json({ hasPin: rows.length > 0 });
+  } catch (error) {
+    console.error('Error verificando PIN existente:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+});
+
 // Ejecutar migración de base de datos antes de iniciar el servidor
 migrateDatabase()
   .then(() => {
