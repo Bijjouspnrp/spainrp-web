@@ -2452,7 +2452,7 @@ async function sendBanNotification(userId, banType, reason, expiresAt, bannedBy)
 const ipTrackingCache = new Map();
 const IP_TRACKING_COOLDOWN = 30000; // 30 segundos entre trackings de la misma IP
 const IP_TRACKING_BATCH_SIZE = 3; // Procesar máximo 3 IPs por lote
-const IP_TRACKING_BATCH_DELAY = 5000; // 5 segundos entre lotes
+const IP_TRACKING_BATCH_DELAY = 1000; // 1 segundo entre lotes
 
 // Cola de procesamiento de IPs
 const ipProcessingQueue = [];
@@ -8680,7 +8680,7 @@ app.post('/api/roblox/verify-user', ensureAuthenticated, async (req, res) => {
     const timeoutId = setTimeout(() => {
       console.log(`[ROBLOX AUTH] ⏰ Timeout verificando usuario: ${username}`);
       controller.abort();
-    }, 1000);
+    }, 5000);
 
     try {
       console.log(`[ROBLOX AUTH] 📡 Consultando API de Roblox para: ${username}`);
@@ -8883,10 +8883,10 @@ app.get('/api/roblox/check-pin', ensureAuthenticated, async (req, res) => {
     // Query optimizada con timeout
     const query = 'SELECT id FROM roblox_auth WHERE discord_user_id = ? LIMIT 1';
     
-    // Timeout de 3 segundos para la consulta
+    // Timeout de 10 segundos para la consulta
     const queryPromise = db.query(query, [userId]);
     const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Query timeout')), 3000)
+      setTimeout(() => reject(new Error('Query timeout')), 10000)
     );
 
     const [rows] = await Promise.race([queryPromise, timeoutPromise]);
