@@ -754,7 +754,7 @@ const CNISection = () => {
   const [showHelp, setShowHelp] = useState(false);
 
   // Hook de caché avanzado
-  const { getCachedData, setCachedData, clearExpiredCache, getCacheStats } = useAdvancedCache();
+  const { getCachedData, setCachedData, clearExpiredCache, clearCache, getCacheStats } = useAdvancedCache();
 
   // Estados para funcionalidades CNI
   const [searchData, setSearchData] = useState({
@@ -1962,7 +1962,7 @@ const BusinessRecordsTab = ({ cache }) => {
 
   const loadBusinesses = async () => {
     const cacheKey = 'cni-businesses';
-    const cachedData = cache.getCachedData(cacheKey);
+    const cachedData = getCachedData(cacheKey);
     
     if (cachedData) {
       console.log('[CNI][EMPRESAS] 📦 Usando datos en caché');
@@ -1984,7 +1984,7 @@ const BusinessRecordsTab = ({ cache }) => {
       if (data.success) {
         setBusinesses(data.empresas);
         // Cachear por 2 minutos
-        cache.setCachedData(cacheKey, data.empresas, 120000);
+        setCachedData(cacheKey, data.empresas, 120000);
         console.log(`[CNI][EMPRESAS] ✅ ${data.empresas.length} empresas cargadas y cacheadas`);
       } else {
         setError('Error cargando empresas');
@@ -1999,7 +1999,7 @@ const BusinessRecordsTab = ({ cache }) => {
 
   const loadVisits = async () => {
     const cacheKey = 'cni-visits';
-    const cachedData = cache.getCachedData(cacheKey);
+    const cachedData = getCachedData(cacheKey);
     
     if (cachedData) {
       console.log('[CNI][VISITAS] 📦 Usando datos en caché');
@@ -2015,7 +2015,7 @@ const BusinessRecordsTab = ({ cache }) => {
       if (data.success) {
         setVisits(data.visitas);
         // Cachear por 3 minutos
-        cache.setCachedData(cacheKey, data.visitas, 180000);
+        setCachedData(cacheKey, data.visitas, 180000);
         console.log(`[CNI][VISITAS] ✅ ${data.visitas.length} visitas cargadas y cacheadas`);
       }
     } catch (err) {
@@ -2025,7 +2025,7 @@ const BusinessRecordsTab = ({ cache }) => {
 
   const loadStats = async () => {
     const cacheKey = 'cni-business-stats';
-    const cachedData = cache.getCachedData(cacheKey);
+    const cachedData = getCachedData(cacheKey);
     
     if (cachedData) {
       console.log('[CNI][ESTADISTICAS] 📦 Usando datos en caché');
@@ -2041,7 +2041,7 @@ const BusinessRecordsTab = ({ cache }) => {
       if (data.success) {
         setStats(data.estadisticas);
         // Cachear por 5 minutos
-        cache.setCachedData(cacheKey, data.estadisticas, 300000);
+        setCachedData(cacheKey, data.estadisticas, 300000);
         console.log('[CNI][ESTADISTICAS] ✅ Estadísticas cargadas y cacheadas');
       }
     } catch (err) {
@@ -2089,7 +2089,7 @@ const BusinessRecordsTab = ({ cache }) => {
         });
         
         // Limpiar caché y recargar datos
-        cache.clearCache();
+        clearCache();
         await Promise.all([loadBusinesses(), loadStats()]);
         
         console.log('[CNI][EMPRESAS] ✅ Empresa registrada y datos actualizados');
@@ -2233,7 +2233,7 @@ const BusinessRecordsTab = ({ cache }) => {
         console.log('[CNI][EMPRESAS] 🔄 Limpiando caché y recargando datos...');
         
         // Limpiar caché y recargar datos
-        cache.clearCache();
+        clearCache();
         await Promise.all([loadBusinesses(), loadStats()]);
       } else {
         console.log(`[CNI][EMPRESAS] ❌ Error en respuesta: ${data.error}`);
