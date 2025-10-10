@@ -785,11 +785,11 @@ const CNISection = () => {
     }
   });
 
-  // Limpiar caché expirado cada 5 minutos
-  useEffect(() => {
-    const interval = setInterval(clearExpiredCache, 300000);
-    return () => clearInterval(interval);
-  }, [clearExpiredCache]);
+  // Limpiar caché expirado cada 5 minutos (deshabilitado)
+  // useEffect(() => {
+  //   const interval = setInterval(clearExpiredCache, 300000);
+  //   return () => clearInterval(interval);
+  // }, [clearExpiredCache]);
 
   // Verificar autenticación y permisos CNI
   useEffect(() => {
