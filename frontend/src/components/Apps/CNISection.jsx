@@ -18,7 +18,8 @@ import './BusinessRecords.css';
 import './CNIBlog.css';
 import './CNIExport.css';
 
-// Hook personalizado para caché avanzado
+// Hook personalizado para caché avanzado (deshabilitado temporalmente)
+/*
 const useAdvancedCache = () => {
   const [cache, setCache] = useState(new Map());
   const [cacheStats, setCacheStats] = useState({
@@ -89,6 +90,7 @@ const useAdvancedCache = () => {
     getCacheStats
   };
 };
+*/
 
 // Hook para exportación de datos
 const useDataExport = () => {
@@ -753,8 +755,8 @@ const CNISection = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
 
-  // Hook de caché avanzado
-  const { getCachedData, setCachedData, clearExpiredCache, clearCache, getCacheStats } = useAdvancedCache();
+  // Hook de caché avanzado (deshabilitado temporalmente)
+  // const { getCachedData, setCachedData, clearExpiredCache, clearCache, getCacheStats } = useAdvancedCache();
 
   // Estados para funcionalidades CNI
   const [searchData, setSearchData] = useState({
@@ -852,17 +854,8 @@ const CNISection = () => {
 
   // Cargar agentes CNI para autocompletado
 
-  // Cargar estadísticas de la base de datos con caché
+  // Cargar estadísticas de la base de datos
   const loadDatabaseStats = async () => {
-    const cacheKey = 'database-stats';
-    const cachedData = getCachedData(cacheKey);
-    
-    if (cachedData) {
-      console.log('[CNI] Usando datos en caché para estadísticas');
-      setDatabaseStats(cachedData);
-      return;
-    }
-
     try {
       // Usar el nuevo endpoint del dashboard CNI
       const dashboardRes = await fetch(apiUrl('/api/cni/dashboard'));
@@ -881,7 +874,6 @@ const CNISection = () => {
             totalArrestos: cniData.baseDatos?.arrestos || 0
           };
           setDatabaseStats(stats);
-          setCachedData(cacheKey, stats, 300000); // 5 minutos de caché
         }
       } else {
         console.warn('[CNI] Dashboard endpoint not available, using fallback');
@@ -1219,14 +1211,14 @@ const CNISection = () => {
       </div>
 
       <div className="cni-content">
-        {activeTab === 'database' && <DatabaseTab stats={databaseStats} cache={{ getCachedData, setCachedData }} />}
-        {activeTab === 'search' && <AdvancedSearchTab cache={{ getCachedData, setCachedData }} />}
-        {activeTab === 'tracking' && <TrackingTab cache={{ getCachedData, setCachedData }} />}
-        {activeTab === 'players' && <PlayersInCityTab cache={{ getCachedData, setCachedData }} />}
-        {activeTab === 'vehicles' && <VehiclesInCityTab cache={{ getCachedData, setCachedData }} />}
-        {activeTab === 'intelligence' && <IntelligenceTab cache={{ getCachedData, setCachedData }} />}
-        {activeTab === 'business' && <BusinessRecordsTab cache={{ getCachedData, setCachedData }} />}
-        {activeTab === 'blog' && <BlogTab cache={{ getCachedData, setCachedData }} />}
+        {activeTab === 'database' && <DatabaseTab stats={databaseStats} />}
+        {activeTab === 'search' && <AdvancedSearchTab />}
+        {activeTab === 'tracking' && <TrackingTab />}
+        {activeTab === 'players' && <PlayersInCityTab />}
+        {activeTab === 'vehicles' && <VehiclesInCityTab />}
+        {activeTab === 'intelligence' && <IntelligenceTab />}
+        {activeTab === 'business' && <BusinessRecordsTab />}
+        {activeTab === 'blog' && <BlogTab />}
       </div>
     </div>
   );
@@ -1961,15 +1953,6 @@ const BusinessRecordsTab = ({ cache }) => {
   }, []);
 
   const loadBusinesses = async () => {
-    const cacheKey = 'cni-businesses';
-    const cachedData = getCachedData(cacheKey);
-    
-    if (cachedData) {
-      console.log('[CNI][EMPRESAS] 📦 Usando datos en caché');
-      setBusinesses(cachedData);
-      return;
-    }
-
     try {
       console.log('[CNI][EMPRESAS] 🔄 Cargando empresas desde servidor...');
       setLoading(true);
@@ -1983,9 +1966,7 @@ const BusinessRecordsTab = ({ cache }) => {
       
       if (data.success) {
         setBusinesses(data.empresas);
-        // Cachear por 2 minutos
-        setCachedData(cacheKey, data.empresas, 120000);
-        console.log(`[CNI][EMPRESAS] ✅ ${data.empresas.length} empresas cargadas y cacheadas`);
+        console.log(`[CNI][EMPRESAS] ✅ ${data.empresas.length} empresas cargadas`);
       } else {
         setError('Error cargando empresas');
       }
@@ -1998,15 +1979,6 @@ const BusinessRecordsTab = ({ cache }) => {
   };
 
   const loadVisits = async () => {
-    const cacheKey = 'cni-visits';
-    const cachedData = getCachedData(cacheKey);
-    
-    if (cachedData) {
-      console.log('[CNI][VISITAS] 📦 Usando datos en caché');
-      setVisits(cachedData);
-      return;
-    }
-
     try {
       console.log('[CNI][VISITAS] 🔄 Cargando visitas desde servidor...');
       const response = await fetch(apiUrl('/api/cni/visitas'));
@@ -2014,9 +1986,7 @@ const BusinessRecordsTab = ({ cache }) => {
       
       if (data.success) {
         setVisits(data.visitas);
-        // Cachear por 3 minutos
-        setCachedData(cacheKey, data.visitas, 180000);
-        console.log(`[CNI][VISITAS] ✅ ${data.visitas.length} visitas cargadas y cacheadas`);
+        console.log(`[CNI][VISITAS] ✅ ${data.visitas.length} visitas cargadas`);
       }
     } catch (err) {
       console.error('[CNI][VISITAS] ❌ Error cargando visitas:', err);
@@ -2024,15 +1994,6 @@ const BusinessRecordsTab = ({ cache }) => {
   };
 
   const loadStats = async () => {
-    const cacheKey = 'cni-business-stats';
-    const cachedData = getCachedData(cacheKey);
-    
-    if (cachedData) {
-      console.log('[CNI][ESTADISTICAS] 📦 Usando datos en caché');
-      setStats(cachedData);
-      return;
-    }
-
     try {
       console.log('[CNI][ESTADISTICAS] 🔄 Cargando estadísticas desde servidor...');
       const response = await fetch(apiUrl('/api/cni/estadisticas'));
@@ -2040,9 +2001,7 @@ const BusinessRecordsTab = ({ cache }) => {
       
       if (data.success) {
         setStats(data.estadisticas);
-        // Cachear por 5 minutos
-        setCachedData(cacheKey, data.estadisticas, 300000);
-        console.log('[CNI][ESTADISTICAS] ✅ Estadísticas cargadas y cacheadas');
+        console.log('[CNI][ESTADISTICAS] ✅ Estadísticas cargadas');
       }
     } catch (err) {
       console.error('[CNI][ESTADISTICAS] ❌ Error cargando estadísticas:', err);
@@ -2088,8 +2047,7 @@ const BusinessRecordsTab = ({ cache }) => {
           agente_registro: '' 
         });
         
-        // Limpiar caché y recargar datos
-        clearCache();
+        // Recargar datos
         await Promise.all([loadBusinesses(), loadStats()]);
         
         console.log('[CNI][EMPRESAS] ✅ Empresa registrada y datos actualizados');
@@ -2232,8 +2190,7 @@ const BusinessRecordsTab = ({ cache }) => {
         setSuccess(message);
         console.log('[CNI][EMPRESAS] 🔄 Limpiando caché y recargando datos...');
         
-        // Limpiar caché y recargar datos
-        clearCache();
+        // Recargar datos
         await Promise.all([loadBusinesses(), loadStats()]);
       } else {
         console.log(`[CNI][EMPRESAS] ❌ Error en respuesta: ${data.error}`);
