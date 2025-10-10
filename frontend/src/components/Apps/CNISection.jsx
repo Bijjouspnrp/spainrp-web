@@ -12,7 +12,7 @@ import {
   FaCloudDownloadAlt, FaArchive, FaBookmark, FaStar
 } from 'react-icons/fa';
 import { apiUrl } from '../../utils/api';
-import { CNI_CONFIG, getLogoPath, checkImageExists } from '../../config/cniConfig';
+import { CNI_CONFIG, getLogoPath, getBestLogoPath, checkImageExists } from '../../config/cniConfig';
 import './CNISection.css';
 import './BusinessRecords.css';
 import './CNIBlog.css';
@@ -132,60 +132,6 @@ const useDataExport = () => {
 
       // Función para agregar encabezado profesional
       const addHeader = async () => {
-        // Logo CNI usando la imagen PNG original
-        try {
-          // Obtener la mejor ruta de imagen disponible
-          const logoPath = getLogoPath();
-          console.log('[CNI] Intentando cargar logo desde:', logoPath);
-          
-          // Verificar si la imagen existe
-          const imageExists = await checkImageExists(logoPath);
-          
-          if (!imageExists) {
-            console.warn('[CNI] Imagen no encontrada en ruta principal, usando fallback');
-            addFallbackLogo();
-            return;
-          }
-          
-          // Cargar la imagen PNG del CNI
-          const img = new Image();
-          img.crossOrigin = 'anonymous'; // Para evitar problemas de CORS
-          
-          img.onload = () => {
-            // Crear canvas para redimensionar la imagen
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            
-            // Usar configuración del logo
-            const { WIDTH: logoWidth, HEIGHT: logoHeight, X_POSITION: xPos, Y_POSITION: yPos } = CNI_CONFIG.LOGO_PDF;
-            
-            canvas.width = logoWidth;
-            canvas.height = logoHeight;
-            
-            // Dibujar la imagen redimensionada
-            ctx.drawImage(img, 0, 0, logoWidth, logoHeight);
-            
-            // Convertir a base64
-            const logoDataURL = canvas.toDataURL('image/png');
-            
-            // Agregar logo al PDF
-            doc.addImage(logoDataURL, 'PNG', xPos, yPos, logoWidth, logoHeight);
-            console.log('[CNI] Logo PNG cargado exitosamente');
-          };
-          
-          img.onerror = () => {
-            console.warn('[CNI] Error cargando imagen PNG, usando fallback');
-            addFallbackLogo();
-          };
-          
-          // Cargar la imagen
-          img.src = logoPath;
-          
-        } catch (error) {
-          console.warn('[CNI] Error cargando logo PNG, usando fallback:', error);
-          addFallbackLogo();
-        }
-        
         // Función de fallback para logo dibujado
         const addFallbackLogo = () => {
           console.log('[CNI] Usando logo de fallback');
@@ -203,6 +149,56 @@ const useDataExport = () => {
           doc.setFont(undefined, 'bold');
           doc.text('CNI', 27.5, 22);
         };
+
+        // Logo CNI usando la imagen PNG original
+        try {
+          // Obtener la mejor ruta de imagen disponible con fallback automático
+          const logoPath = await getBestLogoPath();
+          console.log('[CNI] Cargando logo desde:', logoPath);
+          
+          // Cargar la imagen PNG del CNI
+          const img = new Image();
+          img.crossOrigin = 'anonymous'; // Para evitar problemas de CORS
+          
+          img.onload = () => {
+            try {
+              // Crear canvas para redimensionar la imagen
+              const canvas = document.createElement('canvas');
+              const ctx = canvas.getContext('2d');
+              
+              // Usar configuración del logo
+              const { WIDTH: logoWidth, HEIGHT: logoHeight, X_POSITION: xPos, Y_POSITION: yPos } = CNI_CONFIG.LOGO_PDF;
+              
+              canvas.width = logoWidth;
+              canvas.height = logoHeight;
+              
+              // Dibujar la imagen redimensionada
+              ctx.drawImage(img, 0, 0, logoWidth, logoHeight);
+              
+              // Convertir a base64
+              const logoDataURL = canvas.toDataURL('image/png');
+              
+              // Agregar logo al PDF
+              doc.addImage(logoDataURL, 'PNG', xPos, yPos, logoWidth, logoHeight);
+              console.log('[CNI] ✅ Logo PNG cargado exitosamente');
+            } catch (canvasError) {
+              console.warn('[CNI] ⚠️ Error procesando imagen, usando fallback:', canvasError);
+              addFallbackLogo();
+            }
+          };
+          
+          img.onerror = () => {
+            console.warn('[CNI] ⚠️ Error cargando imagen PNG, usando fallback');
+            addFallbackLogo();
+          };
+          
+          // Cargar la imagen
+          img.src = logoPath;
+          
+        } catch (error) {
+          console.warn('[CNI] ❌ Error cargando logo PNG, usando fallback:', error);
+          addFallbackLogo();
+        }
         
         // Título principal
         doc.setTextColor(30, 58, 138);
@@ -1965,18 +1961,36 @@ const BusinessRecordsTab = ({ cache }) => {
   }, []);
 
   const loadBusinesses = async () => {
+    const cacheKey = 'cni-businesses';
+    const cachedData = cache.getCachedData(cacheKey);
+    
+    if (cachedData) {
+      console.log('[CNI][EMPRESAS] 📦 Usando datos en caché');
+      setBusinesses(cachedData);
+      return;
+    }
+
     try {
+      console.log('[CNI][EMPRESAS] 🔄 Cargando empresas desde servidor...');
       setLoading(true);
+      const startTime = Date.now();
+      
       const response = await fetch(apiUrl('/api/cni/empresas'));
       const data = await response.json();
       
+      const loadTime = Date.now() - startTime;
+      console.log(`[CNI][EMPRESAS] ⏱️ Carga completada en ${loadTime}ms`);
+      
       if (data.success) {
         setBusinesses(data.empresas);
+        // Cachear por 2 minutos
+        cache.setCachedData(cacheKey, data.empresas, 120000);
+        console.log(`[CNI][EMPRESAS] ✅ ${data.empresas.length} empresas cargadas y cacheadas`);
       } else {
         setError('Error cargando empresas');
       }
     } catch (err) {
-      console.error('Error cargando empresas:', err);
+      console.error('[CNI][EMPRESAS] ❌ Error cargando empresas:', err);
       setError('Error de conexión al cargar empresas');
     } finally {
       setLoading(false);
@@ -1984,38 +1998,74 @@ const BusinessRecordsTab = ({ cache }) => {
   };
 
   const loadVisits = async () => {
+    const cacheKey = 'cni-visits';
+    const cachedData = cache.getCachedData(cacheKey);
+    
+    if (cachedData) {
+      console.log('[CNI][VISITAS] 📦 Usando datos en caché');
+      setVisits(cachedData);
+      return;
+    }
+
     try {
+      console.log('[CNI][VISITAS] 🔄 Cargando visitas desde servidor...');
       const response = await fetch(apiUrl('/api/cni/visitas'));
       const data = await response.json();
       
       if (data.success) {
         setVisits(data.visitas);
+        // Cachear por 3 minutos
+        cache.setCachedData(cacheKey, data.visitas, 180000);
+        console.log(`[CNI][VISITAS] ✅ ${data.visitas.length} visitas cargadas y cacheadas`);
       }
     } catch (err) {
-      console.error('Error cargando visitas:', err);
+      console.error('[CNI][VISITAS] ❌ Error cargando visitas:', err);
     }
   };
 
   const loadStats = async () => {
+    const cacheKey = 'cni-business-stats';
+    const cachedData = cache.getCachedData(cacheKey);
+    
+    if (cachedData) {
+      console.log('[CNI][ESTADISTICAS] 📦 Usando datos en caché');
+      setStats(cachedData);
+      return;
+    }
+
     try {
+      console.log('[CNI][ESTADISTICAS] 🔄 Cargando estadísticas desde servidor...');
       const response = await fetch(apiUrl('/api/cni/estadisticas'));
       const data = await response.json();
       
       if (data.success) {
         setStats(data.estadisticas);
+        // Cachear por 5 minutos
+        cache.setCachedData(cacheKey, data.estadisticas, 300000);
+        console.log('[CNI][ESTADISTICAS] ✅ Estadísticas cargadas y cacheadas');
       }
     } catch (err) {
-      console.error('Error cargando estadísticas:', err);
+      console.error('[CNI][ESTADISTICAS] ❌ Error cargando estadísticas:', err);
     }
   };
 
   const handleAddBusiness = async (e) => {
     e.preventDefault();
+    
+    // Validación rápida del lado cliente
+    if (!newBusiness.nombre.trim() || !newBusiness.tipo.trim() || !newBusiness.propietario.trim()) {
+      setError('Por favor completa todos los campos obligatorios');
+      return;
+    }
+    
     setLoading(true);
     setError('');
     setSuccess('');
     
     try {
+      console.log('[CNI][EMPRESAS] 🏢 Registrando nueva empresa:', newBusiness.nombre);
+      const startTime = Date.now();
+      
       const response = await fetch(apiUrl('/api/cni/empresas'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2023,18 +2073,33 @@ const BusinessRecordsTab = ({ cache }) => {
       });
       
       const data = await response.json();
+      const registerTime = Date.now() - startTime;
+      console.log(`[CNI][EMPRESAS] ⏱️ Registro completado en ${registerTime}ms`);
       
       if (data.success) {
-        setSuccess('Empresa registrada correctamente');
-        setNewBusiness({ nombre: '', tipo: '', propietario: '', ubicacion: '', estado: 'activa', notas: '', agente_registro: '' });
-        loadBusinesses();
-        loadStats();
+        setSuccess(`✅ Empresa "${newBusiness.nombre}" registrada correctamente`);
+        setNewBusiness({ 
+          nombre: '', 
+          tipo: '', 
+          propietario: '', 
+          ubicacion: '', 
+          estado: 'activa', 
+          notas: '', 
+          agente_registro: '' 
+        });
+        
+        // Limpiar caché y recargar datos
+        cache.clearCache();
+        await Promise.all([loadBusinesses(), loadStats()]);
+        
+        console.log('[CNI][EMPRESAS] ✅ Empresa registrada y datos actualizados');
       } else {
-        setError(`Error: ${data.error}`);
+        setError(`❌ Error: ${data.error}`);
+        console.error('[CNI][EMPRESAS] ❌ Error en registro:', data.error);
       }
     } catch (err) {
-      console.error('Error añadiendo empresa:', err);
-      setError('Error de conexión al registrar empresa');
+      console.error('[CNI][EMPRESAS] ❌ Error de conexión:', err);
+      setError('❌ Error de conexión al registrar empresa');
     } finally {
       setLoading(false);
     }
