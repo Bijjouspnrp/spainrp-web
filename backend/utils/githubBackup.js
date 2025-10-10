@@ -61,7 +61,7 @@ class GitHubBackup {
 
   // Exportar datos de la base de datos
   async exportDatabaseData() {
-    const db = require('./database').getDatabase();
+    const db = require('../db/database').getDatabase();
     
     return new Promise((resolve, reject) => {
       const tables = [
@@ -162,7 +162,7 @@ class GitHubBackup {
 
   // Importar datos a la base de datos
   async importDatabaseData(tablesData) {
-    const db = require('./database').getDatabase();
+    const db = require('../db/database').getDatabase();
     
     return new Promise((resolve, reject) => {
       const tableNames = Object.keys(tablesData);
