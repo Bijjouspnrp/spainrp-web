@@ -2451,7 +2451,7 @@ async function sendBanNotification(userId, banType, reason, expiresAt, bannedBy)
 
 // Cache para evitar tracking excesivo de la misma IP
 const ipTrackingCache = new Map();
-const IP_TRACKING_COOLDOWN = 30000; // 30 segundos entre trackings de la misma IP
+const IP_TRACKING_COOLDOWN = 300000; // 5 minutos entre trackings de la misma IP (reducido para mejorar velocidad)
 const IP_TRACKING_BATCH_SIZE = 3; // Procesar máximo 3 IPs por lote
 const IP_TRACKING_BATCH_DELAY = 5000; // 5 segundos entre lotes
 
@@ -2627,54 +2627,31 @@ async function trackIP(req, userId = null) {
       }
     }
     
-    // Extraer información del dispositivo del User-Agent con geolocalización
-    const deviceInfo = await parseUserAgent(userAgent, req, ip);
+    // Simplificar tracking - solo información básica
+    const deviceInfo = {
+      browser: userAgent.includes('Chrome') ? 'Chrome' : 
+              userAgent.includes('Firefox') ? 'Firefox' : 
+              userAgent.includes('Safari') ? 'Safari' : 'Other',
+      country: 'Unknown',
+      city: 'Unknown'
+    };
     
-    // Obtener información adicional del usuario si está disponible
+    // Obtener información básica del usuario si está disponible
     let userInfo = null;
-    if (userId) {
-      // Intentar obtener información del usuario desde la base de datos o sesión
-      if (req.user && req.user.username) {
-        userInfo = {
-          username: req.user.username,
-          discriminator: req.user.discriminator || '0000',
-          avatar: req.user.avatar
-        };
-      } else {
-        // Si no hay información en req.user, intentar obtenerla de la base de datos
-        try {
-          const userData = await getQuery(
-            'SELECT username, discriminator, avatar FROM users WHERE id = ?',
-            [userId]
-          );
-          if (userData) {
-            userInfo = {
-              username: userData.username,
-              discriminator: userData.discriminator || '0000',
-              avatar: userData.avatar
-            };
-          }
-        } catch (dbError) {
-          console.log('[IP TRACKING] No se pudo obtener info del usuario desde DB:', dbError.message);
-        }
-      }
+    if (userId && req.user && req.user.username) {
+      userInfo = {
+        username: req.user.username,
+        discriminator: req.user.discriminator || '0000',
+        avatar: req.user.avatar
+      };
     }
     
-    // Log solo en modo debug o para IPs nuevas
+    // Log solo en modo debug
     if (process.env.DEBUG_IP_TRACKING === 'true') {
-      console.log('[IP TRACKING] 📊 Agregando IP a cola:', { 
-        ip, 
-        userId, 
-        userInfo: userInfo ? 'Disponible' : 'No disponible',
-        device: {
-          browser: deviceInfo.browser,
-          country: deviceInfo.country,
-          city: deviceInfo.city
-        }
-      });
+      console.log('[IP TRACKING] 📊 Tracking IP:', { ip, userId, userInfo: userInfo ? 'Disponible' : 'No disponible' });
     }
     
-    // Agregar a la cola de procesamiento
+    // Agregar a la cola de procesamiento (simplificada)
     ipProcessingQueue.push({
       ip,
       userId,
@@ -2715,79 +2692,28 @@ async function getIPLocation(ip) {
       };
     }
 
-    // Intentar múltiples servicios de geolocalización para mayor precisión
-    const services = [
-      // Servicio 1: ipapi.co (gratuito, 1000 requests/día)
-      async () => {
-        const response = await fetch(`https://ipapi.co/${ip}/json/`);
-        if (response.ok) {
-          const data = await response.json();
-          return {
-            country: data.country_name || 'Unknown',
-            countryCode: data.country_code || 'Unknown',
-            city: data.city || 'Unknown',
-            region: data.region || 'Unknown',
-            timezone: data.timezone || 'Unknown',
-            latitude: data.latitude,
-            longitude: data.longitude,
-            isp: data.org || 'Unknown'
-          };
-        }
-        throw new Error('ipapi.co failed');
-      },
-      
-      // Servicio 2: ip-api.com (gratuito, 1000 requests/minuto)
-      async () => {
-        const response = await fetch(`http://ip-api.com/json/${ip}`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.status === 'success') {
-            return {
-              country: data.country || 'Unknown',
-              countryCode: data.countryCode || 'Unknown',
-              city: data.city || 'Unknown',
-              region: data.regionName || 'Unknown',
-              timezone: data.timezone || 'Unknown',
-              latitude: data.lat,
-              longitude: data.lon,
-              isp: data.isp || 'Unknown'
-            };
-          }
-        }
-        throw new Error('ip-api.com failed');
-      },
-      
-      // Servicio 3: ipinfo.io (gratuito, 50,000 requests/mes)
-      async () => {
-        const response = await fetch(`https://ipinfo.io/${ip}/json`);
-        if (response.ok) {
-          const data = await response.json();
-          const [city, region] = (data.city || 'Unknown').split(',');
-          return {
-            country: data.country || 'Unknown',
-            countryCode: data.country || 'Unknown',
-            city: city || 'Unknown',
-            region: region || data.region || 'Unknown',
-            timezone: data.timezone || 'Unknown',
-            latitude: data.loc ? data.loc.split(',')[0] : null,
-            longitude: data.loc ? data.loc.split(',')[1] : null,
-            isp: data.org || 'Unknown'
-          };
-        }
-        throw new Error('ipinfo.io failed');
-      }
-    ];
-
-    // Intentar cada servicio hasta que uno funcione
-    for (const service of services) {
-      try {
-        const result = await service();
+    // Usar solo un servicio para reducir latencia y carga
+    try {
+      const response = await fetch(`https://ipapi.co/${ip}/json/`, {
+        timeout: 2000 // Timeout de 2 segundos
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const result = {
+          country: data.country_name || 'Unknown',
+          countryCode: data.country_code || 'Unknown',
+          city: data.city || 'Unknown',
+          region: data.region || 'Unknown',
+          timezone: data.timezone || 'Unknown',
+          latitude: data.latitude,
+          longitude: data.longitude,
+          isp: data.org || 'Unknown'
+        };
         console.log(`[IP LOCATION] Información obtenida para ${ip}:`, result);
         return result;
-      } catch (error) {
-        console.log(`[IP LOCATION] Servicio falló para ${ip}:`, error.message);
-        continue;
       }
+    } catch (error) {
+      console.log(`[IP LOCATION] Servicio falló para ${ip}:`, error.message);
     }
 
     // Si todos los servicios fallan, devolver datos por defecto
@@ -2903,17 +2829,20 @@ async function parseUserAgent(userAgent, req = null, ip = null) {
   return info;
 }
 
-// Middleware de verificación de bans
+// Middleware de verificación de bans (optimizado)
 async function banCheckMiddleware(req, res, next) {
   try {
-    // Limpiar bans expirados periódicamente
-    if (Math.random() < 0.01) { // 1% de probabilidad de ejecutar limpieza
+    // Limpiar bans expirados solo ocasionalmente (reducido de 1% a 0.1%)
+    if (Math.random() < 0.001) { // 0.1% de probabilidad de ejecutar limpieza
       await cleanupExpiredBans();
     }
     
     const ip = getRealIP(req);
     
-    console.log('[BAN CHECK] Verificando IP:', ip);
+    // Solo log en modo debug
+    if (process.env.DEBUG_BAN_CHECK === 'true') {
+      console.log('[BAN CHECK] Verificando IP:', ip);
+    }
     
     // Verificar ban de IP
     const ipBan = await isIPBanned(ip);
@@ -2929,17 +2858,19 @@ async function banCheckMiddleware(req, res, next) {
       });
     }
     
-    // Extraer userId si está disponible (JWT o sesión)
+    // Extraer userId si está disponible (JWT o sesión) - simplificado
     let userId = null;
     
-    // Intentar obtener userId del JWT
+    // Intentar obtener userId del JWT primero (más rápido)
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer ')) {
       try {
         const token = authHeader.substring(7);
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'spainrp_secret_key');
         userId = decoded.userId;
-        console.log(`[BAN CHECK] Usuario JWT detectado: ${userId}`);
+        if (process.env.DEBUG_BAN_CHECK === 'true') {
+          console.log(`[BAN CHECK] Usuario JWT detectado: ${userId}`);
+        }
       } catch (jwtError) {
         // JWT inválido, continuar sin userId
       }
@@ -2948,7 +2879,9 @@ async function banCheckMiddleware(req, res, next) {
     // Si no hay JWT, intentar obtener de la sesión Passport
     if (!userId && req.user && req.user.id) {
       userId = req.user.id;
-      console.log(`[BAN CHECK] Usuario de sesión detectado: ${userId}`);
+      if (process.env.DEBUG_BAN_CHECK === 'true') {
+        console.log(`[BAN CHECK] Usuario de sesión detectado: ${userId}`);
+      }
     }
     
     // Trackear IP con userId si está disponible

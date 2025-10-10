@@ -75,67 +75,87 @@ const Panel = () => {
     const token = localStorage.getItem('spainrp_token');
     const headers = token ? { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } : { 'Accept': 'application/json' };
     
-    fetch(apiUrl('/auth/me'), { headers })
-      .then(res => {
-        if (res.status === 401) {
-          setUser(null);
-          setLoading(false);
-          return null;
-        }
-        return res.ok ? res.json() : null;
-      })
-      .then(data => {
-        if (data && data.user) {
-          setUser(data.user);
-          
-          // Obtener roles del usuario en paralelo para mayor velocidad
-          const guildId = '1212556680911650866';
-          fetch(apiUrl(`/api/member/${guildId}/${data.user.id}`), { credentials: 'include' })
-            .then(res => {
-              if (res.status === 401) {
-                setRoles([]);
-                setUser(u => ({ ...u, joinedAt: null, permissions: null }));
-                return null;
-              }
-              if (res.status === 404) {
-                setRoles([]);
-                setUser(u => u ? { ...u, notInGuild: true, invite: undefined } : null);
-                return null;
-              }
-              return res.ok ? res.json() : null;
-            })
-            .then(member => {
-              if (member?.notInGuild) {
-                setUser({
-                  ...data.user,
-                  notInGuild: true,
-                  invite: member.invite
-                });
-                setRoles([]);
-                return;
-              }
-              if (member) {
-                setRoles(member?.roles || []);
-                setUser(u => ({
-                  ...u,
-                  joinedAt: member?.joined_at,
-                  permissions: member?.permissions
-                }));
-              }
-            })
-            .catch(() => {})
-            .finally(() => setLoading(false));
-        } else {
-          setLoading(false);
-        }
-      })
-      .catch(() => setLoading(false));
+    // Cargar datos en paralelo para mayor velocidad
+    Promise.all([
+      fetch(apiUrl('/auth/me'), { headers })
+        .then(res => {
+          if (res.status === 401) {
+            setUser(null);
+            return null;
+          }
+          return res.ok ? res.json() : null;
+        })
+        .catch(() => null),
+      
+      // Cargar estadísticas generales en paralelo
+      fetch(apiUrl('/api/admin-records/stats/records'))
+        .then(res => res.ok ? res.json() : null)
+        .catch(() => null)
+    ]).then(([authData, statsData]) => {
+      if (authData && authData.user) {
+        setUser(authData.user);
+        
+        // Cargar roles del usuario
+        const guildId = '1212556680911650866';
+        fetch(apiUrl(`/api/member/${guildId}/${authData.user.id}`), { credentials: 'include' })
+          .then(res => {
+            if (res.status === 401) {
+              setRoles([]);
+              setUser(u => ({ ...u, joinedAt: null, permissions: null }));
+              return null;
+            }
+            if (res.status === 404) {
+              setRoles([]);
+              setUser(u => u ? { ...u, notInGuild: true, invite: undefined } : null);
+              return null;
+            }
+            return res.ok ? res.json() : null;
+          })
+          .then(member => {
+            if (member?.notInGuild) {
+              setUser({
+                ...authData.user,
+                notInGuild: true,
+                invite: member.invite
+              });
+              setRoles([]);
+              return;
+            }
+            if (member) {
+              setRoles(member?.roles || []);
+              setUser(u => ({
+                ...u,
+                joinedAt: member?.joined_at,
+                permissions: member?.permissions
+              }));
+            }
+          })
+          .catch(() => {});
+      }
+      
+      // Cargar estadísticas si están disponibles
+      if (statsData) {
+        setStatsTotals({
+          antecedentes: statsData.antecedentes || 0,
+          arrestos: statsData.arrestos || 0,
+          multasPendientes: statsData.multasPendientes || 0
+        });
+      }
+      
+      setLoading(false);
+    }).catch(() => setLoading(false));
   }, []);
   // Consultar perfil Roblox verificado al cargar usuario
   useEffect(() => {
     if (user?.id) {
       fetch(apiUrl(`/api/roblox/profile/${user.id}`))
-        .then(res => res.ok ? res.json() : null)
+        .then(res => {
+          if (res.status === 404) {
+            // Usuario no verificado, no es un error
+            return null;
+          }
+          return res.ok ? res.json() : null;
+        })
         .then(data => {
           if (data && data.robloxUserId) {
             setRobloxProfile({
@@ -147,7 +167,9 @@ const Panel = () => {
             setRobloxVerified(true);
           }
         })
-        .catch(() => {});
+        .catch(() => {
+          // Silenciar errores de Roblox para no mostrar en consola
+        });
     }
   }, [user?.id]);
   // Manejar navegación por URL
@@ -221,19 +243,6 @@ const Panel = () => {
   // Estado para antecedentes y multas individuales
   const [userRecords, setUserRecords] = useState({ antecedentes: 0, multasTotal: 0, multasPendientes: 0 });
 
-  useEffect(() => {
-    // Cargar estadísticas en paralelo sin bloquear la UI
-    fetch(apiUrl('/api/admin-records/stats/records'))
-      .then(res => res.ok ? res.json() : null)
-      .then(data => {
-        if (data) setStatsTotals({
-          antecedentes: data.antecedentes || 0,
-          arrestos: data.arrestos || 0,
-          multasPendientes: data.multasPendientes || 0
-        });
-      })
-      .catch(() => {});
-  }, []);
 
   // Consultar antecedentes y multas del usuario autenticado en paralelo
   useEffect(() => {
@@ -252,6 +261,9 @@ const Panel = () => {
           multasTotal: multasData?.total || 0,
           multasPendientes: multasData?.pendientes || 0
         });
+      }).catch(() => {
+        // En caso de error, establecer valores por defecto
+        setUserRecords({ antecedentes: 0, multasTotal: 0, multasPendientes: 0 });
       });
     }
   }, [user?.id]);

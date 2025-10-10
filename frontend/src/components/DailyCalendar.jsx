@@ -134,10 +134,14 @@ export default function DailyCalendar() {
           setTimeout(() => setShowReward(null), 5000);
         }
       } else {
-        throw new Error('Error claiming day');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Error claiming day:', errorData.error || 'Error desconocido');
+        // Mostrar mensaje de error al usuario
+        alert(`Error al reclamar el día: ${errorData.error || 'Error desconocido'}`);
       }
     } catch (error) {
       console.error('Error claiming day:', error);
+      alert('Error de conexión al reclamar el día. Inténtalo de nuevo.');
     } finally {
       setIsClaiming(false);
     }
