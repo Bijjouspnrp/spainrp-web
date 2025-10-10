@@ -869,18 +869,15 @@ const CNISection = () => {
           }
         }
 
-        // Calcular duración de carga basada en la velocidad del dispositivo
-        const deviceSpeed = navigator.hardwareConcurrency || 4; // Núcleos de CPU como indicador
-        const baseDelay = 4000; // 4 segundos base
-        const speedMultiplier = Math.max(0.5, Math.min(2, 8 / deviceSpeed)); // Entre 0.5x y 2x
-        const loadingDelay = Math.round(baseDelay * speedMultiplier);
+        // Carga instantánea - sin delays artificiales
+        console.log('[CNI] ✅ Credenciales verificadas, acceso autorizado');
         
-        console.log(`[CNI] Dispositivo detectado: ${deviceSpeed} núcleos, duración de carga: ${loadingDelay}ms`);
+        // Cargar datos en paralelo sin bloquear la UI
+        loadDatabaseStats().catch(err => {
+          console.warn('[CNI] ⚠️ Error cargando estadísticas:', err);
+        });
         
-        // Esperar un poco para que los datos se carguen completamente
-        setTimeout(() => {
-          setLoading(false);
-        }, loadingDelay);
+        setLoading(false);
       } catch (err) {
         setError('Error verificando permisos CNI');
         setLoading(false);
@@ -983,11 +980,8 @@ const CNISection = () => {
         </div>
         <div className="cni-loading-content">
           <h2>Centro Nacional de Inteligencia</h2>
-          <p>Verificando credenciales de acceso...</p>
-          <p>Inicializando sistemas de inteligencia...</p>
-          <div className="cni-loading-progress">
-            <div className="cni-loading-bar"></div>
-          </div>
+          <p>Inicializando sistemas...</p>
+          <div className="cni-spinner"></div>
         </div>
       </div>
     );
