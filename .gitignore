@@ -141,10 +141,44 @@ vite.config.ts.timestamp-*
 # DNI Cache directory
 backend/cache/
 
-# SQLite databases
+# SQLite databases - NUNCA subir a GitHub
 *.db
 *.sqlite
 *.sqlite3
-backend/*.db
-backend/*.sqlite
-backend/*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Bases de datos específicas del proyecto
+backend/spainrp.db
+backend/spainrp.db-journal
+backend/spainrp.db-wal
+backend/spainrp.db-shm
+
+# Directorios de base de datos
+backend/db/data/
+backend/db/backups/
+backend/db/exports/
+
+# Archivos de base de datos en cualquier ubicación
+**/spainrp.db
+**/spainrp.db-journal
+**/spainrp.db-wal
+**/spainrp.db-shm
+
+# Archivos de configuración de base de datos (si contienen datos sensibles)
+backend/db/config.json
+backend/db/credentials.json
+
+# Logs de base de datos
+backend/logs/database.log
+backend/logs/db-*.log
+
+# Backups de base de datos (nunca subir)
+backend/db/backups/
+backend/db/exports/
+backend/db/dumps/
+
+# Archivos temporales de base de datos
+*.tmp
+*.temp
