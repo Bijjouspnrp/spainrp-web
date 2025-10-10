@@ -131,35 +131,122 @@ const useDataExport = () => {
 
       // Función para agregar encabezado profesional
       const addHeader = () => {
-        // Logo CNI circular en esquina superior izquierda
-        doc.setFillColor(30, 58, 138);
-        doc.circle(27.5, 20.5, 12, 'F');
-        
-        // Círculo interior blanco
-        doc.setFillColor(255, 255, 255);
-        doc.circle(27.5, 20.5, 8, 'F');
-        
-        // Texto "ESPAÑA" en la parte superior del logo
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(6);
-        doc.setFont(undefined, 'bold');
-        doc.text('ESPAÑA', 27.5, 12);
-        
-        // Texto CNI en el centro del logo
-        doc.setTextColor(30, 58, 138);
-        doc.setFontSize(10);
-        doc.setFont(undefined, 'bold');
-        doc.text('CNI', 27.5, 22);
-        
-        // Globo terráqueo simplificado en la parte inferior del logo
-        doc.setFillColor(59, 130, 246);
-        doc.circle(27.5, 28, 4, 'F');
-        
-        // Líneas del globo
-        doc.setDrawColor(255, 255, 255);
-        doc.setLineWidth(0.3);
-        doc.line(23.5, 28, 31.5, 28);
-        doc.line(27.5, 24, 27.5, 32);
+        // Logo CNI usando el SVG como imagen
+        try {
+          // Convertir SVG a base64 para usar en PDF
+          const svgContent = `
+            <svg width="50" height="50" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#1e3a8a;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#1e40af;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              
+              <!-- Anillo exterior azul -->
+              <circle cx="50" cy="50" r="48" fill="url(#blueGradient)" stroke="#1e3a8a" stroke-width="2"/>
+              
+              <!-- Círculo interior blanco -->
+              <circle cx="50" cy="50" r="35" fill="white" stroke="#1e3a8a" stroke-width="1"/>
+              
+              <!-- Texto "ESPAÑA" en la parte superior -->
+              <text x="50" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="white">ESPAÑA</text>
+              
+              <!-- Texto "CENTRO NACIONAL DE INTELIGENCIA" en la parte inferior -->
+              <text x="50" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="6" font-weight="bold" fill="white">CENTRO NACIONAL DE INTELIGENCIA</text>
+              
+              <!-- Escudo de España simplificado -->
+              <g transform="translate(50, 35) scale(0.8)">
+                <rect x="-15" y="-8" width="30" height="16" fill="white" stroke="#1e3a8a" stroke-width="0.5" rx="2"/>
+                <rect x="-12" y="-6" width="6" height="4" fill="#fbbf24"/>
+                <rect x="-11" y="-5" width="4" height="2" fill="#dc2626"/>
+                <rect x="-5" y="-6" width="6" height="4" fill="white"/>
+                <circle cx="-2" cy="-4" r="1" fill="#dc2626"/>
+                <rect x="1" y="-6" width="6" height="4" fill="#fbbf24"/>
+                <rect x="1" y="-5" width="6" height="0.5" fill="#dc2626"/>
+                <rect x="1" y="-3.5" width="6" height="0.5" fill="#dc2626"/>
+                <rect x="1" y="-2" width="6" height="0.5" fill="#dc2626"/>
+                <rect x="7" y="-6" width="6" height="4" fill="#dc2626"/>
+                <circle cx="9" cy="-4" r="0.5" fill="white"/>
+                <circle cx="11" cy="-4" r="0.5" fill="white"/>
+                <rect x="-6" y="0" width="12" height="3" fill="white"/>
+                <circle cx="0" cy="1.5" r="1" fill="#10b981"/>
+                <ellipse cx="0" cy="-2" rx="3" ry="2" fill="#1e40af"/>
+                <text x="0" y="-1" text-anchor="middle" font-size="3" fill="#fbbf24">⚜</text>
+                <path d="M-8 -10 L-6 -8 L-4 -10 L-2 -8 L0 -10 L2 -8 L4 -10 L6 -8 L8 -10 L8 -8 L-8 -8 Z" fill="#dc2626"/>
+              </g>
+              
+              <!-- Texto CNI -->
+              <text x="50" y="55" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e3a8a">CNI</text>
+              
+              <!-- Globo terráqueo -->
+              <g transform="translate(50, 65) scale(0.6)">
+                <circle cx="0" cy="0" r="12" fill="#3b82f6" stroke="#1e40af" stroke-width="1"/>
+                <ellipse cx="0" cy="0" rx="12" ry="6" fill="none" stroke="white" stroke-width="0.5" opacity="0.7"/>
+                <ellipse cx="0" cy="-4" rx="10" ry="5" fill="none" stroke="white" stroke-width="0.5" opacity="0.7"/>
+                <ellipse cx="0" cy="4" rx="10" ry="5" fill="none" stroke="white" stroke-width="0.5" opacity="0.7"/>
+                <line x1="-12" y1="0" x2="12" y2="0" stroke="white" stroke-width="0.5" opacity="0.7"/>
+                <line x1="-8" y1="-8" x2="8" y2="8" stroke="white" stroke-width="0.5" opacity="0.7"/>
+                <line x1="8" y1="-8" x2="-8" y2="8" stroke="white" stroke-width="0.5" opacity="0.7"/>
+                <path d="M-6 -2 Q-4 -4 -2 -2 Q-4 0 -6 -2" fill="white" opacity="0.8"/>
+                <path d="M2 -1 Q4 -3 6 -1 Q4 1 2 -1" fill="white" opacity="0.8"/>
+              </g>
+            </svg>
+          `;
+          
+          // Crear imagen desde SVG
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          const img = new Image();
+          const svgBlob = new Blob([svgContent], { type: 'image/svg+xml' });
+          const url = URL.createObjectURL(svgBlob);
+          
+          img.onload = () => {
+            canvas.width = 50;
+            canvas.height = 50;
+            ctx.drawImage(img, 0, 0, 50, 50);
+            const logoDataURL = canvas.toDataURL('image/png');
+            
+            // Agregar logo al PDF
+            doc.addImage(logoDataURL, 'PNG', 15, 8, 25, 25);
+            URL.revokeObjectURL(url);
+          };
+          
+          img.src = url;
+        } catch (error) {
+          // Fallback al logo dibujado si hay error
+          console.warn('Error cargando logo SVG, usando fallback:', error);
+          
+          // Logo CNI circular en esquina superior izquierda (fallback)
+          doc.setFillColor(30, 58, 138);
+          doc.circle(27.5, 20.5, 12, 'F');
+          
+          // Círculo interior blanco
+          doc.setFillColor(255, 255, 255);
+          doc.circle(27.5, 20.5, 8, 'F');
+          
+          // Texto "ESPAÑA" en la parte superior del logo
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(6);
+          doc.setFont(undefined, 'bold');
+          doc.text('ESPAÑA', 27.5, 12);
+          
+          // Texto CNI en el centro del logo
+          doc.setTextColor(30, 58, 138);
+          doc.setFontSize(10);
+          doc.setFont(undefined, 'bold');
+          doc.text('CNI', 27.5, 22);
+          
+          // Globo terráqueo simplificado en la parte inferior del logo
+          doc.setFillColor(59, 130, 246);
+          doc.circle(27.5, 28, 4, 'F');
+          
+          // Líneas del globo
+          doc.setDrawColor(255, 255, 255);
+          doc.setLineWidth(0.3);
+          doc.line(23.5, 28, 31.5, 28);
+          doc.line(27.5, 24, 27.5, 32);
+        }
         
         // Título principal
         doc.setTextColor(30, 58, 138);
