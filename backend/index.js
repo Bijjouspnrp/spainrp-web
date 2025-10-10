@@ -18,6 +18,7 @@ const discordRoutes = require('./routes/discord');
 const multiroleRoutes = require('./routes/multirole');
 const tinderRoutes = require('./routes/tinder');
 const robloxRoutes = require('./routes/roblox');
+const githubBackup = require('./utils/githubBackup');
 const adminRecordsRoutes = require('./routes/adminRecords');
 const notificationRoutes = require('./routes/notifications');
 const logsRoutes = require('./routes/logs');
@@ -5247,7 +5248,7 @@ app.get('/api/cni/empresas', (req, res) => {
 });
 
 // POST /api/cni/empresas - Registrar nueva empresa
-app.post('/api/cni/empresas', (req, res) => {
+app.post('/api/cni/empresas', async (req, res) => {
   const { nombre, tipo, propietario, ubicacion, estado, notas, agente_registro } = req.body;
   console.log('[CNI][EMPRESAS] POST /api/cni/empresas', req.body);
   
@@ -5258,13 +5259,22 @@ app.post('/api/cni/empresas', (req, res) => {
   db.run(
     'INSERT INTO empresas (nombre, tipo, propietario, ubicacion, estado, notas, agente_registro) VALUES (?, ?, ?, ?, ?, ?, ?)',
     [nombre, tipo, propietario, ubicacion, estado || 'activa', notas || '', agente_registro || ''],
-    function(err) {
+    async function(err) {
       if (err) {
         console.error('[CNI][EMPRESAS] Error insertando empresa:', err);
         return res.status(500).json({ error: 'Error registrando empresa', details: err });
       }
       
       console.log(`[CNI][EMPRESAS] Empresa registrada con ID: ${this.lastID}`);
+      
+      // Crear backup automático después del registro
+      try {
+        await githubBackup.createBackup();
+        console.log('[BACKUP] ✅ Backup automático creado después de registro');
+      } catch (backupError) {
+        console.warn('[BACKUP] ⚠️ Error en backup automático:', backupError.message);
+      }
+      
       res.json({ 
         success: true, 
         empresa: {
@@ -5311,7 +5321,7 @@ app.put('/api/cni/empresas/:id', (req, res) => {
 });
 
 // PATCH /api/cni/empresas/:id/estado - Actualizar solo el estado de la empresa
-app.patch('/api/cni/empresas/:id/estado', (req, res) => {
+app.patch('/api/cni/empresas/:id/estado', async (req, res) => {
   const { id } = req.params;
   const { estado } = req.body;
   console.log(`[CNI][EMPRESAS] PATCH /api/cni/empresas/${id}/estado`, req.body);
@@ -5329,7 +5339,7 @@ app.patch('/api/cni/empresas/:id/estado', (req, res) => {
   db.run(
     'UPDATE empresas SET estado = ? WHERE id = ?',
     [estado, id],
-    function(err) {
+    async function(err) {
       if (err) {
         console.error('[CNI][EMPRESAS] Error actualizando estado:', err);
         return res.status(500).json({ error: 'Error actualizando estado', details: err });
@@ -5340,6 +5350,15 @@ app.patch('/api/cni/empresas/:id/estado', (req, res) => {
       }
       
       console.log(`[CNI][EMPRESAS] Estado de empresa ${id} actualizado a: ${estado}`);
+      
+      // Crear backup automático después de la actualización
+      try {
+        await githubBackup.createBackup();
+        console.log('[BACKUP] ✅ Backup automático creado después de actualización');
+      } catch (backupError) {
+        console.warn('[BACKUP] ⚠️ Error en backup automático:', backupError.message);
+      }
+      
       res.json({ 
         success: true, 
         message: `Estado actualizado a: ${estado}`,
@@ -5347,6 +5366,25 @@ app.patch('/api/cni/empresas/:id/estado', (req, res) => {
       });
     }
   );
+});
+
+// Endpoints de backup
+app.post('/api/backup/create', async (req, res) => {
+  try {
+    const result = await githubBackup.createBackup();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.post('/api/backup/restore', async (req, res) => {
+  try {
+    const result = await githubBackup.restoreBackup();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 });
 
 // DELETE /api/cni/empresas/:id - Eliminar empresa
@@ -8705,6 +8743,21 @@ migrateDatabase()
     
     server.listen(PORT, () => {
       console.log(`Backend SpainRP escuchando en puerto ${PORT}`);
+      
+      // Inicializar sistema de backup
+      console.log('💾 Inicializando sistema de backup...');
+      githubBackup.startScheduledBackup();
+      
+      // Intentar restaurar backup al iniciar
+      githubBackup.restoreBackup().then(result => {
+        if (result.success) {
+          console.log('✅ Backup restaurado desde GitHub');
+        } else {
+          console.log('ℹ️ No se pudo restaurar backup, continuando con BD vacía');
+        }
+      }).catch(err => {
+        console.log('ℹ️ Error restaurando backup, continuando con BD vacía:', err.message);
+      });
       
       // Iniciar el bot de Discord solo si hay token
       if (TOKEN) {

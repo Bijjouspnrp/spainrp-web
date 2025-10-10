@@ -1,0 +1,18 @@
+# Configuración para sistema de backup automático en GitHub
+# Copia este archivo como .env y configura las variables
+
+# Token de GitHub (Personal Access Token)
+# 1. Ve a GitHub.com > Settings > Developer settings > Personal access tokens
+# 2. Genera un nuevo token con permisos de "repo"
+# 3. Copia el token aquí
+GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Configuración del repositorio (opcional, usa valores por defecto)
+GITHUB_OWNER=Bijjouspnrp
+GITHUB_REPO=spainrp-web
+GITHUB_BRANCH=main
+GITHUB_BACKUP_PATH=database-backups/spainrp-backup.json
+
+# Configuración de backup (opcional)
+BACKUP_INTERVAL_MINUTES=5
+BACKUP_ENABLED=true
