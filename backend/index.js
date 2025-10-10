@@ -5310,6 +5310,45 @@ app.put('/api/cni/empresas/:id', (req, res) => {
   );
 });
 
+// PATCH /api/cni/empresas/:id/estado - Actualizar solo el estado de la empresa
+app.patch('/api/cni/empresas/:id/estado', (req, res) => {
+  const { id } = req.params;
+  const { estado } = req.body;
+  console.log(`[CNI][EMPRESAS] PATCH /api/cni/empresas/${id}/estado`, req.body);
+  
+  if (!estado) {
+    return res.status(400).json({ error: 'El estado es obligatorio' });
+  }
+  
+  // Validar que el estado sea válido
+  const estadosValidos = ['activa', 'suspendida', 'bajo_investigacion', 'clausurada'];
+  if (!estadosValidos.includes(estado)) {
+    return res.status(400).json({ error: 'Estado no válido. Estados permitidos: ' + estadosValidos.join(', ') });
+  }
+  
+  db.run(
+    'UPDATE empresas SET estado = ? WHERE id = ?',
+    [estado, id],
+    function(err) {
+      if (err) {
+        console.error('[CNI][EMPRESAS] Error actualizando estado:', err);
+        return res.status(500).json({ error: 'Error actualizando estado', details: err });
+      }
+      
+      if (this.changes === 0) {
+        return res.status(404).json({ error: 'Empresa no encontrada' });
+      }
+      
+      console.log(`[CNI][EMPRESAS] Estado de empresa ${id} actualizado a: ${estado}`);
+      res.json({ 
+        success: true, 
+        message: `Estado actualizado a: ${estado}`,
+        empresa: { id: parseInt(id), estado }
+      });
+    }
+  );
+});
+
 // DELETE /api/cni/empresas/:id - Eliminar empresa
 app.delete('/api/cni/empresas/:id', (req, res) => {
   const { id } = req.params;

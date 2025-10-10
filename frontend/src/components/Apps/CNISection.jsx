@@ -2208,8 +2208,8 @@ const BusinessRecordsTab = ({ cache }) => {
         });
       } else if (action === 'update') {
         console.log(`[CNI][EMPRESAS] 🔄 Actualizando estado a: ${newStatus}`);
-        response = await fetch(apiUrl(`/api/cni/empresas/${businessId}`), {
-          method: 'PUT',
+        response = await fetch(apiUrl(`/api/cni/empresas/${businessId}/estado`), {
+          method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ estado: newStatus })
         });
@@ -2230,9 +2230,11 @@ const BusinessRecordsTab = ({ cache }) => {
         const message = actionMessages[newStatus || action];
         console.log(`[CNI][EMPRESAS] ✅ Acción exitosa: ${message}`);
         setSuccess(message);
-        console.log('[CNI][EMPRESAS] 🔄 Recargando datos...');
-        loadBusinesses();
-        loadStats();
+        console.log('[CNI][EMPRESAS] 🔄 Limpiando caché y recargando datos...');
+        
+        // Limpiar caché y recargar datos
+        cache.clearCache();
+        await Promise.all([loadBusinesses(), loadStats()]);
       } else {
         console.log(`[CNI][EMPRESAS] ❌ Error en respuesta: ${data.error}`);
         setError(`Error: ${data.error}`);
