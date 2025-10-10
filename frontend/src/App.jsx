@@ -290,12 +290,11 @@ function Home({ memberCount, totalMembers, loading }) {
       color: '#fff',
       padding: '1rem 2rem',
       textAlign: 'center',
-
       position: 'fixed',
-      top: '0',
+      top: '64px', // Debajo de la navbar (que tiene 64px de altura)
       left: '0',
       right: '0',
-      zIndex: '9999',
+      zIndex: '9998', // Menor que la navbar pero mayor que el contenido
       boxShadow: '0 4px 20px rgba(255, 107, 107, 0.3)',
       borderBottom: '3px solid #ff4757',
       animation: 'bannerPulse 2s ease-in-out infinite alternate'
@@ -367,7 +366,7 @@ function Home({ memberCount, totalMembers, loading }) {
     <>
       {logoutMsg && <div style={{background:'#7289da',color:'#fff',padding:'1rem',textAlign:'center',borderRadius:8,margin:'1rem auto',maxWidth:400}}>Has cerrado sesión correctamente.</div>}
       {showBetaBanner && <BetaBanner />}
-      <div style={{ marginTop: showBetaBanner ? '100px' : '0', transition: 'margin-top 0.3s ease' }}>
+      <div style={{ marginTop: showBetaBanner ? '164px' : '64px', transition: 'margin-top 0.3s ease' }}>
         <Hero memberCount={memberCount} loading={loading} />
         <Stats memberCount={memberCount} totalMembers={totalMembers} />
         <Features />
