@@ -132,7 +132,7 @@ const useDataExport = () => {
         doc.setGState(new doc.GState({opacity: 1}));
       };
 
-      // Función para cargar imagen como Promise
+      // Función para cargar imagen como Promise con alta resolución
       const loadImageAsDataURL = (src) => {
         return new Promise((resolve, reject) => {
           const img = new Image();
@@ -145,13 +145,26 @@ const useDataExport = () => {
               
               const { WIDTH: logoWidth, HEIGHT: logoHeight } = CNI_CONFIG.LOGO_PDF;
               
-              canvas.width = logoWidth;
-              canvas.height = logoHeight;
+              // Usar alta resolución (4x) para evitar pixelado
+              const highResFactor = 4;
+              const highResWidth = logoWidth * highResFactor;
+              const highResHeight = logoHeight * highResFactor;
               
-              ctx.drawImage(img, 0, 0, logoWidth, logoHeight);
-              const dataURL = canvas.toDataURL('image/png');
+              // Configurar canvas con alta resolución
+              canvas.width = highResWidth;
+              canvas.height = highResHeight;
               
-              console.log('[CNI] ✅ Logo convertido a data URL exitosamente');
+              // Configurar contexto para alta calidad
+              ctx.imageSmoothingEnabled = true;
+              ctx.imageSmoothingQuality = 'high';
+              
+              // Dibujar imagen con alta resolución
+              ctx.drawImage(img, 0, 0, highResWidth, highResHeight);
+              
+              // Convertir a data URL con calidad máxima
+              const dataURL = canvas.toDataURL('image/png', 1.0);
+              
+              console.log(`[CNI] ✅ Logo convertido a data URL en alta resolución (${highResWidth}x${highResHeight})`);
               resolve(dataURL);
             } catch (error) {
               console.warn('[CNI] ⚠️ Error procesando imagen:', error);
