@@ -102,25 +102,109 @@ const useDataExport = () => {
         title: title,
         subject: `Reporte CNI - ${type}`,
         author: 'Centro Nacional de Inteligencia',
-        creator: 'SpainRP CNI System'
+        creator: 'SpainRP CNI System',
+        keywords: 'CNI, Inteligencia, Clasificado, SpainRP'
       });
 
-      // Encabezado del documento
-      doc.setFontSize(20);
-      doc.setTextColor(40, 40, 40);
-      doc.text('CENTRO NACIONAL DE INTELIGENCIA', 20, 20);
-      
-      doc.setFontSize(14);
-      doc.setTextColor(100, 100, 100);
-      doc.text(title, 20, 30);
-      
-      doc.setFontSize(10);
-      doc.text(`Generado el: ${new Date().toLocaleString('es-ES')}`, 20, 40);
-      doc.text(`Tipo de reporte: ${type.toUpperCase()}`, 20, 45);
-      
-      // Línea separadora
-      doc.setDrawColor(200, 200, 200);
-      doc.line(20, 50, 190, 50);
+      // Función para agregar fondo con logo y marca de agua
+      const addBackgroundElements = (pageNum) => {
+        // Fondo con logo transparente como marca de agua
+        doc.setGState(new doc.GState({opacity: 0.05}));
+        doc.setFillColor(30, 58, 138); // Azul CNI
+        doc.rect(0, 0, 210, 297, 'F');
+        
+        // Logo CNI como marca de agua (centro de la página)
+        doc.setGState(new doc.GState({opacity: 0.08}));
+        doc.setFontSize(120);
+        doc.setTextColor(30, 58, 138);
+        doc.text('CNI', 105 - doc.getTextWidth('CNI')/2, 150, { angle: 45 });
+        
+        // Texto "CLASIFICADO" en diagonal
+        doc.setGState(new doc.GState({opacity: 0.15}));
+        doc.setFontSize(60);
+        doc.setTextColor(220, 38, 38); // Rojo para clasificado
+        doc.text('CLASIFICADO', 105 - doc.getTextWidth('CLASIFICADO')/2, 200, { angle: -45 });
+        
+        // Restaurar opacidad normal
+        doc.setGState(new doc.GState({opacity: 1}));
+      };
+
+      // Función para agregar encabezado profesional
+      const addHeader = () => {
+        // Logo CNI en esquina superior izquierda
+        doc.setFillColor(30, 58, 138);
+        doc.rect(15, 8, 25, 25, 'F');
+        
+        // Texto CNI en el logo
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(12);
+        doc.setFont(undefined, 'bold');
+        doc.text('CNI', 27.5 - doc.getTextWidth('CNI')/2, 22);
+        
+        // Título principal
+        doc.setTextColor(30, 58, 138);
+        doc.setFontSize(18);
+        doc.setFont(undefined, 'bold');
+        doc.text('CENTRO NACIONAL DE INTELIGENCIA', 50, 20);
+        
+        // Subtítulo
+        doc.setFontSize(14);
+        doc.setTextColor(100, 100, 100);
+        doc.text(title, 50, 28);
+        
+        // Información del reporte
+        doc.setFontSize(9);
+        doc.setTextColor(80, 80, 80);
+        doc.text(`Generado el: ${new Date().toLocaleString('es-ES')}`, 50, 35);
+        doc.text(`Tipo de reporte: ${type.toUpperCase()}`, 50, 40);
+        doc.text(`Clasificación: CONFIDENCIAL`, 50, 45);
+        
+        // Línea separadora con estilo
+        doc.setDrawColor(30, 58, 138);
+        doc.setLineWidth(2);
+        doc.line(15, 50, 195, 50);
+        
+        // Línea decorativa
+        doc.setDrawColor(220, 38, 38);
+        doc.setLineWidth(1);
+        doc.line(15, 52, 195, 52);
+      };
+
+      // Función para agregar pie de página profesional
+      const addFooter = (pageNum, totalPages) => {
+        const pageHeight = doc.internal.pageSize.height;
+        
+        // Línea superior del pie
+        doc.setDrawColor(30, 58, 138);
+        doc.setLineWidth(1);
+        doc.line(15, pageHeight - 25, 195, pageHeight - 25);
+        
+        // Información del pie
+        doc.setFontSize(8);
+        doc.setTextColor(100, 100, 100);
+        doc.text(`Página ${pageNum} de ${totalPages}`, 15, pageHeight - 15);
+        
+        // Firma del Director General
+        doc.setTextColor(30, 58, 138);
+        doc.setFont(undefined, 'bold');
+        doc.text('Director General CNI', 195 - doc.getTextWidth('Director General CNI'), pageHeight - 15);
+        
+        // Fecha y hora
+        doc.setTextColor(80, 80, 80);
+        doc.setFont(undefined, 'normal');
+        doc.text(new Date().toLocaleString('es-ES'), 195 - doc.getTextWidth(new Date().toLocaleString('es-ES')), pageHeight - 10);
+        
+        // Logo pequeño en el pie
+        doc.setFillColor(30, 58, 138);
+        doc.rect(15, pageHeight - 20, 15, 15, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(8);
+        doc.text('CNI', 22.5 - doc.getTextWidth('CNI')/2, pageHeight - 12);
+      };
+
+      // Agregar elementos de fondo y encabezado
+      addBackgroundElements(1);
+      addHeader();
 
       let yPosition = 60;
       const pageHeight = doc.internal.pageSize.height;
@@ -128,8 +212,9 @@ const useDataExport = () => {
 
       // Función para agregar nueva página si es necesario
       const checkPageBreak = (requiredSpace = 20) => {
-        if (yPosition + requiredSpace > pageHeight - margin) {
+        if (yPosition + requiredSpace > pageHeight - 40) {
           doc.addPage();
+          addBackgroundElements(doc.internal.getNumberOfPages());
           yPosition = 20;
           return true;
         }
@@ -160,14 +245,11 @@ const useDataExport = () => {
           await exportGeneralData(doc, data, yPosition, checkPageBreak);
       }
 
-      // Pie de página
+      // Agregar pie de página a todas las páginas
       const pageCount = doc.internal.getNumberOfPages();
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
-        doc.setFontSize(8);
-        doc.setTextColor(150, 150, 150);
-        doc.text(`Página ${i} de ${pageCount}`, 20, pageHeight - 10);
-        doc.text('CNI - SpainRP', 190 - doc.getTextWidth('CNI - SpainRP'), pageHeight - 10);
+        addFooter(i, pageCount);
       }
 
       // Descargar el archivo
@@ -249,75 +331,157 @@ const useDataExport = () => {
 
 // Funciones auxiliares para exportación de datos específicos
 const exportDatabaseData = async (doc, data, yPosition, checkPageBreak) => {
+  // Título de sección con estilo profesional
   doc.setFontSize(16);
-  doc.setTextColor(40, 40, 40);
+  doc.setTextColor(30, 58, 138);
+  doc.setFont(undefined, 'bold');
   doc.text('ESTADÍSTICAS DE BASE DE DATOS', 20, yPosition);
+  yPosition += 12;
+  
+  // Línea decorativa bajo el título
+  doc.setDrawColor(30, 58, 138);
+  doc.setLineWidth(1);
+  doc.line(20, yPosition, 100, yPosition);
   yPosition += 15;
 
-  doc.setFontSize(12);
+  // Crear tabla de estadísticas
+  doc.setFontSize(10);
   doc.setTextColor(60, 60, 60);
   
-  Object.entries(data).forEach(([key, value]) => {
-    checkPageBreak(10);
-    doc.text(`${key}: ${value.toLocaleString()}`, 20, yPosition);
-    yPosition += 8;
+  // Encabezado de la tabla
+  doc.setFillColor(240, 240, 240);
+  doc.rect(20, yPosition - 5, 170, 12, 'F');
+  doc.setTextColor(30, 58, 138);
+  doc.setFont(undefined, 'bold');
+  doc.text('MÉTRICA', 25, yPosition + 2);
+  doc.text('VALOR', 150, yPosition + 2);
+  yPosition += 15;
+  
+  // Datos de la tabla
+  doc.setFont(undefined, 'normal');
+  Object.entries(data).forEach(([key, value], index) => {
+    checkPageBreak(12);
+    
+    // Alternar colores de fila
+    if (index % 2 === 0) {
+      doc.setFillColor(250, 250, 250);
+      doc.rect(20, yPosition - 5, 170, 10, 'F');
+    }
+    
+    doc.setTextColor(60, 60, 60);
+    doc.text(key.replace(/_/g, ' ').toUpperCase(), 25, yPosition + 2);
+    doc.text(value.toLocaleString(), 150, yPosition + 2);
+    yPosition += 12;
   });
 };
 
 const exportTrackingData = async (doc, data, yPosition, checkPageBreak) => {
+  // Título de sección con estilo profesional
   doc.setFontSize(16);
-  doc.setTextColor(40, 40, 40);
+  doc.setTextColor(30, 58, 138);
+  doc.setFont(undefined, 'bold');
   doc.text('RESULTADOS DE RASTREO', 20, yPosition);
+  yPosition += 12;
+  
+  // Línea decorativa bajo el título
+  doc.setDrawColor(30, 58, 138);
+  doc.setLineWidth(1);
+  doc.line(20, yPosition, 100, yPosition);
   yPosition += 15;
 
   data.forEach((result, index) => {
-    checkPageBreak(25);
+    checkPageBreak(30);
     
+    // Contenedor del resultado con borde
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.5);
+    doc.rect(20, yPosition - 5, 170, 25);
+    
+    // Título del resultado
     doc.setFontSize(12);
-    doc.setTextColor(40, 40, 40);
-    doc.text(`${index + 1}. ${result.type}`, 20, yPosition);
+    doc.setTextColor(30, 58, 138);
+    doc.setFont(undefined, 'bold');
+    doc.text(`${index + 1}. ${result.type}`, 25, yPosition);
     yPosition += 8;
     
-    doc.setFontSize(10);
-    doc.setTextColor(80, 80, 80);
-    doc.text(`Estado: ${result.status}`, 30, yPosition);
-    yPosition += 6;
-    doc.text(`Detalles: ${result.details}`, 30, yPosition);
-    yPosition += 6;
-    doc.text(`Última actividad: ${result.lastSeen}`, 30, yPosition);
-    yPosition += 10;
+    // Detalles en columnas
+    doc.setFontSize(9);
+    doc.setTextColor(60, 60, 60);
+    doc.setFont(undefined, 'normal');
+    
+    // Columna izquierda
+    doc.text(`Estado: ${result.status}`, 25, yPosition);
+    doc.text(`Detalles: ${result.details}`, 25, yPosition + 6);
+    
+    // Columna derecha
+    doc.text(`Última actividad: ${result.lastSeen}`, 110, yPosition);
+    if (result.location) {
+      doc.text(`Ubicación: ${result.location}`, 110, yPosition + 6);
+    }
+    
+    yPosition += 15;
   });
 };
 
 const exportBusinessData = async (doc, data, yPosition, checkPageBreak) => {
+  // Título de sección con estilo profesional
   doc.setFontSize(16);
-  doc.setTextColor(40, 40, 40);
+  doc.setTextColor(30, 58, 138);
+  doc.setFont(undefined, 'bold');
   doc.text('REGISTROS EMPRESARIALES', 20, yPosition);
+  yPosition += 12;
+  
+  // Línea decorativa bajo el título
+  doc.setDrawColor(30, 58, 138);
+  doc.setLineWidth(1);
+  doc.line(20, yPosition, 80, yPosition);
   yPosition += 15;
 
   data.forEach((business, index) => {
-    checkPageBreak(30);
+    checkPageBreak(35);
     
+    // Contenedor de la empresa con borde
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.5);
+    doc.rect(20, yPosition - 5, 170, 30);
+    
+    // Número y nombre de la empresa
     doc.setFontSize(12);
-    doc.setTextColor(40, 40, 40);
-    doc.text(`${index + 1}. ${business.nombre}`, 20, yPosition);
+    doc.setTextColor(30, 58, 138);
+    doc.setFont(undefined, 'bold');
+    doc.text(`${index + 1}. ${business.nombre}`, 25, yPosition);
     yPosition += 8;
     
-    doc.setFontSize(10);
-    doc.setTextColor(80, 80, 80);
-    doc.text(`Tipo: ${business.tipo}`, 30, yPosition);
-    yPosition += 6;
-    doc.text(`Propietario: ${business.propietario}`, 30, yPosition);
-    yPosition += 6;
-    doc.text(`Ubicación: ${business.ubicacion}`, 30, yPosition);
-    yPosition += 6;
-    doc.text(`Estado: ${business.estado}`, 30, yPosition);
-    yPosition += 6;
+    // Detalles de la empresa en columnas
+    doc.setFontSize(9);
+    doc.setTextColor(60, 60, 60);
+    doc.setFont(undefined, 'normal');
+    
+    // Columna izquierda
+    doc.text(`Tipo: ${business.tipo}`, 25, yPosition);
+    doc.text(`Propietario: ${business.propietario}`, 25, yPosition + 6);
+    doc.text(`Ubicación: ${business.ubicacion}`, 25, yPosition + 12);
+    
+    // Columna derecha
+    doc.text(`Estado: ${business.estado}`, 110, yPosition);
+    if (business.fecha_registro) {
+      doc.text(`Registro: ${business.fecha_registro}`, 110, yPosition + 6);
+    }
+    if (business.ultima_visita) {
+      doc.text(`Última visita: ${business.ultima_visita}`, 110, yPosition + 12);
+    }
+    
+    yPosition += 18;
+    
+    // Notas si existen
     if (business.notas) {
-      doc.text(`Notas: ${business.notas}`, 30, yPosition);
+      doc.setFontSize(8);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Notas: ${business.notas}`, 25, yPosition);
       yPosition += 6;
     }
-    yPosition += 10;
+    
+    yPosition += 8;
   });
 };
 
