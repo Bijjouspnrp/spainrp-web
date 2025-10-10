@@ -260,6 +260,7 @@ function PrivateRoute({ children }) {
 function Home({ memberCount, totalMembers, loading }) {
   const location = useLocation();
   const [logoutMsg, setLogoutMsg] = useState(false);
+  const [showBetaBanner, setShowBetaBanner] = useState(true);
   
   // Debug logging for Home component
   useEffect(() => {
@@ -281,9 +282,86 @@ function Home({ memberCount, totalMembers, loading }) {
       setTimeout(() => setLogoutMsg(false), 3000);
     }
   }, [location.state]);
+
+  // Banner de Beta/Mantenimiento
+  const BetaBanner = () => (
+    <div style={{
+      background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)',
+      color: '#fff',
+      padding: '1rem 2rem',
+      textAlign: 'center',
+      position: 'relative',
+      boxShadow: '0 4px 20px rgba(255, 107, 107, 0.3)',
+      borderBottom: '3px solid #ff4757',
+      animation: 'bannerPulse 2s ease-in-out infinite alternate'
+    }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '1rem',
+        flexWrap: 'wrap'
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          fontSize: '1.2rem',
+          fontWeight: '700'
+        }}>
+          <span style={{fontSize: '1.5rem'}}>⚠️</span>
+          <span>PÁGINA EN BETA</span>
+        </div>
+        <div style={{
+          fontSize: '1rem',
+          opacity: 0.9,
+          maxWidth: '800px'
+        }}>
+          Esta página está en desarrollo activo. Pueden existir errores, funciones incompletas y cambios frecuentes. 
+          <strong style={{color: '#ffd700', marginLeft: '0.5rem'}}>No es la versión oficial final.</strong>
+        </div>
+        <button
+          onClick={() => setShowBetaBanner(false)}
+          style={{
+            background: 'rgba(255, 255, 255, 0.2)',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            color: '#fff',
+            borderRadius: '50%',
+            width: '32px',
+            height: '32px',
+            cursor: 'pointer',
+            fontSize: '1.2rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.2s ease',
+            marginLeft: '1rem'
+          }}
+          onMouseOver={(e) => {
+            e.target.style.background = 'rgba(255, 255, 255, 0.3)';
+            e.target.style.transform = 'scale(1.1)';
+          }}
+          onMouseOut={(e) => {
+            e.target.style.background = 'rgba(255, 255, 255, 0.2)';
+            e.target.style.transform = 'scale(1)';
+          }}
+        >
+          ×
+        </button>
+      </div>
+      <style>{`
+        @keyframes bannerPulse {
+          0% { box-shadow: 0 4px 20px rgba(255, 107, 107, 0.3); }
+          100% { box-shadow: 0 6px 30px rgba(255, 107, 107, 0.5); }
+        }
+      `}</style>
+    </div>
+  );
+
   return (
     <>
       {logoutMsg && <div style={{background:'#7289da',color:'#fff',padding:'1rem',textAlign:'center',borderRadius:8,margin:'1rem auto',maxWidth:400}}>Has cerrado sesión correctamente.</div>}
+      {showBetaBanner && <BetaBanner />}
       <Hero memberCount={memberCount} loading={loading} />
       <Stats memberCount={memberCount} totalMembers={totalMembers} />
       <Features />
