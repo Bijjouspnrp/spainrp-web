@@ -74,7 +74,8 @@ const Panel = () => {
     // Obtener datos del usuario autenticado
     const token = localStorage.getItem('spainrp_token');
     const headers = token ? { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } : { 'Accept': 'application/json' };
-  fetch(apiUrl('/auth/me'), { headers })
+    
+    fetch(apiUrl('/auth/me'), { headers })
       .then(res => {
         if (res.status === 401) {
           setUser(null);
@@ -86,22 +87,19 @@ const Panel = () => {
       .then(data => {
         if (data && data.user) {
           setUser(data.user);
-          // Obtener roles del usuario en el servidor SpainRP (guildId necesario)
-          const guildId = '1212556680911650866'; // ID del servidor SpainRP
+          
+          // Obtener roles del usuario en paralelo para mayor velocidad
+          const guildId = '1212556680911650866';
           fetch(apiUrl(`/api/member/${guildId}/${data.user.id}`), { credentials: 'include' })
             .then(res => {
               if (res.status === 401) {
                 setRoles([]);
                 setUser(u => ({ ...u, joinedAt: null, permissions: null }));
-                setLoading(false);
                 return null;
               }
               if (res.status === 404) {
-                // Si el usuario está autenticado pero no está en el servidor Discord,
-                // mostrar el panel con invitación en vez de redirigir a /404
                 setRoles([]);
                 setUser(u => u ? { ...u, notInGuild: true, invite: undefined } : null);
-                setLoading(false);
                 return null;
               }
               return res.ok ? res.json() : null;
@@ -114,7 +112,6 @@ const Panel = () => {
                   invite: member.invite
                 });
                 setRoles([]);
-                setLoading(false);
                 return;
               }
               if (member) {
@@ -125,9 +122,9 @@ const Panel = () => {
                   permissions: member?.permissions
                 }));
               }
-              setLoading(false);
             })
-            .catch(() => setLoading(false));
+            .catch(() => {})
+            .finally(() => setLoading(false));
         } else {
           setLoading(false);
         }
@@ -225,6 +222,7 @@ const Panel = () => {
   const [userRecords, setUserRecords] = useState({ antecedentes: 0, multasTotal: 0, multasPendientes: 0 });
 
   useEffect(() => {
+    // Cargar estadísticas en paralelo sin bloquear la UI
     fetch(apiUrl('/api/admin-records/stats/records'))
       .then(res => res.ok ? res.json() : null)
       .then(data => {
@@ -237,25 +235,24 @@ const Panel = () => {
       .catch(() => {});
   }, []);
 
-  // Consultar antecedentes y multas del usuario autenticado
+  // Consultar antecedentes y multas del usuario autenticado en paralelo
   useEffect(() => {
     if (user?.id) {
-      fetch(apiUrl(`/api/admin-records/antecedentes/${user.id}`))
-        .then(res => res.ok ? res.json() : null)
-        .then(data => {
-          setUserRecords(r => ({ ...r, antecedentes: data?.total || 0 }));
-        })
-        .catch(() => {});
-      fetch(apiUrl(`/api/admin-records/multas/${user.id}`))
-        .then(res => res.ok ? res.json() : null)
-        .then(data => {
-          setUserRecords(r => ({
-            ...r,
-            multasTotal: data?.total || 0,
-            multasPendientes: data?.pendientes || 0
-          }));
-        })
-        .catch(() => {});
+      // Cargar antecedentes y multas en paralelo para mayor velocidad
+      Promise.all([
+        fetch(apiUrl(`/api/admin-records/antecedentes/${user.id}`))
+          .then(res => res.ok ? res.json() : null)
+          .catch(() => null),
+        fetch(apiUrl(`/api/admin-records/multas/${user.id}`))
+          .then(res => res.ok ? res.json() : null)
+          .catch(() => null)
+      ]).then(([antecedentesData, multasData]) => {
+        setUserRecords({
+          antecedentes: antecedentesData?.total || 0,
+          multasTotal: multasData?.total || 0,
+          multasPendientes: multasData?.pendientes || 0
+        });
+      });
     }
   }, [user?.id]);
 
