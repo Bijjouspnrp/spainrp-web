@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { 
   FaEye, FaSearch, FaDatabase, FaUser, FaIdCard, FaMoneyBillWave, 
   FaHistory, FaClipboardList, FaShieldAlt, FaSpinner, FaExclamationTriangle,
@@ -7,13 +7,511 @@ import {
   FaUsers, FaBuilding, FaMapMarkerAlt, FaPhone, FaEnvelope,
   FaCalendarAlt, FaClock, FaFlag, FaKey, FaFingerprint, FaPlus,
   FaBars, FaChevronDown, FaChevronUp, FaQuestionCircle, FaInfoCircle,
-  FaCog, FaExpand, FaCompress, FaAngleRight, FaAngleLeft
+  FaCog, FaExpand, FaCompress, FaAngleRight, FaAngleLeft,
+  FaDownload, FaFilePdf, FaFileExcel, FaFileCsv, FaPrint,
+  FaCloudDownloadAlt, FaArchive, FaBookmark, FaStar
 } from 'react-icons/fa';
 import { apiUrl } from '../../utils/api';
 import './CNISection.css';
 import './BusinessRecords.css';
 import './CNIBlog.css';
-import RobloxAuth from './RobloxAuth';
+import './CNIExport.css';
+
+// Hook personalizado para caché avanzado
+const useAdvancedCache = () => {
+  const [cache, setCache] = useState(new Map());
+  const [cacheStats, setCacheStats] = useState({
+    hits: 0,
+    misses: 0,
+    size: 0,
+    lastCleanup: Date.now()
+  });
+
+  const getCachedData = useCallback((key) => {
+    const cached = cache.get(key);
+    if (cached && cached.expires > Date.now()) {
+      setCacheStats(prev => ({ ...prev, hits: prev.hits + 1 }));
+      return cached.data;
+    }
+    setCacheStats(prev => ({ ...prev, misses: prev.misses + 1 }));
+    return null;
+  }, [cache]);
+
+  const setCachedData = useCallback((key, data, ttl = 300000) => {
+    const expires = Date.now() + ttl;
+    setCache(prev => {
+      const newCache = new Map(prev);
+      newCache.set(key, { data, expires, created: Date.now() });
+      return newCache;
+    });
+    setCacheStats(prev => ({ ...prev, size: cache.size + 1 }));
+  }, [cache.size]);
+
+  const clearExpiredCache = useCallback(() => {
+    const now = Date.now();
+    setCache(prev => {
+      const newCache = new Map();
+      let cleaned = 0;
+      for (const [key, value] of prev) {
+        if (value.expires > now) {
+          newCache.set(key, value);
+        } else {
+          cleaned++;
+        }
+      }
+      setCacheStats(prev => ({ 
+        ...prev, 
+        size: newCache.size,
+        lastCleanup: now
+      }));
+      return newCache;
+    });
+  }, []);
+
+  const clearCache = useCallback(() => {
+    setCache(new Map());
+    setCacheStats({ hits: 0, misses: 0, size: 0, lastCleanup: Date.now() });
+  }, []);
+
+  const getCacheStats = useCallback(() => {
+    const hitRate = cacheStats.hits + cacheStats.misses > 0 
+      ? (cacheStats.hits / (cacheStats.hits + cacheStats.misses) * 100).toFixed(2)
+      : 0;
+    return { ...cacheStats, hitRate };
+  }, [cacheStats]);
+
+  return {
+    getCachedData,
+    setCachedData,
+    clearExpiredCache,
+    clearCache,
+    getCacheStats
+  };
+};
+
+// Hook para exportación de datos
+const useDataExport = () => {
+  const exportToPDF = useCallback(async (data, filename, title, type = 'general') => {
+    try {
+      // Importar jsPDF dinámicamente
+      const { jsPDF } = await import('jspdf');
+      const doc = new jsPDF();
+      
+      // Configuración del documento
+      doc.setProperties({
+        title: title,
+        subject: `Reporte CNI - ${type}`,
+        author: 'Centro Nacional de Inteligencia',
+        creator: 'SpainRP CNI System'
+      });
+
+      // Encabezado del documento
+      doc.setFontSize(20);
+      doc.setTextColor(40, 40, 40);
+      doc.text('CENTRO NACIONAL DE INTELIGENCIA', 20, 20);
+      
+      doc.setFontSize(14);
+      doc.setTextColor(100, 100, 100);
+      doc.text(title, 20, 30);
+      
+      doc.setFontSize(10);
+      doc.text(`Generado el: ${new Date().toLocaleString('es-ES')}`, 20, 40);
+      doc.text(`Tipo de reporte: ${type.toUpperCase()}`, 20, 45);
+      
+      // Línea separadora
+      doc.setDrawColor(200, 200, 200);
+      doc.line(20, 50, 190, 50);
+
+      let yPosition = 60;
+      const pageHeight = doc.internal.pageSize.height;
+      const margin = 20;
+
+      // Función para agregar nueva página si es necesario
+      const checkPageBreak = (requiredSpace = 20) => {
+        if (yPosition + requiredSpace > pageHeight - margin) {
+          doc.addPage();
+          yPosition = 20;
+          return true;
+        }
+        return false;
+      };
+
+      // Exportar según el tipo de datos
+      switch (type) {
+        case 'database':
+          await exportDatabaseData(doc, data, yPosition, checkPageBreak);
+          break;
+        case 'tracking':
+          await exportTrackingData(doc, data, yPosition, checkPageBreak);
+          break;
+        case 'business':
+          await exportBusinessData(doc, data, yPosition, checkPageBreak);
+          break;
+        case 'blog':
+          await exportBlogData(doc, data, yPosition, checkPageBreak);
+          break;
+        case 'players':
+          await exportPlayersData(doc, data, yPosition, checkPageBreak);
+          break;
+        case 'vehicles':
+          await exportVehiclesData(doc, data, yPosition, checkPageBreak);
+          break;
+        default:
+          await exportGeneralData(doc, data, yPosition, checkPageBreak);
+      }
+
+      // Pie de página
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text(`Página ${i} de ${pageCount}`, 20, pageHeight - 10);
+        doc.text('CNI - SpainRP', 190 - doc.getTextWidth('CNI - SpainRP'), pageHeight - 10);
+      }
+
+      // Descargar el archivo
+      doc.save(`${filename}_${new Date().toISOString().split('T')[0]}.pdf`);
+      
+      return { success: true, message: 'PDF generado correctamente' };
+    } catch (error) {
+      console.error('Error generando PDF:', error);
+      return { success: false, message: 'Error generando PDF: ' + error.message };
+    }
+  }, []);
+
+  const exportToExcel = useCallback(async (data, filename, title) => {
+    try {
+      // Importar XLSX dinámicamente
+      const XLSX = await import('xlsx');
+      
+      // Preparar datos para Excel
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      const workbook = XLSX.utils.book_new();
+      
+      // Agregar metadatos
+      workbook.Props = {
+        Title: title,
+        Subject: 'Reporte CNI',
+        Author: 'Centro Nacional de Inteligencia',
+        CreatedDate: new Date()
+      };
+      
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Datos');
+      
+      // Descargar archivo
+      XLSX.writeFile(workbook, `${filename}_${new Date().toISOString().split('T')[0]}.xlsx`);
+      
+      return { success: true, message: 'Excel generado correctamente' };
+    } catch (error) {
+      console.error('Error generando Excel:', error);
+      return { success: false, message: 'Error generando Excel: ' + error.message };
+    }
+  }, []);
+
+  const exportToCSV = useCallback((data, filename, title) => {
+    try {
+      if (!data || data.length === 0) {
+        return { success: false, message: 'No hay datos para exportar' };
+      }
+
+      // Convertir datos a CSV
+      const headers = Object.keys(data[0]);
+      const csvContent = [
+        headers.join(','),
+        ...data.map(row => headers.map(header => `"${row[header] || ''}"`).join(','))
+      ].join('\n');
+
+      // Crear y descargar archivo
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `${filename}_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      return { success: true, message: 'CSV generado correctamente' };
+    } catch (error) {
+      console.error('Error generando CSV:', error);
+      return { success: false, message: 'Error generando CSV: ' + error.message };
+    }
+  }, []);
+
+  return {
+    exportToPDF,
+    exportToExcel,
+    exportToCSV
+  };
+};
+
+// Funciones auxiliares para exportación de datos específicos
+const exportDatabaseData = async (doc, data, yPosition, checkPageBreak) => {
+  doc.setFontSize(16);
+  doc.setTextColor(40, 40, 40);
+  doc.text('ESTADÍSTICAS DE BASE DE DATOS', 20, yPosition);
+  yPosition += 15;
+
+  doc.setFontSize(12);
+  doc.setTextColor(60, 60, 60);
+  
+  Object.entries(data).forEach(([key, value]) => {
+    checkPageBreak(10);
+    doc.text(`${key}: ${value.toLocaleString()}`, 20, yPosition);
+    yPosition += 8;
+  });
+};
+
+const exportTrackingData = async (doc, data, yPosition, checkPageBreak) => {
+  doc.setFontSize(16);
+  doc.setTextColor(40, 40, 40);
+  doc.text('RESULTADOS DE RASTREO', 20, yPosition);
+  yPosition += 15;
+
+  data.forEach((result, index) => {
+    checkPageBreak(25);
+    
+    doc.setFontSize(12);
+    doc.setTextColor(40, 40, 40);
+    doc.text(`${index + 1}. ${result.type}`, 20, yPosition);
+    yPosition += 8;
+    
+    doc.setFontSize(10);
+    doc.setTextColor(80, 80, 80);
+    doc.text(`Estado: ${result.status}`, 30, yPosition);
+    yPosition += 6;
+    doc.text(`Detalles: ${result.details}`, 30, yPosition);
+    yPosition += 6;
+    doc.text(`Última actividad: ${result.lastSeen}`, 30, yPosition);
+    yPosition += 10;
+  });
+};
+
+const exportBusinessData = async (doc, data, yPosition, checkPageBreak) => {
+  doc.setFontSize(16);
+  doc.setTextColor(40, 40, 40);
+  doc.text('REGISTROS EMPRESARIALES', 20, yPosition);
+  yPosition += 15;
+
+  data.forEach((business, index) => {
+    checkPageBreak(30);
+    
+    doc.setFontSize(12);
+    doc.setTextColor(40, 40, 40);
+    doc.text(`${index + 1}. ${business.nombre}`, 20, yPosition);
+    yPosition += 8;
+    
+    doc.setFontSize(10);
+    doc.setTextColor(80, 80, 80);
+    doc.text(`Tipo: ${business.tipo}`, 30, yPosition);
+    yPosition += 6;
+    doc.text(`Propietario: ${business.propietario}`, 30, yPosition);
+    yPosition += 6;
+    doc.text(`Ubicación: ${business.ubicacion}`, 30, yPosition);
+    yPosition += 6;
+    doc.text(`Estado: ${business.estado}`, 30, yPosition);
+    yPosition += 6;
+    if (business.notas) {
+      doc.text(`Notas: ${business.notas}`, 30, yPosition);
+      yPosition += 6;
+    }
+    yPosition += 10;
+  });
+};
+
+const exportBlogData = async (doc, data, yPosition, checkPageBreak) => {
+  doc.setFontSize(16);
+  doc.setTextColor(40, 40, 40);
+  doc.text('ARCHIVOS CNI', 20, yPosition);
+  yPosition += 15;
+
+  data.forEach((article, index) => {
+    checkPageBreak(40);
+    
+    doc.setFontSize(12);
+    doc.setTextColor(40, 40, 40);
+    doc.text(`${index + 1}. ${article.titulo}`, 20, yPosition);
+    yPosition += 8;
+    
+    doc.setFontSize(10);
+    doc.setTextColor(80, 80, 80);
+    doc.text(`Banda: ${article.banda}`, 30, yPosition);
+    yPosition += 6;
+    doc.text(`Agente: ${article.agente}`, 30, yPosition);
+    yPosition += 6;
+    doc.text(`Categoría: ${article.categoria}`, 30, yPosition);
+    yPosition += 6;
+    doc.text(`Nivel: ${article.nivel_seguridad}`, 30, yPosition);
+    yPosition += 6;
+    doc.text(`Fecha: ${new Date(article.fecha_creacion).toLocaleDateString('es-ES')}`, 30, yPosition);
+    yPosition += 6;
+    
+    // Contenido (truncado si es muy largo)
+    const content = article.contenido.length > 200 
+      ? article.contenido.substring(0, 200) + '...'
+      : article.contenido;
+    doc.text(`Contenido: ${content}`, 30, yPosition);
+    yPosition += 15;
+  });
+};
+
+const exportPlayersData = async (doc, data, yPosition, checkPageBreak) => {
+  doc.setFontSize(16);
+  doc.setTextColor(40, 40, 40);
+  doc.text('CIUDADANOS DETECTADOS', 20, yPosition);
+  yPosition += 15;
+
+  data.forEach((player, index) => {
+    checkPageBreak(25);
+    
+    doc.setFontSize(12);
+    doc.setTextColor(40, 40, 40);
+    doc.text(`${index + 1}. ${player.Player.split(':')[0]}`, 20, yPosition);
+    yPosition += 8;
+    
+    doc.setFontSize(10);
+    doc.setTextColor(80, 80, 80);
+    doc.text(`ID: ${player.Player.split(':')[1]}`, 30, yPosition);
+    yPosition += 6;
+    doc.text(`Equipo: ${player.Team}`, 30, yPosition);
+    yPosition += 6;
+    doc.text(`Permisos: ${player.Permission}`, 30, yPosition);
+    yPosition += 6;
+    if (player.Callsign) {
+      doc.text(`Indicativo: ${player.Callsign}`, 30, yPosition);
+      yPosition += 6;
+    }
+    yPosition += 10;
+  });
+};
+
+const exportVehiclesData = async (doc, data, yPosition, checkPageBreak) => {
+  doc.setFontSize(16);
+  doc.setTextColor(40, 40, 40);
+  doc.text('VEHÍCULOS EN CIUDAD', 20, yPosition);
+  yPosition += 15;
+
+  data.forEach((vehicle, index) => {
+    checkPageBreak(25);
+    
+    doc.setFontSize(12);
+    doc.setTextColor(40, 40, 40);
+    doc.text(`${index + 1}. ${vehicle.Name}`, 20, yPosition);
+    yPosition += 8;
+    
+    doc.setFontSize(10);
+    doc.setTextColor(80, 80, 80);
+    doc.text(`Propietario: ${vehicle.Owner}`, 30, yPosition);
+    yPosition += 6;
+    doc.text(`Textura: ${vehicle.Texture}`, 30, yPosition);
+    yPosition += 6;
+    yPosition += 10;
+  });
+};
+
+const exportGeneralData = async (doc, data, yPosition, checkPageBreak) => {
+  doc.setFontSize(16);
+  doc.setTextColor(40, 40, 40);
+  doc.text('DATOS GENERALES', 20, yPosition);
+  yPosition += 15;
+
+  if (Array.isArray(data)) {
+    data.forEach((item, index) => {
+      checkPageBreak(15);
+      doc.setFontSize(10);
+      doc.setTextColor(80, 80, 80);
+      doc.text(`${index + 1}. ${JSON.stringify(item)}`, 20, yPosition);
+      yPosition += 8;
+    });
+  } else {
+    Object.entries(data).forEach(([key, value]) => {
+      checkPageBreak(10);
+      doc.setFontSize(10);
+      doc.setTextColor(80, 80, 80);
+      doc.text(`${key}: ${value}`, 20, yPosition);
+      yPosition += 8;
+    });
+  }
+};
+
+// Componente de botones de exportación
+const ExportButtons = ({ data, filename, title, type, onExport }) => {
+  const { exportToPDF, exportToExcel, exportToCSV } = useDataExport();
+  const [exporting, setExporting] = useState(false);
+  const [exportType, setExportType] = useState('');
+
+  const handleExport = async (format) => {
+    if (!data || (Array.isArray(data) && data.length === 0)) {
+      alert('No hay datos para exportar');
+      return;
+    }
+
+    setExporting(true);
+    setExportType(format);
+
+    try {
+      let result;
+      switch (format) {
+        case 'pdf':
+          result = await exportToPDF(data, filename, title, type);
+          break;
+        case 'excel':
+          result = await exportToExcel(data, filename, title);
+          break;
+        case 'csv':
+          result = exportToCSV(data, filename, title);
+          break;
+        default:
+          result = { success: false, message: 'Formato no soportado' };
+      }
+
+      if (result.success) {
+        onExport && onExport('success', result.message);
+      } else {
+        onExport && onExport('error', result.message);
+      }
+    } catch (error) {
+      onExport && onExport('error', 'Error durante la exportación: ' + error.message);
+    } finally {
+      setExporting(false);
+      setExportType('');
+    }
+  };
+
+  return (
+    <div className="cni-export-buttons">
+      <button
+        className="cni-btn cni-btn-export"
+        onClick={() => handleExport('pdf')}
+        disabled={exporting}
+        title="Exportar a PDF"
+      >
+        {exporting && exportType === 'pdf' ? <FaSpinner className="fa-spin" /> : <FaFilePdf />}
+        PDF
+      </button>
+      <button
+        className="cni-btn cni-btn-export"
+        onClick={() => handleExport('excel')}
+        disabled={exporting}
+        title="Exportar a Excel"
+      >
+        {exporting && exportType === 'excel' ? <FaSpinner className="fa-spin" /> : <FaFileExcel />}
+        Excel
+      </button>
+      <button
+        className="cni-btn cni-btn-export"
+        onClick={() => handleExport('csv')}
+        disabled={exporting}
+        title="Exportar a CSV"
+      >
+        {exporting && exportType === 'csv' ? <FaSpinner className="fa-spin" /> : <FaFileCsv />}
+        CSV
+      </button>
+    </div>
+  );
+};
 
 const CNISection = () => {
   const [user, setUser] = useState(null);
@@ -24,11 +522,9 @@ const CNISection = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  
-  // Estados para autenticación Roblox
-  const [showRobloxAuth, setShowRobloxAuth] = useState(false);
-  const [robloxUser, setRobloxUser] = useState(null);
-  const [authRequired, setAuthRequired] = useState(false);
+
+  // Hook de caché avanzado
+  const { getCachedData, setCachedData, clearExpiredCache, getCacheStats } = useAdvancedCache();
 
   // Estados para funcionalidades CNI
   const [searchData, setSearchData] = useState({
@@ -56,6 +552,12 @@ const CNISection = () => {
       location: ''
     }
   });
+
+  // Limpiar caché expirado cada 5 minutos
+  useEffect(() => {
+    const interval = setInterval(clearExpiredCache, 300000);
+    return () => clearInterval(interval);
+  }, [clearExpiredCache]);
 
   // Verificar autenticación y permisos CNI
   useEffect(() => {
@@ -88,33 +590,8 @@ const CNISection = () => {
           const cniData = await cniRes.json();
           setIsCNI(cniData.hasRole);
           
-          // Si es CNI, verificar autenticación Roblox
+          // Mostrar modal de bienvenida solo la primera vez
           if (cniData.hasRole) {
-            // Modo instantáneo - saltar verificación de PIN
-            const isInstantMode = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost' || window.location.hostname.includes('render.com');
-            
-            if (isInstantMode) {
-              console.log('⚡ Modo instantáneo CNI - saltando verificación de PIN');
-              // En modo instantáneo, siempre mostrar autenticación
-              setAuthRequired(true);
-              setShowRobloxAuth(true);
-            } else {
-              // Verificar si ya tiene autenticación Roblox
-              const robloxAuthRes = await fetch(apiUrl('/api/roblox/check-pin'), {
-                headers: { 'Authorization': `Bearer ${token}` }
-              });
-              
-              if (robloxAuthRes.ok) {
-                const robloxData = await robloxAuthRes.json();
-                if (!robloxData.hasPin) {
-                  // No tiene PIN configurado, mostrar autenticación
-                  setAuthRequired(true);
-                  setShowRobloxAuth(true);
-                }
-              }
-            }
-            
-            // Mostrar modal de bienvenida solo la primera vez
             const hasSeenWelcome = localStorage.getItem('cni-welcome-seen');
             if (!hasSeenWelcome) {
               setShowWelcomeModal(true);
@@ -143,24 +620,19 @@ const CNISection = () => {
     checkAuth();
   }, []);
 
-  // Funciones para manejar autenticación Roblox
-  const handleRobloxAuthSuccess = (userData) => {
-    setRobloxUser(userData);
-    setShowRobloxAuth(false);
-    setAuthRequired(false);
-  };
-
-  const handleRobloxAuthCancel = () => {
-    setShowRobloxAuth(false);
-    setAuthRequired(false);
-    // Redirigir a la página principal o cerrar sesión
-    window.location.href = '/';
-  };
-
   // Cargar agentes CNI para autocompletado
 
-  // Cargar estadísticas de la base de datos
+  // Cargar estadísticas de la base de datos con caché
   const loadDatabaseStats = async () => {
+    const cacheKey = 'database-stats';
+    const cachedData = getCachedData(cacheKey);
+    
+    if (cachedData) {
+      console.log('[CNI] Usando datos en caché para estadísticas');
+      setDatabaseStats(cachedData);
+      return;
+    }
+
     try {
       // Usar el nuevo endpoint del dashboard CNI
       const dashboardRes = await fetch(apiUrl('/api/cni/dashboard'));
@@ -171,14 +643,15 @@ const CNISection = () => {
         
         if (dashboardData.success && dashboardData.cni) {
           const cniData = dashboardData.cni.dashboard;
-          setDatabaseStats(prev => ({
-            ...prev,
+          const stats = {
             totalUsers: cniData.baseDatos?.totalUsuarios || 0,
             totalDNIs: cniData.baseDatos?.dnisRegistrados || 0,
             totalMultas: cniData.multas?.total || 0,
             totalAntecedentes: cniData.baseDatos?.antecedentes || 0,
             totalArrestos: cniData.baseDatos?.arrestos || 0
-          }));
+          };
+          setDatabaseStats(stats);
+          setCachedData(cacheKey, stats, 300000); // 5 minutos de caché
         }
       } else {
         console.warn('[CNI] Dashboard endpoint not available, using fallback');
@@ -236,7 +709,7 @@ const CNISection = () => {
       <div className="cni-loading">
         <div className="cni-loading-logo">
           <img 
-            src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iOCIgZmlsbD0iIzFhMWExYSIvPgo8cGF0aCBkPSJNMTIgMTJIMjhWMjhIMTJWMjBIMTZWMjRIMjRWMjBIMjBWMjRIMTZWMjBIMTJWMTJaIiBmaWxsPSIjZmJiZjI0Ii8+Cjx0ZXh0IHg9IjIwIiB5PSIyNiIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjgiIGZpbGw9IiNmYmJmMjQiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkNOTTwvdGV4dD4KPC9zdmc+" 
+            src="https://media.discordapp.net/attachments/1329945759541497906/1424473452206751764/CNIescudoespaC3B1a2.png?ex=68e413c8&is=68e2c248&hm=f12f703571bbc40060329de77d8c8f6973c677806a45a1b1238a8deb9522a0b1&=" 
             alt="CNI Logo" 
             className="cni-loading-logo-img"
             onError={(e) => {
@@ -303,6 +776,8 @@ const CNISection = () => {
                   <li><strong><FaBuilding /> Gestión Empresarial Completa</strong> - Suspender, investigar, clausurar y eliminar empresas</li>
                   <li><strong><FaFileAlt /> Archivos CNI</strong> - Sistema de blog para documentar investigaciones de bandas</li>
                   <li><strong><FaMoneyBillWave /> Análisis Financiero</strong> - Supervisión de patrimonios y movimientos sospechosos</li>
+                  <li><strong><FaDownload /> Exportación de Datos</strong> - Exporta reportes a PDF, Excel y CSV</li>
+                  <li><strong><FaArchive /> Sistema de Caché Avanzado</strong> - Carga de datos optimizada y caché inteligente</li>
                 </ul>
               </div>
 
@@ -352,7 +827,7 @@ const CNISection = () => {
         <div className="cni-header-content">
           <div className="cni-logo">
             <img 
-              src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iOCIgZmlsbD0iIzFhMWExYSIvPgo8cGF0aCBkPSJNMTIgMTJIMjhWMjhIMTJWMjBIMTZWMjRIMjRWMjBIMjBWMjRIMTZWMjBIMTJWMTJaIiBmaWxsPSIjZmJiZjI0Ii8+Cjx0ZXh0IHg9IjIwIiB5PSIyNiIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjgiIGZpbGw9IiNmYmJmMjQiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkNOTTwvdGV4dD4KPC9zdmc+" 
+              src="https://media.discordapp.net/attachments/1329945759541497906/1424473452206751764/CNIescudoespaC3B1a2.png?ex=68e413c8&is=68e2c248&hm=f12f703571bbc40060329de77d8c8f6973c677806a45a1b1238a8deb9522a0b1&=" 
               alt="CNI Logo" 
               className="cni-logo-img"
               onError={(e) => {
@@ -420,6 +895,10 @@ const CNISection = () => {
               <div className="cni-help-section">
                 <h4><FaBuilding /> Empresas</h4>
                 <p>Gestión completa del registro empresarial: crear, suspender, investigar y clausurar empresas.</p>
+              </div>
+              <div className="cni-help-section">
+                <h4><FaDownload /> Exportación</h4>
+                <p>Exporta reportes y datos a PDF, Excel y CSV para análisis externos.</p>
               </div>
             </div>
             <button 
@@ -510,27 +989,33 @@ const CNISection = () => {
       </div>
 
       <div className="cni-content">
-        {activeTab === 'database' && <DatabaseTab stats={databaseStats} />}
-        {activeTab === 'search' && <AdvancedSearchTab />}
-        {activeTab === 'tracking' && <TrackingTab />}
-        {activeTab === 'players' && <PlayersInCityTab />}
-        {activeTab === 'vehicles' && <VehiclesInCityTab />}
-        {activeTab === 'intelligence' && <IntelligenceTab />}
-        {activeTab === 'business' && <BusinessRecordsTab />}
-        {activeTab === 'blog' && <BlogTab />}
+        {activeTab === 'database' && <DatabaseTab stats={databaseStats} cache={{ getCachedData, setCachedData }} />}
+        {activeTab === 'search' && <AdvancedSearchTab cache={{ getCachedData, setCachedData }} />}
+        {activeTab === 'tracking' && <TrackingTab cache={{ getCachedData, setCachedData }} />}
+        {activeTab === 'players' && <PlayersInCityTab cache={{ getCachedData, setCachedData }} />}
+        {activeTab === 'vehicles' && <VehiclesInCityTab cache={{ getCachedData, setCachedData }} />}
+        {activeTab === 'intelligence' && <IntelligenceTab cache={{ getCachedData, setCachedData }} />}
+        {activeTab === 'business' && <BusinessRecordsTab cache={{ getCachedData, setCachedData }} />}
+        {activeTab === 'blog' && <BlogTab cache={{ getCachedData, setCachedData }} />}
       </div>
     </div>
   );
 };
 
 // Pestaña de Base de Datos
-const DatabaseTab = ({ stats }) => {
+const DatabaseTab = ({ stats, cache }) => {
   const [quickSearch, setQuickSearch] = useState({
     query: '',
     type: 'discord',
     results: [],
     loading: false
   });
+  const [exportMessage, setExportMessage] = useState('');
+
+  const handleExport = (type, message) => {
+    setExportMessage(message);
+    setTimeout(() => setExportMessage(''), 3000);
+  };
 
   const handleQuickSearch = async (searchType) => {
     if (!quickSearch.query.trim()) return;
@@ -592,7 +1077,22 @@ const DatabaseTab = ({ stats }) => {
 
   return (
     <div className="cni-section">
-      <h3><FaDatabase /> Base de Datos Nacional</h3>
+      <div className="cni-section-header">
+        <h3><FaDatabase /> Base de Datos Nacional</h3>
+        <ExportButtons 
+          data={stats} 
+          filename="estadisticas_bd" 
+          title="Estadísticas de Base de Datos" 
+          type="database"
+          onExport={handleExport}
+        />
+      </div>
+
+      {exportMessage && (
+        <div className={`cni-export-message ${exportMessage.includes('Error') ? 'error' : 'success'}`}>
+          {exportMessage}
+        </div>
+      )}
       
       <div className="cni-stats-grid">
         <div className="cni-stat-card">
@@ -880,7 +1380,7 @@ const IntelligenceTab = () => {
 };
 
 // Pestaña de Rastreo Mejorada
-const TrackingTab = () => {
+const TrackingTab = ({ cache }) => {
   const [trackingForm, setTrackingForm] = useState({
     target: '',
     trackingType: 'all'
@@ -889,6 +1389,12 @@ const TrackingTab = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [exportMessage, setExportMessage] = useState('');
+
+  const handleExport = (type, message) => {
+    setExportMessage(message);
+    setTimeout(() => setExportMessage(''), 3000);
+  };
 
   const handleTrackingSearch = async () => {
     if (!trackingForm.target.trim()) return;
@@ -1080,7 +1586,23 @@ const TrackingTab = () => {
       
       {trackingResults.length > 0 && (
         <div className="cni-section">
-          <h3><FaMapMarkerAlt /> Resultados de Rastreo</h3>
+          <div className="cni-section-header">
+            <h3><FaMapMarkerAlt /> Resultados de Rastreo</h3>
+            <ExportButtons 
+              data={trackingResults} 
+              filename="resultados_rastreo" 
+              title="Resultados de Rastreo" 
+              type="tracking"
+              onExport={handleExport}
+            />
+          </div>
+
+          {exportMessage && (
+            <div className={`cni-export-message ${exportMessage.includes('Error') ? 'error' : 'success'}`}>
+              {exportMessage}
+            </div>
+          )}
+
           <div className="cni-search-results">
             {trackingResults.map((result, index) => (
               <div key={index} className="cni-result-card">
@@ -1110,7 +1632,7 @@ const TrackingTab = () => {
 };
 
 // Pestaña de Registros Empresariales
-const BusinessRecordsTab = () => {
+const BusinessRecordsTab = ({ cache }) => {
   const [businesses, setBusinesses] = useState([]);
   const [visits, setVisits] = useState([]);
   const [stats, setStats] = useState({
@@ -1124,6 +1646,12 @@ const BusinessRecordsTab = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [exportMessage, setExportMessage] = useState('');
+
+  const handleExport = (type, message) => {
+    setExportMessage(message);
+    setTimeout(() => setExportMessage(''), 3000);
+  };
   
   // Estados para autocompletado
   const [cniAgents, setCniAgents] = useState([]);
@@ -1661,7 +2189,23 @@ const BusinessRecordsTab = () => {
       </div>
 
       <div className="cni-section">
-        <h3><FaBuilding /> Empresas Registradas ({businesses.length})</h3>
+        <div className="cni-section-header">
+          <h3><FaBuilding /> Empresas Registradas ({businesses.length})</h3>
+          <ExportButtons 
+            data={businesses} 
+            filename="empresas_registradas" 
+            title="Registros Empresariales" 
+            type="business"
+            onExport={handleExport}
+          />
+        </div>
+
+        {exportMessage && (
+          <div className={`cni-export-message ${exportMessage.includes('Error') ? 'error' : 'success'}`}>
+            {exportMessage}
+          </div>
+        )}
+
         {loading ? (
           <div className="cni-loading">
             <FaSpinner className="fa-spin" />
@@ -1792,12 +2336,18 @@ const BusinessRecordsTab = () => {
 };
 
 // Pestaña de Blog CNI
-const BlogTab = () => {
+const BlogTab = ({ cache }) => {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showNewArticle, setShowNewArticle] = useState(false);
+  const [exportMessage, setExportMessage] = useState('');
+
+  const handleExport = (type, message) => {
+    setExportMessage(message);
+    setTimeout(() => setExportMessage(''), 3000);
+  };
   
   // Estados para autocompletado
   const [cniAgents, setCniAgents] = useState([]);
@@ -2121,7 +2671,23 @@ const BlogTab = () => {
       )}
 
       <div className="cni-section">
-        <h3><FaFileAlt /> Archivos Existentes ({articles.length})</h3>
+        <div className="cni-section-header">
+          <h3><FaFileAlt /> Archivos Existentes ({articles.length})</h3>
+          <ExportButtons 
+            data={articles} 
+            filename="archivos_cni" 
+            title="Archivos CNI" 
+            type="blog"
+            onExport={handleExport}
+          />
+        </div>
+
+        {exportMessage && (
+          <div className={`cni-export-message ${exportMessage.includes('Error') ? 'error' : 'success'}`}>
+            {exportMessage}
+          </div>
+        )}
+
         {loading ? (
           <div className="cni-loading">
             <FaSpinner className="fa-spin" />
@@ -2186,12 +2752,18 @@ const BlogTab = () => {
 };
 
 // Pestaña de Jugadores en Ciudad
-const PlayersInCityTab = () => {
+const PlayersInCityTab = ({ cache }) => {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [lastUpdate, setLastUpdate] = useState(null);
+  const [exportMessage, setExportMessage] = useState('');
+
+  const handleExport = (type, message) => {
+    setExportMessage(message);
+    setTimeout(() => setExportMessage(''), 3000);
+  };
 
   const loadPlayers = async () => {
     console.log('[CNI][JUGADORES] 👥 Cargando jugadores en ciudad...');
@@ -2302,15 +2874,30 @@ const PlayersInCityTab = () => {
           </div>
         </div>
         
-        <button 
-          className="cni-btn cni-btn-primary"
-          onClick={loadPlayers}
-          disabled={loading}
-        >
-          {loading ? <FaSpinner className="fa-spin" /> : <FaUsers />}
-          {loading ? 'Actualizando...' : 'Actualizar Lista'}
-        </button>
+        <div className="cni-header-actions">
+          <ExportButtons 
+            data={players} 
+            filename="ciudadanos_detectados" 
+            title="Ciudadanos Detectados" 
+            type="players"
+            onExport={handleExport}
+          />
+          <button 
+            className="cni-btn cni-btn-primary"
+            onClick={loadPlayers}
+            disabled={loading}
+          >
+            {loading ? <FaSpinner className="fa-spin" /> : <FaUsers />}
+            {loading ? 'Actualizando...' : 'Actualizar Lista'}
+          </button>
+        </div>
       </div>
+
+      {exportMessage && (
+        <div className={`cni-export-message ${exportMessage.includes('Error') ? 'error' : 'success'}`}>
+          {exportMessage}
+        </div>
+      )}
 
       {loading ? (
         <div className="cni-loading">
@@ -2380,12 +2967,18 @@ const PlayersInCityTab = () => {
 };
 
 // Pestaña de Vehículos en Ciudad
-const VehiclesInCityTab = () => {
+const VehiclesInCityTab = ({ cache }) => {
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [lastUpdate, setLastUpdate] = useState(null);
+  const [exportMessage, setExportMessage] = useState('');
+
+  const handleExport = (type, message) => {
+    setExportMessage(message);
+    setTimeout(() => setExportMessage(''), 3000);
+  };
 
   const loadVehicles = async () => {
     console.log('[CNI][VEHÍCULOS] 🚗 Cargando vehículos en ciudad...');
@@ -2487,15 +3080,30 @@ const VehiclesInCityTab = () => {
           </div>
         </div>
         
-        <button 
-          className="cni-btn cni-btn-primary"
-          onClick={loadVehicles}
-          disabled={loading}
-        >
-          {loading ? <FaSpinner className="fa-spin" /> : <FaCarCrash />}
-          {loading ? 'Actualizando...' : 'Actualizar Lista'}
-        </button>
+        <div className="cni-header-actions">
+          <ExportButtons 
+            data={vehicles} 
+            filename="vehiculos_detectados" 
+            title="Vehículos Detectados" 
+            type="vehicles"
+            onExport={handleExport}
+          />
+          <button 
+            className="cni-btn cni-btn-primary"
+            onClick={loadVehicles}
+            disabled={loading}
+          >
+            {loading ? <FaSpinner className="fa-spin" /> : <FaCarCrash />}
+            {loading ? 'Actualizando...' : 'Actualizar Lista'}
+          </button>
+        </div>
       </div>
+
+      {exportMessage && (
+        <div className={`cni-export-message ${exportMessage.includes('Error') ? 'error' : 'success'}`}>
+          {exportMessage}
+        </div>
+      )}
 
       {loading ? (
         <div className="cni-loading">
@@ -2559,15 +3167,6 @@ const VehiclesInCityTab = () => {
             </div>
           ))}
         </div>
-      )}
-
-      {/* Componente de autenticación Roblox */}
-      {showRobloxAuth && (
-        <RobloxAuth 
-          onSuccess={handleRobloxAuthSuccess}
-          onCancel={handleRobloxAuthCancel}
-          isCNI={true}
-        />
       )}
     </div>
   );

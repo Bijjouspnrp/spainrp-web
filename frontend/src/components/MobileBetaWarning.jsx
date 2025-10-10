@@ -11,7 +11,7 @@ const MobileBetaWarning = () => {
     // Detectar si es móvil o tablet
     const checkDevice = () => {
       const userAgent = navigator.userAgent.toLowerCase();
-      const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+      const isMobileDevice = /android|webos|iphone|ipad|ipod|ios|blackberry|iemobile|opera mini/i.test(userAgent);
       const isTablet = /ipad|android(?!.*mobile)/i.test(userAgent);
       const screenWidth = window.innerWidth;
       
