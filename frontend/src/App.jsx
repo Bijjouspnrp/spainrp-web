@@ -290,6 +290,7 @@ function Home({ memberCount, totalMembers, loading }) {
       color: '#fff',
       padding: '1rem 2rem',
       textAlign: 'center',
+
       position: 'fixed',
       top: '0',
       left: '0',
