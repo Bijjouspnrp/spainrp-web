@@ -10,12 +10,23 @@ function GlobalDMCollectorPanel() {
   useEffect(() => {
     setLoading(true);
     fetch(apiUrl('/api/discord/dmcollector'))
-      .then(res => res.json())
+      .then(res => {
+        if (res.ok) {
+          return res.json();
+        } else {
+          console.warn('[DMCOLLECTOR] Error cargando mensajes DM:', res.status);
+          return { messages: [] };
+        }
+      })
       .then(data => {
         setDmMessages(data.messages || []);
-        setLoading(false);
+        console.log('[DMCOLLECTOR] Mensajes DM cargados:', data.messages?.length || 0);
       })
-      .catch(() => setLoading(false));
+      .catch(err => {
+        console.error('[DMCOLLECTOR] Error cargando mensajes DM:', err);
+        setDmMessages([]);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   // Filtro por contenido y usuario
@@ -56,7 +67,12 @@ function GlobalDMCollectorPanel() {
           ))}
         </ul>
       ) : (
-        <div style={{color:'#888',fontWeight:700}}>No hay mensajes DM globales.</div>
+        <div style={{color:'#888',fontWeight:700,textAlign:'center',padding:'2rem'}}>
+          <div>No hay mensajes DM globales.</div>
+          <div style={{fontSize:'0.9rem',marginTop:'0.5rem',color:'#666'}}>
+            Los usuarios deben enviar DMs al bot para que aparezcan aquí
+          </div>
+        </div>
       )}
     </div>
   );

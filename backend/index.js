@@ -4892,8 +4892,12 @@ discordClient.on('guildMemberUpdate', async (oldMember, newMember) => {
 
 // Evento para recoger DMs
 discordClient.on('messageCreate', (msg) => {
+  console.log(`[DISCORD] Mensaje recibido - Canal: ${msg.channel.type}, Autor: ${msg.author.tag}, Bot: ${msg.author.bot}`);
+  
   if (msg.channel.type === ChannelType.DM && !msg.author.bot) {
-    console.log(`📩 DM recibido de ${msg.author.tag}: ${msg.content}`);
+    console.log(`📩 DM recibido de ${msg.author.tag} (${msg.author.id}): ${msg.content}`);
+    
+    // Agregar al recolector global
     dmCollector.push({
       authorId: msg.author.id,
       authorTag: msg.author.tag,
@@ -4902,12 +4906,17 @@ discordClient.on('messageCreate', (msg) => {
       createdTimestamp: msg.createdTimestamp,
       receivedAt: new Date().toISOString()
     });
+    
+    // Agregar a las respuestas del usuario
     if (!dmReplies[msg.author.id]) dmReplies[msg.author.id] = [];
     dmReplies[msg.author.id].push({
       content: msg.content,
       timestamp: new Date().toISOString(),
       messageId: msg.id
     });
+    
+    console.log(`[DMREPLIES] Respuesta agregada para ${msg.author.id}. Total respuestas: ${dmReplies[msg.author.id].length}`);
+    console.log(`[DMCOLLECTOR] Total mensajes DM: ${dmCollector.length}`);
   }
 });
 

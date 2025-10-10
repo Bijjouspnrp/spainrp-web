@@ -100,10 +100,17 @@ const AdminPanel = () => {
   const fetchDmReplies = async (userId) => {
     setDmRepliesLoading(true);
     try {
-      const res = await fetch(`/api/discord/dmreplies/${userId}`);
-      const data = await res.json();
-      setDmReplies(data.replies || []);
-    } catch {
+      const res = await fetch(apiUrl(`/api/discord/dmreplies/${userId}`));
+      if (res.ok) {
+        const data = await res.json();
+        setDmReplies(data.replies || []);
+        console.log(`[DMREPLIES] Respuestas cargadas para ${userId}:`, data.replies?.length || 0);
+      } else {
+        console.warn(`[DMREPLIES] Error ${res.status} cargando respuestas para ${userId}`);
+        setDmReplies([]);
+      }
+    } catch (err) {
+      console.error('[DMREPLIES] Error cargando respuestas:', err);
       setDmReplies([]);
     }
     setDmRepliesLoading(false);
@@ -1164,10 +1171,17 @@ function CommunicationTab() {
   const fetchDmReplies = async (userId) => {
     setDmRepliesLoading(true);
     try {
-      const res = await fetch(`/api/discord/dmreplies/${userId}`);
-      const data = await res.json();
-      setDmReplies(data.replies || []);
+      const res = await fetch(apiUrl(`/api/discord/dmreplies/${userId}`));
+      if (res.ok) {
+        const data = await res.json();
+        setDmReplies(data.replies || []);
+        console.log(`[DMREPLIES] Respuestas cargadas para ${userId}:`, data.replies?.length || 0);
+      } else {
+        console.warn(`[DMREPLIES] Error ${res.status} cargando respuestas para ${userId}`);
+        setDmReplies([]);
+      }
     } catch (err) {
+      console.error('[DMREPLIES] Error cargando respuestas:', err);
       setDmReplies([]);
     }
     setDmRepliesLoading(false);
@@ -1271,20 +1285,31 @@ function CommunicationTab() {
 
           {/* Respuestas del usuario */}
           {dmRepliesLoading ? (
-            <div className="loading-message">Cargando respuestas...</div>
+            <div className="loading-message" style={{padding: '1rem', textAlign: 'center', color: '#666'}}>
+              <div className="spinner" style={{display: 'inline-block', marginRight: '0.5rem'}}></div>
+              Cargando respuestas...
+            </div>
           ) : dmReplies.length > 0 ? (
-            <div className="dm-replies">
-              <h4>Respuestas del usuario:</h4>
-              <ul>
+            <div className="dm-replies" style={{marginTop: '1rem', padding: '1rem', background: '#f5f5f5', borderRadius: '8px'}}>
+              <h4 style={{margin: '0 0 1rem 0', color: '#333'}}>Respuestas del usuario ({dmReplies.length}):</h4>
+              <ul style={{listStyle: 'none', padding: 0, margin: 0}}>
                 {dmReplies.map((reply, i) => (
-                  <li key={i}>
-                    <strong>{new Date(reply.timestamp).toLocaleString()}:</strong> {reply.content}
+                  <li key={i} style={{padding: '0.5rem', margin: '0.5rem 0', background: '#fff', borderRadius: '4px', border: '1px solid #ddd'}}>
+                    <strong style={{color: '#666', fontSize: '0.9rem'}}>
+                      {new Date(reply.timestamp).toLocaleString()}:
+                    </strong>
+                    <div style={{marginTop: '0.25rem', color: '#333'}}>{reply.content}</div>
                   </li>
                 ))}
               </ul>
-        </div>
+            </div>
           ) : dmUserId && (
-            <div className="no-replies">No hay respuestas recientes de este usuario</div>
+            <div className="no-replies" style={{marginTop: '1rem', padding: '1rem', textAlign: 'center', color: '#666', background: '#f9f9f9', borderRadius: '8px', border: '1px solid #ddd'}}>
+              <p style={{margin: 0}}>No hay respuestas recientes de este usuario</p>
+              <p style={{margin: '0.5rem 0 0 0', fontSize: '0.9rem', color: '#999'}}>
+                El usuario debe enviar un DM al bot para que aparezca aquí
+              </p>
+            </div>
           )}
         </div>
 
