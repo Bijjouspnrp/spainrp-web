@@ -1,15 +1,16 @@
 /* === CALENDARIO MODERNO COMPLETAMENTE REDISEÑADO === */
 
 .daily-calendar {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
   border-radius: 24px;
   padding: 2rem;
   margin: 0 auto;
-  box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 20px 40px rgba(30, 58, 138, 0.4);
   position: relative;
   overflow: hidden;
   max-width: 100%;
   animation: calendarSlideIn 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid #3b82f6;
 }
 
 .daily-calendar::before {
@@ -159,7 +160,7 @@
 /* Días individuales */
 .calendar-day {
   aspect-ratio: 1;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 16px;
   display: flex;
   flex-direction: column;
@@ -169,11 +170,12 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   backdrop-filter: blur(10px);
-  border: 2px solid transparent;
+  border: 2px solid rgba(255, 255, 255, 0.2);
   min-height: 60px;
   overflow: hidden;
-  color: white;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+  font-weight: 600;
 }
 
 .calendar-day::before {
@@ -189,12 +191,12 @@
 }
 
 .calendar-day:hover {
-  background: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.25);
   transform: translateY(-4px) scale(1.05);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
-  border-color: rgba(255, 255, 255, 0.4);
-  color: white;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.6);
+  color: #ffffff;
+  text-shadow: 0 3px 6px rgba(0, 0, 0, 0.8);
 }
 
 .calendar-day:hover::before {
@@ -274,10 +276,10 @@
 
 .calendar-day-number {
   font-size: 0.875rem;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1;
-  color: white;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
 }
 
 .calendar-reward-label {

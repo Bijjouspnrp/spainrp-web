@@ -55,104 +55,6 @@ function Toast({ message, type, onClose }) {
   );
 }
 
-// Panel visual de permisos
-function PermissionsPanel() {
-  const [channels, setChannels] = React.useState([]);
-  const [roles, setRoles] = React.useState([]);
-  const [permissions, setPermissions] = React.useState({});
-  const [saving, setSaving] = React.useState(false);
-  React.useEffect(() => {
-    // Simulación: fetch canales y roles (sin IDs)
-    fetch(apiUrl('/api/discord/channels'))
-      .then(res => res.json())
-      .then(data => setChannels(data.channels || []));
-    fetch(apiUrl('/api/discord/roles'))
-      .then(res => res.json())
-      .then(data => setRoles(data.roles || []));
-    fetch(apiUrl('/api/discord/permissions'))
-      .then(res => res.json())
-      .then(data => setPermissions(data.permissions || {}));
-  }, []);
-
-  const handleChange = (channelId, roleId, perm) => {
-    setPermissions(prev => ({
-      ...prev,
-      [channelId]: {
-        ...prev[channelId],
-        [roleId]: {
-          ...prev[channelId]?.[roleId],
-          [perm]: !prev[channelId]?.[roleId]?.[perm]
-        }
-      }
-    }));
-  };
-
-  const handleSave = async () => {
-    setSaving(true);
-    await fetch(apiUrl('/api/discord/permissions'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ permissions })
-    });
-    setSaving(false);
-    alert('Permisos actualizados');
-  };
-
-  return (
-    <div style={{margin:'2.5rem 0',background:'rgba(255,255,255,0.07)',borderRadius:16,padding:'2rem'}}>
-      <h3 style={{color:'#FFD700',fontWeight:800,fontSize:'1.3rem',marginBottom:'1.2rem'}}>Panel Visual de Permisos</h3>
-      <table style={{width:'100%',borderCollapse:'collapse',background:'rgba(0,0,0,0.04)'}}>
-        <thead>
-          <tr>
-            <th style={{color:'#7289da',fontWeight:700,padding:'8px'}}>Canal</th>
-            {roles.map(role => (
-              <th key={role.id} style={{color:'#FFD700',fontWeight:700,padding:'8px'}}>{role.name}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {channels.map(channel => (
-            <tr key={channel.id}>
-              <td style={{color:'#fff',fontWeight:600,padding:'8px',background:'#23272a'}}>{channel.name}</td>
-              {roles.map(role => (
-                <td key={role.id} style={{textAlign:'center',padding:'8px'}}>
-                  <label style={{display:'block',fontSize:'0.95rem',color:'#fff'}}>
-                    <input
-                      type="checkbox"
-                      checked={permissions[channel.id]?.[role.id]?.read || false}
-                      onChange={() => handleChange(channel.id, role.id, 'read')}
-                    /> Leer
-                  </label>
-                  <label style={{display:'block',fontSize:'0.95rem',color:'#fff'}}>
-                    <input
-                      type="checkbox"
-                      checked={permissions[channel.id]?.[role.id]?.write || false}
-                      onChange={() => handleChange(channel.id, role.id, 'write')}
-                    /> Escribir
-                  </label>
-                  <label style={{display:'block',fontSize:'0.95rem',color:'#fff'}}>
-                    <input
-                      type="checkbox"
-                      checked={permissions[channel.id]?.[role.id]?.admin || false}
-                      onChange={() => handleChange(channel.id, role.id, 'admin')}
-                    /> Admin
-                  </label>
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <button
-        onClick={handleSave}
-        disabled={saving}
-        style={{marginTop:'1.5rem',background:'#7289da',color:'#fff',border:'none',borderRadius:8,padding:'0.7rem 1.5rem',fontWeight:700,fontSize:'1rem',cursor:'pointer'}}
-      >
-        {saving ? 'Guardando...' : 'Guardar cambios'}
-      </button>
-    </div>
-  );
-}
 
 const AdminPanel = () => {
   const { notify } = useToast();
@@ -1651,10 +1553,16 @@ function LogsTab() {
     setLoading(true);
     try {
       const res = await fetch(apiUrl('/api/discord/commandlog'));
-      const data = await res.json();
-      setCommandLogs(data.logs || []);
+      if (res.ok) {
+        const data = await res.json();
+        setCommandLogs(data.logs || []);
+      } else {
+        console.warn('Command logs endpoint not available:', res.status);
+        setCommandLogs([]);
+      }
     } catch (err) {
       console.error('Error fetching command logs:', err);
+      setCommandLogs([]);
     }
     setLoading(false);
   };
@@ -1769,28 +1677,92 @@ function LogsTab() {
               {bannedList.length > 0 ? (
                 <div className="banned-grid">
                   {bannedList.filter(ban => ban && ban.user).map((ban, i) => (
-                    <div key={i} className="banned-card">
-                      <div className="banned-avatar">
+                    <div key={i} className="banned-card" style={{
+                      background: 'linear-gradient(135deg, #2c1810 0%, #3d2317 100%)',
+                      border: '2px solid #8b4513',
+                      borderRadius: '12px',
+                      padding: '1.5rem',
+                      margin: '1rem 0',
+                      boxShadow: '0 8px 32px rgba(139, 69, 19, 0.3)',
+                      color: '#ffffff',
+                      position: 'relative',
+                      overflow: 'hidden'
+                    }}>
+                      <div className="banned-avatar" style={{
+                        width: '60px',
+                        height: '60px',
+                        borderRadius: '50%',
+                        overflow: 'hidden',
+                        marginBottom: '1rem',
+                        border: '3px solid #8b4513',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+                      }}>
                         <img 
                           src={ban.avatar || `https://cdn.discordapp.com/embed/avatars/${ban.user?.discriminator % 5 || 0}.png`} 
                           alt={ban.user?.username || 'Usuario desconocido'}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                           onError={(e) => {
                             e.target.src = `https://cdn.discordapp.com/embed/avatars/${ban.user?.discriminator % 5 || 0}.png`;
                           }}
                         />
                       </div>
-                      <div className="banned-info">
-                        <h4>{ban.user?.username || 'Usuario desconocido'}#{ban.user?.discriminator || '0000'}</h4>
-                        <p className="banned-id">ID: {ban.user?.id || 'N/A'}</p>
-                        <p className="banned-reason">
-                          <strong>Motivo:</strong> {ban.reason || 'Sin motivo especificado'}
+                      <div className="banned-info" style={{ color: '#ffffff' }}>
+                        <h4 style={{ 
+                          color: '#ff6b6b', 
+                          margin: '0 0 0.5rem 0', 
+                          fontSize: '1.2rem',
+                          fontWeight: '700',
+                          textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)'
+                        }}>
+                          {ban.user?.username || 'Usuario desconocido'}#{ban.user?.discriminator || '0000'}
+                        </h4>
+                        <p className="banned-id" style={{ 
+                          color: '#cccccc', 
+                          margin: '0.3rem 0',
+                          fontFamily: 'monospace',
+                          fontSize: '0.9rem'
+                        }}>
+                          ID: {ban.user?.id || 'N/A'}
                         </p>
-                        <p className="banned-date">
-                          <strong>Baneado:</strong> {ban.bannedAt ? new Date(ban.bannedAt).toLocaleString() : 'Fecha desconocida'}
+                        <p className="banned-reason" style={{ 
+                          color: '#ffffff', 
+                          margin: '0.5rem 0',
+                          background: 'rgba(139, 69, 19, 0.2)',
+                          padding: '0.5rem',
+                          borderRadius: '6px',
+                          border: '1px solid #8b4513'
+                        }}>
+                          <strong style={{ color: '#ffd700' }}>Motivo:</strong> {ban.reason || 'Sin motivo especificado'}
                         </p>
-                        <div className="banned-actions">
+                        <p className="banned-date" style={{ 
+                          color: '#cccccc', 
+                          margin: '0.3rem 0',
+                          fontSize: '0.9rem'
+                        }}>
+                          <strong style={{ color: '#ffd700' }}>Baneado:</strong> {ban.bannedAt ? new Date(ban.bannedAt).toLocaleString() : 'Fecha desconocida'}
+                        </p>
+                        <div className="banned-actions" style={{ marginTop: '1rem' }}>
                           <button 
                             className="btn-secondary btn-sm"
+                            style={{
+                              background: 'linear-gradient(135deg, #8b4513, #a0522d)',
+                              color: '#ffffff',
+                              border: '1px solid #8b4513',
+                              padding: '0.5rem 1rem',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              fontWeight: '600',
+                              boxShadow: '0 2px 8px rgba(139, 69, 19, 0.3)',
+                              transition: 'all 0.3s ease'
+                            }}
+                            onMouseOver={(e) => {
+                              e.target.style.background = 'linear-gradient(135deg, #a0522d, #8b4513)';
+                              e.target.style.transform = 'translateY(-2px)';
+                            }}
+                            onMouseOut={(e) => {
+                              e.target.style.background = 'linear-gradient(135deg, #8b4513, #a0522d)';
+                              e.target.style.transform = 'translateY(0)';
+                            }}
                             onClick={() => {
                               navigator.clipboard.writeText(ban.user.id);
                               showToast('ID copiado al portapapeles');
@@ -1894,10 +1866,6 @@ function SettingsTab() {
       </div>
       
       <div className="settings-tools">
-        <div className="tool-section">
-          <h3><FaShieldAlt /> Permisos de Canales</h3>
-          <PermissionsPanel />
-        </div>
 
         <div className="tool-section">
           <h3><FaBan /> Bloqueo de Canales</h3>
