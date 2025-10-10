@@ -1,0 +1,182 @@
+{
+  "timestamp": "2025-10-10T17:58:17.318Z",
+  "version": "1.0",
+  "tables": {
+    "sessions": [
+      {
+        "sessionId": "sample-session",
+        "userId": "710112055985963090",
+        "username": "DemoAdmin",
+        "avatar": null,
+        "ip": "127.0.0.1",
+        "userAgent": "Demo UA",
+        "lastSeen": 1760118930648
+      },
+      {
+        "sessionId": "V3IM25RmrIH6u3rvVf4fgnj8klWmMecl",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "::1",
+        "userAgent": "Go-http-client/1.1",
+        "lastSeen": 1760118931227
+      },
+      {
+        "sessionId": "DaVEXXsC5OdQmbjiK5JB-BDL8qv7vuae",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.50.57",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760118980756
+      },
+      {
+        "sessionId": "wYzzTPvb2ymdtEi1jOzk38Cdubv6XeeV",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.50.57",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760118980791
+      },
+      {
+        "sessionId": "K8PbJwUoII8dpWIOBy4EBrAR7JBosObG",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.50.57",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760118980941
+      },
+      {
+        "sessionId": "VbPkcjAw0olYaejIxOvahhnH4EFRxXHX",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.50.57",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760119040687
+      },
+      {
+        "sessionId": "ti7AlB1G4zbdj9zQST_VnGXQE23g7q_e",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.50.57",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760119040700
+      },
+      {
+        "sessionId": "GVoNxNHF7jX6uq3HkFw39g6G1xJt2oFs",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.50.57",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760119040829
+      },
+      {
+        "sessionId": "M7J4YbybiZVFrGwP7zKFcAqL-5sMBY1E",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.50.57",
+        "userAgent": "Mozilla/5.0 (Windows NT; Windows NT 10.0; es-ES) WindowsPowerShell/5.1.26100.6584",
+        "lastSeen": 1760119097274
+      }
+    ],
+    "notifications": [],
+    "access_logs": [],
+    "error_logs": [],
+    "maintenance_subscribers": [],
+    "news_comments": [],
+    "news_reactions": [],
+    "calendar_claims": [],
+    "calendar_streaks": [],
+    "web_bans": [],
+    "ip_tracking": [
+      {
+        "id": 1,
+        "ip": "::1",
+        "userId": null,
+        "username": null,
+        "discriminator": null,
+        "avatar": null,
+        "userAgent": "Go-http-client/1.1",
+        "country": "Local",
+        "city": "Local Network",
+        "firstSeen": "2025-10-10T17:55:31.230Z",
+        "lastSeen": "2025-10-10T17:55:31.230Z",
+        "visitCount": 1,
+        "isActive": 1,
+        "browser": "Go HTTP Client",
+        "os": "Unknown",
+        "latitude": null,
+        "countryCode": "LOC",
+        "longitude": null,
+        "isp": "Local Network",
+        "device": "Server/API",
+        "region": "Local",
+        "timezone": "Local"
+      },
+      {
+        "id": 2,
+        "ip": "176.6.50.57",
+        "userId": null,
+        "username": null,
+        "discriminator": null,
+        "avatar": null,
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "country": "Germany",
+        "city": "Cologne",
+        "firstSeen": "2025-10-10T17:56:20.758Z",
+        "lastSeen": "2025-10-10T17:57:20.831Z",
+        "visitCount": 5,
+        "isActive": 1,
+        "browser": "Chrome",
+        "os": "Windows",
+        "latitude": 50.9318,
+        "countryCode": "DE",
+        "longitude": 6.9312,
+        "isp": "Telefonica Germany GmbH & Co.OHG",
+        "device": "Desktop",
+        "region": "North Rhine-Westphalia",
+        "timezone": "Europe/Berlin"
+      },
+      {
+        "id": 3,
+        "ip": "176.6.50.57",
+        "userId": null,
+        "username": null,
+        "discriminator": null,
+        "avatar": null,
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "country": "Germany",
+        "city": "Cologne",
+        "firstSeen": "2025-10-10T17:56:20.793Z",
+        "lastSeen": "2025-10-10T17:57:20.831Z",
+        "visitCount": 5,
+        "isActive": 1,
+        "browser": "Chrome",
+        "os": "Windows",
+        "latitude": 50.9318,
+        "countryCode": "DE",
+        "longitude": 6.9312,
+        "isp": "Telefonica Germany GmbH & Co.OHG",
+        "device": "Desktop",
+        "region": "North Rhine-Westphalia",
+        "timezone": "Europe/Berlin"
+      }
+    ],
+    "empresas": [],
+    "visitas_empresas": [],
+    "poll_votes": [],
+    "announcements": [],
+    "polls": []
+  },
+  "metadata": {
+    "totalTables": 16,
+    "backupType": "full",
+    "environment": "production"
+  }
+}
