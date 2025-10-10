@@ -650,8 +650,13 @@ function OverviewTab() {
   const [lastUpdate, setLastUpdate] = useState(new Date());
 
   useEffect(() => {
-    fetchStats();
-    fetchLogs();
+    // Cargar datos en paralelo sin bloquear la UI
+    Promise.all([
+      fetchStats(),
+      fetchLogs()
+    ]).catch(err => {
+      console.warn('Error cargando datos del AdminPanel:', err);
+    });
   }, []);
 
   const fetchStats = async () => {
@@ -663,10 +668,12 @@ function OverviewTab() {
         fetch(apiUrl('/api/discord/roles'))
       ]);
       
-      const memberData = await memberRes.json();
-      const widgetData = await widgetRes.json();
-      const bannedData = await bannedRes.json();
-      const rolesData = await rolesRes.json();
+      const [memberData, widgetData, bannedData, rolesData] = await Promise.all([
+        memberRes.json(),
+        widgetRes.json(),
+        bannedRes.json(),
+        rolesRes.json()
+      ]);
       
       setStats({
         memberCount: memberData.memberCount || 0,
@@ -680,17 +687,24 @@ function OverviewTab() {
       setLastUpdate(new Date());
     } catch (err) {
       console.error('Error fetching stats:', err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const fetchLogs = async () => {
     try {
       const res = await fetch(apiUrl('/api/discord/logs'));
-      const data = await res.json();
-      setLogs(data.logs || []);
+      if (res.ok) {
+        const data = await res.json();
+        setLogs(data.logs || []);
+      } else {
+        console.warn('Logs endpoint not available:', res.status);
+        setLogs([]);
+      }
     } catch (err) {
       console.error('Error fetching logs:', err);
+      setLogs([]);
     }
   };
 
@@ -701,7 +715,15 @@ function OverviewTab() {
         <p>Estadísticas generales y estado del servidor</p>
         <div className="header-actions">
           <button 
-            onClick={fetchStats} 
+            onClick={() => {
+              setLoading(true);
+              Promise.all([
+                fetchStats(),
+                fetchLogs()
+              ]).catch(err => {
+                console.warn('Error actualizando datos:', err);
+              });
+            }}
             className="btn-secondary" 
             disabled={loading}
           >
@@ -1299,16 +1321,25 @@ function RolesTab() {
   const [multiRoleLoading, setMultiRoleLoading] = useState(false);
 
   useEffect(() => {
-    fetchRoles();
+    // Cargar roles en segundo plano sin bloquear la UI
+    fetchRoles().catch(err => {
+      console.warn('Error cargando roles:', err);
+    });
   }, []);
 
   const fetchRoles = async () => {
     try {
       const res = await fetch(apiUrl('/api/discord/roles'));
-      const data = await res.json();
-      setRolesList(data.roles || []);
+      if (res.ok) {
+        const data = await res.json();
+        setRolesList(data.roles || []);
+      } else {
+        console.warn('Roles endpoint not available:', res.status);
+        setRolesList([]);
+      }
     } catch (err) {
       console.error('Error fetching roles:', err);
+      setRolesList([]);
     }
   };
 
@@ -1533,12 +1564,19 @@ function LogsTab() {
     setLoading(true);
     try {
       const res = await fetch(apiUrl('/api/discord/logs'));
-      const data = await res.json();
-      setLogs(data.logs || []);
+      if (res.ok) {
+        const data = await res.json();
+        setLogs(data.logs || []);
+      } else {
+        console.warn('Logs endpoint not available:', res.status);
+        setLogs([]);
+      }
     } catch (err) {
       console.error('Error fetching logs:', err);
+      setLogs([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   // Auto-refresh cada 30 segundos si está activado
@@ -1563,20 +1601,28 @@ function LogsTab() {
     } catch (err) {
       console.error('Error fetching command logs:', err);
       setCommandLogs([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const fetchBannedList = async () => {
     setLoading(true);
     try {
       const res = await fetch(apiUrl('/api/discord/banned'));
-      const data = await res.json();
-      setBannedList(data.bans || []);
+      if (res.ok) {
+        const data = await res.json();
+        setBannedList(data.bans || []);
+      } else {
+        console.warn('Banned list endpoint not available:', res.status);
+        setBannedList([]);
+      }
     } catch (err) {
       console.error('Error fetching banned list:', err);
+      setBannedList([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const filteredLogs = logs.filter(log => 
