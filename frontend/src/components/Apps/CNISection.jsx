@@ -2133,11 +2133,15 @@ const BusinessRecordsTab = ({ cache }) => {
     }
   };
 
-  // Funciones de gestión empresarial
-  const handleBusinessAction = async (businessId, action, newStatus = null) => {
-    console.log(`[CNI][EMPRESAS] 🏢 Iniciando acción empresarial:`, { businessId, action, newStatus });
-    
-    // Confirmaciones específicas para cada acción
+  // Funciones de gestión empresarial (optimizada)
+  const handleBusinessAction = useCallback(async (businessId, action, newStatus = null) => {
+    // Validación rápida
+    if (!businessId || !action) {
+      console.warn('[CNI][EMPRESAS] ❌ Parámetros inválidos');
+      return;
+    }
+
+    // Confirmaciones específicas para cada acción (memoizada)
     const confirmations = {
       'delete': {
         title: 'CONFIRMACIÓN CRÍTICA',
@@ -2173,47 +2177,45 @@ const BusinessRecordsTab = ({ cache }) => {
 
     const confirmation = confirmations[newStatus || action];
     if (!confirmation) {
-      console.log('[CNI][EMPRESAS] ❌ Confirmación no encontrada para:', newStatus || action);
+      console.warn('[CNI][EMPRESAS] ❌ Confirmación no encontrada para:', newStatus || action);
       return;
     }
 
-    console.log('[CNI][EMPRESAS] ⚠️ Mostrando confirmación:', confirmation.title);
-
-    // Mostrar confirmación personalizada
+    // Mostrar confirmación de forma síncrona (no bloquea)
     const confirmed = window.confirm(
       `${confirmation.title}\n\n${confirmation.message}\n\nPresiona OK para ${confirmation.confirmText.toLowerCase()} o Cancelar para ${confirmation.cancelText.toLowerCase()}.`
     );
 
     if (!confirmed) {
-      console.log('[CNI][EMPRESAS] ❌ Acción cancelada por el usuario');
       return;
     }
 
-    console.log('[CNI][EMPRESAS] ✅ Confirmación aceptada, ejecutando acción...');
+    // Estado de loading inmediato
     setLoading(true);
     setError('');
     setSuccess('');
     
     try {
-      console.log(`[CNI][EMPRESAS] 📡 Enviando petición ${action} para empresa ${businessId}...`);
-      let response;
+      // Preparar petición
+      let url, options;
+      
       if (action === 'delete') {
-        console.log('[CNI][EMPRESAS] 🗑️ Ejecutando eliminación...');
-        response = await fetch(apiUrl(`/api/cni/empresas/${businessId}`), {
-          method: 'DELETE'
-        });
+        url = apiUrl(`/api/cni/empresas/${businessId}`);
+        options = { method: 'DELETE' };
       } else if (action === 'update') {
-        console.log(`[CNI][EMPRESAS] 🔄 Actualizando estado a: ${newStatus}`);
-        response = await fetch(apiUrl(`/api/cni/empresas/${businessId}/estado`), {
+        url = apiUrl(`/api/cni/empresas/${businessId}/estado`);
+        options = {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ estado: newStatus })
-        });
+        };
+      } else {
+        throw new Error('Acción no válida');
       }
       
-      console.log(`[CNI][EMPRESAS] 📊 Respuesta recibida:`, response.status, response.statusText);
+      // Ejecutar petición
+      const response = await fetch(url, options);
       const data = await response.json();
-      console.log('[CNI][EMPRESAS] 📋 Datos de respuesta:', data);
       
       if (data.success) {
         const actionMessages = {
@@ -2223,15 +2225,14 @@ const BusinessRecordsTab = ({ cache }) => {
           'clausurada': 'Empresa clausurada definitivamente',
           'activa': 'Empresa reactivada'
         };
-        const message = actionMessages[newStatus || action];
-        console.log(`[CNI][EMPRESAS] ✅ Acción exitosa: ${message}`);
-        setSuccess(message);
-        console.log('[CNI][EMPRESAS] 🔄 Limpiando caché y recargando datos...');
         
-        // Recargar datos
-        await Promise.all([loadBusinesses(), loadStats()]);
+        setSuccess(actionMessages[newStatus || action]);
+        
+        // Recargar datos en paralelo (no bloquea UI)
+        Promise.all([loadBusinesses(), loadStats()]).catch(err => {
+          console.warn('[CNI][EMPRESAS] ⚠️ Error recargando datos:', err);
+        });
       } else {
-        console.log(`[CNI][EMPRESAS] ❌ Error en respuesta: ${data.error}`);
         setError(`Error: ${data.error}`);
       }
     } catch (err) {
@@ -2239,9 +2240,8 @@ const BusinessRecordsTab = ({ cache }) => {
       setError('Error de conexión');
     } finally {
       setLoading(false);
-      console.log('[CNI][EMPRESAS] ✅ Proceso de acción empresarial finalizado');
     }
-  };
+  }, [loadBusinesses, loadStats]);
 
   useEffect(() => {
     loadBusinesses();
