@@ -132,73 +132,98 @@ const useDataExport = () => {
         doc.setGState(new doc.GState({opacity: 1}));
       };
 
-      // Función para agregar encabezado profesional
-      const addHeader = async () => {
-        // Función de fallback para logo dibujado
-        const addFallbackLogo = () => {
-          console.log('[CNI] Usando logo de fallback');
-          // Logo CNI circular en esquina superior izquierda (fallback)
-          doc.setFillColor(30, 58, 138);
-          doc.circle(27.5, 20.5, 12, 'F');
-          
-          // Círculo interior blanco
-          doc.setFillColor(255, 255, 255);
-          doc.circle(27.5, 20.5, 8, 'F');
-          
-          // Texto CNI en el centro del logo
-          doc.setTextColor(30, 58, 138);
-          doc.setFontSize(10);
-          doc.setFont(undefined, 'bold');
-          doc.text('CNI', 27.5, 22);
-        };
-
-        // Logo CNI usando la imagen PNG original
-        try {
-          // Obtener la mejor ruta de imagen disponible con fallback automático
-          const logoPath = await getBestLogoPath();
-          console.log('[CNI] Cargando logo desde:', logoPath);
-          
-          // Cargar la imagen PNG del CNI
+      // Función para cargar imagen como Promise
+      const loadImageAsDataURL = (src) => {
+        return new Promise((resolve, reject) => {
           const img = new Image();
-          img.crossOrigin = 'anonymous'; // Para evitar problemas de CORS
+          img.crossOrigin = 'anonymous';
           
           img.onload = () => {
             try {
-              // Crear canvas para redimensionar la imagen
               const canvas = document.createElement('canvas');
               const ctx = canvas.getContext('2d');
               
-              // Usar configuración del logo
-              const { WIDTH: logoWidth, HEIGHT: logoHeight, X_POSITION: xPos, Y_POSITION: yPos } = CNI_CONFIG.LOGO_PDF;
+              const { WIDTH: logoWidth, HEIGHT: logoHeight } = CNI_CONFIG.LOGO_PDF;
               
               canvas.width = logoWidth;
               canvas.height = logoHeight;
               
-              // Dibujar la imagen redimensionada
               ctx.drawImage(img, 0, 0, logoWidth, logoHeight);
+              const dataURL = canvas.toDataURL('image/png');
               
-              // Convertir a base64
-              const logoDataURL = canvas.toDataURL('image/png');
-              
-              // Agregar logo al PDF
-              doc.addImage(logoDataURL, 'PNG', xPos, yPos, logoWidth, logoHeight);
-              console.log('[CNI] ✅ Logo PNG cargado exitosamente');
-            } catch (canvasError) {
-              console.warn('[CNI] ⚠️ Error procesando imagen, usando fallback:', canvasError);
-              addFallbackLogo();
+              console.log('[CNI] ✅ Logo convertido a data URL exitosamente');
+              resolve(dataURL);
+            } catch (error) {
+              console.warn('[CNI] ⚠️ Error procesando imagen:', error);
+              reject(error);
             }
           };
           
           img.onerror = () => {
-            console.warn('[CNI] ⚠️ Error cargando imagen PNG, usando fallback');
-            addFallbackLogo();
+            console.warn('[CNI] ⚠️ Error cargando imagen:', src);
+            reject(new Error('Failed to load image'));
           };
           
-          // Cargar la imagen
-          img.src = logoPath;
+          img.src = src;
+        });
+      };
+
+      // Función de fallback para logo dibujado
+      const addFallbackLogo = () => {
+        console.log('[CNI] Usando logo de fallback programático');
+        
+        // Logo CNI circular más detallado
+        const { X_POSITION: xPos, Y_POSITION: yPos } = CNI_CONFIG.LOGO_PDF;
+        
+        // Círculo exterior azul
+        doc.setFillColor(30, 58, 138);
+        doc.circle(xPos + 15, yPos + 15, 15, 'F');
+        
+        // Círculo interior blanco
+        doc.setFillColor(255, 255, 255);
+        doc.circle(xPos + 15, yPos + 15, 12, 'F');
+        
+        // Texto "ESPAÑA" en la parte superior
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(6);
+        doc.setFont(undefined, 'bold');
+        doc.text('ESPAÑA', xPos + 15, yPos + 8, { align: 'center' });
+        
+        // Texto "CNI" en el centro
+        doc.setTextColor(30, 58, 138);
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'bold');
+        doc.text('CNI', xPos + 15, yPos + 18, { align: 'center' });
+        
+        // Globo estilizado en la parte inferior
+        doc.setFillColor(100, 150, 200);
+        doc.circle(xPos + 15, yPos + 22, 6, 'F');
+        
+        // Líneas de latitud/longitud
+        doc.setDrawColor(255, 255, 255);
+        doc.setLineWidth(0.5);
+        doc.line(xPos + 9, yPos + 22, xPos + 21, yPos + 22); // Línea horizontal
+        doc.line(xPos + 15, yPos + 16, xPos + 15, yPos + 28); // Línea vertical
+        
+        console.log('[CNI] ✅ Logo de fallback dibujado');
+      };
+
+      // Función para agregar encabezado profesional
+      const addHeader = async () => {
+        try {
+          // Intentar cargar el logo PNG
+          const logoPath = await getBestLogoPath();
+          console.log('[CNI] Cargando logo desde:', logoPath);
+          
+          const logoDataURL = await loadImageAsDataURL(logoPath);
+          
+          // Agregar logo al PDF
+          const { WIDTH: logoWidth, HEIGHT: logoHeight, X_POSITION: xPos, Y_POSITION: yPos } = CNI_CONFIG.LOGO_PDF;
+          doc.addImage(logoDataURL, 'PNG', xPos, yPos, logoWidth, logoHeight);
+          console.log('[CNI] ✅ Logo PNG agregado al PDF exitosamente');
           
         } catch (error) {
-          console.warn('[CNI] ❌ Error cargando logo PNG, usando fallback:', error);
+          console.warn('[CNI] ⚠️ Error cargando logo PNG, usando fallback:', error);
           addFallbackLogo();
         }
         
