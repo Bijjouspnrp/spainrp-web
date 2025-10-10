@@ -47,6 +47,18 @@ class GitHubBackup {
 
       const backupContent = JSON.stringify(backupData, null, 2);
       
+      // Validar que el JSON se generó correctamente
+      if (!backupContent || backupContent.trim() === '') {
+        throw new Error('No se pudo generar el contenido del backup');
+      }
+      
+      // Validar que es JSON válido
+      try {
+        JSON.parse(backupContent);
+      } catch (parseError) {
+        throw new Error('El backup generado no es JSON válido');
+      }
+      
       // Subir a GitHub
       const result = await this.uploadToGitHub(backupContent);
       
@@ -73,18 +85,29 @@ class GitHubBackup {
       
       const exportData = {};
       let completed = 0;
+      let hasError = false;
+      
+      // Si no hay tablas, devolver objeto vacío válido
+      if (tables.length === 0) {
+        resolve({});
+        return;
+      }
       
       tables.forEach(tableName => {
         db.all(`SELECT * FROM ${tableName}`, (err, rows) => {
           if (err) {
             console.warn(`[BACKUP] ⚠️ Error exportando tabla ${tableName}:`, err.message);
             exportData[tableName] = [];
+            hasError = true;
           } else {
             exportData[tableName] = rows || [];
           }
           
           completed++;
           if (completed === tables.length) {
+            if (hasError) {
+              console.warn('[BACKUP] ⚠️ Algunas tablas no se pudieron exportar, continuando con las disponibles');
+            }
             resolve(exportData);
           }
         });
@@ -146,7 +169,30 @@ class GitHubBackup {
       });
 
       const backupContent = Buffer.from(data.content, 'base64').toString('utf-8');
-      const backupData = JSON.parse(backupContent);
+      
+      // Validar que el contenido no esté vacío
+      if (!backupContent || backupContent.trim() === '') {
+        console.warn('[BACKUP] ⚠️ El archivo de backup está vacío, creando backup inicial...');
+        await this.createBackup();
+        return { success: true, message: 'Backup inicial creado' };
+      }
+      
+      let backupData;
+      try {
+        backupData = JSON.parse(backupContent);
+      } catch (parseError) {
+        console.error('[BACKUP] ❌ Error parseando JSON del backup:', parseError);
+        console.log('[BACKUP] 🔄 Creando nuevo backup válido...');
+        await this.createBackup();
+        return { success: true, message: 'Backup corrupto detectado, nuevo backup creado' };
+      }
+      
+      // Validar estructura del backup
+      if (!backupData.tables || typeof backupData.tables !== 'object') {
+        console.warn('[BACKUP] ⚠️ Estructura de backup inválida, creando nuevo backup...');
+        await this.createBackup();
+        return { success: true, message: 'Estructura inválida, nuevo backup creado' };
+      }
       
       // Restaurar datos
       await this.importDatabaseData(backupData.tables);
@@ -156,6 +202,19 @@ class GitHubBackup {
       
     } catch (error) {
       console.error('[BACKUP] ❌ Error restaurando backup:', error);
+      
+      // Si es error 404 (archivo no existe), crear backup inicial
+      if (error.status === 404) {
+        console.log('[BACKUP] 🔄 Archivo de backup no existe, creando backup inicial...');
+        try {
+          await this.createBackup();
+          return { success: true, message: 'Backup inicial creado' };
+        } catch (createError) {
+          console.error('[BACKUP] ❌ Error creando backup inicial:', createError);
+          return { success: false, message: 'Error creando backup inicial: ' + createError.message };
+        }
+      }
+      
       return { success: false, message: error.message };
     }
   }
