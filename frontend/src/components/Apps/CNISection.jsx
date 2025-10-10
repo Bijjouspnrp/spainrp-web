@@ -131,15 +131,35 @@ const useDataExport = () => {
 
       // Función para agregar encabezado profesional
       const addHeader = () => {
-        // Logo CNI en esquina superior izquierda
+        // Logo CNI circular en esquina superior izquierda
         doc.setFillColor(30, 58, 138);
-        doc.rect(15, 8, 25, 25, 'F');
+        doc.circle(27.5, 20.5, 12, 'F');
         
-        // Texto CNI en el logo
+        // Círculo interior blanco
+        doc.setFillColor(255, 255, 255);
+        doc.circle(27.5, 20.5, 8, 'F');
+        
+        // Texto "ESPAÑA" en la parte superior del logo
         doc.setTextColor(255, 255, 255);
-        doc.setFontSize(12);
+        doc.setFontSize(6);
         doc.setFont(undefined, 'bold');
-        doc.text('CNI', 27.5 - doc.getTextWidth('CNI')/2, 22);
+        doc.text('ESPAÑA', 27.5, 12);
+        
+        // Texto CNI en el centro del logo
+        doc.setTextColor(30, 58, 138);
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'bold');
+        doc.text('CNI', 27.5, 22);
+        
+        // Globo terráqueo simplificado en la parte inferior del logo
+        doc.setFillColor(59, 130, 246);
+        doc.circle(27.5, 28, 4, 'F');
+        
+        // Líneas del globo
+        doc.setDrawColor(255, 255, 255);
+        doc.setLineWidth(0.3);
+        doc.line(23.5, 28, 31.5, 28);
+        doc.line(27.5, 24, 27.5, 32);
         
         // Título principal
         doc.setTextColor(30, 58, 138);
@@ -194,12 +214,19 @@ const useDataExport = () => {
         doc.setFont(undefined, 'normal');
         doc.text(new Date().toLocaleString('es-ES'), 195 - doc.getTextWidth(new Date().toLocaleString('es-ES')), pageHeight - 10);
         
-        // Logo pequeño en el pie
+        // Logo pequeño circular en el pie
         doc.setFillColor(30, 58, 138);
-        doc.rect(15, pageHeight - 20, 15, 15, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(8);
-        doc.text('CNI', 22.5 - doc.getTextWidth('CNI')/2, pageHeight - 12);
+        doc.circle(22.5, pageHeight - 12.5, 6, 'F');
+        
+        // Círculo interior blanco
+        doc.setFillColor(255, 255, 255);
+        doc.circle(22.5, pageHeight - 12.5, 4, 'F');
+        
+        // Texto CNI en el logo del pie
+        doc.setTextColor(30, 58, 138);
+        doc.setFontSize(6);
+        doc.setFont(undefined, 'bold');
+        doc.text('CNI', 22.5, pageHeight - 11);
       };
 
       // Agregar elementos de fondo y encabezado
@@ -873,7 +900,7 @@ const CNISection = () => {
       <div className="cni-loading">
         <div className="cni-loading-logo">
           <img 
-            src="https://media.discordapp.net/attachments/1329945759541497906/1424473452206751764/CNIescudoespaC3B1a2.png?ex=68e413c8&is=68e2c248&hm=f12f703571bbc40060329de77d8c8f6973c677806a45a1b1238a8deb9522a0b1&=" 
+            src="https://imgur.com/acRv3nU.png" 
             alt="CNI Logo" 
             className="cni-loading-logo-img"
             onError={(e) => {
@@ -991,7 +1018,7 @@ const CNISection = () => {
         <div className="cni-header-content">
           <div className="cni-logo">
             <img 
-              src="https://media.discordapp.net/attachments/1329945759541497906/1424473452206751764/CNIescudoespaC3B1a2.png?ex=68e413c8&is=68e2c248&hm=f12f703571bbc40060329de77d8c8f6973c677806a45a1b1238a8deb9522a0b1&=" 
+              src="https://imgur.com/acRv3nU.png" 
               alt="CNI Logo" 
               className="cni-logo-img"
               onError={(e) => {

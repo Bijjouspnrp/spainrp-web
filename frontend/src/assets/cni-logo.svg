@@ -1,49 +1,86 @@
-<svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-  <!-- Fondo del escudo -->
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+    <!-- Gradientes para el logo -->
+    <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#1e3a8a;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#1e40af;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e40af;stop-opacity:1" />
     </linearGradient>
-    <linearGradient id="eagleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
       <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:1" />
     </linearGradient>
   </defs>
   
-  <!-- Escudo principal -->
-  <path d="M40 5 L70 20 L70 50 L40 75 L10 50 L10 20 Z" fill="url(#shieldGradient)" stroke="#1e3a8a" stroke-width="2"/>
+  <!-- Anillo exterior azul -->
+  <circle cx="50" cy="50" r="48" fill="url(#blueGradient)" stroke="#1e3a8a" stroke-width="2"/>
   
-  <!-- Águila estilizada -->
-  <g transform="translate(25, 20)">
-    <!-- Cuerpo del águila -->
-    <ellipse cx="15" cy="25" rx="8" ry="12" fill="url(#eagleGradient)"/>
+  <!-- Círculo interior blanco -->
+  <circle cx="50" cy="50" r="35" fill="white" stroke="#1e3a8a" stroke-width="1"/>
+  
+  <!-- Texto "ESPAÑA" en la parte superior -->
+  <text x="50" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="white">ESPAÑA</text>
+  
+  <!-- Texto "CENTRO NACIONAL DE INTELIGENCIA" en la parte inferior -->
+  <text x="50" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="6" font-weight="bold" fill="white">CENTRO NACIONAL DE INTELIGENCIA</text>
+  
+  <!-- Escudo de España simplificado -->
+  <g transform="translate(50, 35) scale(0.8)">
+    <!-- Escudo principal -->
+    <rect x="-15" y="-8" width="30" height="16" fill="white" stroke="#1e3a8a" stroke-width="0.5" rx="2"/>
     
-    <!-- Cabeza -->
-    <circle cx="15" cy="15" r="6" fill="url(#eagleGradient)"/>
+    <!-- Cuarteles del escudo -->
+    <!-- Castilla (castillo) -->
+    <rect x="-12" y="-6" width="6" height="4" fill="#fbbf24"/>
+    <rect x="-11" y="-5" width="4" height="2" fill="#dc2626"/>
+    <rect x="-10" y="-4" width="2" height="1" fill="#dc2626"/>
     
-    <!-- Pico -->
-    <path d="M15 9 L18 12 L15 15 L12 12 Z" fill="#dc2626"/>
+    <!-- León -->
+    <rect x="-5" y="-6" width="6" height="4" fill="white"/>
+    <circle x="-2" y="-4" r="1" fill="#dc2626"/>
     
-    <!-- Ojo -->
-    <circle cx="13" cy="13" r="1.5" fill="#1e3a8a"/>
+    <!-- Aragón (barras) -->
+    <rect x="1" y="-6" width="6" height="4" fill="#fbbf24"/>
+    <rect x="1" y="-5" width="6" height="0.5" fill="#dc2626"/>
+    <rect x="1" y="-3.5" width="6" height="0.5" fill="#dc2626"/>
+    <rect x="1" y="-2" width="6" height="0.5" fill="#dc2626"/>
     
-    <!-- Alas -->
-    <path d="M7 20 Q15 10 23 20 Q15 30 7 20" fill="url(#eagleGradient)"/>
-    <path d="M23 20 Q15 10 31 20 Q15 30 23 20" fill="url(#eagleGradient)"/>
+    <!-- Navarra (cadenas) -->
+    <rect x="7" y="-6" width="6" height="4" fill="#dc2626"/>
+    <circle x="9" y="-4" r="0.5" fill="white"/>
+    <circle x="11" y="-4" r="0.5" fill="white"/>
     
-    <!-- Garras -->
-    <path d="M12 35 L10 40 L15 38 L20 40 L18 35" fill="#dc2626"/>
+    <!-- Granada (granada) -->
+    <rect x="-6" y="0" width="12" height="3" fill="white"/>
+    <circle x="0" y="1.5" r="1" fill="#10b981"/>
+    
+    <!-- Escusón central (Borbón) -->
+    <ellipse cx="0" cy="-2" rx="3" ry="2" fill="#1e40af"/>
+    <text x="0" y="-1" text-anchor="middle" font-size="3" fill="#fbbf24">⚜</text>
+    
+    <!-- Corona -->
+    <path d="M-8 -10 L-6 -8 L-4 -10 L-2 -8 L0 -10 L2 -8 L4 -10 L6 -8 L8 -10 L8 -8 L-8 -8 Z" fill="#dc2626"/>
   </g>
   
   <!-- Texto CNI -->
-  <text x="40" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#1e3a8a">CNI</text>
+  <text x="50" y="55" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e3a8a">CNI</text>
   
-  <!-- Estrellas decorativas -->
-  <g fill="#fbbf24">
-    <polygon points="20,15 22,19 26,19 23,22 24,26 20,24 16,26 17,22 14,19 18,19" opacity="0.8"/>
-    <polygon points="60,15 62,19 66,19 63,22 64,26 60,24 56,26 57,22 54,19 58,19" opacity="0.8"/>
-    <polygon points="40,8 41,11 44,11 42,13 43,16 40,14 37,16 38,13 36,11 39,11" opacity="0.6"/>
+  <!-- Globo terráqueo -->
+  <g transform="translate(50, 65) scale(0.6)">
+    <!-- Círculo del globo -->
+    <circle cx="0" cy="0" r="12" fill="#3b82f6" stroke="#1e40af" stroke-width="1"/>
+    
+    <!-- Líneas de latitud -->
+    <ellipse cx="0" cy="0" rx="12" ry="6" fill="none" stroke="white" stroke-width="0.5" opacity="0.7"/>
+    <ellipse cx="0" cy="-4" rx="10" ry="5" fill="none" stroke="white" stroke-width="0.5" opacity="0.7"/>
+    <ellipse cx="0" cy="4" rx="10" ry="5" fill="none" stroke="white" stroke-width="0.5" opacity="0.7"/>
+    
+    <!-- Líneas de longitud -->
+    <line x1="-12" y1="0" x2="12" y2="0" stroke="white" stroke-width="0.5" opacity="0.7"/>
+    <line x1="-8" y1="-8" x2="8" y2="8" stroke="white" stroke-width="0.5" opacity="0.7"/>
+    <line x1="8" y1="-8" x2="-8" y2="8" stroke="white" stroke-width="0.5" opacity="0.7"/>
+    
+    <!-- Continentes simplificados -->
+    <path d="M-6 -2 Q-4 -4 -2 -2 Q-4 0 -6 -2" fill="white" opacity="0.8"/>
+    <path d="M2 -1 Q4 -3 6 -1 Q4 1 2 -1" fill="white" opacity="0.8"/>
   </g>
 </svg>
