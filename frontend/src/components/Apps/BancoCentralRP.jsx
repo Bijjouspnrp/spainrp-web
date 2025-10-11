@@ -1123,7 +1123,7 @@ const BancoCentralRP = () => {
         <div className="terms-content">
           <div className="terms-section">
             <h4>Información Legal</h4>
-            <p>Banco Central SpainRP es una entidad financiera virtual regulada por las leyes del servidor SpainRP. Todos los servicios están sujetos a términos y condiciones.</p>
+            <p>Banco Central es una entidad financiera virtual regulada por las leyes del servidor SpainRP. Todos los servicios están sujetos a términos y condiciones.</p>
           </div>
           <div className="terms-section">
             <h4>Seguridad</h4>
@@ -1135,11 +1135,11 @@ const BancoCentralRP = () => {
           </div>
           <div className="terms-section">
             <h4>Contacto</h4>
-            <p>Para soporte técnico, contacte con el staff del servidor SpainRP a través de Discord o en el juego.</p>
+            <p>Para soporte técnico, contacte con BijjouPro08 en el servidor SpainRP a través de Discord.</p>
           </div>
         </div>
         <div className="terms-footer">
-          <p>© 2024 Banco Central SpainRP. Todos los derechos reservados. | Servidor: SpainRP | Versión: 2.0</p>
+          <p>© 2025 Banco Central SpainRP. Todos los derechos reservados. | Servidor: SpainRP | Versión: 2.0</p>
         </div>
       </div>
 
