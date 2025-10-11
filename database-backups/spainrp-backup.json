@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-10-11T18:14:39.910Z",
+  "timestamp": "2025-10-11T18:19:39.911Z",
   "version": "1.0",
   "tables": {
     "sessions": [
@@ -6527,15 +6527,249 @@
         "ip": "176.6.48.235",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
         "lastSeen": 1760206445004
+      },
+      {
+        "sessionId": "QSDMFq3UXywltggR7j5ocAY1sCxWB6j0",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760206504721
+      },
+      {
+        "sessionId": "RbE_RheWz8cjlAsUPK7yAESqTa3ZpQcP",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760206504722
+      },
+      {
+        "sessionId": "QjNILFk20-5LFUxvwywIguSTV0SlS5Wv",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760206504778
+      },
+      {
+        "sessionId": "1A4yw1ft2zBL38UH94ke0p5-jlp5MuUi",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760206504797
+      },
+      {
+        "sessionId": "-dhoVvK1TUUkPxkmpUJcGNF-hpAWaXlk",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760206504902
+      },
+      {
+        "sessionId": "fC5GcbicMEjJqBgEfcKOa4BFUFau-Jyk",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760206564731
+      },
+      {
+        "sessionId": "3Ou2nfD37JtcehI6hFx1VfhA7tX5kK6V",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760206564748
+      },
+      {
+        "sessionId": "4rKuhAM8y2IipIkhgFmi_6t8pMcPdhN5",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760206564814
+      },
+      {
+        "sessionId": "qlmlWaDwSCYACe06SPTnwn_oPymqMgu3",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760206564827
+      },
+      {
+        "sessionId": "EGa5C4CvoPKe64pK-Aw28YPHOyaGsXm3",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760206564982
+      },
+      {
+        "sessionId": "yhxLfIJIqCcTYuzI-OybXpuznMqfPvw5",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760206624691
+      },
+      {
+        "sessionId": "AJC5Xd8cmQG2T9_45hrwMRR6qzaj-LTG",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760206624701
+      },
+      {
+        "sessionId": "b5qpkqoh9iD2utoSEO65kZKCnZ9M0Vp8",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760206624757
+      },
+      {
+        "sessionId": "C1HRtl5Run61H9Uqsdmomwf-X6CevpaG",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760206624773
+      },
+      {
+        "sessionId": "XDe1Cr9_t88MXKfWL2mIdw-GfxkTjoK_",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760206624861
+      },
+      {
+        "sessionId": "5DsKVaRWS2n7M0ID4kL0mYGTztBS-YW4",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "216.144.248.27",
+        "userAgent": "Mozilla/5.0+(compatible; UptimeRobot/2.0; http://www.uptimerobot.com/)",
+        "lastSeen": 1760206647984
+      },
+      {
+        "sessionId": "nH07Seyet3Rw05ZdteLzHbWiD8_9q6TS",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760206684771
+      },
+      {
+        "sessionId": "FeFDhnxX3FkoJyO01ovU-gQtxGv7sCqY",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760206684777
+      },
+      {
+        "sessionId": "OdDMVcL1q3QD9NcIPRH6rcOdfpc970P0",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760206684848
+      },
+      {
+        "sessionId": "ar0i867inVSyDyV_hslTrlUNjyu2ST9n",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760206684861
+      },
+      {
+        "sessionId": "BV5g7FlV1D8HNoq1jPEndFKHv-NTkVY6",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760206684985
+      },
+      {
+        "sessionId": "xRDecVhekLecMJGzz4fzqlmqpW8gaJ21",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760206744712
+      },
+      {
+        "sessionId": "D9BGmG6JQ5msXBOOZJ-4i9uQ2XJsUAjw",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760206744721
+      },
+      {
+        "sessionId": "bYxJ3sKYLB81e1iYlutsseSGco7J1LTN",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760206744779
+      },
+      {
+        "sessionId": "D7CIGD9Hn3Aa8ICzQRbo6l_0H8RqXSKQ",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760206744798
+      },
+      {
+        "sessionId": "7FkwzCWbpfriqQg07-ZVdMefxcRXEBT2",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760206745091
       }
     ],
     "notifications": [],
     "access_logs": [],
     "error_logs": [],
     "maintenance_subscribers": [],
+    "news_comments": [],
+    "news_reactions": [],
     "polls": [],
-    "poll_votes": [],
-    "calendar_claims": [],
     "calendar_streaks": [],
     "web_bans": [],
     "ip_tracking": [
@@ -6574,8 +6808,8 @@
         "country": "Unknown",
         "city": "Unknown",
         "firstSeen": "2025-10-11T17:39:56.340Z",
-        "lastSeen": "2025-10-11T18:14:05.005Z",
-        "visitCount": 647,
+        "lastSeen": "2025-10-11T18:19:05.091Z",
+        "visitCount": 672,
         "isActive": 1,
         "browser": "Chrome",
         "region": null,
@@ -6598,8 +6832,8 @@
         "country": "Unknown",
         "city": "Unknown",
         "firstSeen": "2025-10-11T17:39:56.335Z",
-        "lastSeen": "2025-10-11T18:14:05.005Z",
-        "visitCount": 647,
+        "lastSeen": "2025-10-11T18:19:05.091Z",
+        "visitCount": 672,
         "isActive": 1,
         "browser": "Chrome",
         "region": null,
@@ -6622,8 +6856,8 @@
         "country": "Unknown",
         "city": "Unknown",
         "firstSeen": "2025-10-11T17:39:56.404Z",
-        "lastSeen": "2025-10-11T18:14:05.005Z",
-        "visitCount": 647,
+        "lastSeen": "2025-10-11T18:19:05.091Z",
+        "visitCount": 672,
         "isActive": 1,
         "browser": "Chrome",
         "region": null,
@@ -6670,8 +6904,8 @@
         "country": "Unknown",
         "city": "Unknown",
         "firstSeen": "2025-10-11T18:02:17.049Z",
-        "lastSeen": "2025-10-11T18:12:23.981Z",
-        "visitCount": 2,
+        "lastSeen": "2025-10-11T18:17:27.985Z",
+        "visitCount": 3,
         "isActive": 1,
         "browser": "Other",
         "region": null,
@@ -6734,9 +6968,9 @@
     ],
     "empresas": [],
     "visitas_empresas": [],
-    "news_comments": [],
-    "news_reactions": [],
-    "announcements": []
+    "poll_votes": [],
+    "announcements": [],
+    "calendar_claims": []
   },
   "metadata": {
     "totalTables": 16,
