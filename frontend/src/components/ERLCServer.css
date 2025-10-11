@@ -670,6 +670,38 @@ body:not(.dark) .erlc-error {
   position: relative;
 }
 
+.erlc-welcome-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.erlc-welcome-close:hover {
+  background: rgba(255, 107, 107, 0.8);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.erlc-welcome-close:active {
+  transform: scale(0.95);
+}
+
 .erlc-welcome-modal::before {
   content: '';
   position: absolute;
@@ -1031,20 +1063,181 @@ body:not(.dark) .erlc-error {
 
 /* Responsive para el modal */
 @media (max-width: 768px) {
+  .erlc-welcome-modal-overlay {
+    padding: 10px;
+    align-items: flex-start;
+    padding-top: 20px;
+  }
+  
   .erlc-welcome-modal {
-    width: 95%;
-    margin: 20px;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    border-radius: 16px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
   }
   
   .erlc-welcome-header {
-    padding: 20px 20px 12px 20px;
+    padding: 20px 16px 12px 16px;
+    gap: 16px;
+  }
+  
+  .erlc-welcome-logo {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .erlc-welcome-main-icon {
+    font-size: 24px;
+  }
+  
+  .erlc-welcome-header h3 {
+    font-size: 1.4rem;
+  }
+  
+  .erlc-welcome-subtitle {
+    font-size: 0.9rem;
   }
   
   .erlc-welcome-content {
-    padding: 16px 20px;
+    padding: 0 16px 16px 16px;
+  }
+  
+  .erlc-welcome-feature {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  
+  .erlc-feature-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+    margin: 0 auto;
+  }
+  
+  .erlc-feature-text h4 {
+    font-size: 1rem;
+  }
+  
+  .erlc-feature-text p {
+    font-size: 0.9rem;
+  }
+  
+  .erlc-welcome-cta {
+    margin-top: 16px;
+  }
+  
+  .erlc-community-link {
+    padding: 12px 20px;
+    font-size: 0.9rem;
+    border-radius: 12px;
+    width: 100%;
+    justify-content: center;
   }
   
   .erlc-welcome-actions {
-    padding: 12px 20px 20px 20px;
+    padding: 12px 16px 20px 16px;
+  }
+  
+  .erlc-welcome-btn {
+    padding: 14px 24px;
+    font-size: 1rem;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 200px;
+  }
+  
+  .erlc-welcome-close {
+    top: 12px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .erlc-welcome-modal-overlay {
+    padding: 5px;
+    padding-top: 10px;
+  }
+  
+  .erlc-welcome-modal {
+    border-radius: 12px;
+    max-height: calc(100vh - 20px);
+  }
+  
+  .erlc-welcome-header {
+    padding: 16px 12px 8px 12px;
+    gap: 12px;
+  }
+  
+  .erlc-welcome-logo {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .erlc-welcome-main-icon {
+    font-size: 20px;
+  }
+  
+  .erlc-welcome-header h3 {
+    font-size: 1.2rem;
+  }
+  
+  .erlc-welcome-subtitle {
+    font-size: 0.85rem;
+  }
+  
+  .erlc-welcome-content {
+    padding: 0 12px 12px 12px;
+  }
+  
+  .erlc-welcome-feature {
+    padding: 12px;
+    margin-bottom: 12px;
+    gap: 10px;
+  }
+  
+  .erlc-feature-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+  
+  .erlc-feature-text h4 {
+    font-size: 0.95rem;
+  }
+  
+  .erlc-feature-text p {
+    font-size: 0.85rem;
+  }
+  
+  .erlc-community-link {
+    padding: 10px 16px;
+    font-size: 0.85rem;
+    border-radius: 10px;
+  }
+  
+  .erlc-welcome-actions {
+    padding: 8px 12px 16px 12px;
+  }
+  
+  .erlc-welcome-btn {
+    padding: 12px 20px;
+    font-size: 0.95rem;
+    border-radius: 10px;
+  }
+  
+  .erlc-welcome-close {
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
   }
 }

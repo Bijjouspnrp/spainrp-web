@@ -353,8 +353,21 @@ const ERLCServer = () => {
 
       {/* Modal de Bienvenida ERLC */}
       {showWelcomeModal && (
-        <div className="erlc-welcome-modal-overlay">
-          <div className="erlc-welcome-modal">
+        <div className="erlc-welcome-modal-overlay" onClick={() => {
+          localStorage.setItem('erlc_welcome_seen', 'true');
+          setShowWelcomeModal(false);
+        }}>
+          <div className="erlc-welcome-modal" onClick={(e) => e.stopPropagation()}>
+            <button 
+              className="erlc-welcome-close"
+              onClick={() => {
+                localStorage.setItem('erlc_welcome_seen', 'true');
+                setShowWelcomeModal(false);
+              }}
+              aria-label="Cerrar modal"
+            >
+              ×
+            </button>
             <div className="erlc-welcome-header">
               <div className="erlc-welcome-logo">
                 <FaServer className="erlc-welcome-main-icon" />
