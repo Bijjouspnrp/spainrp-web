@@ -680,7 +680,7 @@ export default function BlackMarket() {
       
       // Aplicar filtros a todos los items
       let filtered = allItems.filter(item => {
-        // Filtro por búsqueda
+      // Filtro por búsqueda
         const query = searchQuery.toLowerCase();
         const matchesName = item.name.toLowerCase().includes(query);
         const matchesDescription = item.description?.toLowerCase().includes(query);
@@ -1538,9 +1538,9 @@ export default function BlackMarket() {
 
   // Debug logs para identificar el problema
   console.log('[BlackMarket] 🔍 Estado actual:', { loading, roleChecking, user: !!user, authorized });
-  
-  // --- Bloque: feedback de carga centrado (spinner + texto) ---
-  if (loading || roleChecking) {
+
+// --- Bloque: feedback de carga centrado (spinner + texto) ---
+if (loading || roleChecking) {
   // Si termina de cargar y no hay user, mostrar login en vez de spinner
   if (!loading && !roleChecking && !user) {
     return (
@@ -1610,8 +1610,8 @@ export default function BlackMarket() {
     </div>
   );
 }
-  // --- fin del bloque ---  // Mostrar la página con info de login y toast, sin redirigir
-  if (!user) {
+// --- fin del bloque ---  // Mostrar la página con info de login y toast, sin redirigir
+if (!user) {
   return (
     <div className="blackmarket-hack-bg">
       <DiscordUserBar />
@@ -1696,8 +1696,8 @@ export default function BlackMarket() {
   console.log('[BlackMarket] 🎯 Renderizando contenido principal');
   
   try {
-    return (
-      <div className={`blackmarket-hack-bg theme-${currentTheme}`}>
+  return (
+    <div className={`blackmarket-hack-bg theme-${currentTheme}`}>
       {roleChecking && <div className="role-check-bar" />}
       {roleToast && <div className="role-ok-toast">{roleToast}</div>}
       <DiscordUserBar />
@@ -2435,9 +2435,9 @@ export default function BlackMarket() {
               </>
             ) : (
               <>
-                {getFilteredItems().length} de {ITEMS[selected].options.length} items
+            {getFilteredItems().length} de {ITEMS[selected].options.length} items
                 {(selectedQuality !== 'all' || stockFilter !== 'all' || priceRange.min > 0 || priceRange.max < 1000000) && (
-                  <span className="filtered-indicator"> (filtrados)</span>
+              <span className="filtered-indicator"> (filtrados)</span>
                 )}
               </>
             )}
@@ -2466,7 +2466,7 @@ export default function BlackMarket() {
                     />
                   ) : null}
                   <div className="item-icon-fallback" style={{display: item.image ? 'none' : 'flex'}}>
-                    {item.icon && <span className="blackmarket-hack-item-icon">{item.icon}</span>}
+                {item.icon && <span className="blackmarket-hack-item-icon">{item.icon}</span>}
                   </div>
                 </div>
                 <div className="item-info">
@@ -3889,7 +3889,7 @@ export default function BlackMarket() {
           <FaSkull size={18} style={{marginRight:6}} />
           <span>Error técnico - Contacta al administrador</span>
         </div>
-      </div>
-    );
+    </div>
+  );
   }
 }

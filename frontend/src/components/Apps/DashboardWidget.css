@@ -1,0 +1,175 @@
+/* Widget genérico del dashboard */
+.dashboard-widget {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 20px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  position: relative;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-widget:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.dashboard-widget.editable {
+  cursor: move;
+  border-style: dashed;
+}
+
+.dashboard-widget.editable:hover {
+  border-style: solid;
+  transform: scale(1.02);
+}
+
+/* Tamaños de widgets */
+.dashboard-widget.small {
+  grid-column: span 1;
+  min-height: 150px;
+}
+
+.dashboard-widget.medium {
+  grid-column: span 1;
+  min-height: 200px;
+}
+
+.dashboard-widget.large {
+  grid-column: span 2;
+  min-height: 250px;
+}
+
+/* Header del widget */
+.widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.widget-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #ffffff;
+}
+
+.widget-icon {
+  font-size: 1.2rem;
+}
+
+.widget-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.drag-handle {
+  color: #a0a0a0;
+  cursor: grab;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.drag-handle:hover {
+  color: #00d4ff;
+  background: rgba(0, 212, 255, 0.1);
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.widget-remove {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.widget-remove:hover {
+  background: #ef4444;
+  color: #ffffff;
+  transform: scale(1.1);
+}
+
+/* Contenido del widget */
+.widget-content {
+  flex: 1;
+  overflow-y: auto;
+  color: #ffffff;
+}
+
+/* Estados de drag */
+.dashboard-widget.dragging {
+  opacity: 0.5;
+  transform: rotate(5deg);
+}
+
+.dashboard-widget.drag-over {
+  border-color: #00d4ff !important;
+  background: rgba(0, 212, 255, 0.1);
+}
+
+/* Animaciones */
+@keyframes widgetPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.dashboard-widget.editable:active {
+  animation: widgetPulse 0.5s ease-in-out;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard-widget.large {
+    grid-column: span 1;
+  }
+  
+  .widget-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  
+  .widget-controls {
+    align-self: flex-end;
+  }
+}
+
+/* Scrollbar personalizado */
+.widget-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.widget-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.widget-content::-webkit-scrollbar-thumb {
+  background: rgba(0, 212, 255, 0.5);
+  border-radius: 3px;
+}
+
+.widget-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 212, 255, 0.7);
+}

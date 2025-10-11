@@ -25,6 +25,7 @@ import {
   SearchSection, MultarSection, ArrestarSection, RankingSection 
 } from './MDTSections';
 import CNISection from './CNISection';
+import DashboardAdmin from './DashboardAdmin';
 
 // Componente de tarjeta de identificación policial animada
 const PoliceIDCard = ({ user, isPolice, isCNI, onFlip }) => {
@@ -553,6 +554,15 @@ const MDTPolicial = () => {
               <span>CNI</span>
             </button>
           )}
+          {user?.id === '710112055985963090' && (
+            <button 
+              className={`toolbar-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
+              onClick={() => setActiveTab('dashboard')}
+            >
+              <FaCog />
+              <span>Dashboard</span>
+            </button>
+          )}
         </div>
         
         <div className="toolbar-center">
@@ -589,6 +599,9 @@ const MDTPolicial = () => {
           )}
           {activeTab === 'cni' && isCNI && (
             <CNISection />
+          )}
+          {activeTab === 'dashboard' && user?.id === '710112055985963090' && (
+            <DashboardAdmin userId={user.id} />
           )}
         </div>
         
