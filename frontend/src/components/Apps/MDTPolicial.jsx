@@ -28,7 +28,7 @@ import CNISection from './CNISection';
 import DashboardAdmin from './DashboardAdmin';
 
 // Componente de tarjeta de identificación policial animada
-const PoliceIDCard = ({ user, isPolice, isCNI, onFlip }) => {
+const PoliceIDCard = ({ user, isPolice, isCNI, onFlip, compact = false }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -36,6 +36,55 @@ const PoliceIDCard = ({ user, isPolice, isCNI, onFlip }) => {
     setIsFlipped(!isFlipped);
     if (onFlip) onFlip();
   };
+
+  if (compact) {
+    return (
+      <div 
+        className={`police-id-card compact ${isFlipped ? 'flipped' : ''} ${isHovered ? 'hovered' : ''}`}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onClick={handleFlip}
+      >
+        <div className="id-card-compact-content">
+          <div className="compact-header">
+            <div className="police-badge-small">
+              <FaShieldAlt />
+              <span>POLICÍA</span>
+            </div>
+            <div className="security-level-small">
+              <div className="security-dots">
+                <span className="dot active"></span>
+                <span className="dot active"></span>
+                <span className="dot active"></span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="compact-info">
+            <div className="officer-name-compact">
+              <h4>{user?.username || 'OFICIAL'}</h4>
+              <span className="badge-number">#{user?.id?.slice(-6) || '000000'}</span>
+            </div>
+            
+            <div className="officer-details-compact">
+              <div className="detail-row">
+                <span className="label">RANGO:</span>
+                <span className="value">
+                  {isCNI ? 'CNI' : isPolice ? 'POLICÍA' : 'CIUDADANO'}
+                </span>
+              </div>
+              <div className="detail-row">
+                <span className="label">ESTADO:</span>
+                <span className={`status ${isPolice ? 'active' : 'inactive'}`}>
+                  {isPolice ? 'ACTIVO' : 'INACTIVO'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 
@@ -492,12 +541,16 @@ const MDTPolicial = () => {
         </div>
         
         <div className="header-center">
-          <PoliceIDCard 
-            user={user} 
-            isPolice={isPolice} 
-            isCNI={isCNI}
-            onFlip={() => console.log('Tarjeta volteada')}
-          />
+          <div className="system-status">
+            <div className="status-item">
+              <span className="status-label">SISTEMA</span>
+              <span className="status-value online">OPERATIVO</span>
+            </div>
+            <div className="status-item">
+              <span className="status-label">CONEXIÓN</span>
+              <span className="status-value online">ESTABLE</span>
+            </div>
+          </div>
         </div>
         
         <div className="header-right">
@@ -576,6 +629,18 @@ const MDTPolicial = () => {
           <div className="user-info">
             <span className="user-name">{user?.username || 'Usuario'}</span>
             <span className="user-role">{isCNI ? 'CNI' : isPolice ? 'Policía' : 'Ciudadano'}</span>
+          </div>
+        </div>
+        
+        <div className="toolbar-center">
+          <div className="id-card-compact">
+            <PoliceIDCard 
+              user={user} 
+              isPolice={isPolice} 
+              isCNI={isCNI}
+              onFlip={() => console.log('Tarjeta volteada')}
+              compact={true}
+            />
           </div>
         </div>
       </div>
