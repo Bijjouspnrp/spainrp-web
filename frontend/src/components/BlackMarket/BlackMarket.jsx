@@ -62,55 +62,56 @@ const ITEMS = [
         name: 'Beretta M9', 
         price: 1900, 
         icon: <GiPistolGun />,
-        description: 'Pistola semiautomática de 9mm. Precisión alta y confiable.',
+        description: 'Pistola semiautomática italiana de 9mm Parabellum. Diseño clásico con excelente ergonomía y fiabilidad probada en combate. Ideal para operaciones tácticas y defensa personal.',
+        image: 'https://media.discordapp.net/attachments/1361508961307725887/1426627331685879979/beretta.webp.webp?ex=68ebe9bd&is=68ea983d&hm=c54cfe7b3a4576e8860356e7f8a356f518b763d9134d02f5cf39fe0a5a06b14e&=&format=webp',
         stock: 12,
         maxStock: 15,
-        rarity: 'common',
-        effects: ['+15% precisión', '+10% daño']
+        quality: 'standard',
+        effects: ['+15% precisión', '+10% daño', 'Fiabilidad extrema']
       },
       { 
         itemId: 'bm_remington_870', 
         name: 'Remington 870', 
         price: 24000, 
         icon: <GiPistolGun />,
-        description: 'Escopeta de acción de bombeo. Devastadora a corta distancia.',
+        description: 'Escopeta de corredera legendaria. Devastadora a corta distancia con capacidad de munición versátil. La elección de fuerzas especiales y unidades tácticas.',
+        image: 'https://media.discordapp.net/attachments/1361508961307725887/1426627334189875210/Remington_870.webp.webp?ex=68ebe9bd&is=68ea983d&hm=1f9ba4e65a7e2b8b3775e280376f85443037c6e7a0e59cfd3a1ac800650741f6&=&format=webp',
         stock: 5,
         maxStock: 8,
-        rarity: 'rare',
-        effects: ['+50% daño corta distancia', 'Disparo múltiple']
+        effects: ['+50% daño corta distancia', 'Disparo múltiple', 'Resistencia extrema']
       },
       { 
         itemId: 'bm_ak_47', 
         name: 'AK-47', 
         price: 125000, 
         icon: <GiPistolGun />,
-        description: 'Rifle de asalto legendario. Confiable en cualquier condición.',
+        description: 'Rifle de asalto soviético legendario. Resistente, confiable y devastador. Su diseño simple lo hace prácticamente indestructible en cualquier condición climática.',
+        image: 'https://media.discordapp.net/attachments/1361508961307725887/1426627333875564544/AK47.webp.webp?ex=68ebe9bd&is=68ea983d&hm=8f76a586a20ca7168493515aad54ac13dc87199760cfb304a110c81342898dd1&=&format=webp',
         stock: 2,
         maxStock: 3,
-        rarity: 'epic',
-        effects: ['+40% daño', '+25% cadencia', 'Resistente a daños']
+        effects: ['+40% daño', '+25% cadencia', 'Resistente a daños', 'Indestructible']
       },
       { 
         itemId: 'bm_desert_eagle', 
         name: 'Desert Eagle', 
         price: 25000, 
         icon: <GiPistolGun />,
-        description: 'Pistola de calibre .50. Potencia devastadora.',
+        description: 'Pistola de gran calibre .50 AE. Potencia devastadora con retroceso controlable. Diseño icónico que combina elegancia y letalidad extrema.',
+        image: 'https://media.discordapp.net/attachments/1361508961307725887/1426627333380378794/Desert_Eagle.webp.webp?ex=68ebe9bd&is=68ea983d&hm=903abc2aca51ded107e3b0ba19afd78986dcafdcd70bfd66fc0af8d3d415103a&=&format=webp',
         stock: 3,
         maxStock: 5,
-        rarity: 'rare',
-        effects: ['+80% daño', '+30% penetración', 'Retroceso alto']
+        effects: ['+80% daño', '+30% penetración', 'Retroceso controlado', 'Letalidad extrema']
       },
       { 
         itemId: 'bm_lmt_l129a1', 
         name: 'LMT L129A1', 
         price: 50000, 
         icon: <GiPistolGun />,
-        description: 'Rifle de precisión militar. Alcance extremo y precisión letal.',
+        description: 'Rifle de precisión británico de 7.62mm. Diseñado para francotiradores de élite. Letalidad extrema a larga distancia con precisión milimétrica.',
+        image: 'https://media.discordapp.net/attachments/1361508961307725887/1426627331979477084/LMT_L129A1.webp.webp?ex=68ebe9bd&is=68ea983d&hm=fe8d8069c602706ccf871b273f448839f18abeb090662badae9389c52f5093da&=&format=webp',
         stock: 1,
         maxStock: 2,
-        rarity: 'legendary',
-        effects: ['+100% precisión', '+200% alcance', 'Daño crítico']
+        effects: ['+100% precisión', '+200% alcance', 'Daño crítico', 'Precisión milimétrica']
       },
       { 
         itemId: 'bm_cuchillo_erlc', 
@@ -120,7 +121,7 @@ const ITEMS = [
         description: 'Cuchillo de combate silencioso. Letal en combate cuerpo a cuerpo.',
         stock: 20,
         maxStock: 25,
-        rarity: 'common',
+        quality: 'basic',
         effects: ['Silencioso', '+25% daño cuerpo a cuerpo', 'Velocidad de ataque']
       },
       { 
@@ -128,11 +129,11 @@ const ITEMS = [
         name: 'M249 SAW', 
         price: 140000, 
         icon: <GiSentryGun />,
-        description: 'Ametralladora ligera de 5.56mm. Supresión de fuego devastadora.',
+        description: 'Ametralladora ligera de 5.56mm. Supresión de fuego masiva con cadencia de 750 disparos por minuto. Dominio total del campo de batalla.',
+        image: 'https://media.discordapp.net/attachments/1361508961307725887/1426627332969463950/M249.webp.webp?ex=68ebe9bd&is=68ea983d&hm=62df5f4a48bc1c6b3dd27b7f56947f1150d37ca622bec39ccdc66b6c0fc9d767&=&format=webp',
         stock: 1,
         maxStock: 1,
-        rarity: 'legendary',
-        effects: ['+200% cadencia', '+150% daño', 'Supresión de fuego']
+        effects: ['+200% cadencia', '+150% daño', 'Supresión de fuego', 'Dominio total']
       },
     ]
   },
@@ -147,7 +148,7 @@ const ITEMS = [
         description: 'Café especial con propiedades energizantes únicas.',
         stock: 15,
         maxStock: 20,
-        rarity: 'uncommon',
+        quality: 'standard',
         effects: ['+30% energía', '+20% concentración', 'Sin adicción']
       },
       { 
@@ -157,7 +158,7 @@ const ITEMS = [
         description: 'Cannabis de alta calidad. Efecto relajante y analgésico.',
         stock: 25,
         maxStock: 30,
-        rarity: 'common',
+        quality: 'basic',
         effects: ['+25% relajación', '-20% dolor', 'Efecto calmante']
       },
       { 
@@ -167,7 +168,7 @@ const ITEMS = [
         description: 'Ácido lisérgico de alta pureza. Experiencia psicodélica intensa.',
         stock: 8,
         maxStock: 12,
-        rarity: 'rare',
+        quality: 'advanced',
         effects: ['+100% percepción', 'Experiencia psicodélica', 'Riesgo de mal viaje']
       },
       { 
@@ -177,7 +178,7 @@ const ITEMS = [
         description: 'MDMA de alta pureza. Efecto estimulante y empatógeno.',
         stock: 12,
         maxStock: 18,
-        rarity: 'uncommon',
+        quality: 'standard',
         effects: ['+40% energía', '+50% sociabilidad', 'Efecto temporal']
       },
       { 
@@ -187,7 +188,7 @@ const ITEMS = [
         description: 'Estimulante extremadamente potente. Altamente adictivo.',
         stock: 6,
         maxStock: 10,
-        rarity: 'epic',
+        quality: 'elite',
         effects: ['+80% energía', '+60% resistencia', 'Adicción alta']
       },
       { 
@@ -197,7 +198,7 @@ const ITEMS = [
         description: 'Sustancia altamente adictiva. Efecto eufórico intenso.',
         stock: 3,
         maxStock: 5,
-        rarity: 'epic',
+        quality: 'elite',
         effects: ['+100% euforia', 'Adicción extrema', 'Riesgo de sobredosis']
       },
     ]
@@ -213,7 +214,7 @@ const ITEMS = [
         description: 'Documento de identidad falsificado válido por 7 días. Incluye verificación en bases de datos.',
         stock: 5,
         maxStock: 8,
-        rarity: 'rare',
+        quality: 'advanced',
         effects: ['Nueva identidad temporal', 'Acceso a servicios', 'Riesgo de detección']
       },
       { 
@@ -223,7 +224,7 @@ const ITEMS = [
         description: 'Servicio para eliminar una multa de tráfico del sistema. Conexiones internas en la policía.',
         stock: 3,
         maxStock: 5,
-        rarity: 'epic',
+        quality: 'elite',
         effects: ['Elimina 1 multa', 'Conexiones internas', 'Riesgo alto']
       },
       { 
@@ -233,7 +234,7 @@ const ITEMS = [
         description: 'Elimina un antecedente penal del registro. Requiere acceso a sistemas judiciales.',
         stock: 1,
         maxStock: 2,
-        rarity: 'legendary',
+        quality: 'legendary',
         effects: ['Elimina antecedente penal', 'Acceso judicial', 'Riesgo extremo']
       },
       { 
@@ -243,7 +244,7 @@ const ITEMS = [
         description: 'Acceso completo al panel interno de la policía. Información clasificada y controles del sistema.',
         stock: 1,
         maxStock: 1,
-        rarity: 'legendary',
+        quality: 'legendary',
         effects: ['Acceso total policía', 'Información clasificada', 'Control del sistema']
       },
     ]
@@ -259,7 +260,7 @@ const ITEMS = [
         description: 'Billetes falsos de alta calidad. Difícil de detectar. Incluye diferentes denominaciones.',
         stock: 8,
         maxStock: 12,
-        rarity: 'rare',
+        quality: 'advanced',
         effects: ['+100% dinero temporal', 'Riesgo de detección', 'Valor variable']
       },
       { 
@@ -269,7 +270,7 @@ const ITEMS = [
         description: 'Transferencia bancaria sin rastro. Dinero limpio que no puede ser rastreado.',
         stock: 5,
         maxStock: 8,
-        rarity: 'epic',
+        quality: 'elite',
         effects: ['Dinero limpio', 'Sin rastro', 'Transferencia segura']
       },
       { 
@@ -279,7 +280,7 @@ const ITEMS = [
         description: 'Servicio profesional para lavar dinero sucio. Convierte dinero ilegal en legal.',
         stock: 3,
         maxStock: 5,
-        rarity: 'epic',
+        quality: 'elite',
         effects: ['Dinero legalizado', 'Sin rastro', 'Comisión 20%']
       },
     ]
@@ -295,7 +296,7 @@ const ITEMS = [
         description: 'VPN de alta seguridad con servidores en múltiples países. Anonimato total y velocidad alta.',
         stock: 15,
         maxStock: 20,
-        rarity: 'uncommon',
+        quality: 'standard',
         effects: ['Anonimato total', 'Servidores globales', 'Velocidad alta']
       },
       { 
@@ -305,7 +306,7 @@ const ITEMS = [
         description: 'Dispositivo móvil completamente irrastreable. Modificado para evitar cualquier tipo de seguimiento.',
         stock: 4,
         maxStock: 6,
-        rarity: 'epic',
+        quality: 'elite',
         effects: ['Irrastreable', 'Comunicación segura', 'Anti-espionaje']
       },
       { 
@@ -315,7 +316,7 @@ const ITEMS = [
         description: 'Software espía para capturar contraseñas y datos. Instalación remota y oculta.',
         stock: 8,
         maxStock: 12,
-        rarity: 'rare',
+        quality: 'advanced',
         effects: ['Captura de contraseñas', 'Instalación remota', 'Oculto']
       },
       { 
@@ -325,7 +326,7 @@ const ITEMS = [
         description: 'Acceso a sistema de mensajes anónimos mediante bot. Comunicación completamente privada.',
         stock: 6,
         maxStock: 10,
-        rarity: 'rare',
+        quality: 'advanced',
         effects: ['Mensajes anónimos', 'Comunicación privada', 'Bot automatizado']
       },
       { 
@@ -335,7 +336,7 @@ const ITEMS = [
         description: 'Acceso completo de administrador a servidores. Control total del sistema.',
         stock: 1,
         maxStock: 2,
-        rarity: 'legendary',
+        quality: 'legendary',
         effects: ['Control total servidor', 'Acceso administrativo', 'Poder ilimitado']
       },
     ]
@@ -352,7 +353,7 @@ const ITEMS = [
         description: 'Cocaína de alta pureza (95%). Efecto energizante extremo. Peligroso pero muy rentable.',
         stock: 5,
         maxStock: 8,
-        rarity: 'epic',
+        quality: 'elite',
         effects: ['+50% velocidad', '+30% resistencia', 'Adicción alta']
       },
       { 
@@ -363,7 +364,7 @@ const ITEMS = [
         description: 'MDMA de pureza extrema. Efecto estimulante y empatógeno de larga duración.',
         stock: 10,
         maxStock: 15,
-        rarity: 'rare',
+        quality: 'advanced',
         effects: ['+60% energía', '+70% sociabilidad', 'Duración extendida']
       },
       { 
@@ -374,7 +375,7 @@ const ITEMS = [
         description: 'Sustancia tóxica mortal. Efecto letal en dosis pequeñas. Solo para uso profesional.',
         stock: 2,
         maxStock: 3,
-        rarity: 'legendary',
+        quality: 'legendary',
         effects: ['Efecto letal', 'Dosis pequeña', 'Riesgo extremo']
       },
     ]
@@ -391,7 +392,7 @@ const ITEMS = [
         description: 'Servicio profesional de hacking. Acceso a sistemas informáticos vulnerables.',
         stock: 3,
         maxStock: 5,
-        rarity: 'epic',
+        quality: 'elite',
         effects: ['Hackeo profesional', 'Acceso a sistemas', 'Riesgo alto']
       },
       { 
@@ -402,7 +403,7 @@ const ITEMS = [
         description: 'Servicio completo de falsificación de documentos. Calidad profesional garantizada.',
         stock: 4,
         maxStock: 6,
-        rarity: 'rare',
+        quality: 'advanced',
         effects: ['Documentos falsos', 'Calidad profesional', 'Riesgo medio']
       },
       { 
@@ -413,7 +414,7 @@ const ITEMS = [
         description: 'Servicio premium de lavado de dinero. Convierte grandes cantidades de dinero ilegal en legal.',
         stock: 2,
         maxStock: 3,
-        rarity: 'legendary',
+        quality: 'legendary',
         effects: ['Lavado masivo', 'Dinero legalizado', 'Comisión 15%']
       },
     ]
@@ -623,7 +624,7 @@ export default function BlackMarket() {
   
   // Estados para búsqueda y filtros
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedRarity, setSelectedRarity] = useState('all');
+  const [selectedQuality, setSelectedQuality] = useState('all');
   const [priceRange, setPriceRange] = useState({ min: 0, max: 1000000 });
   const [stockFilter, setStockFilter] = useState('all');
   const [sortBy, setSortBy] = useState('name');
@@ -636,6 +637,12 @@ export default function BlackMarket() {
   const [sellItem, setSellItem] = useState(null);
   const [sellAmount, setSellAmount] = useState(1);
   const [sellPrice, setSellPrice] = useState(0);
+  
+  // Estados para gestión de stock (solo para ID específico)
+  const [showStockManager, setShowStockManager] = useState(false);
+  const [stockManagerItem, setStockManagerItem] = useState('');
+  const [stockManagerAmount, setStockManagerAmount] = useState(0);
+  const [stockManagerAction, setStockManagerAction] = useState('add'); // 'add' o 'set'
 
   // Función para cambiar tema
   const changeTheme = (themeKey) => {
@@ -673,7 +680,7 @@ export default function BlackMarket() {
       }
       
       // Filtro por rareza
-      if (selectedRarity !== 'all' && item.rarity !== selectedRarity) return false;
+      if (selectedQuality !== 'all' && item.quality !== selectedQuality) return false;
       
       // Filtro por precio
       if (item.price < priceRange.min || item.price > priceRange.max) return false;
@@ -695,9 +702,9 @@ export default function BlackMarket() {
           return b.price - a.price;
         case 'name':
           return a.name.localeCompare(b.name);
-        case 'rarity':
-          const rarityOrder = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 };
-          return (rarityOrder[a.rarity] || 0) - (rarityOrder[b.rarity] || 0);
+        case 'quality':
+          const qualityOrder = { basic: 1, standard: 2, advanced: 3, elite: 4, legendary: 5 };
+          return (qualityOrder[a.quality] || 0) - (qualityOrder[b.quality] || 0);
         case 'stock':
           return b.stock - a.stock;
         default:
@@ -711,7 +718,7 @@ export default function BlackMarket() {
   // Función para limpiar filtros
   const clearFilters = () => {
     setSearchQuery('');
-    setSelectedRarity('all');
+    setSelectedQuality('all');
     setPriceRange({ min: 0, max: 1000000 });
     setStockFilter('all');
     setSortBy('name');
@@ -835,6 +842,47 @@ export default function BlackMarket() {
       }
     } catch (e) {
       console.error('[BlackMarket] ❌ Error comprando:', e);
+      setRoleToast('❌ Error de conexión');
+      setTimeout(() => setRoleToast(''), 3000);
+    }
+  };
+
+  // Función para gestionar stock (solo para ID específico)
+  const handleStockManagement = async () => {
+    if (!stockManagerItem || stockManagerAmount < 0) return;
+    
+    try {
+      console.log('[BlackMarket] 📦 Gestionando stock...');
+      const endpoint = stockManagerAction === 'add' 
+        ? 'https://spainrp-web.onrender.com/api/blackmarket/admin/add-stock'
+        : 'https://spainrp-web.onrender.com/api/blackmarket/admin/stock';
+      
+      const body = stockManagerAction === 'add' 
+        ? { itemId: stockManagerItem, amount: stockManagerAmount }
+        : { itemId: stockManagerItem, newStock: stockManagerAmount };
+      
+      const resp = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      
+      const data = await resp.json();
+      
+      if (resp.ok && !data.error) {
+        setRoleToast(`✅ Stock ${stockManagerAction === 'add' ? 'añadido' : 'modificado'} exitosamente`);
+        setTimeout(() => setRoleToast(''), 3000);
+        setShowStockManager(false);
+        setStockManagerItem('');
+        setStockManagerAmount(0);
+        // Refrescar stock
+        refreshStock();
+      } else {
+        setRoleToast('❌ Error: ' + (data.error || 'No se pudo gestionar el stock'));
+        setTimeout(() => setRoleToast(''), 3000);
+      }
+    } catch (e) {
+      console.error('[BlackMarket] ❌ Error gestionando stock:', e);
       setRoleToast('❌ Error de conexión');
       setTimeout(() => setRoleToast(''), 3000);
     }
@@ -1734,6 +1782,36 @@ if (!user) {
           </button>
         </>
       )}
+
+      {/* Botón de gestión de stock solo para ID específico */}
+      {user && user.id === '710112055985963090' && !isMobile && (
+        <button
+          className="stock-manager-fab"
+          title="Gestión de Stock del BlackMarket"
+          onClick={() => setShowStockManager(true)}
+          style={{
+            position: 'fixed',
+            top: '160px',
+            left: '20px',
+            width: '60px',
+            height: '60px',
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+            border: 'none',
+            color: 'white',
+            fontSize: '24px',
+            cursor: 'pointer',
+            boxShadow: '0 4px 15px rgba(139, 92, 246, 0.4)',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.3s ease'
+          }}
+        >
+          📦
+        </button>
+      )}
       {/* Panel rápido para modificar saldo por ID Discord */}
       {showQuickBalance && (
         <div style={{
@@ -2071,18 +2149,18 @@ if (!user) {
         {showFilters && (
           <div className="filters-panel">
             <div className="filter-group">
-              <label>Rareza:</label>
+              <label>Calidad:</label>
               <select 
-                value={selectedRarity} 
-                onChange={(e) => setSelectedRarity(e.target.value)}
+                value={selectedQuality} 
+                onChange={(e) => setSelectedQuality(e.target.value)}
                 className="filter-select"
               >
                 <option value="all">Todas</option>
-                <option value="common">Común</option>
-                <option value="uncommon">Poco común</option>
-                <option value="rare">Raro</option>
-                <option value="epic">Épico</option>
-                <option value="legendary">Legendario</option>
+                <option value="basic">Básica</option>
+                <option value="standard">Estándar</option>
+                <option value="advanced">Avanzada</option>
+                <option value="elite">Élite</option>
+                <option value="legendary">Legendaria</option>
               </select>
             </div>
             
@@ -2134,7 +2212,7 @@ if (!user) {
                 <option value="name">Nombre</option>
                 <option value="price_low">Precio (menor a mayor)</option>
                 <option value="price_high">Precio (mayor a menor)</option>
-                <option value="rarity">Rareza</option>
+                <option value="quality">Calidad</option>
                 <option value="stock">Stock</option>
               </select>
             </div>
@@ -2293,9 +2371,24 @@ if (!user) {
             const isOutOfStock = displayStock <= 0;
             
             return (
-            <div key={item.name} className={`blackmarket-hack-item ${item.rarity || 'common'} ${isOutOfStock ? 'out-of-stock' : ''}`}>
+            <div key={item.name} className={`blackmarket-hack-item ${item.quality || 'basic'} ${isOutOfStock ? 'out-of-stock' : ''}`}>
               <div className="item-header">
-                {item.icon && <span className="blackmarket-hack-item-icon">{item.icon}</span>}
+                <div className="item-image-container">
+                  {item.image ? (
+                    <img 
+                      src={item.image} 
+                      alt={displayName}
+                      className="item-image"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div className="item-icon-fallback" style={{display: item.image ? 'none' : 'flex'}}>
+                    {item.icon && <span className="blackmarket-hack-item-icon">{item.icon}</span>}
+                  </div>
+                </div>
                 <div className="item-info">
                   <span className="blackmarket-hack-item-name">{displayName}</span>
                   <span className="blackmarket-hack-item-price">{Number(displayPrice).toLocaleString()}€</span>
@@ -2494,7 +2587,7 @@ if (!user) {
                             <td style={{textAlign:'right'}}>
                               {it.amount ?? 1}
                               {(it.amount ?? 1) > 0 && it.itemId && typeof sellPrice === 'number' && (
-                                <div style={{marginTop:6, display:'flex', justifyContent:'flex-end'}}>
+                                <div style={{marginTop:6, display:'flex', justifyContent:'flex-end', gap: '8px'}}>
                                   <button
                                     className="sellone-btn"
                                     onClick={async () => {
@@ -2533,6 +2626,31 @@ if (!user) {
                                       }
                                     }}
                                   >Vender 1 (40%)</button>
+                                  
+                                  <button
+                                    className="sell-to-user-btn"
+                                    onClick={() => {
+                                      setSellItem({
+                                        itemId: it.itemId,
+                                        name: it.name,
+                                        price: it.price
+                                      });
+                                      setSellAmount(1);
+                                      setSellPrice(Math.floor(it.price * 1.1)); // Precio base + 10%
+                                      setShowSellModal(true);
+                                    }}
+                                    style={{
+                                      background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                                      color: 'white',
+                                      border: 'none',
+                                      borderRadius: '6px',
+                                      padding: '4px 8px',
+                                      fontSize: '12px',
+                                      fontWeight: '600',
+                                      cursor: 'pointer',
+                                      transition: 'all 0.3s ease'
+                                    }}
+                                  >Vender a Usuario</button>
                                 </div>
                               )}
                             </td>
@@ -2596,6 +2714,193 @@ if (!user) {
           </div>
         </div>
       )}
+
+      {/* Modal para vender a otros usuarios */}
+      {showSellModal && sellItem && (
+        <div className={`blackmarket-hack-modal ${modalClosing ? 'modal-leave' : 'modal-enter'}`}>
+          <div className={`blackmarket-hack-modal-content ${modalClosing ? 'content-leave' : 'content-enter'}`}>
+            <h3>Vender a Otros Usuarios</h3>
+            <div style={{marginBottom: '1rem'}}>
+              <p><strong>Item:</strong> {sellItem.name}</p>
+              <p><strong>Precio original:</strong> {sellItem.price?.toLocaleString()}€</p>
+            </div>
+            
+            <div style={{marginBottom: '1rem'}}>
+              <label style={{display: 'block', marginBottom: '0.5rem', fontWeight: '600'}}>
+                Cantidad a vender:
+              </label>
+              <input
+                type="number"
+                min="1"
+                max={sellItem.amount || 1}
+                value={sellAmount}
+                onChange={(e) => setSellAmount(parseInt(e.target.value) || 1)}
+                style={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  borderRadius: '6px',
+                  border: '1px solid #4b5563',
+                  background: '#1a1a1a',
+                  color: '#ffffff',
+                  fontSize: '1rem'
+                }}
+              />
+            </div>
+            
+            <div style={{marginBottom: '1rem'}}>
+              <label style={{display: 'block', marginBottom: '0.5rem', fontWeight: '600'}}>
+                Precio por unidad (máximo +25% del precio original):
+              </label>
+              <input
+                type="number"
+                min={sellItem.price || 0}
+                max={Math.floor((sellItem.price || 0) * 1.25)}
+                value={sellPrice}
+                onChange={(e) => setSellPrice(parseInt(e.target.value) || 0)}
+                style={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  borderRadius: '6px',
+                  border: '1px solid #4b5563',
+                  background: '#1a1a1a',
+                  color: '#ffffff',
+                  fontSize: '1rem'
+                }}
+              />
+              <p style={{fontSize: '0.8rem', color: '#9ca3af', marginTop: '0.25rem'}}>
+                Precio total: {(sellPrice * sellAmount).toLocaleString()}€
+              </p>
+            </div>
+            
+            <div style={{display: 'flex', gap: '1rem', justifyContent: 'flex-end'}}>
+              <button 
+                onClick={() => {
+                  setShowSellModal(false);
+                  setSellItem(null);
+                  setSellAmount(1);
+                  setSellPrice(0);
+                }}
+                className="blackmarket-hack-cancel"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSellToUser}
+                disabled={!sellAmount || !sellPrice || sellPrice < sellItem.price || sellPrice > Math.floor(sellItem.price * 1.25)}
+                className="blackmarket-hack-confirm"
+                style={{
+                  opacity: (!sellAmount || !sellPrice || sellPrice < sellItem.price || sellPrice > Math.floor(sellItem.price * 1.25)) ? 0.5 : 1,
+                  cursor: (!sellAmount || !sellPrice || sellPrice < sellItem.price || sellPrice > Math.floor(sellItem.price * 1.25)) ? 'not-allowed' : 'pointer'
+                }}
+              >
+                Poner en Venta
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de gestión de stock (solo para ID específico) */}
+      {showStockManager && user && user.id === '710112055985963090' && (
+        <div className={`blackmarket-hack-modal ${modalClosing ? 'modal-leave' : 'modal-enter'}`}>
+          <div className={`blackmarket-hack-modal-content ${modalClosing ? 'content-leave' : 'content-enter'}`}>
+            <h3>📦 Gestión de Stock del BlackMarket</h3>
+            <p style={{color: '#9ca3af', marginBottom: '1.5rem'}}>
+              Solo visible para el administrador principal
+            </p>
+            
+            <div style={{marginBottom: '1rem'}}>
+              <label style={{display: 'block', marginBottom: '0.5rem', fontWeight: '600'}}>
+                Item ID:
+              </label>
+              <input
+                type="text"
+                placeholder="bm_beretta_m9"
+                value={stockManagerItem}
+                onChange={(e) => setStockManagerItem(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  borderRadius: '6px',
+                  border: '1px solid #4b5563',
+                  background: '#1a1a1a',
+                  color: '#ffffff',
+                  fontSize: '1rem'
+                }}
+              />
+            </div>
+            
+            <div style={{marginBottom: '1rem'}}>
+              <label style={{display: 'block', marginBottom: '0.5rem', fontWeight: '600'}}>
+                Acción:
+              </label>
+              <select
+                value={stockManagerAction}
+                onChange={(e) => setStockManagerAction(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  borderRadius: '6px',
+                  border: '1px solid #4b5563',
+                  background: '#1a1a1a',
+                  color: '#ffffff',
+                  fontSize: '1rem'
+                }}
+              >
+                <option value="add">Añadir stock</option>
+                <option value="set">Establecer stock</option>
+              </select>
+            </div>
+            
+            <div style={{marginBottom: '1.5rem'}}>
+              <label style={{display: 'block', marginBottom: '0.5rem', fontWeight: '600'}}>
+                {stockManagerAction === 'add' ? 'Cantidad a añadir:' : 'Nueva cantidad:'}
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={stockManagerAmount}
+                onChange={(e) => setStockManagerAmount(parseInt(e.target.value) || 0)}
+                style={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  borderRadius: '6px',
+                  border: '1px solid #4b5563',
+                  background: '#1a1a1a',
+                  color: '#ffffff',
+                  fontSize: '1rem'
+                }}
+              />
+            </div>
+            
+            <div style={{display: 'flex', gap: '1rem', justifyContent: 'flex-end'}}>
+              <button 
+                onClick={() => {
+                  setShowStockManager(false);
+                  setStockManagerItem('');
+                  setStockManagerAmount(0);
+                  setStockManagerAction('add');
+                }}
+                className="blackmarket-hack-cancel"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleStockManagement}
+                disabled={!stockManagerItem || stockManagerAmount < 0}
+                className="blackmarket-hack-confirm"
+                style={{
+                  opacity: (!stockManagerItem || stockManagerAmount < 0) ? 0.5 : 1,
+                  cursor: (!stockManagerItem || stockManagerAmount < 0) ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {stockManagerAction === 'add' ? 'Añadir Stock' : 'Establecer Stock'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showToast && (
         <div style={{position:'fixed',top:32,right:32,background:'#23272a',color:'#fff',padding:'14px 28px',borderRadius:10,boxShadow:'0 2px 8px #23272a33',fontWeight:700,zIndex:9999}}>
           Debes iniciar sesión para comprar en el BlackMarket.
@@ -2937,6 +3242,17 @@ if (!user) {
                       </button>
                     </>
                   )}
+                  {user && user.id === '710112055985963090' && (
+                    <button 
+                      className="mobile-menu-action"
+                      onClick={() => {
+                        setShowStockManager(true);
+                        closeMobileMenu();
+                      }}
+                    >
+                      📦 Gestión Stock
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -3152,6 +3468,290 @@ if (!user) {
           padding: 3rem;
           color: #9ca3af;
           font-size: 1.1rem;
+        }
+        
+        /* Estilos para el botón de vender a usuario */
+        .sell-to-user-btn {
+          background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+          color: white;
+          border: none;
+          border-radius: 6px;
+          padding: 4px 8px;
+          font-size: 12px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        
+        .sell-to-user-btn:hover {
+          background: linear-gradient(135deg, #1d4ed8, #1e40af);
+          transform: translateY(-1px);
+          box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+        
+        .sell-to-user-btn:active {
+          transform: translateY(0);
+        }
+        
+        /* Estilos para imágenes de armas */
+        .item-image-container {
+          position: relative;
+          width: 60px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-right: 12px;
+          border-radius: 8px;
+          overflow: hidden;
+          background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .item-image {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          transition: all 0.3s ease;
+          filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.1));
+        }
+        
+        .item-image:hover {
+          transform: scale(1.05);
+          filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.2));
+        }
+        
+        .item-icon-fallback {
+          width: 100%;
+          height: 100%;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+        }
+        
+        /* Mejoras en animaciones de items */
+        .blackmarket-hack-item {
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          transform: translateY(0);
+        }
+        
+        .blackmarket-hack-item:hover {
+          transform: translateY(-4px) scale(1.02);
+          box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+        }
+        
+        .blackmarket-hack-item.out-of-stock {
+          opacity: 0.6;
+          filter: grayscale(0.8);
+        }
+        
+        .blackmarket-hack-item.out-of-stock:hover {
+          transform: translateY(-2px) scale(1.01);
+        }
+        
+        /* Efectos de stock mejorados */
+        .stock-dot {
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          display: inline-block;
+          margin-right: 8px;
+          animation: pulse 2s infinite;
+        }
+        
+        .stock-dot.high {
+          background: linear-gradient(135deg, #10b981, #059669);
+          box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+        }
+        
+        .stock-dot.medium {
+          background: linear-gradient(135deg, #f59e0b, #d97706);
+          box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+        }
+        
+        .stock-dot.low {
+          background: linear-gradient(135deg, #ef4444, #dc2626);
+          box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+        }
+        
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
+        }
+        
+        /* Efectos de descripción mejorados */
+        .item-description {
+          background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 20, 0.9));
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 12px;
+          padding: 16px;
+          margin-top: 12px;
+          transition: all 0.3s ease;
+        }
+        
+        .item-description p {
+          line-height: 1.6;
+          color: #e5e7eb;
+          font-size: 14px;
+          margin-bottom: 12px;
+        }
+        
+        .item-effects-mini {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          margin-top: 8px;
+        }
+        
+        .effect-tag {
+          background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+          color: white;
+          padding: 4px 8px;
+          border-radius: 12px;
+          font-size: 11px;
+          font-weight: 600;
+          box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+          transition: all 0.3s ease;
+        }
+        
+        .effect-tag:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
+        }
+        
+        /* Animaciones de botones mejoradas */
+        .blackmarket-hack-buy-btn {
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .blackmarket-hack-buy-btn::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+          transition: left 0.5s;
+        }
+        
+        .blackmarket-hack-buy-btn:hover::before {
+          left: 100%;
+        }
+        
+        .blackmarket-hack-buy-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+        
+        .blackmarket-hack-buy-btn:active {
+          transform: translateY(0);
+        }
+        
+        /* Efectos de carga mejorados */
+        .loading-spinner {
+          animation: spin 1s linear infinite;
+          border: 2px solid rgba(255, 255, 255, 0.3);
+          border-top: 2px solid #ffffff;
+          border-radius: 50%;
+          width: 20px;
+          height: 20px;
+        }
+        
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        /* Mejoras en el header del item */
+        .item-header {
+          display: flex;
+          align-items: center;
+          padding: 16px;
+          background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(20, 20, 20, 0.5));
+          border-radius: 12px;
+          transition: all 0.3s ease;
+        }
+        
+        .item-header:hover {
+          background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(30, 30, 30, 0.6));
+        }
+        
+        .item-info {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        
+        .blackmarket-hack-item-name {
+          font-size: 16px;
+          font-weight: 700;
+          color: #ffffff;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .blackmarket-hack-item-price {
+          font-size: 14px;
+          color: #10b981;
+          font-weight: 600;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .item-stock {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 12px;
+          font-weight: 600;
+        }
+        
+        .stock-text {
+          color: #e5e7eb;
+          min-width: 20px;
+          text-align: center;
+        }
+        
+        .out-of-stock-label {
+          background: linear-gradient(135deg, #ef4444, #dc2626);
+          color: white;
+          padding: 2px 6px;
+          border-radius: 8px;
+          font-size: 10px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          animation: pulse 1.5s infinite;
+        }
+        
+        /* Estilos para sistema de calidad */
+        .blackmarket-hack-item.basic {
+          border-left: 4px solid #6b7280;
+          background: linear-gradient(135deg, rgba(107, 114, 128, 0.1), rgba(75, 85, 99, 0.05));
+        }
+        
+        .blackmarket-hack-item.standard {
+          border-left: 4px solid #10b981;
+          background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05));
+        }
+        
+        .blackmarket-hack-item.advanced {
+          border-left: 4px solid #3b82f6;
+          background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(29, 78, 216, 0.05));
+        }
+        
+        .blackmarket-hack-item.elite {
+          border-left: 4px solid #8b5cf6;
+          background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.05));
+        }
+        
+        .blackmarket-hack-item.legendary {
+          border-left: 4px solid #f59e0b;
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.05));
+          box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
         }
       `}</style>
     </div>
