@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-10-11T22:41:16.275Z",
+  "timestamp": "2025-10-11T22:41:24.142Z",
   "version": "1.0",
   "tables": {
     "sessions": [
@@ -47423,6 +47423,87 @@
         "ip": "176.6.48.235",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
         "lastSeen": 1760222476238
+      },
+      {
+        "sessionId": "5NqJE1Ycmc9DtX4biUk7_nTJva9vuo4X",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760222477850
+      },
+      {
+        "sessionId": "5_2voEROB5tdQA2I6rKxL9eekUtbxMsr",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760222477851
+      },
+      {
+        "sessionId": "zr-ROH9MfIBWgL-gkr03Ija85N4uqP-s",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760222480088
+      },
+      {
+        "sessionId": "ooKHxVREOeyu17v8lbUT1c1owVhotFIV",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760222480092
+      },
+      {
+        "sessionId": "JiOw_IzaBB9ZMb7SLL73MNhqfAQolRF6",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760222480159
+      },
+      {
+        "sessionId": "Tm-r_YzOYSwarElXYDb0P-ACv_0aWI96",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760222480256
+      },
+      {
+        "sessionId": "BHK1GODvVP201gzdDG6dvwBykEaAHULS",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760222480260
+      },
+      {
+        "sessionId": "fHQRkfpgO28RiUvaYOfqNqXcYU18eBiF",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760222480335
+      },
+      {
+        "sessionId": "o_x72ehdA7lVg36jy2i6dzYJ0ccNvW_T",
+        "userId": null,
+        "username": null,
+        "avatar": null,
+        "ip": "176.6.48.235",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "lastSeen": 1760222484110
       }
     ],
     "notifications": [],
@@ -47470,8 +47551,8 @@
         "country": "Unknown",
         "city": "Unknown",
         "firstSeen": "2025-10-11T17:39:56.340Z",
-        "lastSeen": "2025-10-11T22:40:50.087Z",
-        "visitCount": 4269,
+        "lastSeen": "2025-10-11T22:40:50.312Z",
+        "visitCount": 4275,
         "isActive": 1,
         "browser": "Chrome",
         "countryCode": null,
@@ -47494,8 +47575,8 @@
         "country": "Unknown",
         "city": "Unknown",
         "firstSeen": "2025-10-11T17:39:56.335Z",
-        "lastSeen": "2025-10-11T22:40:50.087Z",
-        "visitCount": 4269,
+        "lastSeen": "2025-10-11T22:40:50.312Z",
+        "visitCount": 4275,
         "isActive": 1,
         "browser": "Chrome",
         "countryCode": null,
@@ -47518,8 +47599,8 @@
         "country": "Unknown",
         "city": "Unknown",
         "firstSeen": "2025-10-11T17:39:56.404Z",
-        "lastSeen": "2025-10-11T22:40:50.087Z",
-        "visitCount": 4269,
+        "lastSeen": "2025-10-11T22:40:50.312Z",
+        "visitCount": 4275,
         "isActive": 1,
         "browser": "Chrome",
         "countryCode": null,
@@ -47784,12 +47865,24 @@
         "ultima_visita": null,
         "notas": "asda",
         "agente_registro": "asdasd"
+      },
+      {
+        "id": 2,
+        "nombre": "asdasd",
+        "tipo": "Restaurante",
+        "propietario": "asd",
+        "ubicacion": "asdasd",
+        "estado": "activa",
+        "fecha_registro": "2025-10-11 22:41:24",
+        "ultima_visita": null,
+        "notas": "dasas",
+        "agente_registro": "asdas"
       }
     ],
     "visitas_empresas": [],
-    "poll_votes": [],
     "announcements": [],
-    "polls": []
+    "polls": [],
+    "poll_votes": []
   },
   "metadata": {
     "totalTables": 16,
