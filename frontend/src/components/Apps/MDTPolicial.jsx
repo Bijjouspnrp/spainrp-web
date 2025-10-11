@@ -12,7 +12,7 @@ import {
   FaMicrochip, FaSatelliteDish, FaBroadcastTower, FaWifi2,
   FaFingerprint as FaFingerprintIcon, FaQrcode, FaBarcode,
   FaKey, FaLock as FaLockIcon, FaUnlock as FaUnlockIcon,
-  FaShield as FaShieldIcon, FaCrosshairs, FaTarget,
+  FaShieldAlt as FaShieldIcon, FaCrosshairs, FaTarget,
   FaRadar as FaRadarIcon, FaSatellite as FaSatelliteIcon,
   FaWifi as FaWifiIcon, FaSignal as FaSignalIcon,
   FaBolt as FaBoltIcon, FaCog as FaCogIcon,

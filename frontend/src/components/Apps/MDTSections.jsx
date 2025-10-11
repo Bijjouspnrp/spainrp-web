@@ -741,11 +741,7 @@ export const InventarioSection = ({ data }) => {
       'bm_otter': 'Nutria',
       'bm_weasel': 'Comadreja',
       'bm_stoat': 'Armiño',
-      'bm_mink': 'Visón',
-      'bm_marten': 'Marta',
-      'bm_fisher': 'Pescador',
-      'bm_wolverine': 'Glotón',
-      'bm_badger': 'Tejón'
+      'bm_mink': 'Visón'
     };
     
     return itemNames[itemId] || itemId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
