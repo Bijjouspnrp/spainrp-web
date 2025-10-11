@@ -432,6 +432,8 @@ const STOCKS = [
   { name: 'Servicios', price: 210, color: '#f59e42' },
 ];
 export default function BlackMarket() {
+  console.log('[BlackMarket] 🚀 Componente iniciando...');
+  
   const [userBalance, setUserBalanceState] = useState(null);
   const [user, setUser] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
@@ -1472,8 +1474,11 @@ export default function BlackMarket() {
     }
   };
 
-// --- Bloque: feedback de carga centrado (spinner + texto) ---
-if (loading || roleChecking) {
+  // Debug logs para identificar el problema
+  console.log('[BlackMarket] 🔍 Estado actual:', { loading, roleChecking, user: !!user, authorized });
+  
+  // --- Bloque: feedback de carga centrado (spinner + texto) ---
+  if (loading || roleChecking) {
   // Si termina de cargar y no hay user, mostrar login en vez de spinner
   if (!loading && !roleChecking && !user) {
     return (
@@ -1543,8 +1548,8 @@ if (loading || roleChecking) {
     </div>
   );
 }
-// --- fin del bloque ---  // Mostrar la página con info de login y toast, sin redirigir
-if (!user) {
+  // --- fin del bloque ---  // Mostrar la página con info de login y toast, sin redirigir
+  if (!user) {
   return (
     <div className="blackmarket-hack-bg">
       <DiscordUserBar />
@@ -1625,8 +1630,12 @@ if (!user) {
     );
   }
 
-  return (
-    <div className={`blackmarket-hack-bg theme-${currentTheme}`}>
+  // Fallback para asegurar que siempre se renderice algo
+  console.log('[BlackMarket] 🎯 Renderizando contenido principal');
+  
+  try {
+    return (
+      <div className={`blackmarket-hack-bg theme-${currentTheme}`}>
       {roleChecking && <div className="role-check-bar" />}
       {roleToast && <div className="role-ok-toast">{roleToast}</div>}
       <DiscordUserBar />
@@ -3755,5 +3764,31 @@ if (!user) {
         }
       `}</style>
     </div>
-  );
+    );
+  } catch (error) {
+    console.error('[BlackMarket] ❌ Error en renderizado:', error);
+    return (
+      <div className="blackmarket-hack-bg">
+        <DiscordUserBar />
+        <div className="blackmarket-hack-header">
+          <FaLock size={32} style={{marginRight:12}} />
+          <span>BLACKMARKET SPAINRP</span>
+        </div>
+        <div style={{textAlign:'center',marginTop:'120px',color:'#fff'}}>
+          <h2>Error cargando el BlackMarket</h2>
+          <p>Por favor, recarga la página o contacta al administrador.</p>
+          <button
+            style={{background:'#7289da',color:'#fff',borderRadius:8,padding:'0.7rem 1.5rem',fontWeight:700,textDecoration:'none',fontSize:'1.2rem',border:'none',cursor:'pointer'}}
+            onClick={() => window.location.reload()}
+          >
+            Recargar página
+          </button>
+        </div>
+        <div className="blackmarket-hack-footer">
+          <FaSkull size={18} style={{marginRight:6}} />
+          <span>Error técnico - Contacta al administrador</span>
+        </div>
+      </div>
+    );
+  }
 }
