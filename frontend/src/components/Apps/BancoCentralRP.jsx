@@ -637,13 +637,42 @@ const BancoCentralRP = () => {
             </div>
             <div className="card-back">
               <div className="card-stripe"></div>
-              <div className="card-signature">
-                <span className="label">FIRMA</span>
-                <div className="signature-line"></div>
+              <div className="card-magnetic-stripe"></div>
+              <div className="card-hologram">
+                <div className="hologram-pattern"></div>
+                <div className="hologram-text">SpainRP</div>
               </div>
-              <div className="card-cvv">
-                <span className="label">CVV</span>
-                <span className="cvv-number">123</span>
+              <div className="card-signature-section">
+                <div className="card-signature">
+                  <span className="label">AUTHORIZED SIGNATURE</span>
+                  <div className="signature-line">
+                    <div className="signature-pattern"></div>
+                  </div>
+                </div>
+                <div className="card-cvv">
+                  <span className="label">CVV</span>
+                  <div className="cvv-box">
+                    <span className="cvv-number">123</span>
+                  </div>
+                </div>
+              </div>
+              <div className="card-contact-info">
+                <div className="contact-line">
+                  <span className="contact-label">CALL</span>
+                  <span className="contact-value">+34 900 123 456</span>
+                </div>
+                <div className="contact-line">
+                  <span className="contact-label">WEB</span>
+                  <span className="contact-value">www.spainrp-bank.com</span>
+                </div>
+              </div>
+              <div className="card-security-features">
+                <div className="security-chip-small"></div>
+                <div className="security-dots">
+                  <span className="dot"></span>
+                  <span className="dot"></span>
+                  <span className="dot"></span>
+                </div>
               </div>
             </div>
           </div>
