@@ -1,10 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   FaShieldAlt, FaUser, FaSearch, FaFileAlt, FaExclamationTriangle, 
   FaCheckCircle, FaTimes, FaEye, FaEdit, FaTrash, FaPlus, 
   FaCrown, FaGavel, FaIdCard, FaMoneyBillWave, FaList, 
   FaTrophy, FaLock, FaUnlock, FaCarCrash,
-  FaUserShield, FaDatabase, FaClipboardList, FaHistory
+  FaUserShield, FaDatabase, FaClipboardList, FaHistory,
+  FaRadar, FaSatellite, FaFingerprint, FaBrain, FaRobot,
+  FaWifi, FaSignal, FaBolt, FaCog, FaGlobe, FaShieldVirus,
+  FaCctv, FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock,
+  FaChartLine, FaUsers, FaCar, FaBuilding, FaNewspaper,
+  FaMicrochip, FaSatelliteDish, FaBroadcastTower, FaWifi2,
+  FaFingerprint as FaFingerprintIcon, FaQrcode, FaBarcode,
+  FaKey, FaLock as FaLockIcon, FaUnlock as FaUnlockIcon,
+  FaShield as FaShieldIcon, FaCrosshairs, FaTarget,
+  FaRadar as FaRadarIcon, FaSatellite as FaSatelliteIcon,
+  FaWifi as FaWifiIcon, FaSignal as FaSignalIcon,
+  FaBolt as FaBoltIcon, FaCog as FaCogIcon,
+  FaGlobe as FaGlobeIcon, FaShieldVirus as FaShieldVirusIcon
 } from 'react-icons/fa';
 import { apiUrl } from '../../utils/api';
 import './MDTPolicial.css';
@@ -14,6 +26,266 @@ import {
 } from './MDTSections';
 import CNISection from './CNISection';
 
+// Componente de tarjeta de identificación policial animada
+const PoliceIDCard = ({ user, isPolice, isCNI, onFlip }) => {
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleFlip = () => {
+    setIsFlipped(!isFlipped);
+    if (onFlip) onFlip();
+  };
+
+  return (
+    <div 
+      className={`police-id-card ${isFlipped ? 'flipped' : ''} ${isHovered ? 'hovered' : ''}`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onClick={handleFlip}
+    >
+      {/* Frente de la tarjeta */}
+      <div className="id-card-front">
+        <div className="id-card-header">
+          <div className="police-badge">
+            <FaShieldAlt />
+            <span>POLICÍA NACIONAL</span>
+          </div>
+          <div className="security-level">
+            <div className="security-dots">
+              <span className="dot active"></span>
+              <span className="dot active"></span>
+              <span className="dot active"></span>
+            </div>
+            <span>NIVEL 3</span>
+          </div>
+        </div>
+        
+        <div className="id-card-content">
+          <div className="officer-photo">
+            <div className="photo-container">
+              <div className="photo-placeholder">
+                <FaUserShield />
+              </div>
+              <div className="photo-overlay">
+                <FaFingerprintIcon />
+              </div>
+            </div>
+          </div>
+          
+          <div className="officer-info">
+            <div className="officer-name">
+              <h3>{user?.username || 'OFICIAL'}</h3>
+              <span className="badge-number">#{user?.id?.slice(-6) || '000000'}</span>
+            </div>
+            
+            <div className="officer-details">
+              <div className="detail-row">
+                <span className="label">RANGO:</span>
+                <span className="value">
+                  {isCNI ? 'AGENTE CNI' : isPolice ? 'POLICÍA' : 'CIUDADANO'}
+                </span>
+              </div>
+              <div className="detail-row">
+                <span className="label">DEPARTAMENTO:</span>
+                <span className="value">MDT CENTRAL</span>
+              </div>
+              <div className="detail-row">
+                <span className="label">ESTADO:</span>
+                <span className={`status ${isPolice ? 'active' : 'inactive'}`}>
+                  {isPolice ? 'ACTIVO' : 'INACTIVO'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="id-card-footer">
+          <div className="qr-code">
+            <FaQrcode />
+          </div>
+          <div className="expiry-date">
+            <span>VÁLIDO HASTA</span>
+            <span>12/25</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Reverso de la tarjeta */}
+      <div className="id-card-back">
+        <div className="back-header">
+          <div className="police-logo">
+            <FaShieldAlt />
+            <span>POLICÍA NACIONAL</span>
+          </div>
+        </div>
+        
+        <div className="back-content">
+          <div className="magnetic-stripe"></div>
+          
+          <div className="back-info">
+            <div className="security-features">
+              <h4>CARACTERÍSTICAS DE SEGURIDAD</h4>
+              <div className="features-grid">
+                <div className="feature-item">
+                  <FaMicrochip />
+                  <span>Chip de Seguridad</span>
+                </div>
+                <div className="feature-item">
+                  <FaFingerprintIcon />
+                  <span>Biometría</span>
+                </div>
+                <div className="feature-item">
+                  <FaQrcode />
+                  <span>Código QR</span>
+                </div>
+                <div className="feature-item">
+                  <FaShieldIcon />
+                  <span>Encriptación</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="contact-info">
+              <div className="contact-item">
+                <FaPhone />
+                <span>+34 900 123 456</span>
+              </div>
+              <div className="contact-item">
+                <FaEnvelope />
+                <span>mdt@policia.es</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Componente de terminal de comandos animado
+const CommandTerminal = ({ isActive, onCommand }) => {
+  const [command, setCommand] = useState('');
+  const [history, setHistory] = useState([]);
+  const terminalRef = useRef(null);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (command.trim()) {
+      setHistory(prev => [...prev, { command, timestamp: new Date() }]);
+      if (onCommand) onCommand(command);
+      setCommand('');
+    }
+  };
+
+  return (
+    <div className={`command-terminal ${isActive ? 'active' : ''}`}>
+      <div className="terminal-header">
+        <div className="terminal-controls">
+          <span className="control close"></span>
+          <span className="control minimize"></span>
+          <span className="control maximize"></span>
+        </div>
+        <div className="terminal-title">MDT COMMAND INTERFACE</div>
+      </div>
+      
+      <div className="terminal-body" ref={terminalRef}>
+        <div className="terminal-output">
+          {history.map((item, index) => (
+            <div key={index} className="terminal-line">
+              <span className="prompt">mdt@police:~$</span>
+              <span className="command">{item.command}</span>
+              <span className="timestamp">
+                {item.timestamp.toLocaleTimeString()}
+              </span>
+            </div>
+          ))}
+        </div>
+        
+        <form onSubmit={handleSubmit} className="terminal-input">
+          <span className="prompt">mdt@police:~$</span>
+          <input
+            type="text"
+            value={command}
+            onChange={(e) => setCommand(e.target.value)}
+            placeholder="Ingresa comando..."
+            className="command-input"
+            autoFocus
+          />
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// Componente de radar de actividad
+const ActivityRadar = ({ isActive }) => {
+  const [scans, setScans] = useState([]);
+  const radarRef = useRef(null);
+
+  useEffect(() => {
+    if (!isActive) return;
+
+    const interval = setInterval(() => {
+      const newScan = {
+        id: Date.now(),
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        intensity: Math.random() * 100
+      };
+      setScans(prev => [...prev.slice(-10), newScan]);
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [isActive]);
+
+  return (
+    <div className={`activity-radar ${isActive ? 'active' : ''}`}>
+      <div className="radar-header">
+        <FaRadarIcon />
+        <span>RADAR DE ACTIVIDAD</span>
+      </div>
+      
+      <div className="radar-display" ref={radarRef}>
+        <div className="radar-grid">
+          <div className="grid-line horizontal"></div>
+          <div className="grid-line vertical"></div>
+          <div className="grid-line diagonal-1"></div>
+          <div className="grid-line diagonal-2"></div>
+        </div>
+        
+        <div className="radar-center">
+          <div className="center-dot"></div>
+        </div>
+        
+        {scans.map(scan => (
+          <div
+            key={scan.id}
+            className="radar-scan"
+            style={{
+              left: `${scan.x}%`,
+              top: `${scan.y}%`,
+              '--intensity': `${scan.intensity}%`
+            }}
+          >
+            <div className="scan-pulse"></div>
+          </div>
+        ))}
+      </div>
+      
+      <div className="radar-stats">
+        <div className="stat">
+          <span className="label">ESCANEOS:</span>
+          <span className="value">{scans.length}</span>
+        </div>
+        <div className="stat">
+          <span className="label">ACTIVIDAD:</span>
+          <span className="value">ALTA</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const MDTPolicial = () => {
   const [user, setUser] = useState(null);
   const [isPolice, setIsPolice] = useState(false);
@@ -21,6 +293,8 @@ const MDTPolicial = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('citizen');
   const [error, setError] = useState(null);
+  const [terminalActive, setTerminalActive] = useState(false);
+  const [radarActive, setRadarActive] = useState(true);
 
   // Estados para ciudadanos
   const [citizenData, setCitizenData] = useState({
@@ -35,18 +309,6 @@ const MDTPolicial = () => {
     dnis: [],
     searchResults: [],
     selectedDNI: null
-  });
-
-  // Estados para formularios
-  const [searchForm, setSearchForm] = useState({
-    discordId: '',
-    dni: ''
-  });
-  const [multaForm, setMultaForm] = useState({
-    discordId: '',
-    motivo: '',
-    cantidad: '',
-    descripcion: ''
   });
 
   // Verificar autenticación y permisos
@@ -145,7 +407,7 @@ const MDTPolicial = () => {
         console.log('Datos del ranking recibidos:', topData);
         setPoliceData(prev => ({ 
           ...prev, 
-          topMultas: topData, // Pasar toda la estructura de datos
+          topMultas: topData,
           rankingMessage: topData.message || null
         }));
       } else {
@@ -175,86 +437,168 @@ const MDTPolicial = () => {
     }
   }, [user, isPolice]);
 
+  const handleCommand = (command) => {
+    console.log('Comando ejecutado:', command);
+    // Aquí se pueden añadir comandos específicos del MDT
+  };
+
   if (loading) {
     return (
-      <div className="mdt-loading">
-        <div className="mdt-spinner"></div>
-        <h2>Verificando permisos...</h2>
+      <div className="mdt-loading-screen">
+        <div className="loading-content">
+          <div className="police-logo">
+            <FaShieldAlt />
+            <span>MDT POLICIAL</span>
+          </div>
+          <div className="loading-spinner">
+            <div className="spinner-ring"></div>
+            <div className="spinner-ring"></div>
+            <div className="spinner-ring"></div>
+          </div>
+          <p>Inicializando sistema MDT...</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="mdt-error">
-        <FaExclamationTriangle size={48} />
-        <h2>Error de Acceso</h2>
-        <p>{error}</p>
-        <a href="/auth/login" className="mdt-btn mdt-btn-primary">
-          Iniciar Sesión
-        </a>
+      <div className="mdt-error-screen">
+        <div className="error-content">
+          <FaExclamationTriangle className="error-icon" />
+          <h2>Error de Acceso</h2>
+          <p>{error}</p>
+          <a href="/auth/login" className="mdt-btn mdt-btn-primary">
+            Iniciar Sesión
+          </a>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="mdt-container">
+      {/* Header con tarjeta de identificación */}
       <div className="mdt-header">
-        <div className="mdt-header-content">
+        <div className="header-left">
           <div className="mdt-logo">
             <FaShieldAlt />
-            <h1>MDT Policial</h1>
+            <div className="logo-text">
+              <span className="main-title">MDT POLICIAL</span>
+              <span className="subtitle">Sistema de Gestión Policial</span>
+            </div>
           </div>
-          <div className="mdt-user-info">
-            <span className="mdt-user-name">{user?.username}</span>
-            {isPolice && <span className="mdt-police-badge">POLICÍA</span>}
+        </div>
+        
+        <div className="header-center">
+          <PoliceIDCard 
+            user={user} 
+            isPolice={isPolice} 
+            isCNI={isCNI}
+            onFlip={() => console.log('Tarjeta volteada')}
+          />
+        </div>
+        
+        <div className="header-right">
+          <div className="system-controls">
+            <button 
+              className={`control-btn ${terminalActive ? 'active' : ''}`}
+              onClick={() => setTerminalActive(!terminalActive)}
+              title="Terminal de Comandos"
+            >
+              <FaCog />
+            </button>
+            <button 
+              className={`control-btn ${radarActive ? 'active' : ''}`}
+              onClick={() => setRadarActive(!radarActive)}
+              title="Radar de Actividad"
+            >
+              <FaRadarIcon />
+            </button>
+            <div className="status-indicators">
+              <div className="indicator online">
+                <span className="dot"></span>
+                <span>ONLINE</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="mdt-tabs">
-        <button 
-          className={`mdt-tab ${activeTab === 'citizen' ? 'active' : ''}`}
-          onClick={() => setActiveTab('citizen')}
-        >
-          <FaUser /> Ciudadano
-        </button>
-        {isPolice && (
+      {/* Panel de herramientas flotantes */}
+      <div className="mdt-toolbar">
+        <div className="toolbar-left">
           <button 
-            className={`mdt-tab ${activeTab === 'police' ? 'active' : ''}`}
-            onClick={() => setActiveTab('police')}
+            className={`toolbar-btn ${activeTab === 'citizen' ? 'active' : ''}`}
+            onClick={() => setActiveTab('citizen')}
           >
-            <FaShieldAlt /> Policía
+            <FaUser />
+            <span>Ciudadano</span>
           </button>
-        )}
-        {isCNI && (
-          <button 
-            className={`mdt-tab ${activeTab === 'cni' ? 'active' : ''}`}
-            onClick={() => setActiveTab('cni')}
-          >
-            <FaEye /> CNI
-          </button>
-        )}
+          {isPolice && (
+            <button 
+              className={`toolbar-btn ${activeTab === 'police' ? 'active' : ''}`}
+              onClick={() => setActiveTab('police')}
+            >
+              <FaShieldAlt />
+              <span>Policía</span>
+            </button>
+          )}
+          {isCNI && (
+            <button 
+              className={`toolbar-btn ${activeTab === 'cni' ? 'active' : ''}`}
+              onClick={() => setActiveTab('cni')}
+            >
+              <FaEye />
+              <span>CNI</span>
+            </button>
+          )}
+        </div>
+        
+        <div className="toolbar-right">
+          <div className="system-info">
+            <span className="time">{new Date().toLocaleTimeString()}</span>
+            <span className="date">{new Date().toLocaleDateString()}</span>
+          </div>
+        </div>
       </div>
 
-      <div className="mdt-content">
-        {activeTab === 'citizen' && (
-          <CitizenPanel 
-            data={citizenData} 
-            onRefresh={loadCitizenData}
-            userId={user?.id}
-          />
-        )}
-        {activeTab === 'police' && isPolice && (
-          <PolicePanel 
-            data={policeData}
-            onSearch={setPoliceData}
-            onRefresh={loadPoliceData}
-          />
-        )}
-        {activeTab === 'cni' && isCNI && (
-          <CNISection />
-        )}
+      {/* Contenido principal */}
+      <div className="mdt-main-content">
+        <div className="content-left">
+          {activeTab === 'citizen' && (
+            <CitizenPanel 
+              data={citizenData} 
+              onRefresh={loadCitizenData}
+              userId={user?.id}
+            />
+          )}
+          {activeTab === 'police' && isPolice && (
+            <PolicePanel 
+              data={policeData}
+              onSearch={setPoliceData}
+              onRefresh={loadPoliceData}
+            />
+          )}
+          {activeTab === 'cni' && isCNI && (
+            <CNISection />
+          )}
+        </div>
+        
+        <div className="content-right">
+          {/* Terminal de comandos */}
+          {terminalActive && (
+            <CommandTerminal 
+              isActive={terminalActive}
+              onCommand={handleCommand}
+            />
+          )}
+          
+          {/* Radar de actividad */}
+          {radarActive && (
+            <ActivityRadar isActive={radarActive} />
+          )}
+        </div>
       </div>
     </div>
   );
@@ -266,30 +610,43 @@ const CitizenPanel = ({ data, onRefresh, userId }) => {
 
   return (
     <div className="citizen-panel">
+      <div className="panel-header">
+        <h2>Panel de Ciudadano</h2>
+        <div className="panel-controls">
+          <button className="refresh-btn" onClick={onRefresh}>
+            <FaCog />
+          </button>
+        </div>
+      </div>
+      
       <div className="citizen-nav">
         <button 
-          className={`citizen-nav-btn ${activeSection === 'dni' ? 'active' : ''}`}
+          className={`nav-btn ${activeSection === 'dni' ? 'active' : ''}`}
           onClick={() => setActiveSection('dni')}
         >
-          <FaIdCard /> Mi DNI
+          <FaIdCard />
+          <span>Mi DNI</span>
         </button>
         <button 
-          className={`citizen-nav-btn ${activeSection === 'multas' ? 'active' : ''}`}
+          className={`nav-btn ${activeSection === 'multas' ? 'active' : ''}`}
           onClick={() => setActiveSection('multas')}
         >
-          <FaMoneyBillWave /> Multas
+          <FaMoneyBillWave />
+          <span>Multas</span>
         </button>
         <button 
-          className={`citizen-nav-btn ${activeSection === 'antecedentes' ? 'active' : ''}`}
+          className={`nav-btn ${activeSection === 'antecedentes' ? 'active' : ''}`}
           onClick={() => setActiveSection('antecedentes')}
         >
-          <FaHistory /> Antecedentes
+          <FaHistory />
+          <span>Antecedentes</span>
         </button>
         <button 
-          className={`citizen-nav-btn ${activeSection === 'inventario' ? 'active' : ''}`}
+          className={`nav-btn ${activeSection === 'inventario' ? 'active' : ''}`}
           onClick={() => setActiveSection('inventario')}
         >
-          <FaClipboardList /> Inventario
+          <FaClipboardList />
+          <span>Inventario</span>
         </button>
       </div>
 
@@ -309,30 +666,43 @@ const PolicePanel = ({ data, onSearch, onRefresh }) => {
 
   return (
     <div className="police-panel">
+      <div className="panel-header">
+        <h2>Panel Policial</h2>
+        <div className="panel-controls">
+          <button className="refresh-btn" onClick={onRefresh}>
+            <FaCog />
+          </button>
+        </div>
+      </div>
+      
       <div className="police-nav">
         <button 
-          className={`police-nav-btn ${activeSection === 'search' ? 'active' : ''}`}
+          className={`nav-btn ${activeSection === 'search' ? 'active' : ''}`}
           onClick={() => setActiveSection('search')}
         >
-          <FaSearch /> Buscar
+          <FaSearch />
+          <span>Buscar</span>
         </button>
         <button 
-          className={`police-nav-btn ${activeSection === 'multar' ? 'active' : ''}`}
+          className={`nav-btn ${activeSection === 'multar' ? 'active' : ''}`}
           onClick={() => setActiveSection('multar')}
         >
-          <FaGavel /> Multar
+          <FaGavel />
+          <span>Multar</span>
         </button>
         <button 
-          className={`police-nav-btn ${activeSection === 'arrestar' ? 'active' : ''}`}
+          className={`nav-btn ${activeSection === 'arrestar' ? 'active' : ''}`}
           onClick={() => setActiveSection('arrestar')}
         >
-          <FaLock /> Arrestar
+          <FaLock />
+          <span>Arrestar</span>
         </button>
         <button 
-          className={`police-nav-btn ${activeSection === 'ranking' ? 'active' : ''}`}
+          className={`nav-btn ${activeSection === 'ranking' ? 'active' : ''}`}
           onClick={() => setActiveSection('ranking')}
         >
-          <FaTrophy /> Ranking
+          <FaTrophy />
+          <span>Ranking</span>
         </button>
       </div>
 

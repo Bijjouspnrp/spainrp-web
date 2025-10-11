@@ -1,31 +1,152 @@
-/* MDT Policial - Estilo Moderno Policía Nacional/Guardia Civil */
+/* MDT Policial - Diseño Moderno y Tecnológico */
 
+/* Variables CSS para el tema policial */
+:root {
+  --police-primary: #1a1a2e;
+  --police-secondary: #16213e;
+  --police-accent: #0f3460;
+  --police-highlight: #00d4ff;
+  --police-danger: #ff4757;
+  --police-warning: #ffa502;
+  --police-success: #2ed573;
+  --police-text: #ffffff;
+  --police-text-secondary: #a0a0a0;
+  --police-border: rgba(0, 212, 255, 0.2);
+  --police-glow: rgba(0, 212, 255, 0.3);
+  --police-shadow: rgba(0, 0, 0, 0.5);
+  
+  /* Gradientes */
+  --police-gradient-primary: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  --police-gradient-accent: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+  --police-gradient-danger: linear-gradient(135deg, #ff4757 0%, #ff3742 100%);
+  --police-gradient-success: linear-gradient(135deg, #2ed573 0%, #20bf6b 100%);
+  
+  /* Efectos de partículas */
+  --particle-color-1: rgba(0, 212, 255, 0.1);
+  --particle-color-2: rgba(255, 71, 87, 0.1);
+  --particle-color-3: rgba(46, 213, 115, 0.1);
+}
+
+/* Reset y base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  background: var(--police-primary);
+  color: var(--police-text);
+  overflow-x: hidden;
+}
+
+/* Contenedor principal */
 .mdt-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-  color: #ffffff;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  padding-top: 80px; /* Compensar altura de la navbar */
+  background: var(--police-gradient-primary);
+  position: relative;
+  overflow: hidden;
 }
 
-.mdt-loading, .mdt-error {
+/* Efectos de partículas de fondo */
+.mdt-container::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(2px 2px at 20px 30px, var(--particle-color-1), transparent),
+    radial-gradient(2px 2px at 40px 70px, var(--particle-color-2), transparent),
+    radial-gradient(1px 1px at 90px 40px, var(--particle-color-3), transparent),
+    radial-gradient(1px 1px at 130px 80px, var(--particle-color-1), transparent);
+  background-repeat: repeat;
+  background-size: 150px 150px;
+  pointer-events: none;
+  z-index: 0;
+  animation: floatParticles 20s ease-in-out infinite;
+}
+
+@keyframes floatParticles {
+  0%, 100% { 
+    transform: translateY(0px) rotate(0deg);
+    opacity: 0.3;
+  }
+  50% { 
+    transform: translateY(-30px) rotate(180deg);
+    opacity: 0.8;
+  }
+}
+
+/* Pantalla de carga */
+.mdt-loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--police-gradient-primary);
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: calc(100vh - 80px); /* Restar altura de navbar */
-  text-align: center;
-  padding: 2rem;
+  z-index: 1000;
 }
 
-.mdt-spinner {
-  width: 50px;
-  height: 50px;
-  border: 3px solid #333;
-  border-top: 3px solid #4a90e2;
+.loading-content {
+  text-align: center;
+  color: var(--police-text);
+}
+
+.police-logo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 40px;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--police-highlight);
+}
+
+.police-logo svg {
+  font-size: 2.5rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.loading-spinner {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+}
+
+.spinner-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 3px solid transparent;
+  border-top: 3px solid var(--police-highlight);
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
+}
+
+.spinner-ring:nth-child(2) {
+  width: 60px;
+  height: 60px;
+  top: 10px;
+  left: 10px;
+  animation-delay: 0.2s;
+  border-top-color: var(--police-success);
+}
+
+.spinner-ring:nth-child(3) {
+  width: 40px;
+  height: 40px;
+  top: 20px;
+  left: 20px;
+  animation-delay: 0.4s;
+  border-top-color: var(--police-danger);
 }
 
 @keyframes spin {
@@ -33,2085 +154,1082 @@
   100% { transform: rotate(360deg); }
 }
 
-.mdt-header {
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
-  border-bottom: 3px solid #fbbf24;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
 }
 
-.mdt-header-content {
+/* Pantalla de error */
+.mdt-error-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--police-gradient-primary);
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
-  max-width: 1400px;
-  margin: 0 auto;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.error-content {
+  text-align: center;
+  color: var(--police-text);
+}
+
+.error-icon {
+  font-size: 4rem;
+  color: var(--police-danger);
+  margin-bottom: 20px;
+  animation: shake 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(10px); }
+}
+
+/* Header principal */
+.mdt-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 30px;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--police-border);
+  position: relative;
+  z-index: 10;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
 .mdt-logo {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 15px;
 }
 
 .mdt-logo svg {
-  font-size: 2rem;
-  color: #fbbf24;
+  font-size: 2.5rem;
+  color: var(--police-highlight);
+  animation: pulse 3s ease-in-out infinite;
 }
 
-.mdt-logo h1 {
-  margin: 0;
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #ffffff;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.mdt-user-info {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.mdt-user-name {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #ffffff;
-}
-
-.mdt-police-badge {
-  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-  color: #ffffff;
-  padding: 0.3rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
-}
-
-.mdt-tabs {
-  display: flex;
-  background: #2d2d2d;
-  border-bottom: 1px solid #404040;
-  padding: 0 2rem;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-.mdt-tab {
-  background: none;
-  border: none;
-  color: #9ca3af;
-  padding: 1rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  border-bottom: 3px solid transparent;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.mdt-tab:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.mdt-tab.active {
-  color: #4a90e2;
-  border-bottom-color: #4a90e2;
-  background: rgba(74, 144, 226, 0.1);
-}
-
-.mdt-content {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 2rem;
-}
-
-.mdt-section {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-}
-
-.mdt-section h3 {
-  margin: 0 0 1.5rem 0;
-  color: #4a90e2;
-  font-size: 1.3rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.mdt-no-data {
+.logo-text {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem;
-  text-align: center;
-  color: #9ca3af;
 }
 
-.mdt-no-data svg {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  opacity: 0.5;
+.main-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--police-text);
+  text-shadow: 0 0 10px var(--police-glow);
 }
 
-/* Navegación de Ciudadano */
-.citizen-nav, .police-nav {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-}
-
-.citizen-nav-btn, .police-nav-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  padding: 0.8rem 1.2rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
-}
-
-.citizen-nav-btn:hover, .police-nav-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
-}
-
-.citizen-nav-btn.active, .police-nav-btn.active {
-  background: #4a90e2;
-  border-color: #4a90e2;
-  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
-}
-
-/* DNI Interactivo - Contenedor Principal */
-.dni-section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.dni-controls {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.dni-flip-btn {
-  background: linear-gradient(135deg, #4a90e2, #3b82f6);
-  color: white;
-  border: none;
-  padding: 0.6rem 1rem;
-  border-radius: 8px;
+.subtitle {
   font-size: 0.9rem;
-  font-weight: 600;
+  color: var(--police-text-secondary);
+  letter-spacing: 1px;
+}
+
+.header-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.system-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.control-btn {
+  width: 45px;
+  height: 45px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(0, 212, 255, 0.1);
+  color: var(--police-highlight);
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
-}
-
-.dni-flip-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-}
-
-.dni-container {
-  perspective: 1000px;
-  display: flex;
   justify-content: center;
-  margin: 2rem 0;
-}
-
-.dni-card-interactive {
-  position: relative;
-  width: 100%;
-  max-width: 700px;
-  height: 440px;
-  transform-style: preserve-3d;
-  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-}
-
-.dni-card-interactive:hover {
-  transform: scale(1.02);
-}
-
-.dni-card-interactive.flipped {
-  transform: rotateY(180deg);
-}
-
-.dni-card-interactive.hovered {
-  transform: scale(1.05) rotateY(5deg);
-}
-
-.dni-card-interactive.flipped.hovered {
-  transform: scale(1.05) rotateY(175deg);
-}
-
-.dni-card-front,
-.dni-card-back {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  backface-visibility: hidden;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(220, 38, 38, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-.dni-card-back {
-  transform: rotateY(180deg);
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border: 2px solid #dc2626;
-}
-
-/* DNI Card Real - Frente */
-.dni-card-real {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border-radius: 12px;
-  padding: 0;
-  border: 2px solid #dc2626;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  max-width: 600px;
-  width: 100%;
-  margin: 0 auto;
+  font-size: 1.2rem;
   position: relative;
   overflow: hidden;
-  aspect-ratio: 1.6 / 1;
 }
 
-.dni-card-real::before {
+.control-btn::before {
   content: '';
   position: absolute;
   top: 0;
-  left: 0;
-  right: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.control-btn:hover::before {
+  left: 100%;
+}
+
+.control-btn:hover {
+  transform: translateY(-2px);
+  background: rgba(0, 212, 255, 0.2);
+  box-shadow: 0 5px 15px var(--police-glow);
+}
+
+.control-btn.active {
+  background: var(--police-gradient-accent);
+  color: white;
+  box-shadow: 0 0 20px var(--police-glow);
+}
+
+.status-indicators {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.indicator.online {
+  background: rgba(46, 213, 115, 0.1);
+  color: var(--police-success);
+  border: 1px solid rgba(46, 213, 115, 0.3);
+}
+
+.indicator .dot {
+  width: 8px;
   height: 8px;
-  background: linear-gradient(90deg, #dc2626 0%, #b91c1c 50%, #dc2626 100%);
-}
-
-.dni-header-real {
-  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-  color: white;
-  padding: 0.8rem 1.2rem;
-  text-align: center;
-  position: relative;
-  height: 60px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.dni-logo {
-  margin-bottom: 0.2rem;
-}
-
-.dni-logo-text {
-  font-size: 1.1rem;
-  font-weight: 900;
-  letter-spacing: 2px;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.dni-title {
-  margin-bottom: 0;
-}
-
-.dni-title-text {
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  opacity: 0.9;
-}
-
-.dni-content {
-  display: flex;
-  padding: 1rem 1.2rem;
-  gap: 1.2rem;
-  background: white;
-  height: calc(100% - 60px - 50px);
-  align-items: stretch;
-}
-
-.dni-photo-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 100px;
-  flex-shrink: 0;
-}
-
-.dni-photo-container {
-  width: 80px;
-  height: 100px;
-  border: 2px solid #dc2626;
-  border-radius: 6px;
-  overflow: hidden;
-  position: relative;
-  background: #f8f9fa;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.dni-photo {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.dni-photo-placeholder {
-  width: 100%;
-  height: 100%;
-  background: #e9ecef;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #6c757d;
-}
-
-.dni-number {
-  margin-top: 0.6rem;
-  text-align: center;
-}
-
-.dni-number-text {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #dc2626;
-  letter-spacing: 1px;
-  font-family: 'Courier New', monospace;
-}
-
-.dni-info-real {
-  flex: 1;
-  color: #212529;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.dni-name-section {
-  margin-bottom: 0.8rem;
-  padding-bottom: 0.6rem;
-  border-bottom: 2px solid #dc2626;
-}
-
-.dni-name-text {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #212529;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  line-height: 1.2;
-}
-
-.dni-roblox {
-  margin-top: 0.2rem;
-}
-
-.dni-roblox-text {
-  font-size: 0.8rem;
-  color: #6c757d;
-  font-style: italic;
-}
-
-.dni-details {
-  margin-bottom: 0.6rem;
-  flex: 1;
-}
-
-.dni-detail-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.3rem;
-  font-size: 0.8rem;
-  align-items: center;
-}
-
-.dni-detail-label {
-  font-weight: 700;
-  color: #495057;
-  min-width: 80px;
-  font-size: 0.75rem;
-}
-
-.dni-detail-value {
-  color: #212529;
-  font-weight: 500;
-  font-size: 0.8rem;
-  text-align: right;
-}
-
-.dni-dates {
-  border-top: 1px solid #dee2e6;
-  padding-top: 0.6rem;
-  margin-top: auto;
-}
-
-.dni-date-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.2rem;
-  font-size: 0.75rem;
-  align-items: center;
-}
-
-.dni-date-label {
-  font-weight: 600;
-  color: #6c757d;
-  min-width: 80px;
-  font-size: 0.7rem;
-}
-
-.dni-date-value {
-  color: #212529;
-  font-weight: 500;
-  font-size: 0.75rem;
-  text-align: right;
-}
-
-.dni-footer {
-  background: #f8f9fa;
-  padding: 0.6rem;
-  text-align: center;
-  border-top: 1px solid #dee2e6;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.dni-status-real {
-  font-size: 0.8rem;
-  font-weight: 700;
-  padding: 0.3rem 0.8rem;
-  border-radius: 15px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.dni-status-real.activo {
-  background: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-}
-
-.dni-status-real.arrestado {
-  background: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
-}
-
-/* DNI Reverso */
-.dni-back-header {
-  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-  color: white;
-  padding: 1rem 1.5rem;
-  text-align: center;
-  position: relative;
-  height: 60px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.dni-back-logo-text {
-  font-size: 1.2rem;
-  font-weight: 900;
-  letter-spacing: 2px;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-  margin-bottom: 0.2rem;
-}
-
-.dni-back-title-text {
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  opacity: 0.9;
-}
-
-.dni-back-content {
-  padding: 1.5rem;
-  background: white;
-  height: calc(100% - 60px - 60px);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.dni-back-info {
-  flex: 1;
-}
-
-.dni-back-section {
-  margin-bottom: 1.5rem;
-}
-
-.dni-back-section h4 {
-  color: #dc2626;
-  font-size: 1rem;
-  font-weight: 700;
-  margin: 0 0 0.8rem 0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 2px solid #dc2626;
-  padding-bottom: 0.3rem;
-}
-
-.dni-back-details {
-  display: grid;
-  gap: 0.6rem;
-}
-
-.dni-back-field {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.4rem 0;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.dni-back-field:last-child {
-  border-bottom: none;
-}
-
-.dni-back-label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #495057;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  min-width: 120px;
-}
-
-.dni-back-value {
-  font-size: 0.9rem;
-  color: #212529;
-  font-weight: 500;
-  text-align: right;
-}
-
-.dni-back-value.arrestado {
-  color: #dc2626;
-  font-weight: 700;
-}
-
-.dni-back-value.activo {
-  color: #10b981;
-  font-weight: 700;
-}
-
-.dni-back-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 0;
-  border-top: 2px solid #dc2626;
-  background: #f8f9fa;
-  height: 60px;
-}
-
-.dni-back-qr {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-}
-
-.qr-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  color: #6c757d;
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.dni-back-signature {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.3rem;
-}
-
-.dni-back-signature span {
-  font-size: 0.8rem;
-  color: #6c757d;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.signature-line {
-  width: 120px;
-  height: 2px;
-  background: #dc2626;
-  border-radius: 1px;
-}
-
-/* DNI Card (fallback) */
-.dni-card {
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
-  border-radius: 12px;
-  padding: 1.5rem;
-  border: 2px solid #fbbf24;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-}
-
-.dni-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.dni-header h4 {
-  margin: 0;
-  font-size: 1.5rem;
-  color: #fbbf24;
-  font-weight: 700;
-}
-
-.dni-status {
-  padding: 0.3rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.dni-status.activo {
-  background: #10b981;
-  color: #ffffff;
-}
-
-.dni-status.arrestado {
-  background: #dc2626;
-  color: #ffffff;
-}
-
-.dni-info {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
-}
-
-.dni-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.dni-field label {
-  font-size: 0.9rem;
-  color: #9ca3af;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.dni-field span {
-  font-size: 1.1rem;
-  color: #ffffff;
-  font-weight: 500;
-}
-
-/* Multas */
-.multas-summary {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.summary-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1rem;
-}
-
-.summary-stats .stat-item {
-  text-align: center;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
-}
-
-.summary-stats .stat-item:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: translateY(-2px);
-}
-
-.summary-stats .stat-label {
-  display: block;
-  font-size: 0.9rem;
-  color: #9ca3af;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.summary-stats .stat-value {
-  display: block;
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-top: 0.5rem;
-}
-
-.summary-stats .stat-value.success {
-  color: #10b981;
-}
-
-.summary-stats .stat-value.warning {
-  color: #f59e0b;
-}
-
-.summary-stats .stat-value.danger {
-  color: #dc2626;
-}
-
-/* Mensajes de multas */
-.multas-message {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  padding: 1.5rem;
-  border-radius: 12px;
-  margin-bottom: 1.5rem;
-  border: 2px solid;
-  animation: slideInDown 0.5s ease-out;
-}
-
-.multas-message.good-citizen {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
-  border-color: #10b981;
-  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.2);
-}
-
-.multas-message.warning-citizen {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
-  border-color: #f59e0b;
-  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.2);
-}
-
-.message-icon {
-  font-size: 2rem;
-  flex-shrink: 0;
-  margin-top: 0.2rem;
-}
-
-.multas-message.good-citizen .message-icon {
-  color: #10b981;
-}
-
-.multas-message.warning-citizen .message-icon {
-  color: #f59e0b;
-}
-
-.message-content {
-  flex: 1;
-}
-
-.message-content h4 {
-  margin: 0 0 0.8rem 0;
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #ffffff;
-}
-
-.message-content p {
-  margin: 0 0 0.8rem 0;
-  color: #e5e7eb;
-  line-height: 1.6;
-  font-size: 1rem;
-}
-
-.message-content .warning-text {
-  background: rgba(220, 38, 38, 0.1);
-  border: 1px solid rgba(220, 38, 38, 0.3);
-  border-radius: 8px;
-  padding: 1rem;
-  margin: 1rem 0;
-  color: #fca5a5;
-  font-weight: 500;
-}
-
-.message-stats {
-  display: flex;
-  gap: 1.5rem;
-  margin-top: 1rem;
-  flex-wrap: wrap;
-}
-
-.message-stats span {
-  background: rgba(16, 185, 129, 0.2);
-  color: #10b981;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.message-actions {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.action-text {
-  color: #9ca3af;
-  font-style: italic;
-  font-size: 0.9rem;
-}
-
-@keyframes slideInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.multas-list {
-  display: grid;
-  gap: 1rem;
-}
-
-.multa-card {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 1.5rem;
-  border-left: 4px solid #dc2626;
-  transition: all 0.3s ease;
-}
-
-.multa-card.pagada {
-  border-left-color: #10b981;
-  opacity: 0.7;
-}
-
-.multa-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-}
-
-.multa-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.multa-header h4 {
-  margin: 0;
-  color: #ffffff;
-  font-size: 1.2rem;
-}
-
-.multa-status {
-  padding: 0.3rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.multa-status.pendiente {
-  background: #f59e0b;
-  color: #ffffff;
-}
-
-.multa-status.pagada {
-  background: #10b981;
-  color: #ffffff;
-}
-
-.multa-info {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.multa-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.multa-field label {
-  font-size: 0.9rem;
-  color: #9ca3af;
-  font-weight: 600;
-}
-
-.multa-field span {
-  color: #ffffff;
-  font-weight: 500;
-}
-
-.multa-amount {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #fbbf24;
-}
-
-/* Antecedentes */
-.antecedentes-list {
-  display: grid;
-  gap: 1rem;
-}
-
-.antecedente-card {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 1.5rem;
-  border-left: 4px solid #8b5cf6;
-}
-
-.antecedente-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.antecedente-header h4 {
-  margin: 0;
-  color: #ffffff;
-  font-size: 1.1rem;
-}
-
-.antecedente-fecha {
-  color: #9ca3af;
-  font-size: 0.9rem;
-}
-
-.antecedente-info {
-  display: grid;
-  gap: 0.8rem;
-}
-
-.antecedente-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.antecedente-field label {
-  font-size: 0.9rem;
-  color: #9ca3af;
-  font-weight: 600;
-}
-
-.antecedente-field span {
-  color: #ffffff;
-}
-
-.gravedad {
-  padding: 0.2rem 0.6rem;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.gravedad.leve {
-  background: #f59e0b;
-  color: #ffffff;
-}
-
-.gravedad.media {
-  background: #f97316;
-  color: #ffffff;
-}
-
-.gravedad.grave {
-  background: #dc2626;
-  color: #ffffff;
-}
-
-/* Inventario */
-.inventario-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1rem;
-}
-
-.inventario-item {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  transition: all 0.3s ease;
-}
-
-.inventario-item:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: translateY(-2px);
-}
-
-.item-icon {
-  font-size: 1.5rem;
-  color: #4a90e2;
-}
-
-.item-info h4 {
-  margin: 0 0 0.3rem 0;
-  color: #ffffff;
-  font-size: 1rem;
-}
-
-.item-info p {
-  margin: 0;
-  color: #9ca3af;
-  font-size: 0.9rem;
-}
-
-.item-id {
-  font-family: 'Courier New', monospace !important;
-  font-size: 0.8rem !important;
-  color: #6b7280 !important;
-  background: rgba(107, 114, 128, 0.1) !important;
-  padding: 0.2rem 0.5rem !important;
-  border-radius: 4px !important;
-  margin-top: 0.5rem !important;
-  display: inline-block !important;
-}
-
-/* Formularios */
-.search-form, .multa-form, .arrest-form {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.search-inputs {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.form-group label {
-  color: #ffffff;
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-
-.mdt-input, .mdt-select, .mdt-textarea {
-  background: #1a1a1a;
-  border: 1px solid #4b5563;
-  color: #ffffff;
-  padding: 0.8rem;
-  border-radius: 6px;
-  font-size: 1rem;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.mdt-input:focus, .mdt-select:focus, .mdt-textarea:focus {
-  outline: none;
-  border-color: #3b82f6;
-  background: #2a2a2a;
-  color: #ffffff;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.mdt-textarea {
-  resize: vertical;
-  min-height: 80px;
-}
-
-.mdt-input::placeholder, .mdt-textarea::placeholder {
-  color: #9ca3af;
-  opacity: 1;
-}
-
-.mdt-select option {
-  background: #1a1a1a;
-  color: #ffffff;
-  padding: 0.5rem;
-}
-
-/* Botones */
-.mdt-btn {
-  background: #4a90e2;
-  color: #ffffff;
-  border: none;
-  padding: 0.8rem 1.5rem;
-  border-radius: 6px;
-  font-size: 1rem;
-  font-weight: 600;
+  border-radius: 50%;
+  background: var(--police-success);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Tarjeta de identificación policial */
+.police-id-card {
+  width: 350px;
+  height: 220px;
+  perspective: 1000px;
   cursor: pointer;
   transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  text-decoration: none;
 }
 
-.mdt-btn:hover {
-  background: #3b82f6;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+.police-id-card:hover {
+  transform: translateY(-5px);
 }
 
-.mdt-btn:disabled {
-  background: #6b7280;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
+.police-id-card.flipped {
+  transform: rotateY(180deg);
 }
 
-.mdt-btn-primary {
-  background: #4a90e2;
+.police-id-card.hovered {
+  transform: translateY(-10px) scale(1.02);
 }
 
-.mdt-btn-success {
-  background: #10b981;
-}
-
-.mdt-btn-danger {
-  background: #dc2626;
-}
-
-.mdt-btn-warning {
-  background: #f59e0b;
-}
-
-/* Resultados de búsqueda */
-.search-results {
-  margin-top: 1.5rem;
-}
-
-.result-card {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 1.5rem;
-  border-left: 4px solid #4a90e2;
-}
-
-.result-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.result-header h5 {
-  margin: 0;
-  color: #ffffff;
-  font-size: 1.2rem;
-}
-
-.result-type {
-  background: #4a90e2;
-  color: #ffffff;
-  padding: 0.3rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.result-info {
-  display: grid;
-  gap: 0.8rem;
-}
-
-.result-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.result-field label {
-  color: #9ca3af;
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-
-.result-field span {
-  color: #ffffff;
-}
-
-/* Ranking */
-.ranking-list {
-  display: grid;
-  gap: 1rem;
-}
-
-.ranking-item {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  transition: all 0.3s ease;
-  min-height: 80px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.ranking-item.top {
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(251, 191, 36, 0.05) 100%);
-  border: 1px solid rgba(251, 191, 36, 0.3);
-}
-
-.ranking-item:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: translateY(-2px);
-  border-color: rgba(251, 191, 36, 0.5);
-}
-
-.ranking-position {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #fbbf24;
-  min-width: 50px;
-  text-align: center;
-  background: rgba(251, 191, 36, 0.1);
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.ranking-avatar {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  flex-shrink: 0;
-}
-
-.ranking-avatar-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.ranking-avatar-placeholder {
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #9ca3af;
-}
-
-.ranking-position .gold {
-  color: #fbbf24;
-}
-
-.ranking-position .silver {
-  color: #9ca3af;
-}
-
-.ranking-position .bronze {
-  color: #cd7f32;
-}
-
-.ranking-position .position {
-  color: #6b7280;
-}
-
-.ranking-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.ranking-info h4 {
-  margin: 0 0 0.3rem 0;
-  color: #ffffff;
-  font-size: 1.2rem;
-  font-weight: 600;
-}
-
-.ranking-info p {
-  margin: 0;
-  color: #9ca3af;
-  font-size: 0.9rem;
-}
-
-.ranking-discord-id {
-  font-size: 0.85rem !important;
-  color: #6b7280 !important;
-  font-family: 'Courier New', monospace;
-  margin: 0.2rem 0 !important;
-  word-break: break-all;
-}
-
-.ranking-stats {
-  font-weight: 600 !important;
-  color: #fbbf24 !important;
-  font-size: 0.95rem !important;
-  line-height: 1.4 !important;
-  margin-top: 0.3rem !important;
-}
-
-/* Mensajes de feedback */
-.result-message {
-  margin-top: 1rem;
-  padding: 1rem;
-  border-radius: 8px;
-  font-weight: 600;
-  text-align: center;
-}
-
-.result-message.success {
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid #10b981;
-  color: #10b981;
-}
-
-.result-message.error {
-  background: rgba(220, 38, 38, 0.1);
-  border: 1px solid #dc2626;
-  color: #dc2626;
-}
-
-.search-error {
-  margin-top: 1rem;
-  padding: 1rem;
-  background: rgba(220, 38, 38, 0.1);
-  border: 1px solid #dc2626;
-  border-radius: 8px;
-  color: #dc2626;
-  text-align: center;
-}
-
-.search-error p {
-  margin: 0;
-  font-weight: 600;
-}
-
-.antecedentes-details {
-  margin-top: 1rem;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  border-left: 4px solid #8b5cf6;
-}
-
-.antecedentes-details h6 {
-  margin: 0 0 0.5rem 0;
-  color: #8b5cf6;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.antecedentes-details ul {
-  margin: 0;
-  padding-left: 1.5rem;
-  color: #ffffff;
-}
-
-.antecedentes-details li {
-  margin-bottom: 0.3rem;
-  font-size: 0.9rem;
-}
-
-.status-success {
-  color: #10b981;
-  font-weight: 600;
-}
-
-.ranking-message {
-  font-size: 0.9rem;
-  color: #9ca3af;
-  margin-top: 0.5rem;
-  font-style: italic;
-}
-
-/* Nuevos estilos para ranking mejorado */
-.ranking-stats-overview {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1rem;
-}
-
-.stat-item {
-  text-align: center;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.stat-label {
-  display: block;
-  font-size: 0.9rem;
-  color: #9ca3af;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-}
-
-.stat-value {
-  display: block;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #fbbf24;
-}
-
-.ranking-tabs {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.ranking-tab {
-  background: transparent;
-  border: none;
-  color: #9ca3af;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px 8px 0 0;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  border-bottom: 2px solid transparent;
-}
-
-.ranking-tab:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: #ffffff;
-}
-
-.ranking-tab.active {
-  background: rgba(251, 191, 36, 0.1);
-  color: #fbbf24;
-  border-bottom-color: #fbbf24;
-}
-
-.ranking-tab-content {
-  animation: fadeIn 0.3s ease;
-}
-
-.ranking-header {
-  margin-bottom: 1.5rem;
-  text-align: center;
-}
-
-.ranking-header h4 {
-  color: #ffffff;
-  font-size: 1.3rem;
-  margin: 0 0 0.5rem 0;
-  font-weight: 600;
-}
-
-.ranking-subtitle {
-  color: #9ca3af;
-  font-size: 0.9rem;
-  margin: 0;
-  font-style: italic;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Búsqueda mejorada */
-.dni-result {
-  border-left-color: #fbbf24;
-}
-
-.multas-result {
-  border-left-color: #dc2626;
-}
-
-.antecedentes-result {
-  border-left-color: #8b5cf6;
-}
-
-.inventario-result {
-  border-left-color: #10b981;
-}
-
-.summary-result {
-  border-left-color: #4a90e2;
-  background: rgba(74, 144, 226, 0.05);
-}
-
-.multa-item {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
-  padding: 0.8rem;
-  margin-bottom: 0.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.multa-info {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.multa-amount {
-  font-weight: 700;
-  color: #fbbf24;
-  font-size: 1.1rem;
-}
-
-.multa-motivo {
-  color: #ffffff;
-  flex: 1;
-  min-width: 150px;
-}
-
-.antecedente-item {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
-  padding: 0.8rem;
-  margin-bottom: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.antecedente-tipo {
-  font-weight: 600;
-  color: #8b5cf6;
-  font-size: 0.9rem;
-}
-
-.antecedente-desc {
-  color: #ffffff;
-  font-size: 0.9rem;
-}
-
-.inventario-item {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
-  padding: 0.6rem;
-  margin-bottom: 0.4rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.item-name {
-  color: #ffffff;
-  font-weight: 500;
-}
-
-.item-quantity {
-  color: #10b981;
-  font-weight: 600;
-  background: rgba(16, 185, 129, 0.1);
-  padding: 0.2rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.8rem;
-}
-
-.more-items {
-  text-align: center;
-  color: #9ca3af;
-  font-style: italic;
-  font-size: 0.9rem;
-  margin-top: 0.5rem;
-  padding: 0.5rem;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
-}
-
-.summary-info {
-  display: grid;
-  gap: 0.8rem;
-}
-
-.summary-field {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.summary-field:last-child {
-  border-bottom: none;
-}
-
-.summary-field label {
-  color: #9ca3af;
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-
-.summary-field span {
-  color: #ffffff;
-  font-weight: 500;
-}
-
-/* Autocompletado */
-.search-input-container {
-  position: relative;
-  flex: 1;
-}
-
-.search-loading {
+.police-id-card > div {
   position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  backface-visibility: hidden;
+  transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(0, 212, 255, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.id-card-front {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.id-card-back {
+  background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 50%, #16213e 100%);
+  padding: 20px;
+  transform: rotateY(180deg);
+}
+
+.id-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.police-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--police-highlight);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.police-badge svg {
+  font-size: 1.2rem;
+}
+
+.security-level {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.7rem;
+  color: var(--police-text-secondary);
+}
+
+.security-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.security-dots .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--police-highlight);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.security-dots .dot.active {
+  background: var(--police-success);
+}
+
+.id-card-content {
+  display: flex;
+  gap: 20px;
+  flex: 1;
+}
+
+.officer-photo {
+  width: 80px;
+  height: 80px;
+  position: relative;
+}
+
+.photo-container {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  background: rgba(0, 212, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.photo-placeholder {
+  font-size: 2rem;
+  color: var(--police-highlight);
+}
+
+.photo-overlay {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  width: 20px;
+  height: 20px;
+  background: var(--police-success);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  color: white;
+}
+
+.officer-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.officer-name h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--police-text);
+  margin-bottom: 5px;
+}
+
+.badge-number {
+  font-size: 0.8rem;
+  color: var(--police-text-secondary);
+  font-family: 'Courier New', monospace;
+}
+
+.officer-details {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+}
+
+.detail-row .label {
+  color: var(--police-text-secondary);
+  font-weight: 600;
+}
+
+.detail-row .value {
+  color: var(--police-text);
+  font-weight: 500;
+}
+
+.status.active {
+  color: var(--police-success);
+}
+
+.status.inactive {
+  color: var(--police-danger);
+}
+
+.id-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.qr-code {
+  font-size: 1.5rem;
+  color: var(--police-highlight);
+}
+
+.expiry-date {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 0.7rem;
+  color: var(--police-text-secondary);
+}
+
+/* Reverso de la tarjeta */
+.back-header {
+  margin-bottom: 15px;
+}
+
+.police-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--police-highlight);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.back-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.magnetic-stripe {
+  height: 20px;
+  background: linear-gradient(90deg, #000 0%, #333 50%, #000 100%);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.magnetic-stripe::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: stripeShine 2s ease-in-out infinite;
+}
+
+@keyframes stripeShine {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.back-info {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.security-features h4 {
+  font-size: 0.8rem;
+  color: var(--police-text-secondary);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  color: var(--police-text);
+}
+
+.feature-item svg {
+  font-size: 0.9rem;
+  color: var(--police-highlight);
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.7rem;
+  color: var(--police-text-secondary);
+}
+
+.contact-item svg {
+  font-size: 0.8rem;
+  color: var(--police-highlight);
+}
+
+/* Toolbar */
+.mdt-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid var(--police-border);
+  position: relative;
   z-index: 10;
 }
 
-.search-spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid #333;
-  border-top: 2px solid #4a90e2;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+.toolbar-left {
+  display: flex;
+  gap: 10px;
 }
 
-.suggestions-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: rgba(45, 45, 45, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  z-index: 1000;
-  max-height: 200px;
-  overflow-y: auto;
-  backdrop-filter: blur(10px);
-}
-
-.suggestion-item {
+.toolbar-btn {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
-  padding: 0.8rem 1rem;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(0, 212, 255, 0.1);
+  color: var(--police-text-secondary);
   cursor: pointer;
-  transition: background-color 0.2s ease;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.suggestion-item:last-child {
-  border-bottom: none;
-}
-
-.suggestion-item:hover {
-  background: rgba(74, 144, 226, 0.2);
-}
-
-.suggestion-type {
-  font-size: 1.2rem;
-  min-width: 24px;
-  text-align: center;
-}
-
-.suggestion-label {
-  color: #ffffff;
+  transition: all 0.3s ease;
   font-size: 0.9rem;
-  flex: 1;
-  white-space: nowrap;
+  font-weight: 500;
+  position: relative;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-/* Responsive */
+.toolbar-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.toolbar-btn:hover::before {
+  left: 100%;
+}
+
+.toolbar-btn:hover {
+  background: rgba(0, 212, 255, 0.2);
+  color: var(--police-text);
+  transform: translateY(-2px);
+}
+
+.toolbar-btn.active {
+  background: var(--police-gradient-accent);
+  color: white;
+  box-shadow: 0 5px 15px var(--police-glow);
+}
+
+.toolbar-btn svg {
+  font-size: 1.1rem;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.system-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 0.8rem;
+  color: var(--police-text-secondary);
+}
+
+.time {
+  font-weight: 700;
+  color: var(--police-highlight);
+}
+
+/* Contenido principal */
+.mdt-main-content {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 20px;
+  padding: 20px 30px;
+  min-height: calc(100vh - 200px);
+  position: relative;
+  z-index: 5;
+}
+
+.content-left {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  border: 1px solid var(--police-border);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+.content-right {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Terminal de comandos */
+.command-terminal {
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 12px;
+  border: 1px solid var(--police-border);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.command-terminal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.terminal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.5);
+  border-bottom: 1px solid var(--police-border);
+}
+
+.terminal-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.control {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.control.close { background: var(--police-danger); }
+.control.minimize { background: var(--police-warning); }
+.control.maximize { background: var(--police-success); }
+
+.terminal-title {
+  font-size: 0.8rem;
+  color: var(--police-text-secondary);
+  font-weight: 600;
+}
+
+.terminal-body {
+  padding: 16px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  color: var(--police-text);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.terminal-output {
+  margin-bottom: 10px;
+}
+
+.terminal-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.prompt {
+  color: var(--police-highlight);
+  font-weight: 700;
+}
+
+.command {
+  color: var(--police-text);
+}
+
+.timestamp {
+  color: var(--police-text-secondary);
+  font-size: 0.7rem;
+  margin-left: auto;
+}
+
+.terminal-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.command-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--police-text);
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  outline: none;
+}
+
+.command-input::placeholder {
+  color: var(--police-text-secondary);
+}
+
+/* Radar de actividad */
+.activity-radar {
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 12px;
+  border: 1px solid var(--police-border);
+  backdrop-filter: blur(10px);
+  padding: 20px;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.activity-radar.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.radar-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--police-highlight);
+}
+
+.radar-header svg {
+  font-size: 1.2rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.radar-display {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  background: radial-gradient(circle, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  border: 2px solid var(--police-border);
+  margin-bottom: 15px;
+  overflow: hidden;
+}
+
+.radar-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.grid-line {
+  position: absolute;
+  background: var(--police-border);
+}
+
+.grid-line.horizontal {
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  transform: translateY(-50%);
+}
+
+.grid-line.vertical {
+  left: 50%;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  transform: translateX(-50%);
+}
+
+.grid-line.diagonal-1 {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent 48%, var(--police-border) 49%, var(--police-border) 51%, transparent 52%);
+}
+
+.grid-line.diagonal-2 {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(-45deg, transparent 48%, var(--police-border) 49%, var(--police-border) 51%, transparent 52%);
+}
+
+.radar-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.center-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--police-highlight);
+  border-radius: 50%;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.radar-scan {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--police-highlight);
+  border-radius: 50%;
+  animation: scanPulse 2s ease-in-out infinite;
+}
+
+.scan-pulse {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--police-highlight);
+  border-radius: 50%;
+  animation: scanExpand 2s ease-in-out infinite;
+  opacity: 0;
+}
+
+@keyframes scanPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.2); }
+}
+
+@keyframes scanExpand {
+  0% { transform: scale(0); opacity: 1; }
+  100% { transform: scale(1); opacity: 0; }
+}
+
+.radar-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat .label {
+  color: var(--police-text-secondary);
+  font-size: 0.7rem;
+}
+
+.stat .value {
+  color: var(--police-text);
+  font-weight: 700;
+}
+
+/* Paneles de contenido */
+.citizen-panel,
+.police-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px;
+  border-bottom: 1px solid var(--police-border);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.panel-header h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--police-text);
+}
+
+.panel-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.refresh-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(0, 212, 255, 0.1);
+  color: var(--police-highlight);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.refresh-btn:hover {
+  background: rgba(0, 212, 255, 0.2);
+  transform: rotate(180deg);
+}
+
+/* Navegación de paneles */
+.citizen-nav,
+.police-nav {
+  display: flex;
+  padding: 15px 25px;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid var(--police-border);
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--police-text-secondary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  font-weight: 500;
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.nav-btn:hover::before {
+  left: 100%;
+}
+
+.nav-btn:hover {
+  background: rgba(0, 212, 255, 0.1);
+  color: var(--police-text);
+  transform: translateY(-2px);
+}
+
+.nav-btn.active {
+  background: var(--police-gradient-accent);
+  color: white;
+  box-shadow: 0 5px 15px var(--police-glow);
+}
+
+.nav-btn svg {
+  font-size: 1.1rem;
+}
+
+/* Contenido de paneles */
+.citizen-content,
+.police-content {
+  flex: 1;
+  padding: 25px;
+  overflow-y: auto;
+}
+
+/* Scrollbar personalizado */
+.citizen-content::-webkit-scrollbar,
+.police-content::-webkit-scrollbar,
+.terminal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.citizen-content::-webkit-scrollbar-track,
+.police-content::-webkit-scrollbar-track,
+.terminal-body::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.citizen-content::-webkit-scrollbar-thumb,
+.police-content::-webkit-scrollbar-thumb,
+.terminal-body::-webkit-scrollbar-thumb {
+  background: var(--police-highlight);
+  border-radius: 4px;
+}
+
+.citizen-content::-webkit-scrollbar-thumb:hover,
+.police-content::-webkit-scrollbar-thumb:hover,
+.terminal-body::-webkit-scrollbar-thumb:hover {
+  background: var(--police-accent);
+}
+
+/* Responsive design */
+@media (max-width: 1200px) {
+  .mdt-main-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .content-right {
+    order: -1;
+  }
+  
+  .police-id-card {
+    width: 300px;
+    height: 190px;
+  }
+}
+
 @media (max-width: 768px) {
-  .mdt-header-content {
+  .mdt-header {
     flex-direction: column;
-    gap: 1rem;
-    text-align: center;
+    gap: 20px;
+    padding: 15px 20px;
   }
-
-  .mdt-tabs {
-    padding: 0 1rem;
-    overflow-x: auto;
+  
+  .header-center {
+    order: -1;
   }
-
-  .mdt-content {
-    padding: 1rem;
+  
+  .police-id-card {
+    width: 280px;
+    height: 180px;
   }
-
-  .search-inputs {
-    flex-direction: column;
-    align-items: stretch;
+  
+  .mdt-toolbar {
+    padding: 10px 20px;
   }
-
-  .dni-info, .multa-info {
-    grid-template-columns: 1fr;
+  
+  .toolbar-left {
+    flex-wrap: wrap;
   }
-
-  .inventario-grid {
-    grid-template-columns: 1fr;
+  
+  .mdt-main-content {
+    padding: 15px 20px;
   }
-
-  /* Multas Responsive */
-  .summary-stats {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.8rem;
+  
+  .citizen-nav,
+  .police-nav {
+    flex-wrap: wrap;
+    padding: 10px 20px;
   }
-
-  .summary-stats .stat-item {
-    padding: 0.8rem;
-  }
-
-  .summary-stats .stat-value {
-    font-size: 1.2rem;
-  }
-
-  .multas-message {
-    flex-direction: column;
-    text-align: center;
-    padding: 1rem;
-  }
-
-  .message-icon {
-    font-size: 1.5rem;
-    margin-top: 0;
-  }
-
-  .message-stats {
-    justify-content: center;
-    gap: 1rem;
-  }
-
-  .message-stats span {
+  
+  .nav-btn {
+    padding: 10px 15px;
     font-size: 0.8rem;
-    padding: 0.4rem 0.8rem;
-  }
-
-  /* DNI Interactivo Responsive */
-  .dni-section-header {
-    flex-direction: column;
-    align-items: stretch;
-    text-align: center;
-    gap: 1rem;
-  }
-
-  .dni-controls {
-    justify-content: center;
-  }
-
-  .dni-container {
-    margin: 1rem 0;
-    padding: 0 0.5rem;
-  }
-
-  .dni-card-interactive {
-    max-width: 100%;
-    height: 350px;
-  }
-
-  .dni-card-interactive:hover {
-    transform: scale(1.01);
-  }
-
-  .dni-card-interactive.hovered {
-    transform: scale(1.02) rotateY(2deg);
-  }
-
-  .dni-card-interactive.flipped.hovered {
-    transform: scale(1.02) rotateY(178deg);
-  }
-
-  .dni-card-real {
-    max-width: 100%;
-    margin: 0;
-    aspect-ratio: 1.4 / 1;
-  }
-
-  .dni-content {
-    flex-direction: row;
-    gap: 0.8rem;
-    padding: 0.8rem;
-  }
-
-  .dni-photo-section {
-    align-items: center;
-    min-width: 80px;
-  }
-
-  .dni-photo-container {
-    width: 60px;
-    height: 80px;
-  }
-
-  .dni-name-text {
-    font-size: 0.9rem;
-  }
-
-  .dni-detail-row {
-    font-size: 0.7rem;
-  }
-
-  .dni-date-row {
-    font-size: 0.65rem;
-  }
-
-  .dni-detail-label, .dni-date-label {
-    min-width: 60px;
-    font-size: 0.65rem;
-  }
-
-  .dni-detail-value, .dni-date-value {
-    font-size: 0.7rem;
-  }
-
-  /* DNI Reverso Responsive */
-  .dni-back-content {
-    padding: 1rem;
-  }
-
-  .dni-back-section h4 {
-    font-size: 0.9rem;
-  }
-
-  .dni-back-field {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.3rem;
-    padding: 0.6rem 0;
-  }
-
-  .dni-back-label {
-    min-width: auto;
-    font-size: 0.75rem;
-  }
-
-  .dni-back-value {
-    font-size: 0.8rem;
-    text-align: left;
-  }
-
-  .dni-back-footer {
-    flex-direction: column;
-    gap: 1rem;
-    height: auto;
-    padding: 1rem 0;
-  }
-
-  .dni-back-qr,
-  .dni-back-signature {
-    flex: none;
-  }
-
-  .signature-line {
-    width: 100px;
   }
 }
 
 @media (max-width: 480px) {
-  .dni-card-interactive {
-    height: 300px;
+  .police-id-card {
+    width: 250px;
+    height: 160px;
   }
-
-  .dni-content {
+  
+  .id-card-content {
     flex-direction: column;
-    gap: 0.6rem;
-    padding: 0.6rem;
+    gap: 15px;
   }
-
-  .dni-photo-section {
-    align-items: center;
-    min-width: auto;
-    margin-bottom: 0.5rem;
+  
+  .officer-photo {
+    width: 60px;
+    height: 60px;
+    align-self: center;
   }
-
-  .dni-photo-container {
-    width: 50px;
-    height: 65px;
+  
+  .main-title {
+    font-size: 1.4rem;
   }
-
-  .dni-name-text {
+  
+  .subtitle {
     font-size: 0.8rem;
   }
-
-  .dni-detail-row {
-    font-size: 0.65rem;
-  }
-
-  .dni-date-row {
-    font-size: 0.6rem;
-  }
-
-  .dni-detail-label, .dni-date-label {
-    min-width: 50px;
-    font-size: 0.6rem;
-  }
-
-  .dni-detail-value, .dni-date-value {
-    font-size: 0.65rem;
-  }
-
-  .dni-back-content {
-    padding: 0.8rem;
-  }
-
-  .dni-back-section {
-    margin-bottom: 1rem;
-  }
-
-  .dni-back-section h4 {
-    font-size: 0.8rem;
-  }
-
-  .dni-back-label {
-    font-size: 0.7rem;
-  }
-
-  .dni-back-value {
-    font-size: 0.75rem;
-  }
-
-  /* Multas Responsive Móvil Pequeño */
-  .summary-stats {
-    grid-template-columns: 1fr;
-    gap: 0.6rem;
-  }
-
-  .summary-stats .stat-item {
-    padding: 0.6rem;
-  }
-
-  .summary-stats .stat-value {
-    font-size: 1.1rem;
-  }
-
-  .multas-message {
-    padding: 0.8rem;
-  }
-
-  .message-content h4 {
-    font-size: 1.1rem;
-  }
-
-  .message-content p {
-    font-size: 0.9rem;
-  }
-
-  .message-stats {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .message-stats span {
-    font-size: 0.75rem;
-    padding: 0.3rem 0.6rem;
-  }
 }
 
-/* Estilos para el nuevo formulario de arresto */
-.arrest-form {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 1rem;
-}
-
-.form-group {
-  margin-bottom: 1rem;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  color: #e5e7eb;
-  font-size: 0.9rem;
-}
-
-.form-help {
-  display: block;
-  margin-top: 0.25rem;
-  font-size: 0.8rem;
-  color: #9ca3af;
-  font-style: italic;
-}
-
-/* Estilos duplicados removidos - ya están definidos arriba */
-
-/* Resultado del arresto */
-.arrest-result {
-  background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
-  border-radius: 16px;
-  padding: 2rem;
-  border: 2px solid #3b82f6;
-  margin-top: 1.5rem;
-  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
-  animation: slideInUp 0.6s ease-out;
-}
-
-@keyframes slideInUp {
+/* Animaciones adicionales */
+@keyframes fadeInUp {
   from {
     opacity: 0;
     transform: translateY(30px);
@@ -2122,479 +1240,47 @@
   }
 }
 
-.arrest-result h4 {
-  margin: 0 0 1.5rem 0;
-  color: #3b82f6;
-  font-size: 1.3rem;
-  font-weight: 800;
-  text-align: center;
-  border-bottom: 2px solid #3b82f6;
-  padding-bottom: 0.5rem;
-}
-
-.arrest-section {
-  margin-bottom: 2rem;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 12px;
-  padding: 1.5rem;
-  border: 1px solid rgba(59, 130, 246, 0.3);
-}
-
-.arrest-section h5 {
-  margin: 0 0 1rem 0;
-  color: #fbbf24;
-  font-size: 1.1rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.arrest-details {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-}
-
-.arrest-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.arrest-field label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #9ca3af;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.arrest-field span {
-  font-size: 0.9rem;
-  color: #ffffff;
-  font-weight: 500;
-}
-
-.arrest-value {
-  font-size: 1rem !important;
-  color: #ffffff !important;
-  font-weight: 600 !important;
-}
-
-.discord-id {
-  font-family: monospace !important;
-  background: rgba(59, 130, 246, 0.2) !important;
-  padding: 0.25rem 0.5rem !important;
-  border-radius: 4px !important;
-  font-size: 0.85rem !important;
-}
-
-.cargos-summary {
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  border-left: 4px solid #f59e0b;
-}
-
-.sanciones-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.sancion-item {
-  background: rgba(0, 0, 0, 0.4);
-  border-radius: 12px;
-  padding: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: transform 0.2s ease;
-}
-
-.sancion-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.sancion-icon {
-  font-size: 1.5rem;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: rgba(59, 130, 246, 0.2);
-}
-
-.sancion-info {
-  flex: 1;
-}
-
-.sancion-label {
-  font-size: 0.8rem;
-  color: #9ca3af;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.25rem;
-}
-
-.sancion-value {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #ffffff;
-}
-
-.sancion-item.multa .sancion-value {
-  color: #ef4444;
-}
-
-.sancion-item.tiempo-ic .sancion-value {
-  color: #f59e0b;
-}
-
-.sancion-item.tiempo-ooc .sancion-value {
-  color: #10b981;
-}
-
-.foto-container {
-  margin-top: 0.5rem;
-}
-
-.arrest-foto {
-  max-width: 200px;
-  max-height: 150px;
-  border-radius: 8px;
-  border: 2px solid #3b82f6;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.arrest-status {
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 2px solid rgba(59, 130, 246, 0.3);
-}
-
-.status-success {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid #10b981;
-  border-radius: 8px;
-  padding: 1rem;
-  color: #10b981;
-  font-weight: 600;
-}
-
-.status-icon {
-  font-size: 1.2rem;
-  color: #10b981;
-}
-
-.cargos-detail {
-  background: rgba(0, 0, 0, 0.3);
-  padding: 0.5rem;
-  border-radius: 6px;
-  border-left: 3px solid #f59e0b;
-  font-size: 0.85rem;
-  line-height: 1.4;
-}
-
-.multa-total {
-  color: #ef4444 !important;
-  font-weight: 700 !important;
-  font-size: 1rem !important;
-}
-
-.tiempo-ic {
-  color: #f59e0b !important;
-  font-weight: 600 !important;
-}
-
-.tiempo-ooc {
-  color: #10b981 !important;
-  font-weight: 600 !important;
-}
-
-/* Responsive para arresto */
-@media (max-width: 768px) {
-  .arrest-form {
-    padding: 1rem;
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
   }
-  
-  .arrest-result {
-    padding: 1.5rem;
-  }
-  
-  .arrest-section {
-    padding: 1rem;
-    margin-bottom: 1.5rem;
-  }
-  
-  .arrest-details {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
-  }
-  
-  .arrest-field {
-    gap: 0.2rem;
-  }
-  
-  .arrest-field label {
-    font-size: 0.75rem;
-  }
-  
-  .arrest-field span {
-    font-size: 0.85rem;
-  }
-  
-  .cargos-detail {
-    font-size: 0.8rem;
-  }
-  
-  .sanciones-grid {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
-  }
-  
-  .sancion-item {
-    padding: 0.75rem;
-  }
-  
-  .sancion-icon {
-    font-size: 1.2rem;
-    width: 32px;
-    height: 32px;
-  }
-  
-  .sancion-value {
-    font-size: 1rem;
-  }
-  
-  .arrest-foto {
-    max-width: 150px;
-    max-height: 100px;
-  }
-  
-  .selected-cargos {
-    padding: 0.4rem;
-    gap: 0.4rem;
-  }
-  
-  .cargo-chip {
-    padding: 0.3rem 0.5rem;
-    font-size: 0.8rem;
-  }
-  
-  .cargo-chip-remove {
-    width: 18px;
-    height: 18px;
-    font-size: 12px;
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
-/* Estilos para cargos seleccionados */
-.selected-cargos {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-  padding: 0.5rem;
-  background: rgba(59, 130, 246, 0.05);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  border-radius: 8px;
-  min-height: 40px;
-}
-
-.cargo-chip {
-  display: flex;
-  align-items: center;
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  color: white;
-  padding: 0.4rem 0.6rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  gap: 0.5rem;
-  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
-  transition: all 0.2s ease;
-}
-
-.cargo-chip:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
-}
-
-.cargo-chip-text {
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.cargo-chip-remove {
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  color: white;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: bold;
-  transition: all 0.2s ease;
-}
-
-.cargo-chip-remove:hover {
-  background: rgba(239, 68, 68, 0.8);
-  transform: scale(1.1);
-}
-
-/* Estilos para autocompletado */
-.autocomplete-container {
-  position: relative;
-  width: 100%;
-}
-
-.search-spinner {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #3b82f6;
-  font-size: 14px;
-}
-
-.autocomplete-suggestions {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: #1f2937;
-  border: 1px solid #374151;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  z-index: 1000;
-  max-height: 300px;
-  overflow-y: auto;
-  margin-top: 2px;
-}
-
-.suggestion-item {
-  display: flex;
-  align-items: center;
-  padding: 12px;
-  cursor: pointer;
-  transition: background 0.2s ease;
-  border-bottom: 1px solid #374151;
-}
-
-.suggestion-item:last-child {
-  border-bottom: none;
-}
-
-.suggestion-item:hover {
-  background: #374151;
-}
-
-.suggestion-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  margin-right: 12px;
-  flex-shrink: 0;
-}
-
-.suggestion-avatar img {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.suggestion-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.suggestion-name {
-  font-weight: 600;
-  color: #ffffff;
-  font-size: 0.9rem;
-  margin-bottom: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.suggestion-id {
-  font-size: 0.8rem;
-  color: #9ca3af;
-  font-family: monospace;
-}
-
-.suggestion-details {
-  font-size: 0.8rem;
-  color: #9ca3af;
-  margin-top: 2px;
-}
-
-.suggestion-details strong {
-  color: #f59e0b;
-}
-
-/* Responsive para autocompletado */
-@media (max-width: 768px) {
-  .autocomplete-suggestions {
-    max-height: 200px;
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
   }
-  
-  .suggestion-item {
-    padding: 10px;
-  }
-  
-  .suggestion-avatar {
-    width: 28px;
-    height: 28px;
-    margin-right: 10px;
-  }
-  
-  .suggestion-name {
-    font-size: 0.85rem;
-  }
-  
-  .suggestion-id,
-  .suggestion-details {
-    font-size: 0.75rem;
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
-/* Estilos para avatares de Discord en ranking */
-.ranking-avatar-img {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--theme-border);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+/* Aplicar animaciones a elementos */
+.mdt-header {
+  animation: fadeInUp 0.6s ease-out;
 }
 
-.ranking-avatar-placeholder {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--theme-surface);
-  border: 2px solid var(--theme-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--theme-text);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+.mdt-toolbar {
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.police-id-card {
+  animation: slideInRight 0.8s ease-out;
+}
+
+.command-terminal,
+.activity-radar {
+  animation: slideInLeft 0.8s ease-out;
+}
+
+.citizen-panel,
+.police-panel {
+  animation: fadeInUp 1s ease-out;
 }
