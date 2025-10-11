@@ -6,7 +6,7 @@ import {
   FaTrophy, FaLock, FaUnlock, FaCarCrash,
   FaUserShield, FaDatabase, FaClipboardList, FaHistory,
   FaRadar, FaSatellite, FaFingerprint, FaBrain, FaRobot,
-  FaWifi, FaSignal, FaBolt, FaCog, FaGlobe, FaShieldVirus,
+  FaWifi, FaSignal, FaBolt, FaCog, FaGlobeAmericas, FaShieldVirus,
   FaCctv, FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock,
   FaChartLine, FaUsers, FaCar, FaBuilding, FaNewspaper,
   FaMicrochip, FaSatelliteDish, FaBroadcastTower, FaWifi2,
@@ -16,7 +16,7 @@ import {
   FaRadar as FaRadarIcon, FaSatellite as FaSatelliteIcon,
   FaWifi as FaWifiIcon, FaSignal as FaSignalIcon,
   FaBolt as FaBoltIcon, FaCog as FaCogIcon,
-  FaGlobe as FaGlobeIcon, FaShieldVirus as FaShieldVirusIcon
+  FaGlobeAmericas as FaGlobeIcon, FaShieldVirus as FaShieldVirusIcon
 } from 'react-icons/fa';
 import { apiUrl } from '../../utils/api';
 import './MDTPolicial.css';
