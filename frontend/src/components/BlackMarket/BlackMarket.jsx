@@ -654,6 +654,79 @@ export default function BlackMarket() {
 
   // Función para obtener items filtrados con stock real
   const getFilteredItems = () => {
+    // Si hay búsqueda, buscar en todas las secciones
+    if (searchQuery) {
+      let allItems = [];
+      
+      // Recopilar todos los items de todas las secciones
+      ITEMS.forEach((section, sectionIndex) => {
+        section.options.forEach(item => {
+          // Obtener datos reales del stock y precio
+          const realStockData = stockData[item.itemId];
+          const realStock = realStockData ? realStockData.stock : (item.stock || 0);
+          const realPrice = realStockData ? realStockData.price : item.price;
+          const realName = realStockData ? realStockData.name : item.name;
+          
+          allItems.push({
+            ...item,
+            stock: realStock,
+            price: realPrice,
+            name: realName,
+            sectionIndex: sectionIndex,
+            sectionName: section.category
+          });
+        });
+      });
+      
+      // Aplicar filtros a todos los items
+      let filtered = allItems.filter(item => {
+        // Filtro por búsqueda
+        const query = searchQuery.toLowerCase();
+        const matchesName = item.name.toLowerCase().includes(query);
+        const matchesDescription = item.description?.toLowerCase().includes(query);
+        const matchesEffects = item.effects?.some(effect => 
+          effect.toLowerCase().includes(query)
+        );
+        const matchesSection = item.sectionName?.toLowerCase().includes(query);
+        if (!matchesName && !matchesDescription && !matchesEffects && !matchesSection) return false;
+        
+        // Filtro por calidad
+        if (selectedQuality !== 'all' && item.quality !== selectedQuality) return false;
+        
+        // Filtro por precio
+        if (item.price < priceRange.min || item.price > priceRange.max) return false;
+        
+        // Filtro por stock
+        if (stockFilter === 'in_stock' && item.stock <= 0) return false;
+        if (stockFilter === 'low_stock' && item.stock > 2) return false;
+        if (stockFilter === 'out_of_stock' && item.stock > 0) return false;
+        
+        return true;
+      });
+      
+      // Ordenamiento
+      filtered.sort((a, b) => {
+        switch (sortBy) {
+          case 'price_low':
+            return a.price - b.price;
+          case 'price_high':
+            return b.price - a.price;
+          case 'name':
+            return a.name.localeCompare(b.name);
+          case 'quality':
+            const qualityOrder = { basic: 1, standard: 2, advanced: 3, elite: 4, legendary: 5 };
+            return (qualityOrder[a.quality] || 0) - (qualityOrder[b.quality] || 0);
+          case 'stock':
+            return b.stock - a.stock;
+          default:
+            return 0;
+        }
+      });
+      
+      return filtered;
+    }
+    
+    // Si no hay búsqueda, usar la sección actual
     if (!ITEMS[selected] || selected >= ITEMS.length) return [];
     
     let filtered = ITEMS[selected].options.map(item => {
@@ -670,18 +743,7 @@ export default function BlackMarket() {
         name: realName
       };
     }).filter(item => {
-      // Filtro por búsqueda
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        const matchesName = item.name.toLowerCase().includes(query);
-        const matchesDescription = item.description?.toLowerCase().includes(query);
-        const matchesEffects = item.effects?.some(effect => 
-          effect.toLowerCase().includes(query)
-        );
-        if (!matchesName && !matchesDescription && !matchesEffects) return false;
-      }
-      
-      // Filtro por rareza
+      // Filtro por calidad
       if (selectedQuality !== 'all' && item.quality !== selectedQuality) return false;
       
       // Filtro por precio
@@ -2366,9 +2428,18 @@ export default function BlackMarket() {
         <div className="blackmarket-hack-list">
           {/* Contador de resultados */}
           <div className="results-counter">
-            {getFilteredItems().length} de {ITEMS[selected].options.length} items
-            {(searchQuery || selectedQuality !== 'all' || stockFilter !== 'all' || priceRange.min > 0 || priceRange.max < 1000000) && (
-              <span className="filtered-indicator"> (filtrados)</span>
+            {searchQuery ? (
+              <>
+                {getFilteredItems().length} resultados de búsqueda
+                <span className="search-indicator"> (en todas las secciones)</span>
+              </>
+            ) : (
+              <>
+                {getFilteredItems().length} de {ITEMS[selected].options.length} items
+                {(selectedQuality !== 'all' || stockFilter !== 'all' || priceRange.min > 0 || priceRange.max < 1000000) && (
+                  <span className="filtered-indicator"> (filtrados)</span>
+                )}
+              </>
             )}
           </div>
           
@@ -2401,6 +2472,9 @@ export default function BlackMarket() {
                 <div className="item-info">
                   <span className="blackmarket-hack-item-name">{displayName}</span>
                   <span className="blackmarket-hack-item-price">{Number(displayPrice).toLocaleString()}€</span>
+                  {searchQuery && item.sectionName && (
+                    <span className="item-section-badge">{item.sectionName}</span>
+                  )}
                 </div>
                 <div className="item-stock">
                   <span className={`stock-dot ${displayStock <= 2 ? 'low' : displayStock <= 5 ? 'medium' : 'high'}`}></span>
@@ -3734,6 +3808,33 @@ export default function BlackMarket() {
           text-transform: uppercase;
           letter-spacing: 0.5px;
           animation: pulse 1.5s infinite;
+        }
+        
+        /* Estilos para búsqueda global */
+        .search-indicator {
+          color: #3b82f6;
+          font-weight: 600;
+          font-size: 0.9em;
+        }
+        
+        .item-section-badge {
+          background: linear-gradient(135deg, #6366f1, #4f46e5);
+          color: white;
+          padding: 2px 8px;
+          border-radius: 12px;
+          font-size: 10px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          margin-top: 4px;
+          display: inline-block;
+          box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
+        }
+        
+        .filtered-indicator {
+          color: #f59e0b;
+          font-weight: 600;
+          font-size: 0.9em;
         }
         
         /* Estilos para sistema de calidad */
