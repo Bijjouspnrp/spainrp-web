@@ -654,7 +654,7 @@ const exportBusinessData = async (doc, data, yPosition, checkPageBreak) => {
     }
     
     yPosition += 8;
-  });
+  }
 };
 
 const exportBlogData = async (doc, data, yPosition, checkPageBreak) => {
