@@ -478,7 +478,7 @@ const MDTPolicial = () => {
 
   return (
     <div className="mdt-container">
-      {/* Header con tarjeta de identificación */}
+      {/* Header simplificado */}
       <div className="mdt-header">
         <div className="header-left">
           <div className="mdt-logo">
@@ -488,15 +488,6 @@ const MDTPolicial = () => {
               <span className="subtitle">Sistema de Gestión Policial</span>
             </div>
           </div>
-        </div>
-        
-        <div className="header-center">
-          <PoliceIDCard 
-            user={user} 
-            isPolice={isPolice} 
-            isCNI={isCNI}
-            onFlip={() => console.log('Tarjeta volteada')}
-          />
         </div>
         
         <div className="header-right">
@@ -553,6 +544,15 @@ const MDTPolicial = () => {
               <span>CNI</span>
             </button>
           )}
+        </div>
+        
+        <div className="toolbar-center">
+          <PoliceIDCard 
+            user={user} 
+            isPolice={isPolice} 
+            isCNI={isCNI}
+            onFlip={() => console.log('Tarjeta volteada')}
+          />
         </div>
         
         <div className="toolbar-right">

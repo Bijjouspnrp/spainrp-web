@@ -654,6 +654,23 @@ body {
 .toolbar-left {
   display: flex;
   gap: 10px;
+  flex: 1;
+}
+
+.toolbar-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 0 0 auto;
+  margin: 0 20px;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex: 1;
+  justify-content: flex-end;
 }
 
 .toolbar-btn {
@@ -1012,6 +1029,10 @@ body {
   height: 100%;
   display: flex;
   flex-direction: column;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 12px;
+  border: 1px solid var(--police-border);
+  backdrop-filter: blur(10px);
 }
 
 .panel-header {
@@ -1020,13 +1041,15 @@ body {
   align-items: center;
   padding: 20px 25px;
   border-bottom: 1px solid var(--police-border);
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px 12px 0 0;
 }
 
 .panel-header h2 {
   font-size: 1.4rem;
   font-weight: 700;
-  color: var(--police-text);
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .panel-controls {
@@ -1117,6 +1140,51 @@ body {
   flex: 1;
   padding: 25px;
   overflow-y: auto;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 0 0 12px 12px;
+}
+
+/* Mejorar contraste del contenido */
+.citizen-content h3,
+.police-content h3 {
+  color: #ffffff !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+  font-weight: 700;
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+}
+
+.citizen-content p,
+.police-content p {
+  color: #e0e0e0 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  line-height: 1.6;
+}
+
+.citizen-content label,
+.police-content label {
+  color: #ffffff !important;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.citizen-content input,
+.police-content input,
+.citizen-content select,
+.police-content select,
+.citizen-content textarea,
+.police-content textarea {
+  background: rgba(0, 0, 0, 0.6) !important;
+  border: 1px solid var(--police-border) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.citizen-content input::placeholder,
+.police-content input::placeholder,
+.citizen-content textarea::placeholder,
+.police-content textarea::placeholder {
+  color: #a0a0a0 !important;
 }
 
 /* Scrollbar personalizado */
@@ -1144,6 +1212,183 @@ body {
 .police-content::-webkit-scrollbar-thumb:hover,
 .terminal-body::-webkit-scrollbar-thumb:hover {
   background: var(--police-accent);
+}
+
+/* Estilos específicos para secciones MDT */
+.mdt-section {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid var(--police-border);
+  backdrop-filter: blur(10px);
+}
+
+.mdt-section h3 {
+  color: #ffffff !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+  font-weight: 700;
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mdt-section h3 svg {
+  color: var(--police-highlight);
+}
+
+.mdt-section p {
+  color: #e0e0e0 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  line-height: 1.6;
+}
+
+.mdt-section label {
+  color: #ffffff !important;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  display: block;
+  margin-bottom: 5px;
+}
+
+.mdt-section input,
+.mdt-section select,
+.mdt-section textarea {
+  background: rgba(0, 0, 0, 0.6) !important;
+  border: 1px solid var(--police-border) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  border-radius: 6px;
+  padding: 10px;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.mdt-section input::placeholder,
+.mdt-section textarea::placeholder {
+  color: #a0a0a0 !important;
+}
+
+.mdt-section button {
+  background: linear-gradient(135deg, var(--police-primary), var(--police-accent));
+  border: none;
+  color: #ffffff;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.mdt-section button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+}
+
+.mdt-section button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Estilos para tarjetas de datos */
+.mdt-section .card,
+.mdt-section .multa-card,
+.mdt-section .antecedente-card,
+.mdt-section .inventario-item {
+  background: rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid var(--police-border) !important;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.mdt-section .card h4,
+.mdt-section .multa-card h4,
+.mdt-section .antecedente-card h4 {
+  color: #ffffff !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.mdt-section .card p,
+.mdt-section .multa-card p,
+.mdt-section .antecedente-card p {
+  color: #e0e0e0 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  margin-bottom: 8px;
+}
+
+/* Estilos para formularios */
+.mdt-section .form-group {
+  margin-bottom: 20px;
+}
+
+.mdt-section .form-group label {
+  color: #ffffff !important;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.mdt-section .form-group input,
+.mdt-section .form-group select,
+.mdt-section .form-group textarea {
+  background: rgba(0, 0, 0, 0.6) !important;
+  border: 1px solid var(--police-border) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  border-radius: 6px;
+  padding: 12px;
+  width: 100%;
+  font-size: 14px;
+}
+
+.mdt-section .form-group input::placeholder,
+.mdt-section .form-group textarea::placeholder {
+  color: #a0a0a0 !important;
+}
+
+/* Estilos para botones */
+.mdt-btn {
+  background: linear-gradient(135deg, var(--police-primary), var(--police-accent));
+  border: none;
+  color: #ffffff;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  font-size: 14px;
+}
+
+.mdt-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+}
+
+.mdt-btn-primary {
+  background: linear-gradient(135deg, var(--police-primary), var(--police-accent));
+}
+
+.mdt-btn-success {
+  background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.mdt-btn-danger {
+  background: linear-gradient(135deg, #dc3545, #fd7e14);
+}
+
+.mdt-btn-secondary {
+  background: linear-gradient(135deg, #6c757d, #495057);
 }
 
 /* Responsive design */
