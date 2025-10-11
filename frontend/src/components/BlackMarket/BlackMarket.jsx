@@ -2367,7 +2367,7 @@ export default function BlackMarket() {
           {/* Contador de resultados */}
           <div className="results-counter">
             {getFilteredItems().length} de {ITEMS[selected].options.length} items
-            {(searchQuery || selectedRarity !== 'all' || stockFilter !== 'all' || priceRange.min > 0 || priceRange.max < 1000000) && (
+            {(searchQuery || selectedQuality !== 'all' || stockFilter !== 'all' || priceRange.min > 0 || priceRange.max < 1000000) && (
               <span className="filtered-indicator"> (filtrados)</span>
             )}
           </div>
