@@ -1619,8 +1619,8 @@ body {
 
 .dni-card-interactive {
   width: 100%;
-  max-width: 400px;
-  height: 250px;
+  max-width: 450px;
+  height: 300px;
   position: relative;
   transform-style: preserve-3d;
   transition: transform 0.6s ease;
@@ -1674,10 +1674,10 @@ body {
 }
 
 .dni-content {
-  padding: 20px;
+  padding: 15px;
   display: flex;
-  gap: 20px;
-  height: calc(100% - 60px);
+  gap: 15px;
+  height: calc(100% - 50px);
 }
 
 .dni-photo-section {
@@ -1688,8 +1688,8 @@ body {
 }
 
 .dni-photo-container {
-  width: 80px;
-  height: 100px;
+  width: 70px;
+  height: 90px;
   border: 2px solid var(--police-border);
   border-radius: 8px;
   overflow: hidden;
@@ -1725,7 +1725,8 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 10px;
+  min-width: 0;
 }
 
 .dni-name-section {
@@ -1749,7 +1750,8 @@ body {
 .dni-details {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  flex: 1;
 }
 
 .dni-detail-row {
@@ -1774,10 +1776,10 @@ body {
 }
 
 .dni-dates {
-  margin-top: auto;
   display: flex;
   flex-direction: column;
   gap: 5px;
+  margin-top: 5px;
 }
 
 .dni-date-row {
@@ -2568,5 +2570,321 @@ body {
   
   .search-input-container {
     min-width: 100%;
+  }
+}
+
+/* ===== RANKING DE MULTAS ===== */
+.ranking-stats-overview {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 25px;
+  border: 1px solid var(--police-border);
+  backdrop-filter: blur(10px);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 12px;
+  border: 1px solid var(--police-border);
+  transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+  background: rgba(0, 0, 0, 0.5);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #95a5a6;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+  text-align: center;
+}
+
+.ranking-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 25px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid var(--police-border);
+}
+
+.ranking-tab {
+  flex: 1;
+  padding: 12px 20px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: #a0a0a0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ranking-tab:hover {
+  background: rgba(0, 212, 255, 0.1);
+  color: var(--police-highlight);
+}
+
+.ranking-tab.active {
+  background: linear-gradient(135deg, var(--police-highlight) 0%, var(--police-accent) 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+}
+
+.ranking-tab-content {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 25px;
+  border: 1px solid var(--police-border);
+  backdrop-filter: blur(10px);
+}
+
+.ranking-header {
+  text-align: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--police-border);
+}
+
+.ranking-header h4 {
+  color: #ffffff !important;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.ranking-subtitle {
+  color: #a0a0a0 !important;
+  font-size: 0.9rem;
+  margin: 0;
+  font-style: italic;
+}
+
+.ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 12px;
+  border: 1px solid var(--police-border);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.ranking-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--police-border);
+  transition: all 0.3s ease;
+}
+
+.ranking-item.top::before {
+  background: linear-gradient(180deg, #ffd700 0%, #ffed4e 100%);
+}
+
+.ranking-item:hover {
+  background: rgba(0, 0, 0, 0.5);
+  transform: translateX(5px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.ranking-item:hover::before {
+  width: 6px;
+}
+
+.ranking-position {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+  border: 2px solid var(--police-border);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  flex-shrink: 0;
+}
+
+.ranking-position .gold {
+  color: #ffd700;
+  font-size: 1.5rem;
+}
+
+.ranking-position .silver {
+  color: #c0c0c0;
+  font-size: 1.5rem;
+}
+
+.ranking-position .bronze {
+  color: #cd7f32;
+  font-size: 1.5rem;
+}
+
+.ranking-position .position {
+  font-size: 1rem;
+}
+
+.ranking-avatar {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid var(--police-border);
+  flex-shrink: 0;
+  background: #2c3e50;
+}
+
+.ranking-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ranking-avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #34495e;
+  color: #bdc3c7;
+  font-size: 1.5rem;
+}
+
+.ranking-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ranking-info h4 {
+  color: #ffffff !important;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 5px 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ranking-discord-id {
+  color: #95a5a6 !important;
+  font-size: 0.8rem;
+  font-family: 'Courier New', monospace;
+  margin: 0 0 8px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ranking-stats {
+  color: #e0e0e0 !important;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.more-items {
+  text-align: center;
+  padding: 15px;
+  color: #95a5a6 !important;
+  font-style: italic;
+  font-size: 0.9rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  border: 1px solid var(--police-border);
+}
+
+.ranking-message {
+  text-align: center;
+  padding: 20px;
+  color: #a0a0a0 !important;
+  font-size: 0.9rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  border: 1px solid var(--police-border);
+  margin-top: 15px;
+}
+
+/* Responsive para ranking */
+@media (max-width: 768px) {
+  .ranking-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+  
+  .ranking-position {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+  
+  .ranking-avatar {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .ranking-info h4,
+  .ranking-discord-id {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+  
+  .ranking-tabs {
+    flex-direction: column;
   }
 }
