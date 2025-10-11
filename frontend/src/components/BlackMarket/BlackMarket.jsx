@@ -479,6 +479,7 @@ export default function BlackMarket() {
   const [inventoryError, setInventoryError] = React.useState('');
   const [catalog, setCatalog] = React.useState({}); // mapa itemId -> { name, price }
   const [catalogLoaded, setCatalogLoaded] = React.useState(false);
+  const [stockData, setStockData] = React.useState({}); // mapa itemId -> { stock, price, name }
   const [purchaseState, setPurchaseState] = React.useState({ visible: false, status: 'idle', message: '' });
   // Estado para la pestaña/categoría seleccionada
   const [selected, setSelected] = React.useState(0);
@@ -627,6 +628,14 @@ export default function BlackMarket() {
   const [stockFilter, setStockFilter] = useState('all');
   const [sortBy, setSortBy] = useState('name');
   const [showFilters, setShowFilters] = useState(false);
+  
+  // Estados para ventas entre usuarios
+  const [userSales, setUserSales] = useState([]);
+  const [showUserMarket, setShowUserMarket] = useState(false);
+  const [showSellModal, setShowSellModal] = useState(false);
+  const [sellItem, setSellItem] = useState(null);
+  const [sellAmount, setSellAmount] = useState(1);
+  const [sellPrice, setSellPrice] = useState(0);
 
   // Función para cambiar tema
   const changeTheme = (themeKey) => {
@@ -634,11 +643,24 @@ export default function BlackMarket() {
     localStorage.setItem('blackmarket-theme', themeKey);
   };
 
-  // Función para obtener items filtrados
+  // Función para obtener items filtrados con stock real
   const getFilteredItems = () => {
     if (!ITEMS[selected] || selected >= ITEMS.length) return [];
     
-    let filtered = ITEMS[selected].options.filter(item => {
+    let filtered = ITEMS[selected].options.map(item => {
+      // Obtener datos reales del stock y precio
+      const realStockData = stockData[item.itemId];
+      const realStock = realStockData ? realStockData.stock : (item.stock || 0);
+      const realPrice = realStockData ? realStockData.price : item.price;
+      const realName = realStockData ? realStockData.name : item.name;
+      
+      return {
+        ...item,
+        stock: realStock,
+        price: realPrice,
+        name: realName
+      };
+    }).filter(item => {
       // Filtro por búsqueda
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
@@ -693,6 +715,129 @@ export default function BlackMarket() {
     setPriceRange({ min: 0, max: 1000000 });
     setStockFilter('all');
     setSortBy('name');
+  };
+
+  // Función para refrescar stock
+  const refreshStock = async () => {
+    try {
+      console.log('[BlackMarket] 🔄 Refrescando stock...');
+      const resp = await fetch('https://spainrp-web.onrender.com/api/blackmarket/stock');
+      const data = await resp.json();
+      
+      if (resp.ok && data && data.stock && Array.isArray(data.stock)) {
+        const stockMap = {};
+        data.stock.forEach(item => {
+          stockMap[item.itemId] = {
+            stock: item.stock,
+            price: item.price,
+            name: item.name
+          };
+        });
+        setStockData(stockMap);
+        console.log('[BlackMarket] ✅ Stock refrescado:', data.stock.length, 'items');
+        setRoleToast('✅ Stock actualizado');
+        setTimeout(() => setRoleToast(''), 2000);
+      } else {
+        console.warn('[BlackMarket] ❌ Error refrescando stock:', data);
+        setRoleToast('⚠️ Error actualizando stock');
+        setTimeout(() => setRoleToast(''), 3000);
+      }
+    } catch (e) {
+      console.error('[BlackMarket] ❌ Error refrescando stock:', e);
+      setRoleToast('⚠️ Error de conexión actualizando stock');
+      setTimeout(() => setRoleToast(''), 3000);
+    }
+  };
+
+  // Función para cargar ventas de usuarios
+  const loadUserSales = async () => {
+    try {
+      console.log('[BlackMarket] 📋 Cargando ventas de usuarios...');
+      const resp = await fetch('https://spainrp-web.onrender.com/api/blackmarket/sales');
+      const data = await resp.json();
+      
+      if (resp.ok && data && data.sales && Array.isArray(data.sales)) {
+        setUserSales(data.sales);
+        console.log('[BlackMarket] ✅ Ventas cargadas:', data.sales.length, 'ventas');
+      } else {
+        console.warn('[BlackMarket] ❌ Error cargando ventas:', data);
+        setUserSales([]);
+      }
+    } catch (e) {
+      console.error('[BlackMarket] ❌ Error cargando ventas:', e);
+      setUserSales([]);
+    }
+  };
+
+  // Función para poner item en venta
+  const handleSellToUser = async () => {
+    if (!sellItem || !sellAmount || !sellPrice) return;
+    
+    try {
+      console.log('[BlackMarket] 💰 Poniendo item en venta...');
+      const resp = await fetch('https://spainrp-web.onrender.com/api/blackmarket/sell-to-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sellerId: user.id,
+          itemId: sellItem.itemId,
+          amount: sellAmount,
+          price: sellPrice
+        })
+      });
+      
+      const data = await resp.json();
+      
+      if (resp.ok && !data.error) {
+        setRoleToast('✅ Item puesto en venta exitosamente');
+        setTimeout(() => setRoleToast(''), 3000);
+        setShowSellModal(false);
+        setSellItem(null);
+        setSellAmount(1);
+        setSellPrice(0);
+        // Recargar ventas
+        loadUserSales();
+      } else {
+        setRoleToast('❌ Error: ' + (data.error || 'No se pudo poner en venta'));
+        setTimeout(() => setRoleToast(''), 3000);
+      }
+    } catch (e) {
+      console.error('[BlackMarket] ❌ Error vendiendo:', e);
+      setRoleToast('❌ Error de conexión');
+      setTimeout(() => setRoleToast(''), 3000);
+    }
+  };
+
+  // Función para comprar de otro usuario
+  const handleBuyFromUser = async (saleId, amount) => {
+    try {
+      console.log('[BlackMarket] 🛒 Comprando de usuario...');
+      const resp = await fetch('https://spainrp-web.onrender.com/api/blackmarket/buy-from-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          buyerId: user.id,
+          saleId: saleId,
+          amount: amount
+        })
+      });
+      
+      const data = await resp.json();
+      
+      if (resp.ok && !data.error) {
+        setRoleToast('✅ Compra realizada exitosamente');
+        setTimeout(() => setRoleToast(''), 3000);
+        // Recargar ventas y inventario
+        loadUserSales();
+      } else {
+        setRoleToast('❌ Error: ' + (data.error || 'No se pudo completar la compra'));
+        setTimeout(() => setRoleToast(''), 3000);
+      }
+    } catch (e) {
+      console.error('[BlackMarket] ❌ Error comprando:', e);
+      setRoleToast('❌ Error de conexión');
+      setTimeout(() => setRoleToast(''), 3000);
+    }
   };
 
   // Quick balance handler con logging y notificaciones
@@ -978,34 +1123,69 @@ export default function BlackMarket() {
       });
   }, []);
 
-  // Cargar catálogo desde API externa (vía proxy backend)
+  // Cargar catálogo y stock desde API externa (vía proxy backend)
   React.useEffect(() => {
     (async () => {
       try {
-        console.log('[BlackMarket] 📦 Fetch catálogo...');
-        const resp = await Promise.race([
+        console.log('[BlackMarket] 📦 Fetch catálogo y stock...');
+        
+        // Cargar catálogo y stock en paralelo
+        const [catalogResp, stockResp] = await Promise.allSettled([
           fetch('https://spainrp-web.onrender.com/api/proxy/blackmarket/items'),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000))
+          fetch('https://spainrp-web.onrender.com/api/blackmarket/stock')
         ]);
         
-        const data = await resp.json();
-        if (resp.ok && data && typeof data === 'object') {
-          setCatalog(data);
-          console.log('[BlackMarket] ✅ Catálogo cargado:', Object.keys(data).length, 'items');
+        // Procesar catálogo
+        if (catalogResp.status === 'fulfilled' && catalogResp.value.ok) {
+          const catalogData = await catalogResp.value.json();
+          if (catalogData && typeof catalogData === 'object') {
+            setCatalog(catalogData);
+            console.log('[BlackMarket] ✅ Catálogo cargado:', Object.keys(catalogData).length, 'items');
+          }
         } else {
-          console.warn('[BlackMarket] ❌ Error catálogo:', data);
-          setRoleToast('⚠️ Error cargando catálogo de items');
+          console.warn('[BlackMarket] ❌ Error catálogo:', catalogResp.reason || 'Unknown error');
+        }
+        
+        // Procesar stock
+        if (stockResp.status === 'fulfilled' && stockResp.value.ok) {
+          const stockData = await stockResp.value.json();
+          if (stockData && stockData.stock && Array.isArray(stockData.stock)) {
+            // Crear un mapa de stock para fácil acceso
+            const stockMap = {};
+            stockData.stock.forEach(item => {
+              stockMap[item.itemId] = {
+                stock: item.stock,
+                price: item.price,
+                name: item.name
+              };
+            });
+            setStockData(stockMap);
+            console.log('[BlackMarket] ✅ Stock cargado:', stockData.stock.length, 'items');
+          }
+        } else {
+          console.warn('[BlackMarket] ❌ Error stock:', stockResp.reason || 'Unknown error');
+        }
+        
+        if (catalogResp.status === 'rejected' && stockResp.status === 'rejected') {
+          setRoleToast('⚠️ Error cargando datos del BlackMarket');
           setTimeout(() => setRoleToast(''), 3000);
         }
       } catch (e) {
-        console.error('[BlackMarket] ❌ Error cargando catálogo:', e);
-        setRoleToast('⚠️ Error de conexión cargando items');
+        console.error('[BlackMarket] ❌ Error cargando datos:', e);
+        setRoleToast('⚠️ Error de conexión cargando datos');
         setTimeout(() => setRoleToast(''), 3000);
       } finally {
         setCatalogLoaded(true);
       }
     })();
   }, []);
+
+  // Cargar ventas de usuarios cuando se selecciona la pestaña del mercado
+  React.useEffect(() => {
+    if (selected === ITEMS.length + 1) { // +1 para la pestaña de Bolsa Negra, +1 para mercado de usuarios
+      loadUserSales();
+    }
+  }, [selected]);
 
   const handleBuy = (item) => {
     if (!user) {
@@ -1873,6 +2053,13 @@ if (!user) {
             className="search-input"
           />
           <button 
+            className="refresh-stock-btn"
+            onClick={refreshStock}
+            title="Refrescar stock"
+          >
+            🔄
+          </button>
+          <button 
             className="filters-toggle"
             onClick={() => setShowFilters(!showFilters)}
             title="Mostrar/ocultar filtros"
@@ -1965,7 +2152,7 @@ if (!user) {
       {/* Tabs solo visibles en desktop y tablet */}
       {!isMobile && (
         <div className="blackmarket-hack-tabs">
-          {[...ITEMS.map((cat, idx) => (
+          {ITEMS.map((cat, idx) => (
             <button
               key={idx}
               className={`blackmarket-hack-tab${selected === idx ? ' active' : ''}`}
@@ -1974,7 +2161,7 @@ if (!user) {
               {cat.icon}
               <span>{cat.category}</span>
             </button>
-          )),
+          ))}
           <button
             key={ITEMS.length}
             className={`blackmarket-hack-tab${selected === ITEMS.length ? ' active' : ''}`}
@@ -1983,7 +2170,14 @@ if (!user) {
             <FaChartLine />
             <span>Bolsa Negra</span>
           </button>
-          ]}
+          <button
+            key={ITEMS.length + 1}
+            className={`blackmarket-hack-tab${selected === ITEMS.length + 1 ? ' active' : ''}`}
+            onClick={() => setSelected(ITEMS.length + 1)}
+          >
+            <FaUserSecret />
+            <span>Mercado Usuarios</span>
+          </button>
         </div>
       )}
       {/* Indicador de categoría actual en móvil */}
@@ -1995,16 +2189,24 @@ if (!user) {
                 {ITEMS[selected].icon}
                 <span>{ITEMS[selected].category}</span>
               </>
-            ) : (
+            ) : selected === ITEMS.length ? (
               <>
                 <FaChartLine />
                 <span>Bolsa Negra</span>
+              </>
+            ) : (
+              <>
+                <FaUserSecret />
+                <span>Mercado Usuarios</span>
               </>
             )}
           </div>
           <div className="category-stats">
             {selected < ITEMS.length && (
               <span>{ITEMS[selected].options.length} items disponibles</span>
+            )}
+            {selected === ITEMS.length + 1 && (
+              <span>{userSales.length} ventas disponibles</span>
             )}
           </div>
         </div>
@@ -2020,6 +2222,59 @@ if (!user) {
         }}>
           🚧 Próximamente (En Desarollo)
         </div>
+      ) : selected === ITEMS.length + 1 ? (
+        /* Mercado de Usuarios */
+        <div className="blackmarket-hack-list">
+          <div className="user-market-header">
+            <h3>🏪 Mercado de Usuarios</h3>
+            <p>Compra y vende items con otros jugadores</p>
+            <div className="market-actions">
+              <button 
+                className="refresh-sales-btn"
+                onClick={loadUserSales}
+                title="Refrescar ventas"
+              >
+                🔄 Refrescar
+              </button>
+            </div>
+          </div>
+          
+          {userSales.length > 0 ? (
+            <div className="user-sales-list">
+              {userSales.map((sale) => (
+                <div key={sale.saleId} className="user-sale-item">
+                  <div className="sale-info">
+                    <h4>{sale.itemName}</h4>
+                    <p>Cantidad: {sale.amount}</p>
+                    <p>Precio: {sale.price.toLocaleString()}€</p>
+                    <p>Vendedor: {sale.sellerId}</p>
+                    <p>Fecha: {new Date(sale.createdAt).toLocaleDateString()}</p>
+                  </div>
+                  <div className="sale-actions">
+                    <button 
+                      className="buy-from-user-btn"
+                      onClick={() => handleBuyFromUser(sale.saleId, 1)}
+                    >
+                      Comprar 1
+                    </button>
+                    {sale.amount > 1 && (
+                      <button 
+                        className="buy-from-user-btn"
+                        onClick={() => handleBuyFromUser(sale.saleId, sale.amount)}
+                      >
+                        Comprar Todo
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="no-sales">
+              <p>No hay ventas disponibles en este momento</p>
+            </div>
+          )}
+        </div>
       ) : (
         <div className="blackmarket-hack-list">
           {/* Contador de resultados */}
@@ -2031,11 +2286,14 @@ if (!user) {
           </div>
           
           {getFilteredItems().map((item, i) => {
-            const apiDef = item.itemId ? catalog[item.itemId] : null;
-            const displayName = apiDef?.name || item.name;
-            const displayPrice = typeof apiDef?.price === 'number' ? apiDef.price : item.price;
+            // Los datos ya vienen procesados con stock real desde getFilteredItems
+            const displayName = item.name;
+            const displayPrice = item.price;
+            const displayStock = item.stock;
+            const isOutOfStock = displayStock <= 0;
+            
             return (
-            <div key={item.name} className={`blackmarket-hack-item ${item.rarity || 'common'}`}>
+            <div key={item.name} className={`blackmarket-hack-item ${item.rarity || 'common'} ${isOutOfStock ? 'out-of-stock' : ''}`}>
               <div className="item-header">
                 {item.icon && <span className="blackmarket-hack-item-icon">{item.icon}</span>}
                 <div className="item-info">
@@ -2043,8 +2301,9 @@ if (!user) {
                   <span className="blackmarket-hack-item-price">{Number(displayPrice).toLocaleString()}€</span>
                 </div>
                 <div className="item-stock">
-                  <span className={`stock-dot ${item.stock <= 2 ? 'low' : item.stock <= 5 ? 'medium' : 'high'}`}></span>
-                  <span className="stock-text">{item.stock || 0}</span>
+                  <span className={`stock-dot ${displayStock <= 2 ? 'low' : displayStock <= 5 ? 'medium' : 'high'}`}></span>
+                  <span className="stock-text">{displayStock}</span>
+                  {isOutOfStock && <span className="out-of-stock-label">AGOTADO</span>}
                 </div>
               </div>
               
@@ -2082,11 +2341,11 @@ if (!user) {
               
               <div className="item-actions">
                 <button 
-                  className={`blackmarket-hack-buy ${item.stock <= 0 ? 'disabled' : ''}`} 
+                  className={`blackmarket-hack-buy ${isOutOfStock ? 'disabled' : ''}`} 
                   onClick={() => handleBuy({ ...item, name: displayName, price: displayPrice })}
-                  disabled={item.stock <= 0}
+                  disabled={isOutOfStock}
                 >
-                  {item.stock <= 0 ? 'Agotado' : 'Comprar'}
+                  {isOutOfStock ? 'Agotado' : 'Comprar'}
                 </button>
               </div>
             </div>
@@ -2119,6 +2378,17 @@ if (!user) {
                     } else {
                       console.log('[BlackMarket] Purchase OK:', data);
                       setPurchaseState({ visible: true, status: 'success', message: 'Compra exitosa ✅' });
+                      
+                      // Actualizar stock local después de compra exitosa
+                      if (data.stock !== undefined && modalItem.itemId) {
+                        setStockData(prev => ({
+                          ...prev,
+                          [modalItem.itemId]: {
+                            ...prev[modalItem.itemId],
+                            stock: data.stock
+                          }
+                        }));
+                      }
                     }
                   } else {
                     console.log('[BlackMarket] Simulated purchase for item without API id');
@@ -2600,6 +2870,17 @@ if (!user) {
                     <span>Bolsa Negra</span>
                     {selected === ITEMS.length && <span className="active-indicator">✓</span>}
                   </button>
+                  <button
+                    className={`mobile-menu-tab ${selected === ITEMS.length + 1 ? 'active' : ''}`}
+                    onClick={() => {
+                      setSelected(ITEMS.length + 1);
+                      closeMobileMenu();
+                    }}
+                  >
+                    <FaUserSecret />
+                    <span>Mercado Usuarios</span>
+                    {selected === ITEMS.length + 1 && <span className="active-indicator">✓</span>}
+                  </button>
                 </div>
               </div>
               
@@ -2708,6 +2989,169 @@ if (!user) {
           50% {
             box-shadow: 0 4px 20px rgba(239, 68, 68, 0.8);
           }
+        }
+        
+        /* Estilos para el botón de refrescar stock */
+        .refresh-stock-btn {
+          background: linear-gradient(135deg, #22c55e, #16a34a);
+          border: none;
+          border-radius: 8px;
+          padding: 8px 12px;
+          color: white;
+          font-size: 16px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          margin-right: 8px;
+          box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+        }
+        
+        .refresh-stock-btn:hover {
+          background: linear-gradient(135deg, #16a34a, #15803d);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
+        }
+        
+        .refresh-stock-btn:active {
+          transform: translateY(0);
+        }
+        
+        /* Estilos para items agotados */
+        .blackmarket-hack-item.out-of-stock {
+          opacity: 0.6;
+          filter: grayscale(0.3);
+        }
+        
+        .out-of-stock-label {
+          background: #ef4444;
+          color: white;
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-size: 10px;
+          font-weight: 700;
+          margin-left: 4px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        
+        .blackmarket-hack-buy.disabled {
+          background: #6b7280 !important;
+          cursor: not-allowed !important;
+          opacity: 0.6;
+        }
+        
+        .blackmarket-hack-buy.disabled:hover {
+          background: #6b7280 !important;
+          transform: none !important;
+        }
+        
+        /* Estilos para el mercado de usuarios */
+        .user-market-header {
+          text-align: center;
+          margin-bottom: 2rem;
+          padding: 1rem;
+          background: rgba(0, 255, 153, 0.1);
+          border-radius: 12px;
+          border: 1px solid rgba(0, 255, 153, 0.3);
+        }
+        
+        .user-market-header h3 {
+          color: #00ff99;
+          margin-bottom: 0.5rem;
+          font-size: 1.5rem;
+        }
+        
+        .user-market-header p {
+          color: #e5e7eb;
+          margin-bottom: 1rem;
+          opacity: 0.8;
+        }
+        
+        .market-actions {
+          display: flex;
+          justify-content: center;
+          gap: 1rem;
+        }
+        
+        .refresh-sales-btn {
+          background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+          border: none;
+          border-radius: 8px;
+          padding: 0.5rem 1rem;
+          color: white;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        
+        .refresh-sales-btn:hover {
+          background: linear-gradient(135deg, #1d4ed8, #1e40af);
+          transform: translateY(-2px);
+        }
+        
+        .user-sales-list {
+          display: grid;
+          gap: 1rem;
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        }
+        
+        .user-sale-item {
+          background: rgba(0, 0, 0, 0.3);
+          border: 1px solid rgba(0, 255, 153, 0.2);
+          border-radius: 12px;
+          padding: 1rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          transition: all 0.3s ease;
+        }
+        
+        .user-sale-item:hover {
+          border-color: rgba(0, 255, 153, 0.5);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 255, 153, 0.2);
+        }
+        
+        .sale-info h4 {
+          color: #00ff99;
+          margin-bottom: 0.5rem;
+          font-size: 1.1rem;
+        }
+        
+        .sale-info p {
+          color: #e5e7eb;
+          margin: 0.25rem 0;
+          font-size: 0.9rem;
+          opacity: 0.8;
+        }
+        
+        .sale-actions {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+        
+        .buy-from-user-btn {
+          background: linear-gradient(135deg, #22c55e, #16a34a);
+          border: none;
+          border-radius: 6px;
+          padding: 0.5rem 1rem;
+          color: white;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          font-size: 0.9rem;
+        }
+        
+        .buy-from-user-btn:hover {
+          background: linear-gradient(135deg, #16a34a, #15803d);
+          transform: translateY(-1px);
+        }
+        
+        .no-sales {
+          text-align: center;
+          padding: 3rem;
+          color: #9ca3af;
+          font-size: 1.1rem;
         }
       `}</style>
     </div>

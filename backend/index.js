@@ -1628,6 +1628,7 @@ app.get('/api/proxy/dni/demo/:discordId', async (req, res) => {
 
 // ===== PROXY BLACKMARKET =====
 const BLACKMARKET_BOT_URL = process.env.BLACKMARKET_BOT_URL || 'http://37.27.21.91:5021';
+console.log('🌐Blackmarket API disponible en: http://37.27.21.91:5021/api/blackmarket');
 
 // Proxy: obtener catálogo de items del BlackMarket
 app.get('/api/proxy/blackmarket/items', async (req, res) => {
@@ -1858,6 +1859,210 @@ app.post('/api/proxy/blackmarket/sell', async (req, res) => {
     res.json(data);
   } catch (e) {
     console.error(`[BLACKMARKET PROXY] Error de conexión:`, e.message);
+    res.status(502).json({ error: 'Error conectando con el bot de BlackMarket', details: e.message });
+  }
+});
+
+// ===== NUEVOS ENDPOINTS BLACKMARKET =====
+
+// Proxy: obtener stock de todos los items
+app.get('/api/blackmarket/stock', async (req, res) => {
+  try {
+    console.log('[BLACKMARKET PROXY] ===== INICIO STOCK =====');
+    console.log('[BLACKMARKET PROXY] GET /api/blackmarket/stock');
+    console.log('[BLACKMARKET PROXY] URL del bot:', `${BLACKMARKET_BOT_URL}/api/blackmarket/stock`);
+    
+    const fetchBM = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+    const response = await fetchBM(`${BLACKMARKET_BOT_URL}/api/blackmarket/stock`);
+    
+    console.log('[BLACKMARKET PROXY] Response status:', response.status);
+    const data = await response.json();
+    
+    if (!response.ok) {
+      console.error(`[BLACKMARKET PROXY] Bot respondió con error: ${response.status}`);
+      return res.status(response.status).json({ error: 'Error obteniendo stock del BlackMarket', details: data });
+    }
+    
+    console.log(`[BLACKMARKET PROXY] ✅ Stock obtenido exitosamente`);
+    res.json(data);
+  } catch (e) {
+    console.error(`[BLACKMARKET PROXY] Error de conexión:`, e.message);
+    res.status(502).json({ error: 'Error conectando con el bot de BlackMarket', details: e.message });
+  }
+});
+
+// Proxy: poner item en venta a otros usuarios
+app.post('/api/blackmarket/sell-to-user', async (req, res) => {
+  try {
+    const { sellerId, itemId, amount, price } = req.body;
+    console.log('[BLACKMARKET PROXY] ===== INICIO VENTA A USUARIO =====');
+    console.log(`[BLACKMARKET PROXY] POST /api/blackmarket/sell-to-user`);
+    console.log('[BLACKMARKET PROXY] Request body:', { sellerId, itemId, amount, price });
+    
+    const fetchBM = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+    const response = await fetchBM(`${BLACKMARKET_BOT_URL}/api/blackmarket/sell-to-user`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sellerId, itemId, amount, price })
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      console.error(`[BLACKMARKET PROXY] Bot respondió con error: ${response.status}`);
+      return res.status(response.status).json({ error: 'Error poniendo item en venta', details: data });
+    }
+    
+    console.log(`[BLACKMARKET PROXY] ✅ Item puesto en venta exitosamente`);
+    res.json(data);
+  } catch (e) {
+    console.error(`[BLACKMARKET PROXY] Error de conexión:`, e.message);
+    res.status(502).json({ error: 'Error conectando con el bot de BlackMarket', details: e.message });
+  }
+});
+
+// Proxy: comprar item de otro usuario
+app.post('/api/blackmarket/buy-from-user', async (req, res) => {
+  try {
+    const { buyerId, saleId, amount } = req.body;
+    console.log('[BLACKMARKET PROXY] ===== INICIO COMPRA DE USUARIO =====');
+    console.log(`[BLACKMARKET PROXY] POST /api/blackmarket/buy-from-user`);
+    console.log('[BLACKMARKET PROXY] Request body:', { buyerId, saleId, amount });
+    
+    const fetchBM = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+    const response = await fetchBM(`${BLACKMARKET_BOT_URL}/api/blackmarket/buy-from-user`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ buyerId, saleId, amount })
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      console.error(`[BLACKMARKET PROXY] Bot respondió con error: ${response.status}`);
+      return res.status(response.status).json({ error: 'Error comprando item de usuario', details: data });
+    }
+    
+    console.log(`[BLACKMARKET PROXY] ✅ Compra de usuario exitosa`);
+    res.json(data);
+  } catch (e) {
+    console.error(`[BLACKMARKET PROXY] Error de conexión:`, e.message);
+    res.status(502).json({ error: 'Error conectando con el bot de BlackMarket', details: e.message });
+  }
+});
+
+// Proxy: listar ventas disponibles
+app.get('/api/blackmarket/sales', async (req, res) => {
+  try {
+    console.log('[BLACKMARKET PROXY] ===== INICIO VENTAS DISPONIBLES =====');
+    console.log('[BLACKMARKET PROXY] GET /api/blackmarket/sales');
+    
+    const fetchBM = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+    const response = await fetchBM(`${BLACKMARKET_BOT_URL}/api/blackmarket/sales`);
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      console.error(`[BLACKMARKET PROXY] Bot respondió con error: ${response.status}`);
+      return res.status(response.status).json({ error: 'Error obteniendo ventas disponibles', details: data });
+    }
+    
+    console.log(`[BLACKMARKET PROXY] ✅ Ventas obtenidas exitosamente`);
+    res.json(data);
+  } catch (e) {
+    console.error(`[BLACKMARKET PROXY] Error de conexión:`, e.message);
+    res.status(502).json({ error: 'Error conectando con el bot de BlackMarket', details: e.message });
+  }
+});
+
+// Proxy: cancelar venta propia
+app.post('/api/blackmarket/cancel-sale', async (req, res) => {
+  try {
+    const { sellerId, saleId } = req.body;
+    console.log('[BLACKMARKET PROXY] ===== INICIO CANCELAR VENTA =====');
+    console.log(`[BLACKMARKET PROXY] POST /api/blackmarket/cancel-sale`);
+    console.log('[BLACKMARKET PROXY] Request body:', { sellerId, saleId });
+    
+    const fetchBM = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+    const response = await fetchBM(`${BLACKMARKET_BOT_URL}/api/blackmarket/cancel-sale`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sellerId, saleId })
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      console.error(`[BLACKMARKET PROXY] Bot respondió con error: ${response.status}`);
+      return res.status(response.status).json({ error: 'Error cancelando venta', details: data });
+    }
+    
+    console.log(`[BLACKMARKET PROXY] ✅ Venta cancelada exitosamente`);
+    res.json(data);
+  } catch (e) {
+    console.error(`[BLACKMARKET PROXY] Error de conexión:`, e.message);
+    res.status(502).json({ error: 'Error conectando con el bot de BlackMarket', details: e.message });
+  }
+});
+
+// ===== ENDPOINTS ADMINISTRATIVOS BLACKMARKET =====
+
+// Proxy: modificar stock de un item (admin)
+app.post('/api/blackmarket/admin/stock', ensureAuthAndAdmin, async (req, res) => {
+  try {
+    const { itemId, newStock } = req.body;
+    console.log('[BLACKMARKET ADMIN] ===== INICIO MODIFICAR STOCK =====');
+    console.log(`[BLACKMARKET ADMIN] POST /api/blackmarket/admin/stock`);
+    console.log('[BLACKMARKET ADMIN] Request body:', { itemId, newStock });
+    
+    const fetchBM = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+    const response = await fetchBM(`${BLACKMARKET_BOT_URL}/api/blackmarket/admin/stock`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ itemId, newStock })
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      console.error(`[BLACKMARKET ADMIN] Bot respondió con error: ${response.status}`);
+      return res.status(response.status).json({ error: 'Error modificando stock', details: data });
+    }
+    
+    console.log(`[BLACKMARKET ADMIN] ✅ Stock modificado exitosamente`);
+    res.json(data);
+  } catch (e) {
+    console.error(`[BLACKMARKET ADMIN] Error de conexión:`, e.message);
+    res.status(502).json({ error: 'Error conectando con el bot de BlackMarket', details: e.message });
+  }
+});
+
+// Proxy: añadir stock a un item (admin)
+app.post('/api/blackmarket/admin/add-stock', ensureAuthAndAdmin, async (req, res) => {
+  try {
+    const { itemId, amount } = req.body;
+    console.log('[BLACKMARKET ADMIN] ===== INICIO AÑADIR STOCK =====');
+    console.log(`[BLACKMARKET ADMIN] POST /api/blackmarket/admin/add-stock`);
+    console.log('[BLACKMARKET ADMIN] Request body:', { itemId, amount });
+    
+    const fetchBM = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+    const response = await fetchBM(`${BLACKMARKET_BOT_URL}/api/blackmarket/admin/add-stock`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ itemId, amount })
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      console.error(`[BLACKMARKET ADMIN] Bot respondió con error: ${response.status}`);
+      return res.status(response.status).json({ error: 'Error añadiendo stock', details: data });
+    }
+    
+    console.log(`[BLACKMARKET ADMIN] ✅ Stock añadido exitosamente`);
+    res.json(data);
+  } catch (e) {
+    console.error(`[BLACKMARKET ADMIN] Error de conexión:`, e.message);
     res.status(502).json({ error: 'Error conectando con el bot de BlackMarket', details: e.message });
   }
 });
