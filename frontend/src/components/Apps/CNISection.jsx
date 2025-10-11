@@ -321,7 +321,8 @@ const useDataExport = () => {
         if (yPosition + requiredSpace > pageHeight - 40) {
           doc.addPage();
           addBackgroundElements(doc.internal.getNumberOfPages());
-          yPosition = 20;
+          addHeader();
+          yPosition = 60; // Espacio para el header
           return true;
         }
         return false;
@@ -463,13 +464,33 @@ const exportDatabaseData = async (doc, data, yPosition, checkPageBreak) => {
   doc.text('VALOR', 150, yPosition + 2);
   yPosition += 15;
   
-  // Datos de la tabla
+  // Datos de la tabla con manejo de páginas múltiples
   doc.setFont(undefined, 'normal');
-  Object.entries(data).forEach(([key, value], index) => {
-    checkPageBreak(12);
+  const entries = Object.entries(data);
+  let currentPage = 1;
+  let itemsPerPage = 0;
+  const maxItemsPerPage = 25; // Ajustar según el espacio disponible
+  
+  for (let i = 0; i < entries.length; i++) {
+    const [key, value] = entries[i];
+    
+    // Verificar si necesitamos nueva página
+    if (checkPageBreak(12) || itemsPerPage >= maxItemsPerPage) {
+      // Agregar encabezado de tabla en nueva página si es necesario
+      if (i < entries.length) {
+        doc.setFillColor(240, 240, 240);
+        doc.rect(20, yPosition - 5, 170, 12, 'F');
+        doc.setTextColor(30, 58, 138);
+        doc.setFont(undefined, 'bold');
+        doc.text('MÉTRICA', 25, yPosition + 2);
+        doc.text('VALOR', 150, yPosition + 2);
+        yPosition += 15;
+        itemsPerPage = 0;
+      }
+    }
     
     // Alternar colores de fila
-    if (index % 2 === 0) {
+    if (i % 2 === 0) {
       doc.setFillColor(250, 250, 250);
       doc.rect(20, yPosition - 5, 170, 10, 'F');
     }
@@ -478,7 +499,8 @@ const exportDatabaseData = async (doc, data, yPosition, checkPageBreak) => {
     doc.text(key.replace(/_/g, ' ').toUpperCase(), 25, yPosition + 2);
     doc.text(value.toLocaleString(), 150, yPosition + 2);
     yPosition += 12;
-  });
+    itemsPerPage++;
+  }
 };
 
 const exportTrackingData = async (doc, data, yPosition, checkPageBreak) => {
@@ -495,8 +517,29 @@ const exportTrackingData = async (doc, data, yPosition, checkPageBreak) => {
   doc.line(20, yPosition, 100, yPosition);
   yPosition += 15;
 
-  data.forEach((result, index) => {
-    checkPageBreak(30);
+  const maxItemsPerPage = 8; // Ajustar según el espacio disponible
+  let itemsPerPage = 0;
+
+  for (let index = 0; index < data.length; index++) {
+    const result = data[index];
+    
+    // Verificar si necesitamos nueva página
+    if (checkPageBreak(30) || itemsPerPage >= maxItemsPerPage) {
+      // Agregar título de sección en nueva página si es necesario
+      if (index < data.length) {
+        doc.setFontSize(16);
+        doc.setTextColor(30, 58, 138);
+        doc.setFont(undefined, 'bold');
+        doc.text('RESULTADOS DE RASTREO (CONTINUACIÓN)', 20, yPosition);
+        yPosition += 12;
+        
+        doc.setDrawColor(30, 58, 138);
+        doc.setLineWidth(1);
+        doc.line(20, yPosition, 100, yPosition);
+        yPosition += 15;
+        itemsPerPage = 0;
+      }
+    }
     
     // Contenedor del resultado con borde
     doc.setDrawColor(200, 200, 200);
@@ -526,7 +569,8 @@ const exportTrackingData = async (doc, data, yPosition, checkPageBreak) => {
     }
     
     yPosition += 15;
-  });
+    itemsPerPage++;
+  }
 };
 
 const exportBusinessData = async (doc, data, yPosition, checkPageBreak) => {
@@ -543,8 +587,29 @@ const exportBusinessData = async (doc, data, yPosition, checkPageBreak) => {
   doc.line(20, yPosition, 80, yPosition);
   yPosition += 15;
 
-  data.forEach((business, index) => {
-    checkPageBreak(35);
+  const maxItemsPerPage = 6; // Ajustar según el espacio disponible
+  let itemsPerPage = 0;
+
+  for (let index = 0; index < data.length; index++) {
+    const business = data[index];
+    
+    // Verificar si necesitamos nueva página
+    if (checkPageBreak(35) || itemsPerPage >= maxItemsPerPage) {
+      // Agregar título de sección en nueva página si es necesario
+      if (index < data.length) {
+        doc.setFontSize(16);
+        doc.setTextColor(30, 58, 138);
+        doc.setFont(undefined, 'bold');
+        doc.text('REGISTROS EMPRESARIALES (CONTINUACIÓN)', 20, yPosition);
+        yPosition += 12;
+        
+        doc.setDrawColor(30, 58, 138);
+        doc.setLineWidth(1);
+        doc.line(20, yPosition, 80, yPosition);
+        yPosition += 15;
+        itemsPerPage = 0;
+      }
+    }
     
     // Contenedor de la empresa con borde
     doc.setDrawColor(200, 200, 200);
@@ -578,6 +643,7 @@ const exportBusinessData = async (doc, data, yPosition, checkPageBreak) => {
     }
     
     yPosition += 18;
+    itemsPerPage++;
     
     // Notas si existen
     if (business.notas) {

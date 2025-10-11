@@ -490,6 +490,15 @@ const MDTPolicial = () => {
           </div>
         </div>
         
+        <div className="header-center">
+          <PoliceIDCard 
+            user={user} 
+            isPolice={isPolice} 
+            isCNI={isCNI}
+            onFlip={() => console.log('Tarjeta volteada')}
+          />
+        </div>
+        
         <div className="header-right">
           <div className="system-controls">
             <button 
@@ -547,18 +556,16 @@ const MDTPolicial = () => {
         </div>
         
         <div className="toolbar-center">
-          <PoliceIDCard 
-            user={user} 
-            isPolice={isPolice} 
-            isCNI={isCNI}
-            onFlip={() => console.log('Tarjeta volteada')}
-          />
-        </div>
-        
-        <div className="toolbar-right">
           <div className="system-info">
             <span className="time">{new Date().toLocaleTimeString()}</span>
             <span className="date">{new Date().toLocaleDateString()}</span>
+          </div>
+        </div>
+        
+        <div className="toolbar-right">
+          <div className="user-info">
+            <span className="user-name">{user?.username || 'Usuario'}</span>
+            <span className="user-role">{isCNI ? 'CNI' : isPolice ? 'Policía' : 'Ciudadano'}</span>
           </div>
         </div>
       </div>

@@ -204,6 +204,13 @@ body {
   z-index: 10;
 }
 
+.header-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+}
+
 .header-left {
   display: flex;
   align-items: center;
@@ -734,6 +741,27 @@ body {
   align-items: flex-end;
   font-size: 0.8rem;
   color: var(--police-text-secondary);
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  font-size: 0.9rem;
+  color: var(--police-text);
+}
+
+.user-name {
+  font-weight: 600;
+  color: var(--police-highlight);
+}
+
+.user-role {
+  font-size: 0.8rem;
+  color: var(--police-accent);
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .time {
@@ -1620,8 +1648,8 @@ body {
 
 .dni-card-interactive {
   width: 100%;
-  max-width: 450px;
-  height: 300px;
+  max-width: 500px;
+  height: 320px;
   position: relative;
   transform-style: preserve-3d;
   transition: transform 0.6s ease;
@@ -1675,10 +1703,12 @@ body {
 }
 
 .dni-content {
-  padding: 15px;
+  padding: 20px;
   display: flex;
-  gap: 15px;
-  height: calc(100% - 50px);
+  gap: 20px;
+  height: calc(100% - 60px);
+  flex-direction: row;
+  align-items: flex-start;
 }
 
 .dni-photo-section {
@@ -1689,8 +1719,8 @@ body {
 }
 
 .dni-photo-container {
-  width: 70px;
-  height: 90px;
+  width: 80px;
+  height: 100px;
   border: 2px solid var(--police-border);
   border-radius: 8px;
   overflow: hidden;
@@ -1726,7 +1756,7 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   min-width: 0;
 }
 
