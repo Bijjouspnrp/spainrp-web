@@ -598,6 +598,10 @@ const BancoCentralRP = () => {
             </div>
           </div>
           <div className="header-actions">
+            <div className="bank-badge">
+              <BankIcon />
+              <span>Banco Central SpainRP</span>
+            </div>
             <div className="security-badge">
               <ShieldIcon />
               <span>Seguro SSL</span>
@@ -1113,6 +1117,31 @@ const BancoCentralRP = () => {
           </div>
         </div>
       )}
+
+      {/* Términos Bancarios */}
+      <div className="banking-terms">
+        <div className="terms-content">
+          <div className="terms-section">
+            <h4>Información Legal</h4>
+            <p>Banco Central SpainRP es una entidad financiera virtual regulada por las leyes del servidor SpainRP. Todos los servicios están sujetos a términos y condiciones.</p>
+          </div>
+          <div className="terms-section">
+            <h4>Seguridad</h4>
+            <p>Utilizamos tecnología SSL de 256 bits para proteger todas las transacciones. Sus datos están seguros y encriptados.</p>
+          </div>
+          <div className="terms-section">
+            <h4>Servicios</h4>
+            <p>Ofrecemos servicios de depósito, retiro, transferencias, trabajo y nóminas. Todas las operaciones son instantáneas y seguras.</p>
+          </div>
+          <div className="terms-section">
+            <h4>Contacto</h4>
+            <p>Para soporte técnico, contacte con el staff del servidor SpainRP a través de Discord o en el juego.</p>
+          </div>
+        </div>
+        <div className="terms-footer">
+          <p>© 2024 Banco Central SpainRP. Todos los derechos reservados. | Servidor: SpainRP | Versión: 2.0</p>
+        </div>
+      </div>
 
       {/* Message Toast */}
       {message && (
