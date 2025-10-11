@@ -3,12 +3,16 @@ import { apiUrl, authFetch } from '../../utils/api';
 import DiscordUserBar from '../DiscordUserBar';
 import './BancoCentralRP.css';
 
-// Iconos como componentes
-const WalletIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/>
-    <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/>
-    <circle cx="18" cy="12" r="2"/>
+// Iconos modernos para el banco
+const BankIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M3 21h18"/>
+    <path d="M5 21V7l8-4v18"/>
+    <path d="M19 21V11l-6-4"/>
+    <path d="M9 9v.01"/>
+    <path d="M9 12v.01"/>
+    <path d="M9 15v.01"/>
+    <path d="M9 18v.01"/>
   </svg>
 );
 
@@ -68,6 +72,27 @@ const XIcon = () => (
   </svg>
 );
 
+const ShieldIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+  </svg>
+);
+
+const TrendingUpIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+    <polyline points="17 6 23 6 23 12"/>
+  </svg>
+);
+
+const LockIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+    <circle cx="12" cy="16" r="1"/>
+    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+  </svg>
+);
+
 const BancoCentralRP = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -88,6 +113,12 @@ const BancoCentralRP = () => {
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [workCooldown, setWorkCooldown] = useState(0);
   const [salaryCooldown, setSalaryCooldown] = useState(0);
+  
+  // Estados para la tarjeta de crédito
+  const [cardFlipped, setCardFlipped] = useState(false);
+  const [cardInserted, setCardInserted] = useState(false);
+  const [showCardInsert, setShowCardInsert] = useState(false);
+  const [cardInserting, setCardInserting] = useState(false);
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -225,6 +256,32 @@ const BancoCentralRP = () => {
     setMessage(msg);
     setMessageType(type);
     setTimeout(() => setMessage(''), 3000);
+  };
+
+  // Funciones para la tarjeta de crédito
+  const handleCardFlip = () => {
+    setCardFlipped(!cardFlipped);
+  };
+
+  const handleCardInsert = async () => {
+    if (cardInserting) return;
+    
+    setCardInserting(true);
+    setShowCardInsert(true);
+    
+    // Simular inserción de tarjeta
+    setTimeout(() => {
+      setCardInserted(true);
+      setCardInserting(false);
+      setShowCardInsert(false);
+      showMessage('Tarjeta insertada correctamente. Bienvenido al Banco Central RP', 'success');
+    }, 2000);
+  };
+
+  const handleCardEject = () => {
+    setCardInserted(false);
+    setCardFlipped(false);
+    showMessage('Tarjeta expulsada. Gracias por usar nuestros servicios', 'success');
   };
 
   const handleDeposit = async () => {
@@ -510,9 +567,17 @@ const BancoCentralRP = () => {
   if (loading) {
     return (
       <div className="banco-container">
-        <div className="loading-spinner">
-          <div className="spinner"></div>
-          <p>Cargando banco...</p>
+        <div className="loading-screen">
+          <div className="loading-content">
+            <div className="bank-logo">
+              <BankIcon />
+              <span>SpainRP</span>
+            </div>
+            <div className="loading-spinner">
+              <div className="spinner"></div>
+              <p>Cargando servicios bancarios...</p>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -522,133 +587,280 @@ const BancoCentralRP = () => {
     <div className="banco-container">
       <DiscordUserBar />
       
-      {/* Header */}
+      {/* Header con logo SpainRP */}
       <div className="banco-header">
-        <div className="banco-title">
-          <CreditCardIcon />
-          <h1>Banco Central RP</h1>
-        </div>
-        <div className="banco-subtitle">
-          Gestiona tu dinero de forma segura
-        </div>
-      </div>
-
-      {/* Balance Cards */}
-      <div className="balance-section">
-        <div className="balance-card total">
-          <div className="balance-icon">
-            <WalletIcon />
-          </div>
-          <div className="balance-info">
-            <h3>Saldo Total</h3>
-            <p className="balance-amount">{formatCurrency(balance.cash + balance.bank)}</p>
-          </div>
-        </div>
-        
-        <div className="balance-cards">
-          <div className="balance-card cash">
-            <div className="balance-icon">
-              <DollarSignIcon />
-            </div>
-            <div className="balance-info">
-              <h4>Efectivo</h4>
-              <p>{formatCurrency(balance.cash)}</p>
+        <div className="header-content">
+          <div className="bank-logo">
+            <BankIcon />
+            <div className="logo-text">
+              <span className="bank-name">Banco Central</span>
+              <span className="bank-subtitle">SpainRP</span>
             </div>
           </div>
-          
-          <div className="balance-card bank">
-            <div className="balance-icon">
-              <CreditCardIcon />
-            </div>
-            <div className="balance-info">
-              <h4>Banco</h4>
-              <p>{formatCurrency(balance.bank)}</p>
+          <div className="header-actions">
+            <div className="security-badge">
+              <ShieldIcon />
+              <span>Seguro SSL</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="actions-section">
-        <h2>Acciones Rápidas</h2>
-        <div className="actions-grid">
-          <button 
-            className="action-btn deposit" 
-            onClick={() => setShowDeposit(true)}
-            disabled={loadingAction}
+      {/* Tarjeta de crédito principal */}
+      <div className="card-section">
+        <div className="card-container">
+          <div 
+            className={`credit-card ${cardFlipped ? 'flipped' : ''} ${cardInserted ? 'inserted' : ''}`}
+            onClick={handleCardFlip}
           >
-            <ArrowUpIcon />
-            <span>Depositar</span>
-          </button>
-          
-          <button 
-            className="action-btn withdraw" 
-            onClick={() => setShowWithdraw(true)}
-            disabled={loadingAction}
-          >
-            <ArrowDownIcon />
-            <span>Retirar</span>
-          </button>
-          
-          <button 
-            className="action-btn transfer" 
-            onClick={() => setShowTransfer(true)}
-            disabled={loadingAction}
-          >
-            <ArrowRightIcon />
-            <span>Transferir</span>
-          </button>
-          
-          <button 
-            className="action-btn work" 
-            onClick={() => setShowWork(true)}
-            disabled={loadingAction || workCooldown > 0}
-          >
-            <BriefcaseIcon />
-            <span>
-              {workCooldown > 0 ? `Esperar ${formatTime(workCooldown)}` : 'Trabajar'}
-            </span>
-          </button>
-          
-          <button 
-            className="action-btn salary" 
-            onClick={() => setShowSalary(true)}
-            disabled={loadingAction || salaryCooldown > 0}
-          >
-            <DollarSignIcon />
-            <span>
-              {salaryCooldown > 0 ? `Esperar ${formatTime(salaryCooldown)}` : 'Nómina'}
-            </span>
-          </button>
-        </div>
-      </div>
-
-      {/* Transactions */}
-      <div className="transactions-section">
-        <h2>Últimas Transacciones</h2>
-        <div className="transactions-list">
-          {transactions.length === 0 ? (
-            <div className="no-transactions">
-              <p>No hay transacciones recientes</p>
-            </div>
-          ) : (
-            transactions.map(transaction => (
-              <div key={transaction.id} className="transaction-item">
-                <div className="transaction-icon">
-                  {transaction.icon}
+            <div className="card-front">
+              <div className="card-header">
+                <div className="card-chip"></div>
+                <div className="card-logo">SpainRP Bank</div>
+              </div>
+              <div className="card-number">
+                <span>****</span>
+                <span>****</span>
+                <span>****</span>
+                <span>1234</span>
+              </div>
+              <div className="card-footer">
+                <div className="card-holder">
+                  <span className="label">TITULAR</span>
+                  <span className="name">{user?.username || 'USUARIO'}</span>
                 </div>
-                <div className="transaction-info">
-                  <h4>{transaction.description}</h4>
-                  <p className="transaction-date">{formatDate(transaction.date)}</p>
-                </div>
-                <div className={`transaction-amount ${transaction.amount > 0 ? 'positive' : 'negative'}`}>
-                  {transaction.amount > 0 ? '+' : ''}{formatCurrency(transaction.amount)}
+                <div className="card-expiry">
+                  <span className="label">VENCE</span>
+                  <span className="date">12/25</span>
                 </div>
               </div>
-            ))
+            </div>
+            <div className="card-back">
+              <div className="card-stripe"></div>
+              <div className="card-signature">
+                <span className="label">FIRMA</span>
+                <div className="signature-line"></div>
+              </div>
+              <div className="card-cvv">
+                <span className="label">CVV</span>
+                <span className="cvv-number">123</span>
+              </div>
+            </div>
+          </div>
+          
+          {!cardInserted && (
+            <div className="card-insert-section">
+              <button 
+                className="insert-card-btn"
+                onClick={handleCardInsert}
+                disabled={cardInserting}
+              >
+                {cardInserting ? (
+                  <>
+                    <div className="inserting-animation"></div>
+                    <span>Insertando tarjeta...</span>
+                  </>
+                ) : (
+                  <>
+                    <CreditCardIcon />
+                    <span>Insertar Tarjeta</span>
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+          
+          {cardInserted && (
+            <div className="card-eject-section">
+              <button 
+                className="eject-card-btn"
+                onClick={handleCardEject}
+              >
+                <LockIcon />
+                <span>Expulsar Tarjeta</span>
+              </button>
+            </div>
           )}
         </div>
       </div>
+
+      {/* Balance Cards - Solo visible si la tarjeta está insertada */}
+      {cardInserted && (
+        <div className="balance-section">
+          <div className="section-header">
+            <h2>Estado de Cuenta</h2>
+            <div className="balance-trend">
+              <TrendingUpIcon />
+              <span>+2.5% este mes</span>
+            </div>
+          </div>
+          
+          <div className="balance-grid">
+            <div className="balance-card total">
+              <div className="card-header">
+                <div className="balance-icon">
+                  <DollarSignIcon />
+                </div>
+                <div className="balance-badge">Total</div>
+              </div>
+              <div className="balance-amount">
+                {formatCurrency(balance.cash + balance.bank)}
+              </div>
+              <div className="balance-subtitle">Saldo disponible</div>
+            </div>
+            
+            <div className="balance-card cash">
+              <div className="card-header">
+                <div className="balance-icon">
+                  <DollarSignIcon />
+                </div>
+                <div className="balance-badge cash">Efectivo</div>
+              </div>
+              <div className="balance-amount">
+                {formatCurrency(balance.cash)}
+              </div>
+              <div className="balance-subtitle">En tu bolsillo</div>
+            </div>
+            
+            <div className="balance-card bank">
+              <div className="card-header">
+                <div className="balance-icon">
+                  <CreditCardIcon />
+                </div>
+                <div className="balance-badge bank">Banco</div>
+              </div>
+              <div className="balance-amount">
+                {formatCurrency(balance.bank)}
+              </div>
+              <div className="balance-subtitle">En cuenta bancaria</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quick Actions - Solo visible si la tarjeta está insertada */}
+      {cardInserted && (
+        <div className="actions-section">
+          <div className="section-header">
+            <h2>Servicios Bancarios</h2>
+            <div className="section-subtitle">Gestiona tu dinero de forma segura</div>
+          </div>
+          
+          <div className="actions-grid">
+            <button 
+              className="action-btn deposit" 
+              onClick={() => setShowDeposit(true)}
+              disabled={loadingAction}
+            >
+              <div className="btn-icon">
+                <ArrowUpIcon />
+              </div>
+              <div className="btn-content">
+                <span className="btn-title">Depositar</span>
+                <span className="btn-subtitle">Efectivo → Banco</span>
+              </div>
+            </button>
+            
+            <button 
+              className="action-btn withdraw" 
+              onClick={() => setShowWithdraw(true)}
+              disabled={loadingAction}
+            >
+              <div className="btn-icon">
+                <ArrowDownIcon />
+              </div>
+              <div className="btn-content">
+                <span className="btn-title">Retirar</span>
+                <span className="btn-subtitle">Banco → Efectivo</span>
+              </div>
+            </button>
+            
+            <button 
+              className="action-btn transfer" 
+              onClick={() => setShowTransfer(true)}
+              disabled={loadingAction}
+            >
+              <div className="btn-icon">
+                <ArrowRightIcon />
+              </div>
+              <div className="btn-content">
+                <span className="btn-title">Transferir</span>
+                <span className="btn-subtitle">A otro usuario</span>
+              </div>
+            </button>
+            
+            <button 
+              className="action-btn work" 
+              onClick={() => setShowWork(true)}
+              disabled={loadingAction || workCooldown > 0}
+            >
+              <div className="btn-icon">
+                <BriefcaseIcon />
+              </div>
+              <div className="btn-content">
+                <span className="btn-title">
+                  {workCooldown > 0 ? `Esperar ${formatTime(workCooldown)}` : 'Trabajar'}
+                </span>
+                <span className="btn-subtitle">Gana dinero trabajando</span>
+              </div>
+            </button>
+            
+            <button 
+              className="action-btn salary" 
+              onClick={() => setShowSalary(true)}
+              disabled={loadingAction || salaryCooldown > 0}
+            >
+              <div className="btn-icon">
+                <DollarSignIcon />
+              </div>
+              <div className="btn-content">
+                <span className="btn-title">
+                  {salaryCooldown > 0 ? `Esperar ${formatTime(salaryCooldown)}` : 'Nómina'}
+                </span>
+                <span className="btn-subtitle">Cobra según tu rol</span>
+              </div>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Transactions - Solo visible si la tarjeta está insertada */}
+      {cardInserted && (
+        <div className="transactions-section">
+          <div className="section-header">
+            <h2>Historial de Transacciones</h2>
+            <div className="section-subtitle">Últimas operaciones realizadas</div>
+          </div>
+          
+          <div className="transactions-list">
+            {transactions.length === 0 ? (
+              <div className="no-transactions">
+                <div className="no-transactions-icon">
+                  <CreditCardIcon />
+                </div>
+                <h3>No hay transacciones</h3>
+                <p>Realiza tu primera operación para ver el historial aquí</p>
+              </div>
+            ) : (
+              transactions.map(transaction => (
+                <div key={transaction.id} className="transaction-item">
+                  <div className="transaction-icon">
+                    {transaction.icon}
+                  </div>
+                  <div className="transaction-info">
+                    <h4>{transaction.description}</h4>
+                    <p className="transaction-date">{formatDate(transaction.date)}</p>
+                  </div>
+                  <div className={`transaction-amount ${transaction.amount > 0 ? 'positive' : 'negative'}`}>
+                    <span className="amount-symbol">{transaction.amount > 0 ? '+' : ''}</span>
+                    <span className="amount-value">{formatCurrency(Math.abs(transaction.amount))}</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Modals */}
       {showDeposit && (
@@ -858,10 +1070,30 @@ const BancoCentralRP = () => {
       </div>
       )}
 
+      {/* Animación de inserción de tarjeta */}
+      {showCardInsert && (
+        <div className="card-insert-animation">
+          <div className="insert-animation-content">
+            <div className="card-slot">
+              <div className="card-inserting"></div>
+            </div>
+            <div className="insert-text">
+              <h3>Insertando tarjeta...</h3>
+              <p>Verificando identidad y conectando con el banco</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Message Toast */}
       {message && (
         <div className={`message-toast ${messageType}`}>
-          {message}
+          <div className="toast-content">
+            <div className="toast-icon">
+              {messageType === 'success' ? '✓' : '⚠'}
+            </div>
+            <span>{message}</span>
+          </div>
         </div>
       )}
     </div>
