@@ -600,6 +600,31 @@ const MDTPolicial = () => {
           )}
         </div>
       </div>
+
+      {/* Términos y Condiciones */}
+      <div className="mdt-terms">
+        <div className="terms-content">
+          <div className="terms-section">
+            <h4>Información del Sistema</h4>
+            <p>El MDT Policial es un sistema de gestión policial virtual desarrollado para el servidor SpainRP. Todos los datos mostrados son simulados y utilizados únicamente para fines de roleplay.</p>
+          </div>
+          <div className="terms-section">
+            <h4>Uso de Datos</h4>
+            <p>Los datos de ciudadanos, multas, antecedentes e inventarios son generados automáticamente por el sistema del servidor.</p>
+          </div>
+          <div className="terms-section">
+            <h4>Seguridad</h4>
+            <p>El sistema utiliza encriptación SSL y cumple con los estándares de seguridad para proteger la información. El acceso está restringido a personal autorizado.</p>
+          </div>
+          <div className="terms-section">
+            <h4>Contacto</h4>
+            <p>Para soporte técnico o reportar problemas, contacte con BijjouPro08 en el servidor SpainRP a través de Discord.</p>
+          </div>
+        </div>
+        <div className="terms-footer">
+          <p>© 2025 MDT Policial SpainRP. Sistema de Gestión Policial Virtual. | Servidor: SpainRP | Versión: 2.0</p>
+        </div>
+      </div>
     </div>
   );
 };

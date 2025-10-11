@@ -47,6 +47,7 @@ body {
   background: var(--police-gradient-primary);
   position: relative;
   overflow: hidden;
+  padding-top: 80px; /* Espacio para la navbar */
 }
 
 /* Efectos de partículas de fondo */
@@ -2886,5 +2887,108 @@ body {
   
   .ranking-tabs {
     flex-direction: column;
+  }
+}
+
+/* ===== TÉRMINOS Y CONDICIONES ===== */
+.mdt-terms {
+  background: rgba(0, 0, 0, 0.4);
+  border-top: 1px solid var(--police-border);
+  margin-top: 40px;
+  padding: 30px 0;
+  backdrop-filter: blur(10px);
+}
+
+.terms-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+}
+
+.terms-section {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 25px;
+  border: 1px solid var(--police-border);
+  transition: all 0.3s ease;
+}
+
+.terms-section:hover {
+  background: rgba(0, 0, 0, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.terms-section h4 {
+  color: var(--police-highlight) !important;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 15px 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.terms-section h4::before {
+  content: '🛡️';
+  font-size: 1.2rem;
+}
+
+.terms-section:nth-child(2) h4::before {
+  content: '📊';
+}
+
+.terms-section:nth-child(3) h4::before {
+  content: '🔒';
+}
+
+.terms-section:nth-child(4) h4::before {
+  content: '📞';
+}
+
+.terms-section p {
+  color: #e0e0e0 !important;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.terms-footer {
+  text-align: center;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid var(--police-border);
+}
+
+.terms-footer p {
+  color: #95a5a6 !important;
+  font-size: 0.8rem;
+  margin: 0;
+  font-family: 'Courier New', monospace;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Responsive para términos */
+@media (max-width: 768px) {
+  .terms-content {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 0 15px;
+  }
+  
+  .terms-section {
+    padding: 20px;
+  }
+  
+  .mdt-terms {
+    padding: 20px 0;
+    margin-top: 30px;
   }
 }
