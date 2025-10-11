@@ -60,7 +60,7 @@ export const useDragAndDrop = (items, onReorder) => {
     }
     
     handleDragEnd();
-  }, [draggedItem, dropIndex, items, onReorder, handleDragEnd]);
+  }, [draggedItem, items, onReorder, handleDragEnd]);
 
   const getDragProps = useCallback((itemId, index) => ({
     draggable: true,
