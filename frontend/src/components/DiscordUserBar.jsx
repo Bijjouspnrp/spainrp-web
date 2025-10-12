@@ -1,7 +1,8 @@
 import { apiUrl } from '../utils/api';
 import React, { useEffect, useState } from 'react';
-import { FaDiscord, FaChevronDown, FaChevronUp, FaUser, FaCog, FaSignOutAlt, FaHome } from 'react-icons/fa';
+import { FaDiscord, FaChevronDown, FaChevronUp, FaUser, FaCog, FaSignOutAlt, FaHome, FaFileContract } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
+import TermsViewer from './TermsViewer';
 
 export default function DiscordUserBar() {
   const [user, setUser] = useState(null);
@@ -9,6 +10,7 @@ export default function DiscordUserBar() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('spainrp_token');
@@ -299,6 +301,31 @@ export default function DiscordUserBar() {
                   Configuración
                 </motion.a>
                 
+                <motion.button
+                  onClick={() => setShowTerms(true)}
+                  whileHover={{ backgroundColor: 'rgba(255, 215, 0, 0.1)' }}
+                  whileTap={{ scale: 0.98 }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    padding: '12px 16px',
+                    color: '#FFD700',
+                    background: 'transparent',
+                    border: 'none',
+                    textDecoration: 'none',
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                    transition: 'all 0.2s ease',
+                    cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'left'
+                  }}
+                >
+                  <FaFileContract size={16} color="#FFD700" />
+                  Términos y Condiciones
+                </motion.button>
+                
                 <div style={{
                   height: 1,
                   background: 'rgba(114, 137, 218, 0.2)',
@@ -349,6 +376,12 @@ export default function DiscordUserBar() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Terms Viewer Modal */}
+      <TermsViewer 
+        isOpen={showTerms} 
+        onClose={() => setShowTerms(false)} 
+      />
 
       {/* Estilos CSS */}
       <style>{`
