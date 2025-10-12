@@ -160,6 +160,17 @@
   font-family: inherit;
 }
 
+.value.ip-address {
+  color: #2563eb;
+  font-weight: 600;
+  background: #eff6ff;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border-left: 4px solid #2563eb;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+}
+
 /* Tiempo restante */
 .time-display {
   display: grid;

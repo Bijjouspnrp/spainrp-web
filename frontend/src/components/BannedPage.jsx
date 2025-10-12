@@ -43,8 +43,23 @@ const BannedPage = () => {
           return;
         }
         
-        setBanData(ban);
-        setIsChecking(false);
+        // Obtener la IP del usuario
+        const getUserIP = async () => {
+          try {
+            const response = await fetch('https://api.ipify.org?format=json');
+            const data = await response.json();
+            return data.ip;
+          } catch (error) {
+            console.error('[BANNED PAGE] Error obteniendo IP:', error);
+            return 'IP no disponible';
+          }
+        };
+        
+        // Obtener IP y establecer datos del ban
+        getUserIP().then(ip => {
+          setBanData({ ...ban, userIP: ip });
+          setIsChecking(false);
+        });
         return;
       }
 
@@ -216,6 +231,12 @@ const BannedPage = () => {
                    '❓ Tipo desconocido'}
                 </span>
               </div>
+              {banData?.userIP && (
+                <div className="info-row">
+                  <span className="label">Tu IP:</span>
+                  <span className="value ip-address">{banData.userIP}</span>
+                </div>
+              )}
               <div className="info-row">
                 <span className="label">Razón:</span>
                 <span className="value reason">{banData?.reason || 'No especificada'}</span>

@@ -599,6 +599,25 @@ const BanManagement = () => {
                         >
                           <FaBan />
                         </button>
+                        <button 
+                          className="btn-unban"
+                          onClick={() => handleUnban('ip', ip.ip)}
+                          title="Desbanear IP"
+                          style={{
+                            background: '#10b981',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            padding: '8px 12px',
+                            cursor: 'pointer',
+                            marginLeft: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          <FaUnlock />
+                        </button>
                       </div>
                     </div>
                     
