@@ -1,12 +1,25 @@
-const { Octokit } = require('@octokit/rest');
 const fs = require('fs-extra');
 const path = require('path');
 
 class GitHubBackup {
   constructor() {
-    this.octokit = new Octokit({
-      auth: process.env.GITHUB_TOKEN,
-    });
+    this.octokit = null;
+    this.initialized = false;
+  }
+
+  async initialize() {
+    if (this.initialized) return;
+    
+    try {
+      const { Octokit } = await import('@octokit/rest');
+      this.octokit = new Octokit({
+        auth: process.env.GITHUB_TOKEN,
+      });
+      this.initialized = true;
+    } catch (error) {
+      console.error('[GITHUB BACKUP] Error inicializando Octokit:', error);
+      throw error;
+    }
     
     this.owner = 'Bijjouspnrp';
     this.repo = 'spainrp-web';
@@ -28,6 +41,7 @@ class GitHubBackup {
     }
 
     try {
+      await this.initialize();
       console.log('[BACKUP] 🔄 Iniciando backup de base de datos...');
       
       // Leer datos de la base de datos
@@ -118,6 +132,8 @@ class GitHubBackup {
   // Subir archivo a GitHub
   async uploadToGitHub(content) {
     try {
+      await this.initialize();
+      
       // Verificar si el archivo ya existe
       let existingFile = null;
       try {
@@ -159,6 +175,7 @@ class GitHubBackup {
     }
 
     try {
+      await this.initialize();
       console.log('[BACKUP] 🔄 Restaurando backup desde GitHub...');
       
       const { data } = await this.octokit.repos.getContent({
