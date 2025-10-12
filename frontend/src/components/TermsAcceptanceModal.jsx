@@ -31,7 +31,7 @@ const TermsAcceptanceModal = ({ isOpen, onAccept, onReject, user }) => {
         accepted: true,
         timestamp: new Date().toISOString(),
         userId: user?.id,
-        version: '2.0' // Update this when terms change
+        version: '2.1' // Update this when terms change
       };
       localStorage.setItem('spainrp_terms_accepted', JSON.stringify(acceptanceData));
       onAccept();
@@ -115,6 +115,70 @@ const TermsAcceptanceModal = ({ isOpen, onAccept, onReject, user }) => {
           </p>
         </div>
 
+        {/* Discord DM Consent Notice */}
+        <div style={{
+          background: 'rgba(114, 137, 218, 0.1)',
+          border: '1px solid #7289da',
+          borderRadius: '8px',
+          padding: '16px',
+          marginBottom: '16px',
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '12px'
+        }}>
+          <div style={{
+            background: '#7289da',
+            borderRadius: '50%',
+            width: '24px',
+            height: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+            marginTop: '2px'
+          }}>
+            <span style={{ color: 'white', fontSize: '12px', fontWeight: 'bold' }}>💬</span>
+          </div>
+          <div>
+            <h4 style={{
+              color: '#7289da',
+              margin: '0 0 8px 0',
+              fontSize: '16px',
+              fontWeight: '700'
+            }}>
+              Consentimiento para Mensajes Directos de Discord
+            </h4>
+            <p style={{
+              color: '#e2e8f0',
+              margin: '0 0 8px 0',
+              fontSize: '14px',
+              lineHeight: '1.5'
+            }}>
+              Al aceptar estos términos, autorizas al bot de SpainRP a enviarte mensajes directos (DMs) en Discord para:
+            </p>
+            <ul style={{
+              color: '#e2e8f0',
+              margin: '0',
+              paddingLeft: '20px',
+              fontSize: '14px',
+              lineHeight: '1.5'
+            }}>
+              <li>Notificaciones importantes del sistema</li>
+              <li>Alertas de seguridad y cambios en tu cuenta</li>
+              <li>Actualizaciones de servicios y mantenimiento</li>
+              <li>Comunicaciones relacionadas con tu participación en SpainRP</li>
+            </ul>
+            <p style={{
+              color: '#a0aec0',
+              margin: '8px 0 0 0',
+              fontSize: '12px',
+              fontStyle: 'italic'
+            }}>
+              Estos mensajes son comunicaciones legítimas del servicio y no constituyen spam según las reglas de Discord.
+            </p>
+          </div>
+        </div>
+
         {/* Terms Content */}
         <div style={{
           flex: 1,
@@ -138,6 +202,7 @@ const TermsAcceptanceModal = ({ isOpen, onAccept, onReject, user }) => {
               <ul style={{ color: '#fff', paddingLeft: '20px', lineHeight: '1.6' }}>
                 <li>Política de datos detallada con retención de 2 años</li>
                 <li>Derechos GDPR y proceso de eliminación de datos</li>
+                <li><strong>Autorización para recibir DMs del bot de Discord</strong></li>
                 <li>Limitación de responsabilidad por servicios externos (Discord, ERLC)</li>
                 <li>Protección contra contenido ilegal</li>
                 <li>Prohibición de ingeniería inversa</li>
@@ -169,21 +234,23 @@ const TermsAcceptanceModal = ({ isOpen, onAccept, onReject, user }) => {
                 
                 <p><strong>2. Política de datos:</strong> Guardamos datos de Discord por 2 años desde tu último acceso. Tienes derecho a solicitar eliminación contactando a BijjouPro08.</p>
                 
-                <p><strong>3. Servicios de terceros:</strong> No nos responsabilizamos por caídas de APIs de Discord, ERLC o servicios externos. Enlaces a Discord ToS y ERLC Terms incluidos.</p>
+                <p><strong>3. Comunicaciones por Discord:</strong> Al aceptar estos términos, autorizas al bot de SpainRP a enviarte mensajes directos (DMs) para notificaciones importantes, actualizaciones del sistema, alertas de seguridad y comunicaciones relacionadas con tu cuenta. Estos mensajes no constituyen spam según las reglas de Discord, ya que son comunicaciones legítimas relacionadas con el servicio.</p>
                 
-                <p><strong>4. Protección de contenido:</strong> Implementamos medidas contra contenido ilegal, pero no garantizamos detección del 100%.</p>
+                <p><strong>4. Servicios de terceros:</strong> No nos responsabilizamos por caídas de APIs de Discord, ERLC o servicios externos. Enlaces a Discord ToS y ERLC Terms incluidos.</p>
                 
-                <p><strong>5. Ingeniería inversa:</strong> Está estrictamente prohibido realizar ingeniería inversa de nuestro código o crear bots que imiten nuestra funcionalidad.</p>
+                <p><strong>5. Protección de contenido:</strong> Implementamos medidas contra contenido ilegal, pero no garantizamos detección del 100%.</p>
                 
-                <p><strong>6. Monitoreo:</strong> Recopilamos datos de uso para mejorar servicios, incluyendo métricas de rendimiento y patrones de uso.</p>
+                <p><strong>6. Ingeniería inversa:</strong> Está estrictamente prohibido realizar ingeniería inversa de nuestro código o crear bots que imiten nuestra funcionalidad.</p>
                 
-                <p><strong>7. Backup y seguridad:</strong> Implementamos cifrado, backups diarios y acceso restringido a administradores.</p>
+                <p><strong>7. Monitoreo:</strong> Recopilamos datos de uso para mejorar servicios, incluyendo métricas de rendimiento y patrones de uso.</p>
                 
-                <p><strong>8. Brechas de seguridad:</strong> Notificaremos filtraciones en 72 horas. Reporta incidentes contactando a BijjouPro08.</p>
+                <p><strong>8. Backup y seguridad:</strong> Implementamos cifrado, backups diarios y acceso restringido a administradores.</p>
                 
-                <p><strong>9. Modificaciones:</strong> Te notificaremos cambios importantes via Discord, panel, email o banner web.</p>
+                <p><strong>9. Brechas de seguridad:</strong> Notificaremos filtraciones en 72 horas. Reporta incidentes contactando a BijjouPro08.</p>
                 
-                <p><strong>10. Contacto:</strong> Para cualquier consulta, contacta a BijjouPro08 mediante Discord.</p>
+                <p><strong>10. Modificaciones:</strong> Te notificaremos cambios importantes via Discord, panel, email o banner web.</p>
+                
+                <p><strong>11. Contacto:</strong> Para cualquier consulta, contacta a BijjouPro08 mediante Discord.</p>
               </div>
             </div>
           )}

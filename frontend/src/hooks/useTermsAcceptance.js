@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const TERMS_VERSION = '2.0'; // Update this when terms change significantly
+const TERMS_VERSION = '2.1'; // Update this when terms change significantly
 
 export const useTermsAcceptance = (user) => {
   const [needsAcceptance, setNeedsAcceptance] = useState(false);
