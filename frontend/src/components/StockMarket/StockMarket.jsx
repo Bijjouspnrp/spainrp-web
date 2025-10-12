@@ -33,7 +33,7 @@ const RotatingText = ({ texts, rotationInterval = 2000 }) => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % texts.length);
+        setCurrentIndex((prev) => (prev + 1) % texts.length);
     }, rotationInterval);
 
     return () => clearInterval(interval);
@@ -42,16 +42,16 @@ const RotatingText = ({ texts, rotationInterval = 2000 }) => {
   return (
     <div className="rotating-text-container">
       <AnimatePresence mode="wait">
-        <motion.div
-          key={currentIndex}
-          initial={{ y: "100%", opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: "-120%", opacity: 0 }}
-          transition={{ duration: 0.5, ease: "easeInOut" }}
+          <motion.div
+            key={currentIndex}
+            initial={{ y: "100%", opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: "-120%", opacity: 0 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
           className="rotating-text-item"
-        >
-          {texts[currentIndex]}
-        </motion.div>
+          >
+            {texts[currentIndex]}
+          </motion.div>
       </AnimatePresence>
     </div>
   );
@@ -648,7 +648,7 @@ const StockMarket = () => {
       
       {/* Partículas flotantes */}
       {[...Array(15)].map((_, i) => (
-        <motion.div
+        <motion.div 
           key={i}
           style={{
             position: 'absolute',
@@ -908,9 +908,9 @@ const StockMarket = () => {
             </motion.div>
           )}
         </motion.div>
-        <motion.div 
+              <motion.div
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+                animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 1.0 }}
           style={{
             width: '100%',
@@ -1091,7 +1091,7 @@ const StockMarket = () => {
                           y: -2,
                           boxShadow: "0 6px 20px rgba(114, 137, 218, 0.4)"
                         }}
-                        onClick={() => handleInvest(stock)}
+                    onClick={() => handleInvest(stock)}
                         style={{
                           background: 'linear-gradient(135deg, #7289da 0%, #5b6fd8 100%)',
                           color: '#fff',
@@ -1166,7 +1166,7 @@ const StockMarket = () => {
                           y: -2,
                           boxShadow: "0 6px 20px rgba(231, 76, 60, 0.4)"
                         }}
-                        onClick={() => handleSell(stock)}
+                    onClick={() => handleSell(stock)}
                         style={{
                           background: 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)',
                           color: '#fff',
@@ -1195,15 +1195,15 @@ const StockMarket = () => {
                         </motion.span>
                         Vender
                       </motion.button>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
+                </div>
+              </motion.div>
+          );
+        })}
+      </div>
           </div>
           {/* Modal de confirmación para invertir/vender con input de cantidad */}
           {pendingAction && (
-            <motion.div 
+          <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
@@ -1284,9 +1284,9 @@ const StockMarket = () => {
             </div>
           </motion.div>
             </motion.div>
-          )}
+      )}
           {/* Modal para el gráfico */}
-          {showChartModal && selectedStock && (
+      {showChartModal && selectedStock && (
             <div style={{position:'fixed',top:0,left:0,width:'100vw',height:'100vh',background:'rgba(0,0,0,0.7)',zIndex:9999,display:'flex',alignItems:'center',justifyContent:'center'}}>
               <div style={{background:'rgba(44,47,51,0.98)',borderRadius:28,boxShadow:'0 8px 32px #23272a88',padding:'2.5rem 2rem',minWidth:340,maxWidth:500,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',animation:'fadein 0.5s'}}>
                 <h2 style={{fontWeight:800,fontSize:'1.35rem',marginBottom:18,letterSpacing:1,textAlign:'center',color:'#fff'}}>Precio de {selectedStock.name}</h2>
@@ -1351,7 +1351,7 @@ const StockMarket = () => {
           </details>
         </motion.div>
       </motion.div>
-      <motion.div 
+        <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 1.2 }}
@@ -1370,11 +1370,11 @@ const StockMarket = () => {
         }}
       >
         Bolsa RP en tiempo real. Powered by SpainRP.
-      </motion.div>
+                </motion.div>
       <style>{`
         @keyframes fadein { from { opacity: 0; transform: translateY(30px);} to { opacity: 1; transform: none;} }
       `}</style>
-    </div>
+          </div>
     </>
   );
 };

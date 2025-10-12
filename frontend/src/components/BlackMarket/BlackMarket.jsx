@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { FaLock, FaSkull, FaPills, FaMoneyBillWave, FaUserSecret, FaLaptopCode, FaSkullCrossbones, FaChartLine, FaShieldAlt, FaBolt, FaEye } from 'react-icons/fa';
+import { FaLock, FaSkull, FaPills, FaMoneyBillWave, FaUserSecret, FaLaptopCode, FaSkullCrossbones, FaChartLine } from 'react-icons/fa';
 import { GiPistolGun, GiChemicalDrop, GiAbbotMeeple, GiAbdominalArmor, GiKnifeFork, GiKnifeThrust, GiSentryGun } from 'react-icons/gi';
 import './BlackMarket.css';
 import DiscordUserBar from '../DiscordUserBar';
 import { apiUrl, authFetch } from '../../utils/api';
-import RotatingText from './RotatingText';
 
 // Definición de temas
 const THEMES = {
@@ -1715,47 +1713,8 @@ if (!user) {
             <span className="hamburger-line"></span>
           </button>
         )}
-        <motion.div
-          animate={{ 
-            rotate: [0, 5, -5, 0],
-            scale: [1, 1.1, 1]
-          }}
-          transition={{ 
-            duration: 3, 
-            repeat: Infinity, 
-            repeatDelay: 2 
-          }}
-          style={{ marginRight: isMobile ? 6 : 12 }}
-        >
-          <FaShieldAlt 
-            size={isMobile ? 20 : 32} 
-            style={{
-              color: '#00ff99',
-              filter: 'drop-shadow(0 0 10px rgba(0, 255, 153, 0.5))',
-              animation: 'iconGlow 2s ease-in-out infinite alternate'
-            }} 
-          />
-        </motion.div>
-        
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span className={isMobile ? "mobile-title" : ""} style={{ fontSize: isMobile ? '1.2rem' : '1.8rem', fontWeight: '900' }}>
-            BLACKMARKET
-          </span>
-          <RotatingText
-            texts={['SPAINRP', 'UNDERGROUND', 'ILLEGAL', 'DANGEROUS', 'EXCLUSIVE']}
-            mainClassName="px-2 py-1 bg-gradient-to-r from-cyan-300 to-blue-400 text-black overflow-hidden rounded-lg font-bold"
-            staggerFrom="last"
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "-120%" }}
-            staggerDuration={0.025}
-            splitLevelClassName="overflow-hidden"
-            transition={{ type: "spring", damping: 30, stiffness: 400 }}
-            rotationInterval={2500}
-            style={{ fontSize: isMobile ? '1rem' : '1.2rem' }}
-          />
-        </div>
-        
+        <FaLock size={isMobile ? 20 : 32} style={{marginRight: isMobile ? 6 : 12}} />
+        <span className={isMobile ? "mobile-title" : ""}>BLACKMARKET SPAINRP</span>
         
         {isMobile && (
           <div className="mobile-header-actions">
@@ -3033,46 +2992,44 @@ if (!user) {
               {/* Búsqueda de usuarios */}
               <div className="admin-section">
                 <h3>👥 Buscar Usuarios</h3>
-                <div className={`admin-search ${isMobile ? 'mobile-search' : ''}`}>
+                <div className="admin-search">
                   <input
                     type="text"
-                    placeholder={isMobile ? "Buscar usuario..." : "Buscar por nombre de usuario..."}
+                    placeholder="Buscar por nombre de usuario..."
                     value={adminSearchQuery}
                     onChange={(e) => setAdminSearchQuery(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && searchUsers(adminSearchQuery)}
-                    className={isMobile ? 'mobile-input' : ''}
                   />
                   <button 
                     onClick={() => searchUsers(adminSearchQuery)}
                     disabled={adminLoading}
-                    className={isMobile ? 'mobile-search-btn' : ''}
                   >
-                    {adminLoading ? '🔍' : (isMobile ? '🔍' : 'Buscar')}
+                    {adminLoading ? '🔍' : 'Buscar'}
                   </button>
                 </div>
                 
                 {searchResults.length > 0 && (
-                  <div className={`search-results ${isMobile ? 'mobile-results' : ''}`}>
+                  <div className="search-results">
                     {searchResults.map((user) => (
                       <div 
                         key={user.id} 
-                        className={`user-result ${isMobile ? 'mobile-user-result' : ''}`}
+                        className="user-result"
                         onClick={() => selectUser(user)}
                       >
-                        <div className={`user-info ${isMobile ? 'mobile-user-info' : ''}`}>
-                          <strong className={isMobile ? 'mobile-username' : ''}>{user.username}</strong>
+                        <div className="user-info">
+                          <strong>{user.username}</strong>
                           {user.displayName && user.displayName !== user.username && (
-                            <span className={`display-name ${isMobile ? 'mobile-display-name' : ''}`}>({user.displayName})</span>
+                            <span className="display-name">({user.displayName})</span>
                           )}
                         </div>
-                        <div className={`user-id ${isMobile ? 'mobile-user-id' : ''}`}>ID: {user.id}</div>
+                        <div className="user-id">ID: {user.id}</div>
                         {user.balance && (
-                          <div className={`user-balance-preview ${isMobile ? 'mobile-balance' : ''}`}>
+                          <div className="user-balance-preview">
                             <span>💰 {user.balance.cash}€ / 🏦 {user.balance.bank}€</span>
                           </div>
                         )}
-                        {user.type && <div className={`user-type ${isMobile ? 'mobile-user-type' : ''}`}>Tipo: {user.type}</div>}
-                        {user.found === false && <div className={`user-notfound ${isMobile ? 'mobile-notfound' : ''}`}>No encontrado</div>}
+                        {user.type && <div className="user-type">Tipo: {user.type}</div>}
+                        {user.found === false && <div className="user-notfound">No encontrado</div>}
                       </div>
                     ))}
                   </div>
@@ -3081,67 +3038,51 @@ if (!user) {
               
               {/* Usuario seleccionado */}
               {selectedUser && (
-                <div className={`admin-section ${isMobile ? 'mobile-admin-section' : ''}`}>
-                  <h3 className={isMobile ? 'mobile-section-title' : ''}>
-                    👤 {isMobile ? 'Usuario:' : 'Usuario Seleccionado:'} {selectedUser.username}
-                  </h3>
+                <div className="admin-section">
+                  <h3>👤 Usuario Seleccionado: {selectedUser.username}</h3>
                   
                   {/* Saldo del usuario */}
                   {userBalance && (
-                    <div className={`user-balance ${isMobile ? 'mobile-user-balance' : ''}`}>
-                      <h4 className={isMobile ? 'mobile-balance-title' : ''}>💰 Saldo</h4>
-                      <div className={`balance-info ${isMobile ? 'mobile-balance-info' : ''}`}>
-                        <div className={isMobile ? 'mobile-balance-item' : ''}>Efectivo: {userBalance.cash || 0}€</div>
-                        <div className={isMobile ? 'mobile-balance-item' : ''}>Banco: {userBalance.bank || 0}€</div>
+                    <div className="user-balance">
+                      <h4>💰 Saldo</h4>
+                      <div className="balance-info">
+                        <div>Efectivo: {userBalance.cash || 0}€</div>
+                        <div>Banco: {userBalance.bank || 0}€</div>
                       </div>
-                      <div className={`balance-edit ${isMobile ? 'mobile-balance-edit' : ''}`}>
-                        <input 
-                          type="number" 
-                          placeholder="Efectivo" 
-                          id="edit-cash" 
-                          className={isMobile ? 'mobile-balance-input' : ''}
-                        />
-                        <input 
-                          type="number" 
-                          placeholder="Banco" 
-                          id="edit-bank" 
-                          className={isMobile ? 'mobile-balance-input' : ''}
-                        />
-                        <button 
-                          onClick={() => {
-                            const cash = document.getElementById('edit-cash').value;
-                            const bank = document.getElementById('edit-bank').value;
-                            if (cash || bank) setUserBalance(cash, bank);
-                          }}
-                          className={isMobile ? 'mobile-balance-btn' : ''}
-                        >
-                          {isMobile ? 'Actualizar' : 'Actualizar Saldo'}
+                      <div className="balance-edit">
+                        <input type="number" placeholder="Efectivo" id="edit-cash" />
+                        <input type="number" placeholder="Banco" id="edit-bank" />
+                        <button onClick={() => {
+                          const cash = document.getElementById('edit-cash').value;
+                          const bank = document.getElementById('edit-bank').value;
+                          if (cash || bank) setUserBalance(cash, bank);
+                        }}>
+                          Actualizar Saldo
                         </button>
                       </div>
                     </div>
                   )}
                   
                   {/* Inventario del usuario */}
-                  <div className={`user-inventory ${isMobile ? 'mobile-user-inventory' : ''}`}>
-                    <h4 className={isMobile ? 'mobile-inventory-title' : ''}>🎒 Inventario</h4>
+                  <div className="user-inventory">
+                    <h4>🎒 Inventario</h4>
                     {adminLoading ? (
-                      <div className={isMobile ? 'mobile-loading' : ''}>Cargando inventario...</div>
+                      <div>Cargando inventario...</div>
                     ) : userInventory.length > 0 ? (
-                      <div className={`inventory-list ${isMobile ? 'mobile-inventory-list' : ''}`}>
+                      <div className="inventory-list">
                         {userInventory.map((item, idx) => (
-                          <div key={idx} className={`inventory-item ${isMobile ? 'mobile-inventory-item' : ''}`}>
-                            <div className={`item-info ${isMobile ? 'mobile-item-info' : ''}`}>
-                              <strong className={isMobile ? 'mobile-item-name' : ''}>{item.nombre || item.name}</strong>
-                              <span className={isMobile ? 'mobile-item-quantity' : ''}>Cantidad: {item.cantidad || item.amount}</span>
-                              <span className={isMobile ? 'mobile-item-price' : ''}>Precio: {item.precio || item.price || 'N/A'}€</span>
+                          <div key={idx} className="inventory-item">
+                            <div className="item-info">
+                              <strong>{item.nombre || item.name}</strong>
+                              <span>Cantidad: {item.cantidad || item.amount}</span>
+                              <span>Precio: {item.precio || item.price || 'N/A'}€</span>
                             </div>
-                            <div className={`item-actions ${isMobile ? 'mobile-item-actions' : ''}`}>
+                            <div className="item-actions">
                               <input 
                                 type="number" 
-                                placeholder={isMobile ? "Cant." : "Cantidad"} 
+                                placeholder="Cantidad" 
                                 min="1" 
                                 id={`remove-${idx}`}
-                                className={isMobile ? 'mobile-quantity-input' : ''}
                               />
                               <button 
                                 onClick={async () => {
@@ -3152,7 +3093,6 @@ if (!user) {
                                   }
                                   await removeItemFromUser(item.item_id || item.itemId, amount);
                                 }}
-                                className={isMobile ? 'mobile-remove-btn' : ''}
                                 style={{
                                   background: '#ef4444',
                                   color: '#fff',
@@ -3173,7 +3113,7 @@ if (!user) {
                                   e.target.style.transform = 'scale(1)';
                                 }}
                               >
-                                {isMobile ? 'Retirar' : 'Retirar'}
+                                Retirar
                               </button>
                             </div>
                           </div>
@@ -3185,27 +3125,18 @@ if (!user) {
                   </div>
                   
                   {/* Agregar items */}
-                  <div className={`add-items ${isMobile ? 'mobile-add-items' : ''}`}>
-                    <h4 className={isMobile ? 'mobile-add-title' : ''}>➕ Agregar Items</h4>
-                    <div className={`add-item-form ${isMobile ? 'mobile-add-form' : ''}`}>
-                      <select 
-                        id="add-item-select" 
-                        className={isMobile ? 'mobile-item-select' : ''}
-                      >
-                        <option value="">{isMobile ? "Seleccionar..." : "Seleccionar item..."}</option>
+                  <div className="add-items">
+                    <h4>➕ Agregar Items</h4>
+                    <div className="add-item-form">
+                      <select id="add-item-select">
+                        <option value="">Seleccionar item...</option>
                         {Object.entries(catalog).map(([itemId, item]) => (
                           <option key={itemId} value={itemId}>
-                            {isMobile ? `${item.name} - ${item.price}€` : `${item.name} - ${item.price}€`}
+                            {item.name} - {item.price}€
                           </option>
                         ))}
                       </select>
-                      <input 
-                        type="number" 
-                        placeholder={isMobile ? "Cant." : "Cantidad"} 
-                        min="1" 
-                        id="add-item-amount" 
-                        className={isMobile ? 'mobile-amount-input' : ''}
-                      />
+                      <input type="number" placeholder="Cantidad" min="1" id="add-item-amount" />
                       <button 
                         onClick={async () => {
                           const itemId = document.getElementById('add-item-select').value;
@@ -3216,7 +3147,6 @@ if (!user) {
                           }
                           await addItemToUser(itemId, amount);
                         }}
-                        className={isMobile ? 'mobile-add-btn' : ''}
                         style={{
                           background: '#22c55e',
                           color: '#fff',
@@ -3237,7 +3167,7 @@ if (!user) {
                           e.target.style.transform = 'scale(1)';
                         }}
                       >
-                        {isMobile ? 'Agregar' : 'Agregar Item'}
+                        Agregar Item
                       </button>
                     </div>
                   </div>
@@ -3801,17 +3731,6 @@ if (!user) {
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
-        }
-        
-        @keyframes iconGlow {
-          0% { 
-            filter: drop-shadow(0 0 10px rgba(0, 255, 153, 0.5));
-            transform: scale(1);
-          }
-          100% { 
-            filter: drop-shadow(0 0 20px rgba(0, 255, 153, 0.8));
-            transform: scale(1.05);
-          }
         }
         
         /* Mejoras en el header del item */
