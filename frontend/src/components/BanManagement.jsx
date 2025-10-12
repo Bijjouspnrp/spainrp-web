@@ -153,10 +153,13 @@ const BanManagement = () => {
 
       if (response.ok) {
         const data = await response.json();
+        console.log('[BAN MANAGEMENT] Stats cargadas:', data);
         setStats(data);
+      } else {
+        console.error('[BAN MANAGEMENT] Error cargando stats:', response.status);
       }
     } catch (error) {
-      console.error('Error loading stats:', error);
+      console.error('[BAN MANAGEMENT] Error loading stats:', error);
     }
   };
 
@@ -172,6 +175,7 @@ const BanManagement = () => {
 
       if (response.ok) {
         const data = await response.json();
+        console.log('[BAN MANAGEMENT] IPs cargadas:', data);
         setIps(data.ips || []);
         setPagination(prev => ({
           ...prev,
@@ -179,9 +183,11 @@ const BanManagement = () => {
           total: data.total || 0,
           pages: data.pages || 0
         }));
+      } else {
+        console.error('[BAN MANAGEMENT] Error cargando IPs:', response.status);
       }
     } catch (error) {
-      console.error('Error loading IPs:', error);
+      console.error('[BAN MANAGEMENT] Error loading IPs:', error);
     } finally {
       setLoading(false);
     }
@@ -201,7 +207,7 @@ const BanManagement = () => {
       if (response.ok) {
         const data = await response.json();
         console.log('[BAN MANAGEMENT] Bans cargados:', data);
-        setBans(data.bans || []);
+        setBans(data || []);
         setConnectionStatus('connected');
       } else {
         const errorData = await response.json();
@@ -229,6 +235,8 @@ const BanManagement = () => {
         ? { ip: value, reason, expiresAt: expiresAt || null }
         : { userId: value, reason, expiresAt: expiresAt || null };
 
+      console.log(`[BAN MANAGEMENT] Aplicando ban - Tipo: ${type}, Valor: ${value}, Razón: ${reason}`);
+
       const response = await fetch(apiUrl(endpoint), {
         method: 'POST',
         headers: {
@@ -238,12 +246,18 @@ const BanManagement = () => {
         body: JSON.stringify(body)
       });
 
+      console.log(`[BAN MANAGEMENT] Respuesta del servidor:`, {
+        status: response.status,
+        ok: response.ok
+      });
+
       if (response.ok) {
         const result = await response.json();
+        console.log('[BAN MANAGEMENT] Resultado del ban:', result);
+        
         setShowBanModal(false);
         setBanForm({ type: 'ip', value: '', reason: '', expiresAt: '' });
-        loadBans();
-        loadStats();
+        await Promise.all([loadBans(), loadStats()]);
         
         success(`✅ Ban aplicado correctamente`, 4000);
         
@@ -254,6 +268,7 @@ const BanManagement = () => {
         }
       } else {
         const errorData = await response.json();
+        console.error('[BAN MANAGEMENT] Error del servidor:', errorData);
         if (errorData.error === 'No puedes banearte a ti mismo') {
           error(`❌ ${errorData.error}\n\n${errorData.message}`, 8000);
         } else {
@@ -261,7 +276,7 @@ const BanManagement = () => {
         }
       }
     } catch (error) {
-      console.error('Error banning:', error);
+      console.error('[BAN MANAGEMENT] Error banning:', error);
       error('❌ Error al aplicar el ban', 5000);
     } finally {
       setLoading(false);
@@ -281,7 +296,7 @@ const BanManagement = () => {
     try {
       console.log(`[BAN MANAGEMENT] 🚀 Iniciando desbaneo de ${type}: ${value}`);
       
-      const url = apiUrl(`/api/admin/ban/${type}/${value}`);
+      const url = apiUrl(`/api/admin/ban/${type}/${encodeURIComponent(value)}`);
       console.log(`[BAN MANAGEMENT] URL de desbaneo:`, url);
       
       const token = localStorage.getItem('spainrp_token');
