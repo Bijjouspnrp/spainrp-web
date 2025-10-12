@@ -13,7 +13,7 @@ import {
   Legend,
   Filler,
 } from "chart.js";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { FaUniversity, FaApple, FaBitcoin, FaCarSide, FaEthereum, FaCoffee } from "react-icons/fa";
 
 ChartJS.register(
@@ -26,6 +26,36 @@ ChartJS.register(
   Legend,
   Filler
 );
+
+// Componente de texto rotatorio animado
+const RotatingText = ({ texts, rotationInterval = 2000 }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % texts.length);
+    }, rotationInterval);
+
+    return () => clearInterval(interval);
+  }, [texts.length, rotationInterval]);
+
+  return (
+    <div className="rotating-text-container">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentIndex}
+          initial={{ y: "100%", opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: "-120%", opacity: 0 }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+          className="rotating-text-item"
+        >
+          {texts[currentIndex]}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+};
 
 // Catálogo de iconos para los activos (asignación por code)
 const assetIcons = {
@@ -116,7 +146,7 @@ const StockMarket = () => {
             const invData = await resInv.json();
             console.log('[StockMarket] Inversiones recibidas:', invData);
             setCartera(invData.inversiones || {});
-          } else {
+        } else {
             console.warn('[StockMarket] Error cargando inversiones:', resInv.status);
           }
         }
@@ -128,11 +158,11 @@ const StockMarket = () => {
       setTimeout(() => {
         if (mounted) {
           clearInterval(progressInterval);
-      setLoading(false);
-        }
+        setLoading(false);
+      }
       }, 5000);
     };
-    
+
     fetchAll();
   intervalId = setInterval(fetchAll, 5000); // 5 segundos
     return () => { 
@@ -163,14 +193,14 @@ const StockMarket = () => {
       let res;
       if (type === 'buy') {
         res = await fetch(apiUrl("/api/proxy/bolsa/comprar"), {
-          method: 'POST',
+        method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+        body: JSON.stringify({
           userId: user.id,
           assetId: stock.code,
           cantidad: qty
-          })
-        });
+        })
+      });
         if (res.ok) {
           const data = await res.json();
           setSaldo(data.saldo);
@@ -303,8 +333,8 @@ const StockMarket = () => {
                 borderRadius: '50%',
                 animation: 'waveExpand 2s ease-out infinite 0.5s'
               }} />
-            </div>
           </div>
+        </div>
           
           {/* Título principal */}
           <h1 style={{
@@ -323,16 +353,29 @@ const StockMarket = () => {
             BOLSA SPAINRP
           </h1>
           
-          {/* Subtítulo */}
-          <p style={{
+          {/* Subtítulo con texto rotatorio */}
+          <div style={{
             fontSize: '1.3rem',
             color: '#a0a0a0',
             marginBottom: '3rem',
             fontWeight: '300',
-            letterSpacing: '1px'
+            letterSpacing: '1px',
+            height: '2rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
           }}>
-            Iniciando sistema de trading en tiempo real...
-          </p>
+            <RotatingText 
+              texts={[
+                "Iniciando sistema de trading en tiempo real...",
+                "Conectando con mercados globales...",
+                "Cargando datos financieros...",
+                "Preparando análisis de mercado...",
+                "Sincronizando precios..."
+              ]}
+              rotationInterval={2500}
+            />
+          </div>
           
           {/* Gráfico de previsualización animado */}
           <div style={{
@@ -411,7 +454,7 @@ const StockMarket = () => {
               transition: 'width 0.1s ease-out',
               boxShadow: '0 0 10px rgba(255, 215, 0, 0.6)'
             }} />
-          </div>
+              </div>
           
           {/* Texto de progreso */}
           <div style={{
@@ -422,7 +465,7 @@ const StockMarket = () => {
             animation: 'textPulse 2s ease-in-out infinite'
           }}>
             Conectando con servidores de trading... {loadingProgress}%
-          </div>
+              </div>
           
           {/* Indicadores de estado */}
           <div style={{
@@ -439,11 +482,11 @@ const StockMarket = () => {
                 filter: 'drop-shadow(0 0 10px rgba(255, 215, 0, 0.5))'
               }}>
                 {icon}
-              </div>
+            </div>
             ))}
         </div>
-        </div>
-        
+      </div>
+
         {/* Estilos CSS */}
         <style>{`
           @keyframes backgroundShift {
@@ -494,8 +537,42 @@ const StockMarket = () => {
             0%, 100% { transform: translateY(0px) scale(1); }
             50% { transform: translateY(-10px) scale(1.1); }
           }
+          
+          .rotating-text-container {
+            position: relative;
+            overflow: hidden;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          
+          .rotating-text-item {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            white-space: nowrap;
+          }
+          
+          @keyframes backgroundShift {
+            0%, 100% { transform: translateX(0) translateY(0); }
+            25% { transform: translateX(-10px) translateY(-5px); }
+            50% { transform: translateX(10px) translateY(5px); }
+            75% { transform: translateX(-5px) translateY(10px); }
+          }
+          
+          @keyframes fadein {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          
+          @keyframes titleShine {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+          }
         `}</style>
-      </div>
+            </div>
     );
   }
 
@@ -544,50 +621,226 @@ const StockMarket = () => {
   }
 
   return (
-    <div style={{minHeight:'100vh',background:'linear-gradient(120deg,#23272a 60%,#7289da 100%)',color:'#fff',fontFamily:'Inter,Segoe UI,sans-serif',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'flex-start',padding:'0'}}>
+    <>
+    <div style={{
+      minHeight:'100vh',
+      background:'linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533483 100%)',
+      color:'#fff',
+      fontFamily:'Inter,Segoe UI,sans-serif',
+      display:'flex',
+      flexDirection:'column',
+      alignItems:'center',
+      justifyContent:'flex-start',
+      padding:'0',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Fondo animado con partículas flotantes */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        background: 'radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%)',
+        animation: 'backgroundShift 8s ease-in-out infinite'
+      }} />
+      
+      {/* Partículas flotantes */}
+      {[...Array(15)].map((_, i) => (
+        <motion.div
+          key={i}
+          style={{
+            position: 'absolute',
+            width: Math.random() * 4 + 2 + 'px',
+            height: Math.random() * 4 + 2 + 'px',
+            background: `hsl(${Math.random() * 60 + 200}, 70%, 60%)`,
+            borderRadius: '50%',
+            left: Math.random() * 100 + '%',
+            top: Math.random() * 100 + '%',
+            opacity: Math.random() * 0.6 + 0.2
+          }}
+          animate={{
+            y: [0, -30, 0],
+            x: [0, Math.random() * 20 - 10, 0],
+            opacity: [0.2, 0.8, 0.2]
+          }}
+          transition={{
+            duration: Math.random() * 3 + 2,
+            repeat: Infinity,
+            delay: Math.random() * 2
+          }}
+        />
+      ))}
+      
       <DiscordUserBar user={user} />
-      <div style={{width:'100%',maxWidth:1400,margin:'0 auto',padding:'0',display:'flex',flexDirection:'column',alignItems:'center'}}>
-        <div style={{marginTop:48,marginBottom:32,textAlign:'center'}}>
-          <span style={{fontSize:'3.2rem',marginBottom:12,display:'block',textShadow:'0 2px 24px #7289da88'}}>💹</span>
-          <h1 style={{fontWeight:900,fontSize:'2.7rem',letterSpacing:2,marginBottom:10}}>Bolsa <span style={{color:'#7289da'}}>SpainRP</span></h1>
-          <div style={{fontSize:'1.25rem',opacity:0.92,marginBottom:8}}>Invierte en empresas, criptos y negocios RP en tiempo real.</div>
-          {/* Apartado de saldo y cartera */}
-          <div style={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'flex-start',
-            gap: '2.5rem',
-            marginTop: 24,
-            marginBottom: 8,
-            flexWrap: 'wrap',
-            width: '100%'
-          }}>
-            {/* Saldo */}
-            <div style={{
-              background: 'rgba(44,47,51,0.98)',
-              borderRadius: 18,
-              boxShadow: '0 2px 12px #23272a44',
-              padding: '1.5rem 2.2rem',
-              minWidth: 220,
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        style={{
+          width: '100%',
+          maxWidth: 1400,
+          margin: '0 auto',
+          padding: '0',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          position: 'relative',
+          zIndex: 10
+        }}
+      >
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          style={{
+            marginTop: 48,
+            marginBottom: 32,
+            textAlign: 'center'
+          }}
+        >
+          <motion.span 
+            animate={{ 
+              rotate: [0, 5, -5, 0],
+              scale: [1, 1.05, 1]
+            }}
+            transition={{ 
+              duration: 2, 
+              repeat: Infinity, 
+              repeatDelay: 3 
+            }}
+            style={{
+              fontSize: '3.5rem',
+              marginBottom: 12,
+              display: 'block',
+              textShadow: '0 4px 30px rgba(114, 137, 218, 0.8)',
+              filter: 'drop-shadow(0 0 20px rgba(114, 137, 218, 0.5))'
+            }}
+          >
+            💹
+          </motion.span>
+          
+          <motion.h1 
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            style={{
+              fontWeight: 900,
+              fontSize: '2.8rem',
+              letterSpacing: 2,
+              marginBottom: 10,
+              background: 'linear-gradient(135deg, #fff 0%, #7289da 50%, #fff 100%)',
+              backgroundSize: '200% 200%',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              animation: 'titleShine 3s ease-in-out infinite'
+            }}
+          >
+            Bolsa <span style={{ color: '#7289da' }}>SpainRP</span>
+          </motion.h1>
+          
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            style={{
+              fontSize: '1.3rem',
+              opacity: 0.92,
               marginBottom: 8,
+              fontWeight: 300,
+              letterSpacing: '0.5px'
+            }}
+          >
+            Invierte en empresas, criptos y negocios RP en tiempo real.
+          </motion.div>
+          {/* Apartado de saldo y cartera */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
+            style={{
               display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
+              flexDirection: 'row',
               justifyContent: 'center',
-              fontWeight: 800,
-              fontSize: '1.18rem',
-              color: '#fff',
-              border: '2px solid #2ecc71',
-            }}>
-              <span style={{fontSize:'2.1rem',marginBottom:6}}>💰</span>
-              Saldo disponible
-              <span style={{color:'#2ecc71',fontSize:'1.35rem',marginTop:4}}>
+              alignItems: 'flex-start',
+              gap: '2.5rem',
+              marginTop: 24,
+              marginBottom: 8,
+              flexWrap: 'wrap',
+              width: '100%'
+            }}
+          >
+            {/* Saldo */}
+            <motion.div 
+              whileHover={{ 
+                scale: 1.05, 
+                y: -5,
+                boxShadow: "0 8px 25px rgba(46, 204, 113, 0.3)"
+              }}
+              whileTap={{ scale: 0.98 }}
+              style={{
+                background: 'linear-gradient(135deg, rgba(44,47,51,0.95) 0%, rgba(35,39,42,0.95) 100%)',
+                borderRadius: 20,
+                boxShadow: '0 4px 20px rgba(46, 204, 113, 0.2)',
+                padding: '1.8rem 2.2rem',
+                minWidth: 240,
+                marginBottom: 8,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 800,
+                fontSize: '1.2rem',
+                color: '#fff',
+                border: '2px solid #2ecc71',
+                position: 'relative',
+                overflow: 'hidden',
+                backdropFilter: 'blur(10px)',
+                cursor: 'pointer'
+              }}
+            >
+              <motion.span 
+                animate={{ 
+                  rotate: [0, 10, -10, 0],
+                  scale: [1, 1.1, 1]
+                }}
+                transition={{ 
+                  duration: 2, 
+                  repeat: Infinity, 
+                  repeatDelay: 4 
+                }}
+                style={{
+                  fontSize: '2.3rem',
+                  marginBottom: 8,
+                  filter: 'drop-shadow(0 2px 8px rgba(46, 204, 113, 0.5))'
+                }}
+              >
+                💰
+              </motion.span>
+              <span style={{ marginBottom: 8 }}>Saldo disponible</span>
+              <motion.span 
+                whileHover={{ scale: 1.05 }}
+                style={{
+                  color: '#2ecc71',
+                  fontSize: '1.4rem',
+                  marginTop: 4,
+                  fontWeight: 900,
+                  textShadow: '0 2px 8px rgba(46, 204, 113, 0.3)'
+                }}
+              >
                 {saldo !== null ? `€${saldo}` : 'Cargando...'}
-              </span>
-            </div>
+              </motion.span>
+            </motion.div>
             {/* Cartera */}
-            <div style={{
+            <motion.div 
+              whileHover={{ 
+                scale: 1.05, 
+                y: -5,
+                boxShadow: "0 8px 25px rgba(114, 137, 218, 0.3)"
+              }}
+              whileTap={{ scale: 0.98 }}
+              style={{
               background: 'rgba(44,47,51,0.98)',
               borderRadius: 18,
               boxShadow: '0 2px 12px #23272a44',
@@ -618,7 +871,7 @@ const StockMarket = () => {
                   )}
                   {Object.entries(cartera).map(([code, qty]) => {
                     const stock = stocks.find(s => s.code === code);
-                    return (
+          return (
                       <tr key={code}>
                         <td style={{padding:'0.3rem 0.7rem',fontWeight:700}}>{stock ? stock.name : code}</td>
                         <td style={{padding:'0.3rem 0.7rem',textAlign:'right',fontWeight:700}}>{qty}</td>
@@ -627,13 +880,13 @@ const StockMarket = () => {
                   })}
                 </tbody>
               </table>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
           {/* Mensaje feedback animado */}
           {msg && (
-            <motion.div
+              <motion.div
               initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+                animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
               transition={{ duration: 0.35 }}
               style={{
@@ -654,55 +907,303 @@ const StockMarket = () => {
               {msg}
             </motion.div>
           )}
-        </div>
-        <div style={{width:'100%',maxWidth:1200,marginBottom:'2.7rem',display:'flex',flexDirection:'column',alignItems:'center',gap:'2.5rem'}}>
+        </motion.div>
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 1.0 }}
+          style={{
+            width: '100%',
+            maxWidth: 1200,
+            marginBottom: '2.7rem',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '2.5rem'
+          }}
+        >
           <div style={{background:'rgba(44,47,51,0.98)',borderRadius:28,boxShadow:'0 8px 32px #23272a88',padding:'2.5rem 2rem',minWidth:360,animation:'fadein 1.2s',width:'100%'}}>
             <h2 style={{fontWeight:800,fontSize:'1.45rem',marginBottom:18,letterSpacing:1,textAlign:'center',color:'#fff'}}>Activos disponibles</h2>
             <div style={{display:'flex',flexWrap:'wrap',justifyContent:'center',gap:'2.2rem',width:'100%'}}>
-              {stocks.map(stock => {
+              {stocks.map((stock, index) => {
                 const acciones = cartera[stock.code] || 0;
                 return (
-                  <div key={stock.id} style={{background:selectedStock&&selectedStock.id===stock.id?'#23272a':'rgba(44,47,51,0.98)',boxShadow:selectedStock&&selectedStock.id===stock.id?'0 2px 12px #7289da44':'0 2px 8px #7289da11',borderRadius:18,padding:'1.5rem 1.2rem',margin:'0.5rem',minWidth:260,maxWidth:280,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',transition:'background 0.2s',cursor:'pointer'}}>
-                    <span style={{fontSize:'2.2rem',filter:'drop-shadow(0 2px 8px #7289da88)',marginBottom:8}}>{stock.icon}</span>
-                    <span style={{fontWeight:800,color:'#fff',fontSize:'1.25rem',marginBottom:4}}>{stock.name}</span>
-                    <span style={{fontWeight:600,fontSize:'1.08rem',color:'#7289da',marginBottom:4}}>{stock.type}</span>
-                    <span style={{fontWeight:700,fontSize:'1.08rem',color:'#fff',marginBottom:4}}>{stock.code}</span>
-                    <span style={{fontWeight:800,color:stock.price>stock.history[stock.history.length-2]?'#2ecc71':'#e74c3c',fontSize:'1.15rem',marginBottom:8}}>
-                      {stock.type==='Cripto'?`$${stock.price}`:`€${stock.price}`}
-                    </span>
-                    <span style={{fontWeight:700, color:'#fff', fontSize:'1.05rem', marginBottom:6}}>
-                      Acciones: {acciones}
-                    </span>
-                    <div style={{display:'flex',gap:'0.4rem',marginTop:6,flexWrap:'wrap',justifyContent:'center'}}>
+                  <motion.div 
+                    key={stock.id}
+                    initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ 
+                      duration: 0.5, 
+                      delay: index * 0.1,
+                      type: "spring",
+                      stiffness: 100
+                    }}
+                    whileHover={{ 
+                      scale: 1.05, 
+                      y: -5,
+                      boxShadow: "0 8px 25px rgba(114, 137, 218, 0.3)"
+                    }}
+                    whileTap={{ scale: 0.98 }}
+                    style={{
+                      background: selectedStock && selectedStock.id === stock.id 
+                        ? 'linear-gradient(135deg, #23272a 0%, #2c2f33 100%)' 
+                        : 'linear-gradient(135deg, rgba(44,47,51,0.95) 0%, rgba(35,39,42,0.95) 100%)',
+                      boxShadow: selectedStock && selectedStock.id === stock.id
+                        ? '0 8px 25px rgba(114, 137, 218, 0.4), 0 0 0 2px rgba(114, 137, 218, 0.3)'
+                        : '0 4px 15px rgba(114, 137, 218, 0.1)',
+                      borderRadius: 20,
+                      padding: '1.8rem 1.5rem',
+                      margin: '0.5rem',
+                      minWidth: 280,
+                      maxWidth: 300,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)'
+                    }}
+                  >
+                    {/* Efecto de brillo en hover */}
+                    <motion.div
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: '-100%',
+                        width: '100%',
+                        height: '100%',
+                        background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent)',
+                        zIndex: 1
+                      }}
+                      whileHover={{
+                        x: ['0%', '200%'],
+                        transition: { duration: 0.6 }
+                      }}
+                    />
+                    
+                    <motion.div
+                      style={{ position: 'relative', zIndex: 2 }}
+                      whileHover={{ scale: 1.1, rotate: 5 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <span style={{
+                        fontSize: '2.5rem',
+                        filter: 'drop-shadow(0 4px 12px rgba(114, 137, 218, 0.6))',
+                        marginBottom: 12,
+                        display: 'block'
+                      }}>
+                        {stock.icon}
+                      </span>
+                    </motion.div>
+                    
+                    <motion.div
+                      style={{ textAlign: 'center', position: 'relative', zIndex: 2 }}
+                      initial={{ opacity: 0.8 }}
+                      whileHover={{ opacity: 1 }}
+                    >
+                      <span style={{
+                        fontWeight: 800,
+                        color: '#fff',
+                        fontSize: '1.3rem',
+                        marginBottom: 6,
+                        display: 'block'
+                      }}>
+                        {stock.name}
+                      </span>
+                      <span style={{
+                        fontWeight: 600,
+                        fontSize: '1.1rem',
+                        color: '#7289da',
+                        marginBottom: 6,
+                        display: 'block'
+                      }}>
+                        {stock.type}
+                      </span>
+                      <span style={{
+                        fontWeight: 700,
+                        fontSize: '1.1rem',
+                        color: '#fff',
+                        marginBottom: 8,
+                        display: 'block',
+                        letterSpacing: '1px'
+                      }}>
+                        {stock.code}
+                      </span>
+                      
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        style={{
+                          fontWeight: 800,
+                          color: stock.price > stock.history[stock.history.length - 2] ? '#2ecc71' : '#e74c3c',
+                          fontSize: '1.2rem',
+                          marginBottom: 10,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px'
+                        }}
+                      >
+                        <span>
+                          {stock.type === 'Cripto' ? `$${stock.price}` : `€${stock.price}`}
+                        </span>
+                        <motion.span
+                          animate={{ 
+                            rotate: stock.price > stock.history[stock.history.length - 2] ? [0, 10, -10, 0] : [0, -10, 10, 0]
+                          }}
+                          transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 2 }}
+                        >
+                          {stock.price > stock.history[stock.history.length - 2] ? '📈' : '📉'}
+                        </motion.span>
+                      </motion.div>
+                      
+                      <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        style={{
+                          fontWeight: 700,
+                          color: '#fff',
+                          fontSize: '1.05rem',
+                          marginBottom: 12,
+                          padding: '6px 12px',
+                          background: 'rgba(114, 137, 218, 0.1)',
+                          borderRadius: '12px',
+                          border: '1px solid rgba(114, 137, 218, 0.2)'
+                        }}
+                      >
+                        Acciones: {acciones}
+                      </motion.div>
+                    </motion.div>
+                    <div style={{
+                      display: 'flex',
+                      gap: '0.6rem',
+                      marginTop: 12,
+                      flexWrap: 'wrap',
+                      justifyContent: 'center',
+                      position: 'relative',
+                      zIndex: 2
+                    }}>
                       <motion.button
-                        whileTap={{ scale: 0.96 }}
-                        whileHover={{ scale: 1.04 }}
-                        onClick={()=>handleInvest(stock)}
-                        style={{background:'linear-gradient(90deg,#7289da,#23272a)',color:'#fff',border:'none',borderRadius:9,padding:'0.38rem 0.85rem',fontWeight:800,fontSize:'0.98rem',cursor:'pointer',boxShadow:'0 2px 8px #7289da22',transition:'transform 0.2s',letterSpacing:1,minWidth:80}}
+                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ 
+                          scale: 1.05, 
+                          y: -2,
+                          boxShadow: "0 6px 20px rgba(114, 137, 218, 0.4)"
+                        }}
+                        onClick={() => handleInvest(stock)}
+                        style={{
+                          background: 'linear-gradient(135deg, #7289da 0%, #5b6fd8 100%)',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 12,
+                          padding: '0.5rem 1rem',
+                          fontWeight: 800,
+                          fontSize: '0.95rem',
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 15px rgba(114, 137, 218, 0.3)',
+                          letterSpacing: 1,
+                          minWidth: 90,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                          position: 'relative',
+                          overflow: 'hidden'
+                        }}
                         disabled={saldo !== null && saldo < stock.price}
                       >
-                        <span style={{fontSize:'1.1rem',marginRight:5}}>💸</span>Invertir
+                        <motion.span
+                          animate={{ rotate: [0, 10, -10, 0] }}
+                          transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 3 }}
+                          style={{ fontSize: '1.1rem' }}
+                        >
+                          💸
+                        </motion.span>
+                        Invertir
                       </motion.button>
+                      
                       <motion.button
-                        whileTap={{ scale: 0.96 }}
-                        whileHover={{ scale: 1.04 }}
-                        onClick={()=>openChartModal(stock)}
-                        style={{background:'#fff',color:'#7289da',border:'2px solid #7289da',borderRadius:9,padding:'0.38rem 0.85rem',fontWeight:800,fontSize:'0.98rem',cursor:'pointer',boxShadow:'0 2px 8px #7289da11',transition:'background 0.2s',letterSpacing:1,minWidth:80}}
+                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ 
+                          scale: 1.05, 
+                          y: -2,
+                          boxShadow: "0 6px 20px rgba(255, 255, 255, 0.3)"
+                        }}
+                        onClick={() => openChartModal(stock)}
+                        style={{
+                          background: 'linear-gradient(135deg, #fff 0%, #f8f9fa 100%)',
+                          color: '#7289da',
+                          border: '2px solid #7289da',
+                          borderRadius: 12,
+                          padding: '0.5rem 1rem',
+                          fontWeight: 800,
+                          fontSize: '0.95rem',
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 15px rgba(114, 137, 218, 0.2)',
+                          letterSpacing: 1,
+                          minWidth: 90,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px'
+                        }}
                       >
-                        <span style={{fontSize:'1.1rem',marginRight:5}}>📈</span>Gráfico
+                        <motion.span
+                          animate={{ scale: [1, 1.1, 1] }}
+                          transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 2 }}
+                          style={{ fontSize: '1.1rem' }}
+                        >
+                          📈
+                        </motion.span>
+                        Gráfico
                       </motion.button>
+                      
                       <motion.button
-                        whileTap={{ scale: 0.96 }}
-                        whileHover={{ scale: 1.04 }}
-                        onClick={()=>handleSell(stock)}
-                        style={{background:'#e74c3c',color:'#fff',border:'none',borderRadius:9,padding:'0.38rem 0.85rem',fontWeight:800,fontSize:'0.98rem',cursor:'pointer',boxShadow:'0 2px 8px #e74c3c22',transition:'background 0.2s',letterSpacing:1,minWidth:80}}
+                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ 
+                          scale: 1.05, 
+                          y: -2,
+                          boxShadow: "0 6px 20px rgba(231, 76, 60, 0.4)"
+                        }}
+                        onClick={() => handleSell(stock)}
+                        style={{
+                          background: 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 12,
+                          padding: '0.5rem 1rem',
+                          fontWeight: 800,
+                          fontSize: '0.95rem',
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 15px rgba(231, 76, 60, 0.3)',
+                          letterSpacing: 1,
+                          minWidth: 90,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px'
+                        }}
                         disabled={acciones < 1}
                       >
-                        <span style={{fontSize:'1.1rem',marginRight:5}}>💰</span>Vender
+                        <motion.span
+                          animate={{ rotate: [0, -5, 5, 0] }}
+                          transition={{ duration: 0.4, repeat: Infinity, repeatDelay: 4 }}
+                          style={{ fontSize: '1.1rem' }}
+                        >
+                          💰
+                        </motion.span>
+                        Vender
                       </motion.button>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
           {/* Modal de confirmación para invertir/vender con input de cantidad */}
           {pendingAction && (
-            <motion.div
+            <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
@@ -766,12 +1267,12 @@ const StockMarket = () => {
                     ? <>Total: <span style={{color:'#2ecc71'}}>€{(pendingAction.stock.price * (actionQty||1)).toLocaleString()}</span></>
                     : <>Recibirás: <span style={{color:'#2ecc71'}}>€{(pendingAction.stock.price * (actionQty||1)).toLocaleString()}</span></>
                   }
-                </div>
+              </div>
                 <div style={{display:'flex',gap:'1.2rem',marginTop:18,justifyContent:'center'}}>
                   <motion.button
                     whileTap={{ scale: 0.96 }}
                     whileHover={{ scale: 1.04 }}
-                    onClick={executePendingAction}
+                onClick={executePendingAction} 
                     style={{background:'#2ecc71',color:'#fff',border:'none',borderRadius:9,padding:'0.55rem 1.5rem',fontWeight:900,fontSize:'1.08rem',cursor:'pointer',boxShadow:'0 2px 8px #2ecc7144',letterSpacing:1,minWidth:90}}
                   >Confirmar</motion.button>
                   <motion.button
@@ -780,28 +1281,22 @@ const StockMarket = () => {
                     onClick={cancelPendingAction}
                     style={{background:'#e74c3c',color:'#fff',border:'none',borderRadius:9,padding:'0.55rem 1.5rem',fontWeight:900,fontSize:'1.08rem',cursor:'pointer',boxShadow:'0 2px 8px #e74c3c44',letterSpacing:1,minWidth:90}}
                   >Cancelar</motion.button>
-                </div>
-              </motion.div>
+            </div>
+          </motion.div>
             </motion.div>
           )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
           {/* Modal para el gráfico */}
           {showChartModal && selectedStock && (
             <div style={{position:'fixed',top:0,left:0,width:'100vw',height:'100vh',background:'rgba(0,0,0,0.7)',zIndex:9999,display:'flex',alignItems:'center',justifyContent:'center'}}>
               <div style={{background:'rgba(44,47,51,0.98)',borderRadius:28,boxShadow:'0 8px 32px #23272a88',padding:'2.5rem 2rem',minWidth:340,maxWidth:500,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',animation:'fadein 0.5s'}}>
                 <h2 style={{fontWeight:800,fontSize:'1.35rem',marginBottom:18,letterSpacing:1,textAlign:'center',color:'#fff'}}>Precio de {selectedStock.name}</h2>
                 <div style={{width:'100%',maxWidth:420,background:'linear-gradient(120deg,#7289da 60%,#23272a 100%)',borderRadius:18,padding:'1.2rem',boxShadow:'0 2px 12px #7289da22'}}>
-                  <Line
-                    data={{
+                <Line
+                  data={{
                       labels: selectedStock.history.map((_, i) => `T${i + 1}`),
                       datasets: [
                         {
-                          label: selectedStock.name,
+                      label: selectedStock.name,
                           data: selectedStock.history,
                           borderColor:selectedStock.price>selectedStock.history.at(-2)?"#2ecc71":"#e74c3c",
                           backgroundColor: "rgba(114,137,218,0.18)",
@@ -814,10 +1309,10 @@ const StockMarket = () => {
                           pointHoverRadius: 11,
                         },
                       ],
-                    }}
-                    options={{
-                      responsive: true,
-                      plugins: {
+                  }}
+                  options={{
+                    responsive: true,
+                    plugins: {
                         legend: { display: false },
                         title: { display: false },
                         tooltip: {
@@ -827,18 +1322,18 @@ const StockMarket = () => {
                           borderColor: '#7289da',
                           borderWidth: 2,
                         },
-                      },
-                      scales: {
+                    },
+                    scales: {
                         x: { ticks: { color: "#fff",fontSize:16 }, grid: { color: "#7289da" } },
                         y: { ticks: { color: "#fff",fontSize:16 }, grid: { color: "#7289da" } },
                       },
-                    }}
-                  />
-                </div>
-                <button onClick={closeChartModal} style={{marginTop:24,padding:'0.7rem 2.2rem',background:'#e74c3c',color:'#fff',border:'none',borderRadius:12,fontWeight:800,fontSize:'1.13rem',cursor:'pointer',boxShadow:'0 2px 8px #e74c3c44',letterSpacing:1}}>Cerrar</button>
+                  }}
+                />
               </div>
+                <button onClick={closeChartModal} style={{marginTop:24,padding:'0.7rem 2.2rem',background:'#e74c3c',color:'#fff',border:'none',borderRadius:12,fontWeight:800,fontSize:'1.13rem',cursor:'pointer',boxShadow:'0 2px 8px #e74c3c44',letterSpacing:1}}>Cerrar</button>
             </div>
-          )}
+        </div>
+      )}
           {/* Historial de inversiones (desplegable) */}
           <details style={{background:'rgba(44,47,51,0.98)',border:'1.5px solid #7289da',borderRadius:22,padding:'1.2rem 1.5rem',boxShadow:'0 4px 18px #23272a66',width:'100%',maxWidth:700,margin:'0 auto',animation:'fadein 1.4s',marginBottom:32,marginTop:8}}>
             <summary style={{fontWeight:900,fontSize:'1.22rem',color:'#fff',letterSpacing:1,textAlign:'center',outline:'none',cursor:'pointer',padding:'0.5rem 0',userSelect:'none'}}>Historial de inversiones</summary>
@@ -854,13 +1349,33 @@ const StockMarket = () => {
               ))}
             </ul>
           </details>
-        </div>
-      </div>
-      <div style={{marginTop:0,padding:'1.7rem 0',background:'linear-gradient(90deg,#7289da,#23272a)',color:'#fff',textAlign:'center',fontWeight:900,letterSpacing:2,fontSize:'1.22rem',boxShadow:'0 -2px 12px #23272a33',width:'100%',borderRadius:'0 0 28px 28px'}}>Bolsa RP en tiempo real. Powered by SpainRP.</div>
+        </motion.div>
+      </motion.div>
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 1.2 }}
+        style={{
+          marginTop: 0,
+          padding: '1.7rem 0',
+          background: 'linear-gradient(90deg,#7289da,#23272a)',
+          color: '#fff',
+          textAlign: 'center',
+          fontWeight: 900,
+          letterSpacing: 2,
+          fontSize: '1.22rem',
+          boxShadow: '0 -2px 12px #23272a33',
+          width: '100%',
+          borderRadius: '0 0 28px 28px'
+        }}
+      >
+        Bolsa RP en tiempo real. Powered by SpainRP.
+      </motion.div>
       <style>{`
         @keyframes fadein { from { opacity: 0; transform: translateY(30px);} to { opacity: 1; transform: none;} }
       `}</style>
     </div>
+    </>
   );
 };
 

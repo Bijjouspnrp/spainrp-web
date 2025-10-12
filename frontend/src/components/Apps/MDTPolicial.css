@@ -1064,14 +1064,14 @@ body {
   backdrop-filter: blur(10px);
   overflow: hidden;
   transition: all 0.3s ease;
-  opacity: 0;
+    opacity: 0;
   transform: translateY(20px);
-}
+  }
 
 .command-terminal.active {
-  opacity: 1;
-  transform: translateY(0);
-}
+    opacity: 1;
+    transform: translateY(0);
+  }
 
 .terminal-header {
   display: flex;

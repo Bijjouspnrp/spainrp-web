@@ -1117,7 +1117,7 @@ function LogoutPage() {
         .finally(() => {
           navigate('/', { state: { loggedOut: true } });
         });
-    }, 5000); // Espera 5 segundos antes de redirigir
+    }, 3000); // Espera 5 segundos antes de redirigir
     return () => clearTimeout(timer);
   }, [navigate]);
   return (
