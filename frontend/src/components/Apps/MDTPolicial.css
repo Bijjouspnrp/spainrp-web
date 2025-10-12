@@ -397,122 +397,230 @@ body {
   transform: translateY(-10px) scale(1.02);
 }
 
-/* Tarjeta compacta para la barra de herramientas */
+/* Tarjeta compacta para la barra de herramientas - Rediseño completo */
 .police-id-card.compact {
-  width: 280px;
-  height: 80px;
+  width: 320px;
+  height: 100px;
   perspective: none;
   margin: 0 auto;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.police-id-card.compact:hover {
+  transform: translateY(-3px) scale(1.02);
 }
 
 .id-card-compact-content {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(26, 26, 46, 0.9) 100%);
+  background: linear-gradient(145deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
   border: 2px solid var(--police-border);
-  border-radius: 12px;
-  padding: 12px;
+  border-radius: 16px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(15px);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(0, 212, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.id-card-compact-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #00d4ff, #5865f2, #00d4ff);
+  background-size: 200% 100%;
+  animation: gradientShift 3s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
 .id-card-compact-content:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 212, 255, 0.2);
   border-color: var(--police-highlight);
+  box-shadow: 
+    0 12px 40px rgba(0, 212, 255, 0.2),
+    0 0 0 1px rgba(0, 212, 255, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .compact-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  position: relative;
+  z-index: 2;
 }
 
 .police-badge-small {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.7rem;
-  font-weight: 700;
+  gap: 8px;
+  font-size: 0.75rem;
+  font-weight: 800;
   color: var(--police-highlight);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  background: rgba(0, 212, 255, 0.1);
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 212, 255, 0.2);
 }
 
 .police-badge-small svg {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
+  color: var(--police-accent);
 }
 
 .security-level-small {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.security-level-small .security-dots {
+  display: flex;
+  gap: 3px;
+}
+
+.security-level-small .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.security-level-small .dot.active {
+  background-color: var(--police-success);
+  box-shadow: 0 0 6px var(--police-success);
 }
 
 .compact-info {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.officer-name-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .officer-name-compact h4 {
-  font-size: 0.9rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 800;
   color: var(--police-text);
   margin: 0;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+  letter-spacing: 0.5px;
+}
+
+.badge-number {
+  font-size: 0.7rem;
+  color: var(--police-text-secondary);
+  font-weight: 600;
+  letter-spacing: 1px;
+  font-family: 'Courier New', monospace;
 }
 
 .officer-details-compact {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   align-items: flex-end;
+  min-width: 120px;
 }
 
 .officer-details-compact .detail-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 0.7rem;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .officer-details-compact .label {
   color: var(--police-text-secondary);
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  font-size: 0.65rem;
 }
 
 .officer-details-compact .value {
   color: var(--police-text);
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 0.7rem;
 }
 
 .officer-details-compact .status {
-  padding: 2px 6px;
-  border-radius: 8px;
-  font-size: 0.6rem;
-  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 0.65rem;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  min-width: 60px;
+  text-align: center;
+  transition: all 0.3s ease;
 }
 
 .officer-details-compact .status.active {
-  background: rgba(46, 213, 115, 0.2);
+  background: linear-gradient(135deg, rgba(46, 213, 115, 0.3), rgba(46, 213, 115, 0.1));
   color: var(--police-success);
-  border: 1px solid rgba(46, 213, 115, 0.3);
+  border: 1px solid rgba(46, 213, 115, 0.4);
+  box-shadow: 0 0 8px rgba(46, 213, 115, 0.2);
 }
 
 .officer-details-compact .status.inactive {
-  background: rgba(255, 71, 87, 0.2);
+  background: linear-gradient(135deg, rgba(255, 71, 87, 0.3), rgba(255, 71, 87, 0.1));
   color: var(--police-danger);
-  border: 1px solid rgba(255, 71, 87, 0.3);
+  border: 1px solid rgba(255, 71, 87, 0.4);
+  box-shadow: 0 0 8px rgba(255, 71, 87, 0.2);
+}
+
+/* Efectos de hover mejorados */
+.police-id-card.compact:hover .id-card-compact-content {
+  transform: translateY(-2px);
+}
+
+.police-id-card.compact:hover .police-badge-small {
+  background: rgba(0, 212, 255, 0.2);
+  border-color: var(--police-highlight);
+}
+
+.police-id-card.compact:hover .status.active {
+  box-shadow: 0 0 12px rgba(46, 213, 115, 0.4);
+}
+
+.police-id-card.compact:hover .status.inactive {
+  box-shadow: 0 0 12px rgba(255, 71, 87, 0.4);
 }
 
 .police-id-card > div {
@@ -1653,6 +1761,68 @@ body {
   
   .subtitle {
     font-size: 0.8rem;
+  }
+
+  /* Tarjeta compacta responsive */
+  .police-id-card.compact {
+    width: 280px;
+    height: 90px;
+  }
+
+  .id-card-compact-content {
+    padding: 12px;
+  }
+
+  .compact-header {
+    margin-bottom: 8px;
+  }
+
+  .police-badge-small {
+    font-size: 0.7rem;
+    padding: 3px 6px;
+    gap: 6px;
+  }
+
+  .police-badge-small svg {
+    font-size: 0.8rem;
+  }
+
+  .security-level-small {
+    padding: 3px 6px;
+    gap: 4px;
+  }
+
+  .officer-name-compact h4 {
+    font-size: 0.9rem;
+  }
+
+  .badge-number {
+    font-size: 0.65rem;
+  }
+
+  .officer-details-compact {
+    gap: 4px;
+    min-width: 100px;
+  }
+
+  .officer-details-compact .detail-row {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    gap: 6px;
+  }
+
+  .officer-details-compact .label {
+    font-size: 0.6rem;
+  }
+
+  .officer-details-compact .value {
+    font-size: 0.65rem;
+  }
+
+  .officer-details-compact .status {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    min-width: 50px;
   }
 }
 
