@@ -260,7 +260,7 @@ export default function DiscordUserBar() {
                 </motion.a>
                 
                 <motion.a
-                  href="/profile"
+                  href="/panel"
                   whileHover={{ backgroundColor: 'rgba(114, 137, 218, 0.1)' }}
                   whileTap={{ scale: 0.98 }}
                   style={{
@@ -276,7 +276,7 @@ export default function DiscordUserBar() {
                   }}
                 >
                   <FaUser size={16} color="#7289da" />
-                  Perfil
+                  Panel
                 </motion.a>
                 
                 <motion.a

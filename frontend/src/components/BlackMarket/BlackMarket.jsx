@@ -3,6 +3,7 @@ import { FaLock, FaSkull, FaPills, FaMoneyBillWave, FaUserSecret, FaLaptopCode, 
 import { GiPistolGun, GiChemicalDrop, GiAbbotMeeple, GiAbdominalArmor, GiKnifeFork, GiKnifeThrust, GiSentryGun } from 'react-icons/gi';
 import './BlackMarket.css';
 import DiscordUserBar from '../DiscordUserBar';
+import Particles from '../Particles/Particles';
 import { apiUrl, authFetch } from '../../utils/api';
 
 // Definición de temas
@@ -1698,6 +1699,18 @@ if (!user) {
   try {
   return (
     <div className={`blackmarket-hack-bg theme-${currentTheme}`}>
+      {/* Fondo de partículas animadas */}
+      <Particles
+        particleColors={['#00ff99', '#0ea5e9', '#f59e0b', '#8b5cf6', '#ec4899']}
+        particleCount={150}
+        particleSpread={8}
+        speed={0.08}
+        particleBaseSize={80}
+        moveParticlesOnHover={true}
+        alphaParticles={true}
+        disableRotation={false}
+        className="blackmarket-particles"
+      />
       {roleChecking && <div className="role-check-bar" />}
       {roleToast && <div className="role-ok-toast">{roleToast}</div>}
       <DiscordUserBar />
