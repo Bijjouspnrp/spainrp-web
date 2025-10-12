@@ -3,7 +3,6 @@ import { FaLock, FaSkull, FaPills, FaMoneyBillWave, FaUserSecret, FaLaptopCode, 
 import { GiPistolGun, GiChemicalDrop, GiAbbotMeeple, GiAbdominalArmor, GiKnifeFork, GiKnifeThrust, GiSentryGun } from 'react-icons/gi';
 import './BlackMarket.css';
 import DiscordUserBar from '../DiscordUserBar';
-import Particles from '../Particles/Particles';
 import { apiUrl, authFetch } from '../../utils/api';
 
 // Definición de temas
@@ -1699,18 +1698,39 @@ if (!user) {
   try {
   return (
     <div className={`blackmarket-hack-bg theme-${currentTheme}`}>
-      {/* Fondo de partículas animadas */}
-      <Particles
-        particleColors={['#00ff99', '#0ea5e9', '#f59e0b', '#8b5cf6', '#ec4899']}
-        particleCount={150}
-        particleSpread={8}
-        speed={0.08}
-        particleBaseSize={80}
-        moveParticlesOnHover={true}
-        alphaParticles={true}
-        disableRotation={false}
-        className="blackmarket-particles"
-      />
+      {/* Fondo animado mejorado */}
+      <div className="blackmarket-animated-bg">
+        {/* Partículas flotantes */}
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={i}
+            className="floating-particle"
+            style={{
+              '--delay': `${i * 0.5}s`,
+              '--duration': `${3 + Math.random() * 4}s`,
+              '--x': `${Math.random() * 100}%`,
+              '--y': `${Math.random() * 100}%`,
+              '--size': `${2 + Math.random() * 4}px`,
+              '--opacity': `${0.1 + Math.random() * 0.3}`
+            }}
+          />
+        ))}
+        
+        {/* Ondas de energía */}
+        <div className="energy-waves">
+          <div className="wave wave-1"></div>
+          <div className="wave wave-2"></div>
+          <div className="wave wave-3"></div>
+        </div>
+        
+        {/* Efectos de neón */}
+        <div className="neon-effects">
+          <div className="neon-line neon-line-1"></div>
+          <div className="neon-line neon-line-2"></div>
+          <div className="neon-line neon-line-3"></div>
+        </div>
+      </div>
+      
       {roleChecking && <div className="role-check-bar" />}
       {roleToast && <div className="role-ok-toast">{roleToast}</div>}
       <DiscordUserBar />
@@ -3889,6 +3909,184 @@ if (!user) {
           border-left: 4px solid #f59e0b;
           background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.05));
           box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+        }
+        
+        /* Fondo animado mejorado para BlackMarket */
+        .blackmarket-animated-bg {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          z-index: -1;
+          overflow: hidden;
+          pointer-events: none;
+        }
+        
+        .floating-particle {
+          position: absolute;
+          left: var(--x);
+          top: var(--y);
+          width: var(--size);
+          height: var(--size);
+          background: radial-gradient(circle, rgba(0, 255, 153, 0.8) 0%, rgba(0, 255, 153, 0.2) 50%, transparent 100%);
+          border-radius: 50%;
+          opacity: var(--opacity);
+          animation: floatParticle var(--duration) ease-in-out infinite;
+          animation-delay: var(--delay);
+        }
+        
+        @keyframes floatParticle {
+          0%, 100% {
+            transform: translateY(0px) translateX(0px) scale(1);
+            opacity: var(--opacity);
+          }
+          25% {
+            transform: translateY(-20px) translateX(10px) scale(1.2);
+            opacity: calc(var(--opacity) * 1.5);
+          }
+          50% {
+            transform: translateY(-40px) translateX(-5px) scale(0.8);
+            opacity: calc(var(--opacity) * 0.8);
+          }
+          75% {
+            transform: translateY(-20px) translateX(-10px) scale(1.1);
+            opacity: calc(var(--opacity) * 1.2);
+          }
+        }
+        
+        .energy-waves {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+        }
+        
+        .wave {
+          position: absolute;
+          width: 200%;
+          height: 200%;
+          border-radius: 50%;
+          border: 1px solid rgba(0, 255, 153, 0.1);
+          animation: energyWave 8s ease-in-out infinite;
+        }
+        
+        .wave-1 {
+          top: -50%;
+          left: -50%;
+          animation-delay: 0s;
+        }
+        
+        .wave-2 {
+          top: -50%;
+          left: -50%;
+          animation-delay: 2.5s;
+        }
+        
+        .wave-3 {
+          top: -50%;
+          left: -50%;
+          animation-delay: 5s;
+        }
+        
+        @keyframes energyWave {
+          0% {
+            transform: scale(0.5) rotate(0deg);
+            opacity: 0.8;
+          }
+          50% {
+            transform: scale(1) rotate(180deg);
+            opacity: 0.3;
+          }
+          100% {
+            transform: scale(1.5) rotate(360deg);
+            opacity: 0;
+          }
+        }
+        
+        .neon-effects {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+        }
+        
+        .neon-line {
+          position: absolute;
+          background: linear-gradient(90deg, transparent, rgba(0, 255, 153, 0.3), transparent);
+          height: 1px;
+          animation: neonSweep 6s linear infinite;
+        }
+        
+        .neon-line-1 {
+          top: 20%;
+          width: 100%;
+          animation-delay: 0s;
+        }
+        
+        .neon-line-2 {
+          top: 50%;
+          width: 100%;
+          animation-delay: 2s;
+        }
+        
+        .neon-line-3 {
+          top: 80%;
+          width: 100%;
+          animation-delay: 4s;
+        }
+        
+        @keyframes neonSweep {
+          0% {
+            left: -100%;
+            opacity: 0;
+          }
+          50% {
+            opacity: 1;
+          }
+          100% {
+            left: 100%;
+            opacity: 0;
+          }
+        }
+        
+        /* Efectos específicos por tema */
+        .theme-hacking .floating-particle {
+          background: radial-gradient(circle, rgba(0, 255, 153, 0.8) 0%, rgba(0, 255, 153, 0.2) 50%, transparent 100%);
+        }
+        
+        .theme-hacking .wave {
+          border-color: rgba(0, 255, 153, 0.1);
+        }
+        
+        .theme-hacking .neon-line {
+          background: linear-gradient(90deg, transparent, rgba(0, 255, 153, 0.3), transparent);
+        }
+        
+        .theme-darkness .floating-particle {
+          background: radial-gradient(circle, rgba(139, 92, 246, 0.8) 0%, rgba(139, 92, 246, 0.2) 50%, transparent 100%);
+        }
+        
+        .theme-darkness .wave {
+          border-color: rgba(139, 92, 246, 0.1);
+        }
+        
+        .theme-darkness .neon-line {
+          background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.3), transparent);
+        }
+        
+        .theme-terror .floating-particle {
+          background: radial-gradient(circle, rgba(239, 68, 68, 0.8) 0%, rgba(239, 68, 68, 0.2) 50%, transparent 100%);
+        }
+        
+        .theme-terror .wave {
+          border-color: rgba(239, 68, 68, 0.1);
+        }
+        
+        .theme-terror .neon-line {
+          background: linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.3), transparent);
         }
       `}</style>
     </div>
