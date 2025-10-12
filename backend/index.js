@@ -8380,7 +8380,16 @@ app.get('/api/admin/ban/bans', ensureAuthOrJWT, ensureExclusiveAdmin, async (req
     query += ' ORDER BY bannedAt DESC';
     
     const bans = await allQuery(query, params);
-    res.json(bans);
+    console.log(`[BAN ADMIN] Bans encontrados: ${bans.length}`);
+    console.log(`[BAN ADMIN] Query ejecutada: ${query}`);
+    console.log(`[BAN ADMIN] Parámetros: ${JSON.stringify(params)}`);
+    console.log(`[BAN ADMIN] Bans data:`, bans);
+    
+    res.json({
+      success: true,
+      bans: bans,
+      total: bans.length
+    });
   } catch (error) {
     console.error('[BAN ADMIN] Error obteniendo bans:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
@@ -8565,6 +8574,35 @@ app.delete('/api/admin/ban/:type/:value', ensureAuthOrJWT, ensureExclusiveAdmin,
   }
 });
 
+// Endpoint de prueba para verificar datos de bans
+app.get('/api/admin/ban/debug', ensureAuthOrJWT, ensureExclusiveAdmin, async (req, res) => {
+  try {
+    const { allQuery, getQuery } = require('./db/database');
+    
+    // Verificar si la tabla existe y tiene datos
+    const allBans = await allQuery('SELECT * FROM web_bans ORDER BY bannedAt DESC LIMIT 10');
+    const totalBans = await getQuery('SELECT COUNT(*) as count FROM web_bans');
+    const activeBans = await getQuery('SELECT COUNT(*) as count FROM web_bans WHERE isActive = 1');
+    
+    console.log('[BAN DEBUG] Datos de la tabla web_bans:', {
+      totalBans: totalBans.count,
+      activeBans: activeBans.count,
+      sampleBans: allBans
+    });
+    
+    res.json({
+      success: true,
+      totalBans: totalBans.count,
+      activeBans: activeBans.count,
+      sampleBans: allBans,
+      message: 'Debug data retrieved successfully'
+    });
+  } catch (error) {
+    console.error('[BAN DEBUG] Error:', error);
+    res.status(500).json({ error: 'Error interno del servidor', details: error.message });
+  }
+});
+
 // Obtener estadísticas de bans
 app.get('/api/admin/ban/stats', ensureAuthOrJWT, ensureExclusiveAdmin, async (req, res) => {
   try {
@@ -8575,6 +8613,13 @@ app.get('/api/admin/ban/stats', ensureAuthOrJWT, ensureExclusiveAdmin, async (re
       getQuery('SELECT COUNT(*) as count FROM ip_tracking'),
       getQuery('SELECT COUNT(*) as count FROM ip_tracking WHERE isActive = 1')
     ]);
+    
+    console.log('[BAN ADMIN] Estadísticas:', {
+      ipBans: ipBans.count,
+      discordBans: discordBans.count,
+      totalIPs: totalIPs.count,
+      activeIPs: activeIPs.count
+    });
     
     res.json({
       ipBans: ipBans.count,

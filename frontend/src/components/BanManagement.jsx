@@ -163,6 +163,31 @@ const BanManagement = () => {
     }
   };
 
+  const debugBans = async () => {
+    try {
+      console.log('[BAN MANAGEMENT] 🔍 Iniciando debug de bans...');
+      const response = await fetch(apiUrl('/api/admin/ban/debug'), {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('spainrp_token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('[BAN MANAGEMENT] 🐛 Debug data:', data);
+        alert(`Debug Info:\nTotal Bans: ${data.totalBans}\nActive Bans: ${data.activeBans}\nSample: ${JSON.stringify(data.sampleBans, null, 2)}`);
+      } else {
+        const errorData = await response.json();
+        console.error('[BAN MANAGEMENT] Error en debug:', errorData);
+        alert(`Error en debug: ${errorData.error}`);
+      }
+    } catch (error) {
+      console.error('[BAN MANAGEMENT] Error en debug:', error);
+      alert(`Error en debug: ${error.message}`);
+    }
+  };
+
   const loadIPs = async (page = 1) => {
     try {
       setLoading(true);
@@ -207,7 +232,7 @@ const BanManagement = () => {
       if (response.ok) {
         const data = await response.json();
         console.log('[BAN MANAGEMENT] Bans cargados:', data);
-        setBans(data || []);
+        setBans(data.bans || []);
         setConnectionStatus('connected');
       } else {
         const errorData = await response.json();
@@ -514,6 +539,13 @@ const BanManagement = () => {
         </div>
 
         <div className="toolbar-right">
+          <button 
+            className="btn-secondary"
+            onClick={debugBans}
+            style={{ marginRight: '10px' }}
+          >
+            🔍 Debug
+          </button>
           <button 
             className="btn-primary"
             onClick={() => setShowBanModal(true)}
