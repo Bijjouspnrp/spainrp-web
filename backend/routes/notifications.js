@@ -199,7 +199,11 @@ router.post('/send', async (req, res) => {
       target,
       targetUser,
       priority,
-      userAgent: req.headers['user-agent']?.substring(0, 50) || 'unknown'
+      userAgent: req.headers['user-agent']?.substring(0, 50) || 'unknown',
+      authHeader: req.headers.authorization ? 'Present' : 'Missing',
+      contentType: req.headers['content-type'],
+      bodyKeys: Object.keys(req.body || {}),
+      timestamp: new Date().toISOString()
     });
 
     // Verificar permisos de administrador
@@ -305,11 +309,30 @@ router.post('/send', async (req, res) => {
     console.error('[NOTIFICATIONS] ❌ Error enviando notificación:', {
       error: error.message,
       stack: error.stack,
-      userId: req.user?.id
+      userId: req.user?.id,
+      name: error.name,
+      timestamp: new Date().toISOString()
     });
-    res.status(500).json({ 
-      error: 'Error enviando notificación',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    
+    // Determinar el tipo de error y responder apropiadamente
+    let statusCode = 500;
+    let errorMessage = 'Error interno del servidor';
+    
+    if (error.message.includes('database') || error.message.includes('SQL')) {
+      statusCode = 503;
+      errorMessage = 'Error de base de datos';
+    } else if (error.message.includes('permission') || error.message.includes('admin')) {
+      statusCode = 403;
+      errorMessage = 'No tienes permisos para realizar esta acción';
+    } else if (error.message.includes('validation') || error.message.includes('required')) {
+      statusCode = 400;
+      errorMessage = 'Datos de entrada inválidos';
+    }
+    
+    res.status(statusCode).json({ 
+      error: errorMessage,
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      code: error.name || 'INTERNAL_ERROR'
     });
   }
 });

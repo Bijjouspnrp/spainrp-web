@@ -55,10 +55,27 @@ const AdminNotificationSender = ({ isOpen, onClose }) => {
     setError('');
 
     try {
+      // Verificar token antes de hacer la petición
+      const token = localStorage.getItem('spainrp_token');
+      console.log('[ADMIN-NOTIFICATIONS] 🔍 Verificando token:', {
+        hasToken: !!token,
+        tokenPreview: token ? token.substring(0, 20) + '...' : 'none'
+      });
+
+      if (!token) {
+        throw new Error('No hay token de autenticación. Por favor, inicia sesión nuevamente.');
+      }
+
       const payload = {
         ...formData,
         targetUser: formData.target === 'specific' ? formData.targetUser : undefined
       };
+
+      console.log('[ADMIN-NOTIFICATIONS] 📤 Enviando notificación:', {
+        payload,
+        hasToken: !!token,
+        target: formData.target
+      });
 
       const response = await authFetch(apiUrl('/api/notifications/send'), {
         method: 'POST',
@@ -68,9 +85,16 @@ const AdminNotificationSender = ({ isOpen, onClose }) => {
         body: JSON.stringify(payload)
       });
 
+      console.log('[ADMIN-NOTIFICATIONS] 📡 Respuesta del servidor:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+
       if (response.ok) {
         const data = await response.json();
-        console.log('[ADMIN-NOTIFICATIONS] Notificación enviada:', data);
+        console.log('[ADMIN-NOTIFICATIONS] ✅ Notificación enviada exitosamente:', data);
         
         setSuccess(true);
         setFormData({
@@ -87,11 +111,36 @@ const AdminNotificationSender = ({ isOpen, onClose }) => {
           onClose();
         }, 2000);
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Error enviando notificación');
+        let errorMessage = 'Error enviando notificación';
+        
+        try {
+          const errorData = await response.json();
+          console.error('[ADMIN-NOTIFICATIONS] ❌ Error del servidor:', errorData);
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch (parseError) {
+          console.error('[ADMIN-NOTIFICATIONS] ❌ Error parseando respuesta:', parseError);
+          errorMessage = `Error del servidor (${response.status}): ${response.statusText}`;
+        }
+        
+        // Manejar errores específicos de autenticación
+        if (response.status === 401) {
+          errorMessage = 'Token de autenticación inválido o expirado. Por favor, inicia sesión nuevamente.';
+          // Limpiar token inválido
+          localStorage.removeItem('spainrp_token');
+        } else if (response.status === 403) {
+          errorMessage = 'No tienes permisos para enviar notificaciones.';
+        } else if (response.status === 500) {
+          errorMessage = 'Error interno del servidor. Por favor, intenta nuevamente.';
+        }
+        
+        throw new Error(errorMessage);
       }
     } catch (error) {
-      console.error('[ADMIN-NOTIFICATIONS] Error:', error);
+      console.error('[ADMIN-NOTIFICATIONS] ❌ Error completo:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
       setError(error.message);
     } finally {
       setLoading(false);
