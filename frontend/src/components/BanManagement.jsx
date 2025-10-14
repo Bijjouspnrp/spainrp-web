@@ -654,19 +654,40 @@ const BanManagement = () => {
                             {ip.country || 'Unknown'} 
                             {ip.countryCode && ` (${ip.countryCode})`}
                             {ip.city && ` - ${ip.city}`}
+                            {ip.region && ip.region !== 'Unknown' && `, ${ip.region}`}
                           </div>
+                          {ip.isp && ip.isp !== 'Unknown' && (
+                            <div className="location-isp">
+                              <span className="isp-text">ISP: {ip.isp}</span>
+                            </div>
+                          )}
+                          {ip.timezone && ip.timezone !== 'Unknown' && (
+                            <div className="location-timezone">
+                              <span className="timezone-text">TZ: {ip.timezone}</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                       
                       <div className="device-info">
                         <div className="device-details">
-                          <span className="device-badge">
+                          <span className="device-badge browser">
                             {ip.browser || 'Unknown Browser'}
+                            {ip.browserVersion && ` ${ip.browserVersion}`}
                           </span>
                           <span className="os-badge">
                             {ip.os || 'Unknown OS'}
+                            {ip.osVersion && ` ${ip.osVersion}`}
+                          </span>
+                          <span className="device-type-badge">
+                            {ip.deviceType || ip.device || 'Unknown Device'}
                           </span>
                         </div>
+                        {ip.language && ip.language !== 'Unknown' && (
+                          <div className="language-info">
+                            <span className="language-badge">🌐 {ip.language}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                     

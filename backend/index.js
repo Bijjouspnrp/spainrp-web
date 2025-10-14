@@ -2893,18 +2893,18 @@ async function getIPLocation(ip) {
         timezone: 'Local',
         latitude: null,
         longitude: null,
-        isp: 'Local Network'
+        isp: 'Local Network',
+        accuracy: 'Local'
       };
     }
 
-    // Usar solo un servicio para reducir latencia y carga
-    try {
-      const response = await fetch(`https://ipapi.co/${ip}/json/`, {
-        timeout: 2000 // Timeout de 2 segundos
-      });
-      if (response.ok) {
-        const data = await response.json();
-        const result = {
+    // Lista de servicios de geolocalización con prioridad
+    const services = [
+      {
+        name: 'ipapi.co',
+        url: `https://ipapi.co/${ip}/json/`,
+        timeout: 3000,
+        parser: (data) => ({
           country: data.country_name || 'Unknown',
           countryCode: data.country_code || 'Unknown',
           city: data.city || 'Unknown',
@@ -2912,17 +2912,79 @@ async function getIPLocation(ip) {
           timezone: data.timezone || 'Unknown',
           latitude: data.latitude,
           longitude: data.longitude,
-          isp: data.org || 'Unknown'
-        };
-        console.log(`[IP LOCATION] Información obtenida para ${ip}:`, result);
-        return result;
+          isp: data.org || 'Unknown',
+          accuracy: data.accuracy || 'Medium'
+        })
+      },
+      {
+        name: 'ip-api.com',
+        url: `http://ip-api.com/json/${ip}?fields=status,message,country,countryCode,region,regionName,city,timezone,lat,lon,isp,org,as,query`,
+        timeout: 3000,
+        parser: (data) => ({
+          country: data.country || 'Unknown',
+          countryCode: data.countryCode || 'Unknown',
+          city: data.city || 'Unknown',
+          region: data.regionName || 'Unknown',
+          timezone: data.timezone || 'Unknown',
+          latitude: data.lat,
+          longitude: data.lon,
+          isp: data.isp || 'Unknown',
+          accuracy: 'High'
+        })
+      },
+      {
+        name: 'ipinfo.io',
+        url: `https://ipinfo.io/${ip}/json`,
+        timeout: 3000,
+        parser: (data) => ({
+          country: data.country || 'Unknown',
+          countryCode: data.country || 'Unknown',
+          city: data.city || 'Unknown',
+          region: data.region || 'Unknown',
+          timezone: data.timezone || 'Unknown',
+          latitude: data.loc ? data.loc.split(',')[0] : null,
+          longitude: data.loc ? data.loc.split(',')[1] : null,
+          isp: data.org || 'Unknown',
+          accuracy: 'Medium'
+        })
       }
-    } catch (error) {
-      console.log(`[IP LOCATION] Servicio falló para ${ip}:`, error.message);
+    ];
+
+    // Intentar con cada servicio en orden de prioridad
+    for (const service of services) {
+      try {
+        console.log(`[IP LOCATION] Intentando con ${service.name} para ${ip}`);
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), service.timeout);
+        
+        const response = await fetch(service.url, {
+          signal: controller.signal,
+          headers: {
+            'User-Agent': 'SpainRP/1.0'
+          }
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (response.ok) {
+          const data = await response.json();
+          const result = service.parser(data);
+          
+          // Validar que tenemos datos útiles
+          if (result.country !== 'Unknown' || result.city !== 'Unknown') {
+            console.log(`[IP LOCATION] ✅ Información obtenida de ${service.name} para ${ip}:`, result);
+            return result;
+          }
+        }
+      } catch (error) {
+        console.log(`[IP LOCATION] ❌ ${service.name} falló para ${ip}:`, error.message);
+        continue;
+      }
     }
 
     // Si todos los servicios fallan, devolver datos por defecto
-    console.log(`[IP LOCATION] Todos los servicios fallaron para ${ip}, usando datos por defecto`);
+    console.log(`[IP LOCATION] ⚠️ Todos los servicios fallaron para ${ip}, usando datos por defecto`);
     return {
       country: 'Unknown',
       countryCode: 'Unknown',
@@ -2931,11 +2993,12 @@ async function getIPLocation(ip) {
       timezone: 'Unknown',
       latitude: null,
       longitude: null,
-      isp: 'Unknown'
+      isp: 'Unknown',
+      accuracy: 'Unknown'
     };
 
   } catch (error) {
-    console.error(`[IP LOCATION] Error obteniendo ubicación para ${ip}:`, error);
+    console.error(`[IP LOCATION] ❌ Error obteniendo ubicación para ${ip}:`, error);
     return {
       country: 'Unknown',
       countryCode: 'Unknown',
@@ -2944,7 +3007,8 @@ async function getIPLocation(ip) {
       timezone: 'Unknown',
       latitude: null,
       longitude: null,
-      isp: 'Unknown'
+      isp: 'Unknown',
+      accuracy: 'Unknown'
     };
   }
 }
@@ -2970,8 +3034,11 @@ function isLocalIP(ip) {
 async function parseUserAgent(userAgent, req = null, ip = null) {
   const info = {
     browser: 'Unknown',
+    browserVersion: 'Unknown',
     os: 'Unknown',
+    osVersion: 'Unknown',
     device: 'Unknown',
+    deviceType: 'Unknown',
     country: 'Unknown',
     countryCode: 'Unknown',
     city: 'Unknown',
@@ -2979,41 +3046,109 @@ async function parseUserAgent(userAgent, req = null, ip = null) {
     timezone: 'Unknown',
     latitude: null,
     longitude: null,
-    isp: 'Unknown'
+    isp: 'Unknown',
+    screenResolution: 'Unknown',
+    language: 'Unknown'
   };
   
-  // Detectar navegador
-  if (userAgent.includes('Chrome')) info.browser = 'Chrome';
-  else if (userAgent.includes('Firefox')) info.browser = 'Firefox';
-  else if (userAgent.includes('Safari')) info.browser = 'Safari';
-  else if (userAgent.includes('Edge')) info.browser = 'Edge';
-  else if (userAgent.includes('Opera')) info.browser = 'Opera';
-  else if (userAgent.includes('Go-http-client')) info.browser = 'Go HTTP Client';
+  // Detectar navegador con versión
+  if (userAgent.includes('Chrome/')) {
+    info.browser = 'Chrome';
+    const chromeMatch = userAgent.match(/Chrome\/(\d+\.\d+)/);
+    if (chromeMatch) info.browserVersion = chromeMatch[1];
+  } else if (userAgent.includes('Firefox/')) {
+    info.browser = 'Firefox';
+    const firefoxMatch = userAgent.match(/Firefox\/(\d+\.\d+)/);
+    if (firefoxMatch) info.browserVersion = firefoxMatch[1];
+  } else if (userAgent.includes('Safari/') && !userAgent.includes('Chrome')) {
+    info.browser = 'Safari';
+    const safariMatch = userAgent.match(/Version\/(\d+\.\d+)/);
+    if (safariMatch) info.browserVersion = safariMatch[1];
+  } else if (userAgent.includes('Edg/')) {
+    info.browser = 'Edge';
+    const edgeMatch = userAgent.match(/Edg\/(\d+\.\d+)/);
+    if (edgeMatch) info.browserVersion = edgeMatch[1];
+  } else if (userAgent.includes('Opera/')) {
+    info.browser = 'Opera';
+    const operaMatch = userAgent.match(/Opera\/(\d+\.\d+)/);
+    if (operaMatch) info.browserVersion = operaMatch[1];
+  } else if (userAgent.includes('Go-http-client')) info.browser = 'Go HTTP Client';
   else if (userAgent.includes('curl')) info.browser = 'cURL';
   else if (userAgent.includes('wget')) info.browser = 'Wget';
   else if (userAgent.includes('Python')) info.browser = 'Python HTTP';
   else if (userAgent.includes('Java')) info.browser = 'Java HTTP';
   else if (userAgent.includes('Postman')) info.browser = 'Postman';
+  else if (userAgent.includes('bot') || userAgent.includes('Bot')) info.browser = 'Bot/Crawler';
   
-  // Detectar sistema operativo
-  if (userAgent.includes('Windows')) info.os = 'Windows';
-  else if (userAgent.includes('Mac OS')) info.os = 'macOS';
-  else if (userAgent.includes('Linux')) info.os = 'Linux';
-  else if (userAgent.includes('Android')) info.os = 'Android';
-  else if (userAgent.includes('iOS')) info.os = 'iOS';
-  else if (userAgent.includes('Ubuntu')) info.os = 'Ubuntu';
-  else if (userAgent.includes('CentOS')) info.os = 'CentOS';
-  else if (userAgent.includes('Debian')) info.os = 'Debian';
+  // Detectar sistema operativo con versión
+  if (userAgent.includes('Windows NT 10.0')) {
+    info.os = 'Windows 10/11';
+    info.osVersion = '10+';
+  } else if (userAgent.includes('Windows NT 6.3')) {
+    info.os = 'Windows 8.1';
+    info.osVersion = '8.1';
+  } else if (userAgent.includes('Windows NT 6.1')) {
+    info.os = 'Windows 7';
+    info.osVersion = '7';
+  } else if (userAgent.includes('Windows NT 6.0')) {
+    info.os = 'Windows Vista';
+    info.osVersion = 'Vista';
+  } else if (userAgent.includes('Windows NT 5.1')) {
+    info.os = 'Windows XP';
+    info.osVersion = 'XP';
+  } else if (userAgent.includes('Mac OS X')) {
+    info.os = 'macOS';
+    const macMatch = userAgent.match(/Mac OS X (\d+[._]\d+)/);
+    if (macMatch) info.osVersion = macMatch[1].replace('_', '.');
+  } else if (userAgent.includes('Linux')) {
+    info.os = 'Linux';
+    if (userAgent.includes('Ubuntu')) {
+      info.os = 'Ubuntu';
+      const ubuntuMatch = userAgent.match(/Ubuntu\/(\d+\.\d+)/);
+      if (ubuntuMatch) info.osVersion = ubuntuMatch[1];
+    } else if (userAgent.includes('CentOS')) {
+      info.os = 'CentOS';
+    } else if (userAgent.includes('Debian')) {
+      info.os = 'Debian';
+    } else if (userAgent.includes('Fedora')) {
+      info.os = 'Fedora';
+    }
+  } else if (userAgent.includes('Android')) {
+    info.os = 'Android';
+    const androidMatch = userAgent.match(/Android (\d+\.\d+)/);
+    if (androidMatch) info.osVersion = androidMatch[1];
+  } else if (userAgent.includes('iPhone OS') || userAgent.includes('iOS')) {
+    info.os = 'iOS';
+    const iosMatch = userAgent.match(/OS (\d+[._]\d+)/);
+    if (iosMatch) info.osVersion = iosMatch[1].replace('_', '.');
+  }
   
-  // Detectar tipo de dispositivo
-  if (userAgent.includes('Mobile')) info.device = 'Mobile';
-  else if (userAgent.includes('Tablet')) info.device = 'Tablet';
-  else if (userAgent.includes('Desktop')) info.device = 'Desktop';
-  else if (userAgent.includes('Bot')) info.device = 'Bot';
-  else if (userAgent.includes('Spider')) info.device = 'Spider';
-  else if (userAgent.includes('Crawler')) info.device = 'Crawler';
-  else if (userAgent.includes('Go-http-client')) info.device = 'Server/API';
-  else info.device = 'Desktop';
+  // Detectar tipo de dispositivo y características
+  if (userAgent.includes('Mobile') || userAgent.includes('Android') || userAgent.includes('iPhone')) {
+    info.device = 'Mobile';
+    info.deviceType = 'Smartphone';
+  } else if (userAgent.includes('Tablet') || userAgent.includes('iPad')) {
+    info.device = 'Tablet';
+    info.deviceType = 'Tablet';
+  } else if (userAgent.includes('Desktop') || userAgent.includes('Windows') || userAgent.includes('Mac OS')) {
+    info.device = 'Desktop';
+    info.deviceType = 'Desktop Computer';
+  } else if (userAgent.includes('Bot') || userAgent.includes('Spider') || userAgent.includes('Crawler')) {
+    info.device = 'Bot';
+    info.deviceType = 'Automated Bot';
+  } else if (userAgent.includes('Go-http-client') || userAgent.includes('curl') || userAgent.includes('wget')) {
+    info.device = 'Server';
+    info.deviceType = 'Server/API Client';
+  } else {
+    info.device = 'Desktop';
+    info.deviceType = 'Desktop Computer';
+  }
+  
+  // Detectar idioma del navegador
+  if (req && req.headers['accept-language']) {
+    const languages = req.headers['accept-language'].split(',');
+    info.language = languages[0].split(';')[0];
+  }
   
   // Obtener información de geolocalización si se proporciona IP
   if (ip) {
