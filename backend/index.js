@@ -1286,6 +1286,8 @@ app.use((req, res, next) => {
 
 // SQLite connection centralizada
 const { getDatabase } = require('./db/database');
+const { fixNotificationsSchema } = require('./scripts/fix_notifications_schema');
+const { fixNotificationsId } = require('./scripts/fix_notifications_id');
 const db = getDatabase();
 
 // Migración: agregar columna 'images' si no existe
@@ -1296,6 +1298,29 @@ db.get("PRAGMA table_info(announcements)", (err, columns) => {
       else console.log('[DB MIGRATION] Columna images añadida a announcements');
     });
   }
+});
+
+// Reparar esquema de notificaciones al iniciar el servidor
+console.log('[STARTUP] 🔧 Ejecutando reparación del esquema de notificaciones...');
+Promise.all([
+  fixNotificationsSchema(),
+  fixNotificationsId()
+]).then(results => {
+  const [schemaResult, idResult] = results;
+  
+  if (schemaResult.success) {
+    console.log('[STARTUP] ✅ Esquema de notificaciones reparado:', schemaResult.message);
+  } else {
+    console.error('[STARTUP] ❌ Error reparando esquema de notificaciones:', schemaResult.error);
+  }
+  
+  if (idResult.success) {
+    console.log('[STARTUP] ✅ Columna ID de notificaciones reparada:', idResult.message);
+  } else {
+    console.error('[STARTUP] ❌ Error reparando columna ID:', idResult.error);
+  }
+}).catch(error => {
+  console.error('[STARTUP] ❌ Error ejecutando reparaciones de notificaciones:', error);
 });
 
 // Tabla de bans (específica para este módulo)

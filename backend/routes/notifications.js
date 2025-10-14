@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { getDatabase } = require('../db/database');
 const { verifyToken } = require('../middleware/jwt');
+const { addPriorityColumn } = require('../migrations/add_priority_column');
 
 // Usar conexión centralizada de base de datos
 const db = getDatabase();
@@ -26,6 +27,17 @@ db.run(`ALTER TABLE notifications ADD COLUMN createdAt DATETIME DEFAULT CURRENT_
   if (err && !err.message.includes('duplicate column name')) {
     console.error('[NOTIFICATIONS] Error agregando columna createdAt:', err);
   }
+});
+
+// Ejecutar migración para agregar columna priority
+addPriorityColumn().then(result => {
+  if (result.success) {
+    console.log('[NOTIFICATIONS] ✅ Migración de priority completada:', result.message);
+  } else {
+    console.error('[NOTIFICATIONS] ❌ Error en migración de priority:', result.error);
+  }
+}).catch(error => {
+  console.error('[NOTIFICATIONS] ❌ Error ejecutando migración de priority:', error);
 });
 
 // Copiar datos de created_at a createdAt si existe
