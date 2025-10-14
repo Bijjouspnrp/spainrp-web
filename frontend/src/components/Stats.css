@@ -49,8 +49,10 @@ body:not(.dark) .stats {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
   min-height: 180px;
+  gap: 0.5rem;
 }
 
 .stat-card::before {
@@ -78,15 +80,21 @@ body:not(.dark) .stats {
 }
 
 .stat-number {
-  font-size: clamp(1.2rem, 1.8vw, 1.4rem);
-  font-weight: 600;
+  font-size: clamp(1.4rem, 2.2vw, 1.8rem);
+  font-weight: 700;
   color: var(--stat-fg);
   margin-bottom: 0.5rem;
-  line-height: 1.2;
-  word-break: break-word;
-  overflow-wrap: break-word;
-  hyphens: auto;
+  line-height: 1.1;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.2rem;
+  word-break: keep-all;
+  overflow-wrap: normal;
+  hyphens: none;
   max-width: 100%;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -178,8 +186,9 @@ body:not(.dark) .stats {
   }
 
   .stat-number {
-    font-size: 1.1rem;
-    word-break: break-word;
+    font-size: 1.2rem;
+    min-height: 1.8rem;
+    word-break: keep-all;
   }
 }
 
@@ -204,7 +213,8 @@ body:not(.dark) .stats {
   }
 
   .stat-number {
-    font-size: 1rem;
-    word-break: break-word;
+    font-size: 1.1rem;
+    min-height: 1.6rem;
+    word-break: keep-all;
   }
 } 

@@ -1,31 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const jwt = require('jsonwebtoken');
 const { getDatabase } = require('../db/database');
+const { verifyToken } = require('../middleware/jwt');
 
 // Usar conexión centralizada de base de datos
 const db = getDatabase();
 
-// Middleware para autenticación JWT
-const authenticateJWT = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (!token) {
-    return res.status(401).json({ error: 'Token de acceso requerido' });
-  }
-
-  jwt.verify(token, process.env.JWT_SECRET || 'spainrp_secret_key', (err, user) => {
-    if (err) {
-      return res.status(403).json({ error: 'Token inválido' });
-    }
-    req.user = user;
-    next();
-  });
-};
-
 // Aplicar middleware de autenticación a todas las rutas
-router.use(authenticateJWT);
+router.use(verifyToken);
 
 // Inicializar tabla de notificaciones si no existe
 db.run(`CREATE TABLE IF NOT EXISTS notifications (
@@ -209,8 +191,20 @@ router.post('/send', async (req, res) => {
     const userId = req.user?.id;
     const { title, message, type, target, targetUser, priority } = req.body;
 
+    console.log('[NOTIFICATIONS] POST /send - Request received:', {
+      userId,
+      hasTitle: !!title,
+      hasMessage: !!message,
+      type,
+      target,
+      targetUser,
+      priority,
+      userAgent: req.headers['user-agent']?.substring(0, 50) || 'unknown'
+    });
+
     // Verificar permisos de administrador
     if (!req.user) {
+      console.log('[NOTIFICATIONS] ❌ Usuario no autenticado');
       return res.status(401).json({ error: 'Usuario no autenticado' });
     }
 
@@ -221,11 +215,15 @@ router.post('/send', async (req, res) => {
     ];
 
     if (!adminUserIds.includes(userId)) {
-      console.log(`[NOTIFICATIONS] Usuario ${userId} no está en la lista de administradores`);
+      console.log(`[NOTIFICATIONS] ❌ Usuario ${userId} no está en la lista de administradores`);
+      console.log(`[NOTIFICATIONS] Lista de admins permitidos:`, adminUserIds);
       return res.status(403).json({ error: 'No tienes permisos de administrador' });
     }
 
+    console.log(`[NOTIFICATIONS] ✅ Usuario ${userId} tiene permisos de administrador`);
+
     if (!title || !message) {
+      console.log('[NOTIFICATIONS] ❌ Faltan campos requeridos:', { title: !!title, message: !!message });
       return res.status(400).json({ error: 'Título y mensaje son requeridos' });
     }
 
@@ -240,22 +238,36 @@ router.post('/send', async (req, res) => {
       finalUserId = null; // Notificación global
     }
 
+    console.log('[NOTIFICATIONS] 📝 Creando notificación:', {
+      finalUserId,
+      title,
+      message: message.substring(0, 50) + '...',
+      type: type || 'info',
+      priority: priority || 'normal',
+      isGlobal: finalUserId === null
+    });
+
     // Crear notificación (solo una vez)
     const notificationId = await new Promise((resolve, reject) => {
       db.run(
         'INSERT INTO notifications (userId, title, message, type, priority) VALUES (?, ?, ?, ?, ?)',
         [finalUserId, title, message, type || 'info', priority || 'normal'],
         function(err) {
-          if (err) reject(err);
-          else resolve(this.lastID);
+          if (err) {
+            console.error('[NOTIFICATIONS] ❌ Error insertando notificación:', err);
+            reject(err);
+          } else {
+            console.log('[NOTIFICATIONS] ✅ Notificación insertada con ID:', this.lastID);
+            resolve(this.lastID);
+          }
         }
       );
     });
 
-    console.log(`[NOTIFICATIONS] Notificación enviada por admin ${userId}:`, {
+    console.log(`[NOTIFICATIONS] ✅ Notificación enviada por admin ${userId}:`, {
       id: notificationId,
       title,
-      message,
+      message: message.substring(0, 50) + '...',
       type,
       target,
       targetUser: finalUserId,
@@ -274,17 +286,31 @@ router.post('/send', async (req, res) => {
 
     // Enviar por WebSocket si es para todos los usuarios
     if ((target === 'all' || target === 'online') && global.broadcastNotification) {
+      console.log('[NOTIFICATIONS] 📡 Enviando notificación por WebSocket');
       global.broadcastNotification(notification);
+    } else {
+      console.log('[NOTIFICATIONS] ⚠️ WebSocket no disponible o notificación específica');
     }
+
+    console.log('[NOTIFICATIONS] ✅ Notificación procesada exitosamente');
 
     res.json({
       success: true,
       notificationId,
-      message: 'Notificación enviada exitosamente'
+      message: 'Notificación enviada exitosamente',
+      target: target,
+      isGlobal: finalUserId === null
     });
   } catch (error) {
-    console.error('[NOTIFICATIONS] Error enviando notificación:', error);
-    res.status(500).json({ error: 'Error enviando notificación' });
+    console.error('[NOTIFICATIONS] ❌ Error enviando notificación:', {
+      error: error.message,
+      stack: error.stack,
+      userId: req.user?.id
+    });
+    res.status(500).json({ 
+      error: 'Error enviando notificación',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 

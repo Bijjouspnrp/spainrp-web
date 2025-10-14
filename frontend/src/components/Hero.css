@@ -106,14 +106,24 @@ body:not(.dark) .hero-description {
 
 .stat-item {
   text-align: center;
-  min-width: 110px;
+  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
 }
 
 .stat-number {
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: clamp(1.8rem, 3vw, 2.2rem);
+  font-weight: 800;
   color: #4a90e2;
-  margin-bottom: 0.5rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.2rem;
+  white-space: nowrap;
 }
 
 .stat-label {
@@ -121,6 +131,9 @@ body:not(.dark) .hero-description {
   color: #888;
   font-weight: 500;
   transition: color 0.3s ease;
+  text-align: center;
+  line-height: 1.2;
+  max-width: 100%;
 }
 
 /* Modo claro */
@@ -364,6 +377,15 @@ body:not(.dark) .stat-label {
   .hero-stats {
     flex-direction: column;
     gap: 1.5rem;
+    align-items: center;
+  }
+
+  .stat-item {
+    min-width: 140px;
+  }
+
+  .stat-number {
+    font-size: 1.8rem;
   }
 
   .hero-actions {
