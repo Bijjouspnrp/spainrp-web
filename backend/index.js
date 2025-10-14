@@ -1286,8 +1286,7 @@ app.use((req, res, next) => {
 
 // SQLite connection centralizada
 const { getDatabase } = require('./db/database');
-const { fixNotificationsSchema } = require('./scripts/fix_notifications_schema');
-const { fixNotificationsId } = require('./scripts/fix_notifications_id');
+const { robustNotificationsFix } = require('./scripts/robust_notifications_fix');
 const db = getDatabase();
 
 // Migración: agregar columna 'images' si no existe
@@ -1301,26 +1300,18 @@ db.get("PRAGMA table_info(announcements)", (err, columns) => {
 });
 
 // Reparar esquema de notificaciones al iniciar el servidor
-console.log('[STARTUP] 🔧 Ejecutando reparación del esquema de notificaciones...');
-Promise.all([
-  fixNotificationsSchema(),
-  fixNotificationsId()
-]).then(results => {
-  const [schemaResult, idResult] = results;
-  
-  if (schemaResult.success) {
-    console.log('[STARTUP] ✅ Esquema de notificaciones reparado:', schemaResult.message);
+console.log('[STARTUP] 🔧 Ejecutando reparación robusta del esquema de notificaciones...');
+robustNotificationsFix().then(result => {
+  if (result.success) {
+    console.log('[STARTUP] ✅ Esquema de notificaciones reparado:', result.message);
+    if (result.fixes && result.fixes.length > 0) {
+      console.log('[STARTUP] 📊 Columnas agregadas:', result.fixes.join(', '));
+    }
   } else {
-    console.error('[STARTUP] ❌ Error reparando esquema de notificaciones:', schemaResult.error);
-  }
-  
-  if (idResult.success) {
-    console.log('[STARTUP] ✅ Columna ID de notificaciones reparada:', idResult.message);
-  } else {
-    console.error('[STARTUP] ❌ Error reparando columna ID:', idResult.error);
+    console.error('[STARTUP] ❌ Error reparando esquema de notificaciones:', result.error);
   }
 }).catch(error => {
-  console.error('[STARTUP] ❌ Error ejecutando reparaciones de notificaciones:', error);
+  console.error('[STARTUP] ❌ Error ejecutando reparación de notificaciones:', error);
 });
 
 // Tabla de bans (específica para este módulo)
