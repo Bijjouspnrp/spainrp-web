@@ -617,7 +617,6 @@ export const InventarioSection = ({ data }) => {
       'bm_lock': 'Candado',
       'bm_key': 'Llave',
       'bm_chain': 'Cadena',
-      'bm_rope': 'Cuerda',
       'bm_wire': 'Cable',
       'bm_cord': 'Cordón',
       'bm_string': 'Cuerda',

@@ -19,7 +19,7 @@ import {
   FaGlobeAmericas as FaGlobeIcon, FaShieldVirus as FaShieldVirusIcon,
   FaChevronDown, FaChevronUp, FaExpand, FaCompress, FaBars,
   FaQuestionCircle, FaBell, FaUserCircle, FaSignOutAlt,
-  FaHome, FaHandcuffs, FaChartBar, FaExclamationCircle, 
+  FaHome, FaShieldAlt as FaHandcuffsIcon, FaChartBar, FaExclamationCircle, 
   FaInfoCircle, FaCheck, FaTimes as FaX, FaCog as FaSettings,
   FaSync, FaDownload, FaUpload, FaSave, FaPrint,
   FaMapPin, FaRoute, FaTrafficLight, FaCarSide, FaMotorcycle,
@@ -858,7 +858,7 @@ const PolicePanel = ({ data, onSearch, onRefresh }) => {
           className={`mdt-nav-item ${activeSection === 'arrestar' ? 'active' : ''}`}
           onClick={() => setActiveSection('arrestar')}
         >
-          <FaHandcuffs />
+          <FaHandcuffsIcon />
           <span>Arrestar</span>
         </button>
         <button 
