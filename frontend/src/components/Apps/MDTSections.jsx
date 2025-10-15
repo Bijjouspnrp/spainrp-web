@@ -33,11 +33,11 @@ export const DNISection = ({ data }) => {
 
   return (
     <div className="mdt-section">
-      <div className="dni-section-header">
+      <div className="mdt-section-header">
         <h3><FaIdCard /> Mi DNI</h3>
-        <div className="dni-controls">
+        <div className="mdt-section-controls">
           <button 
-            className="dni-flip-btn"
+            className="mdt-btn mdt-btn-primary"
             onClick={handleFlip}
             title={isFlipped ? "Ver frente" : "Ver reverso"}
           >
@@ -239,7 +239,9 @@ export const MultasSection = ({ data, userId, onRefresh }) => {
   if (!data || data.length === 0) {
     return (
       <div className="mdt-section">
-        <h3><FaMoneyBillWave /> Mis Multas</h3>
+        <div className="mdt-section-header">
+          <h3><FaMoneyBillWave /> Mis Multas</h3>
+        </div>
         <div className="mdt-no-data">
           <FaCheckCircle />
           <p>No tienes multas pendientes</p>
@@ -256,7 +258,14 @@ export const MultasSection = ({ data, userId, onRefresh }) => {
 
   return (
     <div className="mdt-section">
-      <h3><FaMoneyBillWave /> Mis Multas ({data.length})</h3>
+      <div className="mdt-section-header">
+        <h3><FaMoneyBillWave /> Mis Multas ({data.length})</h3>
+        <div className="mdt-section-controls">
+          <button className="mdt-refresh-btn" onClick={onRefresh} title="Actualizar Multas">
+            <FaRefresh />
+          </button>
+        </div>
+      </div>
       
       {/* Resumen de multas */}
       <div className="multas-summary">
@@ -391,7 +400,9 @@ export const AntecedentesSection = ({ data }) => {
   if (!data || data.length === 0) {
     return (
       <div className="mdt-section">
-        <h3><FaHistory /> Mis Antecedentes</h3>
+        <div className="mdt-section-header">
+          <h3><FaHistory /> Mis Antecedentes</h3>
+        </div>
         <div className="mdt-no-data">
           <FaCheckCircle />
           <p>No tienes antecedentes penales</p>
@@ -402,7 +413,9 @@ export const AntecedentesSection = ({ data }) => {
 
   return (
     <div className="mdt-section">
-      <h3><FaHistory /> Mis Antecedentes ({data.length})</h3>
+      <div className="mdt-section-header">
+        <h3><FaHistory /> Mis Antecedentes ({data.length})</h3>
+      </div>
       <div className="antecedentes-list">
         {data.map((antecedente, index) => (
           <div key={antecedente.id || index} className="antecedente-card">
@@ -488,7 +501,9 @@ export const InventarioSection = ({ data }) => {
   if (!data || data.length === 0) {
     return (
       <div className="mdt-section">
-        <h3><FaClipboardList /> Mi Inventario</h3>
+        <div className="mdt-section-header">
+          <h3><FaClipboardList /> Mi Inventario</h3>
+        </div>
         <div className="mdt-no-data">
           <FaExclamationTriangle />
           <p>No tienes objetos en tu inventario</p>
@@ -772,7 +787,9 @@ export const InventarioSection = ({ data }) => {
 
   return (
     <div className="mdt-section">
-      <h3><FaClipboardList /> Mi Inventario ({data.length})</h3>
+      <div className="mdt-section-header">
+        <h3><FaClipboardList /> Mi Inventario ({data.length})</h3>
+      </div>
       <div className="inventario-grid">
         {data.map((item, index) => (
           <div key={index} className="inventario-item">

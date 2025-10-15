@@ -13,6 +13,7 @@ import {
 } from 'react-icons/fa';
 import { apiUrl } from '../../utils/api';
 import { CNI_CONFIG, getLogoPath, getBestLogoPath, checkImageExists } from '../../config/cniConfig';
+import { createLogger, getCurrentUser, logAction, logError, logApiCall } from '../../utils/logger';
 import './CNISection.css';
 import './BusinessRecords.css';
 import './CNIBlog.css';
@@ -859,6 +860,9 @@ const CNISection = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
 
+  // Logger para el sistema CNI
+  const logger = createLogger('CNI');
+
   // Hook de caché avanzado (deshabilitado temporalmente)
   // const { getCachedData, setCachedData, clearExpiredCache, clearCache, getCacheStats } = useAdvancedCache();
 
@@ -903,6 +907,7 @@ const CNISection = () => {
         if (!token) {
           setError('Debes iniciar sesión para acceder al CNI');
           setLoading(false);
+          logger.security('Intento de acceso al CNI sin token', null, null);
           return;
         }
 
@@ -914,6 +919,7 @@ const CNISection = () => {
         if (!userRes.ok) {
           setError('Token inválido');
           setLoading(false);
+          logger.security('Token inválido para acceso al CNI', null, null);
           return;
         }
 
@@ -926,12 +932,24 @@ const CNISection = () => {
           const cniData = await cniRes.json();
           setIsCNI(cniData.hasRole);
           
-          // Mostrar modal de bienvenida solo la primera vez
           if (cniData.hasRole) {
+            logger.cni('Acceso autorizado al CNI', {
+              userId: userData.user.id,
+              username: userData.user.username,
+              hasRole: true
+            }, userData.user.username);
+            
+            // Mostrar modal de bienvenida solo la primera vez
             const hasSeenWelcome = localStorage.getItem('cni-welcome-seen');
             if (!hasSeenWelcome) {
               setShowWelcomeModal(true);
+              logger.cni('Mostrando modal de bienvenida CNI', null, userData.user.username);
             }
+          } else {
+            logger.security('Intento de acceso al CNI sin permisos', {
+              userId: userData.user.id,
+              username: userData.user.username
+            }, userData.user.username);
           }
         }
 
@@ -1348,18 +1366,56 @@ const DatabaseTab = ({ stats, cache }) => {
       
       switch (searchType) {
         case 'dni':
-          const dniRes = await fetch(apiUrl(`/api/proxy/admin/dni/search?q=${encodeURIComponent(quickSearch.query)}`));
-          if (dniRes.ok) {
-            const dniData = await dniRes.json();
-            results = dniData.dniPorNombre || [];
+          // Verificar si es un número de DNI (solo números y longitud 8-9)
+          const isDNINumber = /^\d{8,9}$/.test(quickSearch.query.trim());
+          
+          if (isDNINumber) {
+            // Búsqueda exacta por número de DNI
+            console.log('[CNI] Búsqueda exacta por DNI:', quickSearch.query);
+            const dniRes = await fetch(apiUrl(`/api/proxy/admin/dni/search/exact/${encodeURIComponent(quickSearch.query)}`));
+            if (dniRes.ok) {
+              const dniData = await dniRes.json();
+              console.log('[CNI] Respuesta DNI exacto:', dniData);
+              if (dniData.success && dniData.dniData) {
+                // Formatear los datos del DNI para que coincidan con el formato esperado
+                const formattedDNI = {
+                  nombre: dniData.dniData.nombre || 'N/A',
+                  apellidos: dniData.dniData.apellidos || 'N/A',
+                  numeroDNI: dniData.dniData.numeroDNI || quickSearch.query,
+                  discordId: dniData.dniData.discordId || 'N/A',
+                  arrestado: dniData.dniData.arrestado || false,
+                  fecha_registro: dniData.dniData.fecha_registro || null
+                };
+                results = [formattedDNI];
+              } else {
+                results = [];
+              }
+            }
+          } else {
+            // Búsqueda por nombre
+            console.log('[CNI] Búsqueda por nombre:', quickSearch.query);
+            const dniRes = await fetch(apiUrl(`/api/proxy/admin/dni/search?q=${encodeURIComponent(quickSearch.query)}`));
+            if (dniRes.ok) {
+              const dniData = await dniRes.json();
+              console.log('[CNI] Respuesta búsqueda nombre:', dniData);
+              results = dniData.dniPorNombre || [];
+            }
           }
           break;
           
         case 'discord':
-          const discordRes = await fetch(apiUrl(`/api/proxy/admin/search?query=${encodeURIComponent(quickSearch.query)}`));
+          const user = getCurrentUser();
+          const adminUserId = user?.id;
+          if (!adminUserId) {
+            console.warn('[CNI] No se encontró ID de usuario para búsqueda Discord');
+            results = [];
+            break;
+          }
+          const discordRes = await fetch(apiUrl(`/api/proxy/admin/search?query=${encodeURIComponent(quickSearch.query)}&adminUserId=${adminUserId}`));
           if (discordRes.ok) {
             const discordData = await discordRes.json();
-            results = discordData.results || [];
+            console.log('[CNI] Respuesta búsqueda Discord:', discordData);
+            results = discordData.users || discordData.results || [];
           }
           break;
           
@@ -1388,6 +1444,7 @@ const DatabaseTab = ({ stats, cache }) => {
           break;
       }
       
+      console.log(`[CNI] Resultados encontrados para ${searchType}:`, results.length);
       setQuickSearch(prev => ({ ...prev, results, loading: false }));
     } catch (err) {
       console.error('Error en búsqueda rápida:', err);
@@ -1548,17 +1605,78 @@ const AdvancedSearchTab = () => {
   const handleSearch = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setResults([]);
+    
+    const user = getCurrentUser();
+    logger.cni('Iniciando búsqueda CNI avanzada', {
+      query: searchForm.query,
+      searchType: searchForm.searchType
+    }, user?.username || user?.id);
     
     try {
-      // Búsqueda por nombre/DNI
-      const searchRes = await fetch(apiUrl(`/api/proxy/admin/dni/search?q=${encodeURIComponent(searchForm.query)}`));
-      const searchData = await searchRes.json();
+      let searchData = { success: false, dniPorNombre: [], discordUsers: [] };
+      
+      // Verificar si es un número de DNI exacto
+      const isDNINumber = /^\d{8,9}$/.test(searchForm.query.trim());
+      
+      if (isDNINumber && searchForm.searchType === 'dni') {
+        // Búsqueda exacta por DNI
+        console.log('[CNI] Búsqueda avanzada exacta por DNI:', searchForm.query);
+        logApiCall('GET', `/api/proxy/admin/dni/search/exact/${encodeURIComponent(searchForm.query)}`, true, { query: searchForm.query });
+        
+        const exactRes = await fetch(apiUrl(`/api/proxy/admin/dni/search/exact/${encodeURIComponent(searchForm.query)}`));
+        if (exactRes.ok) {
+          const exactData = await exactRes.json();
+          console.log('[CNI] Respuesta búsqueda exacta:', exactData);
+          if (exactData.success && exactData.dniData) {
+            // Formatear los datos del DNI para que coincidan con el formato esperado
+            const formattedDNI = {
+              nombre: exactData.dniData.nombre || 'N/A',
+              apellidos: exactData.dniData.apellidos || 'N/A',
+              numeroDNI: exactData.dniData.numeroDNI || searchForm.query,
+              discordId: exactData.dniData.discordId || 'N/A',
+              arrestado: exactData.dniData.arrestado || false,
+              fecha_registro: exactData.dniData.fecha_registro || null
+            };
+            searchData = {
+              success: true,
+              dniPorNombre: [formattedDNI],
+              discordUsers: []
+            };
+          }
+        }
+      } else {
+        // Búsqueda general
+        console.log('[CNI] Búsqueda avanzada general:', searchForm.query);
+        logApiCall('GET', `/api/proxy/admin/dni/search?q=${encodeURIComponent(searchForm.query)}`, true, { query: searchForm.query });
+        
+        const searchRes = await fetch(apiUrl(`/api/proxy/admin/dni/search?q=${encodeURIComponent(searchForm.query)}`));
+        if (searchRes.ok) {
+          searchData = await searchRes.json();
+          console.log('[CNI] Respuesta búsqueda general:', searchData);
+        }
+      }
       
       if (searchData.success) {
         setResults(searchData);
+        const totalResults = (searchData.dniPorNombre?.length || 0) + (searchData.discordUsers?.length || 0);
+        logger.cni('Búsqueda CNI avanzada exitosa', {
+          query: searchForm.query,
+          searchType: searchForm.searchType,
+          resultCount: totalResults,
+          hasResults: totalResults > 0
+        }, user?.username || user?.id);
+      } else {
+        logger.warn('Búsqueda CNI avanzada sin resultados', {
+          query: searchForm.query,
+          searchType: searchForm.searchType,
+          error: searchData.error || 'Sin resultados'
+        }, user?.username || user?.id);
       }
     } catch (err) {
-      console.error('Error en búsqueda:', err);
+      console.error('Error en búsqueda avanzada:', err);
+      logError(err, 'handleSearch');
+      setResults({ success: false, error: 'Error de conexión en la búsqueda' });
     } finally {
       setLoading(false);
     }
@@ -1631,31 +1749,100 @@ const AdvancedSearchTab = () => {
         </button>
       </form>
 
-      {results.dniPorNombre && results.dniPorNombre.length > 0 && (
+      {loading && (
+        <div className="cni-loading">
+          <FaSpinner className="fa-spin" />
+          <p>Buscando en la base de datos...</p>
+        </div>
+      )}
+
+      {!loading && results && (
         <div className="cni-search-results">
-          <h4>Resultados de Búsqueda:</h4>
-          {results.dniPorNombre.map((dni, index) => (
-            <div key={index} className="cni-result-card">
-              <div className="cni-result-header">
-                <h5><FaIdCard /> {dni.nombre} {dni.apellidos}</h5>
-                <span className="cni-result-type">DNI</span>
-              </div>
-              <div className="cni-result-info">
-                <div className="cni-result-field">
-                  <label>DNI:</label>
-                  <span>{dni.numeroDNI}</span>
-                </div>
-                <div className="cni-result-field">
-                  <label>Discord ID:</label>
-                  <span>{dni.discordId}</span>
-                </div>
-                <div className="cni-result-field">
-                  <label>Estado:</label>
-                  <span>{dni.arrestado ? 'Arrestado' : 'Activo'}</span>
-                </div>
-              </div>
+          {results.error && (
+            <div className="cni-error-message">
+              <FaExclamationTriangle />
+              {results.error}
             </div>
-          ))}
+          )}
+          
+          {results.success && (
+            <>
+              <h4>Resultados de Búsqueda:</h4>
+              
+              {results.dniPorNombre && results.dniPorNombre.length > 0 && (
+                <div className="cni-results-section">
+                  <h5><FaIdCard /> DNIs Encontrados ({results.dniPorNombre.length})</h5>
+                  {results.dniPorNombre.map((dni, index) => (
+                    <div key={index} className="cni-result-card">
+                      <div className="cni-result-header">
+                        <h5><FaIdCard /> {dni.nombre} {dni.apellidos}</h5>
+                        <span className="cni-result-type">DNI</span>
+                      </div>
+                      <div className="cni-result-info">
+                        <div className="cni-result-field">
+                          <label>DNI:</label>
+                          <span>{dni.numeroDNI}</span>
+                        </div>
+                        <div className="cni-result-field">
+                          <label>Discord ID:</label>
+                          <span>{dni.discordId}</span>
+                        </div>
+                        <div className="cni-result-field">
+                          <label>Estado:</label>
+                          <span className={dni.arrestado ? 'cni-status-arrested' : 'cni-status-active'}>
+                            {dni.arrestado ? 'Arrestado' : 'Activo'}
+                          </span>
+                        </div>
+                        {dni.fecha_registro && (
+                          <div className="cni-result-field">
+                            <label>Fecha Registro:</label>
+                            <span>{new Date(dni.fecha_registro).toLocaleDateString('es-ES')}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {results.discordUsers && results.discordUsers.length > 0 && (
+                <div className="cni-results-section">
+                  <h5><FaUser /> Usuarios Discord ({results.discordUsers.length})</h5>
+                  {results.discordUsers.map((user, index) => (
+                    <div key={index} className="cni-result-card">
+                      <div className="cni-result-header">
+                        <h5><FaUser /> {user.username}</h5>
+                        <span className="cni-result-type">DISCORD</span>
+                      </div>
+                      <div className="cni-result-info">
+                        <div className="cni-result-field">
+                          <label>ID:</label>
+                          <span>{user.id}</span>
+                        </div>
+                        <div className="cni-result-field">
+                          <label>Display Name:</label>
+                          <span>{user.displayName || 'N/A'}</span>
+                        </div>
+                        <div className="cni-result-field">
+                          <label>Roles:</label>
+                          <span>{user.roles?.join(', ') || 'N/A'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {(!results.dniPorNombre || results.dniPorNombre.length === 0) && 
+               (!results.discordUsers || results.discordUsers.length === 0) && (
+                <div className="cni-no-data">
+                  <FaSearch />
+                  <p>No se encontraron resultados para: "{searchForm.query}"</p>
+                  <p>Intenta con un término de búsqueda diferente</p>
+                </div>
+              )}
+            </>
+          )}
         </div>
       )}
     </div>

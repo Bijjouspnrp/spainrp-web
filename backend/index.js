@@ -22,6 +22,7 @@ const githubBackup = require('./utils/githubBackup');
 const adminRecordsRoutes = require('./routes/adminRecords');
 const notificationRoutes = require('./routes/notifications');
 const logsRoutes = require('./routes/logs');
+const { createLogger, logRequest } = require('./utils/logger');
 const { migrateDatabase } = require('./db/migrate');
 const session = require('express-session');
 const passport = require('passport');
@@ -71,6 +72,9 @@ let calendarData = {};
 
 const app = express();
 
+// Logger principal del servidor
+const logger = createLogger('SERVER');
+
 // Configuración de CORS al principio
 app.use(cors({
   origin: [
@@ -102,6 +106,9 @@ app.options('*', (req, res) => {
 });
 
 app.use(express.json());
+
+// Middleware de logging de requests
+app.use(logRequest);
 
 // Configuración mejorada de sesiones
 app.use(session({
@@ -7985,6 +7992,50 @@ app.get('/api/proxy/admin/dni/search', async (req, res) => {
   }
 });
 
+// Proxy para MDT Policial - Búsqueda exacta por número de DNI
+app.get('/api/proxy/admin/dni/search/exact/:dni', async (req, res) => {
+  try {
+    const { dni } = req.params;
+    if (!dni || dni.trim().length < 8) {
+      return res.status(400).json({ error: 'Número de DNI requerido (mínimo 8 caracteres)' });
+    }
+
+    // Usar el endpoint correcto del servidor externo
+    const proxyUrl = `http://37.27.21.91:5021/api/proxy/admin/dni/search/exact/${encodeURIComponent(dni)}`;
+    
+    console.log('[MDT PROXY] Buscando DNI exacto:', dni);
+    console.log('[MDT PROXY] URL del servidor externo:', proxyUrl);
+    
+    const response = await fetch(proxyUrl);
+    
+    // Verificar si la respuesta es HTML (error)
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('text/html')) {
+      console.warn('[MDT PROXY] El servidor proxy devolvió HTML en lugar de JSON');
+      return res.json({ 
+        success: true, 
+        dni: dni,
+        dniData: null,
+        message: 'Búsqueda de DNI no disponible temporalmente'
+      });
+    }
+    
+    const data = await response.json();
+    console.log('[MDT PROXY] Respuesta del servidor externo:', data);
+    res.json(data);
+  } catch (err) {
+    console.error('[MDT PROXY] Error buscando DNI exacto:', err);
+    // Devolver respuesta de respaldo en lugar de error
+    res.json({ 
+      success: true, 
+      dni: req.params.dni || '',
+      dniData: null,
+      message: 'Error de conexión en la búsqueda de DNI',
+      error: err.message
+    });
+  }
+});
+
 // Endpoint para obtener datos de miembro y roles
 app.get('/api/member/:guildId/:userId', async (req, res) => {
   try {
@@ -9086,9 +9137,15 @@ migrateDatabase()
     
     server.listen(PORT, () => {
       console.log(`Backend SpainRP escuchando en puerto ${PORT}`);
+      logger.info('Servidor iniciado exitosamente', {
+        port: PORT,
+        environment: process.env.NODE_ENV || 'development',
+        timestamp: new Date().toISOString()
+      });
       
       // Inicializar sistema de backup
       console.log('💾 Inicializando sistema de backup...');
+      logger.info('Inicializando sistema de backup automático');
       githubBackup.startScheduledBackup();
       
       // Intentar restaurar backup al iniciar

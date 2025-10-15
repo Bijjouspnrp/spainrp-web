@@ -1,5 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { FaDownload, FaRedo, FaFilter, FaSearch, FaTrash, FaEye, FaEyeSlash, FaClock, FaExclamationTriangle, FaInfoCircle, FaCheckCircle, FaTimes, FaChevronDown, FaChevronUp, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { 
+  FaDownload, FaRedo, FaFilter, FaSearch, FaTrash, FaEye, FaEyeSlash, 
+  FaClock, FaExclamationTriangle, FaInfoCircle, FaCheckCircle, FaTimes, 
+  FaChevronDown, FaChevronUp, FaSort, FaSortUp, FaSortDown, FaCog, 
+  FaChartBar, FaFileExport, FaDatabase, FaShieldAlt, FaUser, FaGlobe,
+  FaMobile, FaDesktop, FaTablet, FaCalendarAlt, FaTag, FaCode,
+  FaPlay, FaPause, FaStop, FaExpand, FaCompress, FaCopy, FaSave
+} from 'react-icons/fa';
 import { apiUrl } from '../utils/api';
 
 const Logs = () => {
@@ -16,25 +23,53 @@ const Logs = () => {
   const [refreshInterval, setRefreshInterval] = useState(null);
   const [showStats, setShowStats] = useState(false);
   const [stats, setStats] = useState(null);
+  
+  // Nuevos estados para funcionalidades mejoradas
+  const [viewMode, setViewMode] = useState('table'); // table, card, compact
+  const [itemsPerPage, setItemsPerPage] = useState(50);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedLogs, setSelectedLogs] = useState(new Set());
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [userFilter, setUserFilter] = useState('');
+  const [ipFilter, setIpFilter] = useState('');
+  const [showSettings, setShowSettings] = useState(false);
+  const [exportFormat, setExportFormat] = useState('json');
+  const [isExporting, setIsExporting] = useState(false);
+  const [notification, setNotification] = useState(null);
 
-  // Tipos de logs y sus colores
+  // Tipos de logs y sus colores mejorados
   const logTypes = {
-    access: { label: 'Acceso', color: '#7289da', icon: <FaInfoCircle /> },
-    error: { label: 'Error', color: '#e74c3c', icon: <FaExclamationTriangle /> },
-    auth: { label: 'Autenticación', color: '#f39c12', icon: <FaCheckCircle /> },
-    admin: { label: 'Administración', color: '#9b59b6', icon: <FaInfoCircle /> },
-    api: { label: 'API', color: '#2ecc71', icon: <FaInfoCircle /> },
-    system: { label: 'Sistema', color: '#95a5a6', icon: <FaInfoCircle /> },
-    security: { label: 'Seguridad', color: '#e67e22', icon: <FaExclamationTriangle /> },
-    database: { label: 'Base de Datos', color: '#3498db', icon: <FaInfoCircle /> },
-    payment: { label: 'Pagos', color: '#27ae60', icon: <FaCheckCircle /> },
-    discord: { label: 'Discord', color: '#5865f2', icon: <FaInfoCircle /> },
-    roblox: { label: 'Roblox', color: '#c4302b', icon: <FaInfoCircle /> },
-    tinder: { label: 'Tinder', color: '#fd5068', icon: <FaInfoCircle /> },
-    mdt: { label: 'MDT', color: '#1e3a8a', icon: <FaInfoCircle /> },
-    banco: { label: 'Banco', color: '#16a085', icon: <FaInfoCircle /> },
-    stock: { label: 'Bolsa', color: '#f1c40f', icon: <FaInfoCircle /> },
-    blackmarket: { label: 'Mercado Negro', color: '#2c3e50', icon: <FaInfoCircle /> }
+    access: { label: 'Acceso', color: '#7289da', icon: <FaInfoCircle />, category: 'general' },
+    error: { label: 'Error', color: '#e74c3c', icon: <FaExclamationTriangle />, category: 'error' },
+    auth: { label: 'Autenticación', color: '#f39c12', icon: <FaShieldAlt />, category: 'security' },
+    admin: { label: 'Administración', color: '#9b59b6', icon: <FaCog />, category: 'admin' },
+    api: { label: 'API', color: '#2ecc71', icon: <FaCode />, category: 'technical' },
+    system: { label: 'Sistema', color: '#95a5a6', icon: <FaDatabase />, category: 'system' },
+    security: { label: 'Seguridad', color: '#e67e22', icon: <FaShieldAlt />, category: 'security' },
+    database: { label: 'Base de Datos', color: '#3498db', icon: <FaDatabase />, category: 'technical' },
+    payment: { label: 'Pagos', color: '#27ae60', icon: <FaCheckCircle />, category: 'business' },
+    discord: { label: 'Discord', color: '#5865f2', icon: <FaUser />, category: 'social' },
+    roblox: { label: 'Roblox', color: '#c4302b', icon: <FaGlobe />, category: 'gaming' },
+    tinder: { label: 'Tinder', color: '#fd5068', icon: <FaUser />, category: 'social' },
+    mdt: { label: 'MDT', color: '#1e3a8a', icon: <FaShieldAlt />, category: 'police' },
+    banco: { label: 'Banco', color: '#16a085', icon: <FaCheckCircle />, category: 'business' },
+    stock: { label: 'Bolsa', color: '#f1c40f', icon: <FaChartBar />, category: 'business' },
+    blackmarket: { label: 'Mercado Negro', color: '#2c3e50', icon: <FaTag />, category: 'business' }
+  };
+
+  // Categorías de logs
+  const logCategories = {
+    general: { label: 'General', color: '#7289da' },
+    error: { label: 'Errores', color: '#e74c3c' },
+    security: { label: 'Seguridad', color: '#e67e22' },
+    admin: { label: 'Administración', color: '#9b59b6' },
+    technical: { label: 'Técnico', color: '#2ecc71' },
+    system: { label: 'Sistema', color: '#95a5a6' },
+    business: { label: 'Negocio', color: '#27ae60' },
+    social: { label: 'Social', color: '#5865f2' },
+    gaming: { label: 'Gaming', color: '#c4302b' },
+    police: { label: 'Policial', color: '#1e3a8a' }
   };
 
   // Cargar logs del servidor
@@ -176,8 +211,8 @@ const Logs = () => {
     };
   }, [autoRefresh, fetchLogs]);
 
-  // Filtrar y ordenar logs
-  const filteredAndSortedLogs = React.useMemo(() => {
+  // Filtrar y ordenar logs mejorado
+  const filteredAndSortedLogs = useMemo(() => {
     let filtered = logs;
 
     // Filtrar por tipo
@@ -190,7 +225,7 @@ const Logs = () => {
       filtered = filtered.filter(log => log.level === levelFilter);
     }
 
-    // Filtrar por término de búsqueda
+    // Filtrar por término de búsqueda (búsqueda mejorada)
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(log => 
@@ -198,8 +233,36 @@ const Logs = () => {
         log.user?.toLowerCase().includes(term) ||
         log.ip?.toLowerCase().includes(term) ||
         log.userAgent?.toLowerCase().includes(term) ||
-        log.source?.toLowerCase().includes(term)
+        log.source?.toLowerCase().includes(term) ||
+        log.id?.toLowerCase().includes(term) ||
+        JSON.stringify(log.data || {}).toLowerCase().includes(term)
       );
+    }
+
+    // Filtros avanzados
+    if (userFilter) {
+      const userTerm = userFilter.toLowerCase();
+      filtered = filtered.filter(log => 
+        log.user?.toLowerCase().includes(userTerm)
+      );
+    }
+
+    if (ipFilter) {
+      const ipTerm = ipFilter.toLowerCase();
+      filtered = filtered.filter(log => 
+        log.ip?.toLowerCase().includes(ipTerm)
+      );
+    }
+
+    // Filtro por rango de fechas
+    if (dateRange.start || dateRange.end) {
+      filtered = filtered.filter(log => {
+        const logDate = new Date(log.timestamp);
+        const startDate = dateRange.start ? new Date(dateRange.start) : new Date(0);
+        const endDate = dateRange.end ? new Date(dateRange.end) : new Date();
+        
+        return logDate >= startDate && logDate <= endDate;
+      });
     }
 
     // Ordenar
@@ -223,6 +286,14 @@ const Logs = () => {
           aValue = a.message || '';
           bValue = b.message || '';
           break;
+        case 'level':
+          aValue = a.level || '';
+          bValue = b.level || '';
+          break;
+        case 'ip':
+          aValue = a.ip || '';
+          bValue = b.ip || '';
+          break;
         default:
           aValue = a[sortBy] || '';
           bValue = b[sortBy] || '';
@@ -236,9 +307,19 @@ const Logs = () => {
     });
 
     return filtered;
-  }, [logs, filter, levelFilter, searchTerm, sortBy, sortOrder]);
+  }, [logs, filter, levelFilter, searchTerm, sortBy, sortOrder, userFilter, ipFilter, dateRange]);
 
-  // Toggle expandir log
+  // Paginación
+  const paginatedLogs = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredAndSortedLogs.slice(startIndex, endIndex);
+  }, [filteredAndSortedLogs, currentPage, itemsPerPage]);
+
+  // Calcular total de páginas
+  const totalPages = Math.ceil(filteredAndSortedLogs.length / itemsPerPage);
+
+  // Funciones de utilidad mejoradas
   const toggleLogExpansion = (logId) => {
     setExpandedLogs(prev => {
       const newSet = new Set(prev);
@@ -251,7 +332,58 @@ const Logs = () => {
     });
   };
 
-  // Limpiar logs
+  // Seleccionar/deseleccionar logs
+  const toggleLogSelection = (logId) => {
+    setSelectedLogs(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(logId)) {
+        newSet.delete(logId);
+      } else {
+        newSet.add(logId);
+      }
+      return newSet;
+    });
+  };
+
+  // Seleccionar todos los logs visibles
+  const selectAllLogs = () => {
+    const allVisibleIds = paginatedLogs.map(log => log.id || log.timestamp);
+    setSelectedLogs(new Set(allVisibleIds));
+  };
+
+  // Deseleccionar todos los logs
+  const deselectAllLogs = () => {
+    setSelectedLogs(new Set());
+  };
+
+  // Expandir todos los logs
+  const expandAllLogs = () => {
+    const allVisibleIds = paginatedLogs.map(log => log.id || log.timestamp);
+    setExpandedLogs(new Set(allVisibleIds));
+  };
+
+  // Colapsar todos los logs
+  const collapseAllLogs = () => {
+    setExpandedLogs(new Set());
+  };
+
+  // Mostrar notificación
+  const showNotification = (message, type = 'info') => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
+
+  // Copiar al portapapeles
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      showNotification('Copiado al portapapeles', 'success');
+    } catch (err) {
+      showNotification('Error al copiar', 'error');
+    }
+  };
+
+  // Limpiar logs mejorado
   const clearLogs = async () => {
     if (!window.confirm('¿Estás seguro de que quieres limpiar todos los logs? Esta acción no se puede deshacer.')) {
       return;
@@ -270,30 +402,107 @@ const Logs = () => {
       if (response.ok) {
         setLogs([]);
         setExpandedLogs(new Set());
+        setSelectedLogs(new Set());
+        showNotification('Logs limpiados exitosamente', 'success');
       } else {
         throw new Error('Error limpiando logs');
       }
     } catch (err) {
       console.error('Error limpiando logs:', err);
-      alert('Error limpiando logs: ' + err.message);
+      showNotification('Error limpiando logs: ' + err.message, 'error');
     }
   };
 
-  // Descargar logs
-  const downloadLogs = () => {
-    const dataStr = JSON.stringify(logs, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `spainrp-logs-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  // Exportar logs mejorado
+  const exportLogs = async (format = exportFormat, selectedOnly = false) => {
+    setIsExporting(true);
+    
+    try {
+      const logsToExport = selectedOnly ? 
+        logs.filter(log => selectedLogs.has(log.id || log.timestamp)) : 
+        filteredAndSortedLogs;
+      
+      if (logsToExport.length === 0) {
+        showNotification('No hay logs para exportar', 'warning');
+        return;
+      }
+
+      let dataStr, mimeType, extension;
+      
+      if (format === 'csv') {
+        const headers = ['Timestamp', 'Type', 'Level', 'Message', 'User', 'IP', 'UserAgent', 'Source', 'Data'];
+        const csvData = logsToExport.map(log => [
+          log.timestamp,
+          log.type || '',
+          log.level || '',
+          `"${(log.message || '').replace(/"/g, '""')}"`,
+          log.user || '',
+          log.ip || '',
+          `"${(log.userAgent || '').replace(/"/g, '""')}"`,
+          log.source || '',
+          `"${JSON.stringify(log.data || {}).replace(/"/g, '""')}"`
+        ]);
+        
+        dataStr = [headers, ...csvData].map(row => row.join(',')).join('\n');
+        mimeType = 'text/csv';
+        extension = 'csv';
+      } else if (format === 'txt') {
+        dataStr = logsToExport.map(log => 
+          `[${log.timestamp}] ${log.type?.toUpperCase() || 'UNKNOWN'} - ${log.message || 'No message'}\n` +
+          `  User: ${log.user || 'N/A'}\n` +
+          `  IP: ${log.ip || 'N/A'}\n` +
+          `  Level: ${log.level || 'N/A'}\n` +
+          `  Source: ${log.source || 'N/A'}\n` +
+          (log.data ? `  Data: ${JSON.stringify(log.data, null, 2)}\n` : '') +
+          '---\n'
+        ).join('\n');
+        mimeType = 'text/plain';
+        extension = 'txt';
+      } else {
+        dataStr = JSON.stringify({
+          export: {
+            timestamp: new Date().toISOString(),
+            total: logsToExport.length,
+            filters: {
+              type: filter,
+              level: levelFilter,
+              search: searchTerm,
+              user: userFilter,
+              ip: ipFilter,
+              dateRange
+            },
+            logs: logsToExport
+          }
+        }, null, 2);
+        mimeType = 'application/json';
+        extension = 'json';
+      }
+
+      const dataBlob = new Blob([dataStr], { type: mimeType });
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `spainrp-logs-${selectedOnly ? 'selected' : 'all'}-${new Date().toISOString().split('T')[0]}.${extension}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      showNotification(`Logs exportados exitosamente (${logsToExport.length} registros)`, 'success');
+    } catch (err) {
+      console.error('Error exportando logs:', err);
+      showNotification('Error exportando logs: ' + err.message, 'error');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
-  // Formatear timestamp
+  // Descargar logs (función legacy)
+  const downloadLogs = () => {
+    exportLogs('json', false);
+  };
+
+  // Funciones de formateo mejoradas
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
     return date.toLocaleString('es-ES', {
@@ -306,7 +515,6 @@ const Logs = () => {
     });
   };
 
-  // Formatear duración
   const formatDuration = (timestamp) => {
     const now = new Date();
     const logTime = new Date(timestamp);
@@ -319,6 +527,56 @@ const Logs = () => {
     if (diffHours > 0) return `hace ${diffHours}h`;
     if (diffMins > 0) return `hace ${diffMins}m`;
     return 'ahora';
+  };
+
+  // Detectar tipo de dispositivo desde User Agent
+  const detectDeviceType = (userAgent) => {
+    if (!userAgent) return { type: 'unknown', icon: <FaGlobe /> };
+    
+    const ua = userAgent.toLowerCase();
+    if (ua.includes('mobile') || ua.includes('android') || ua.includes('iphone')) {
+      return { type: 'mobile', icon: <FaMobile /> };
+    } else if (ua.includes('tablet') || ua.includes('ipad')) {
+      return { type: 'tablet', icon: <FaTablet /> };
+    } else {
+      return { type: 'desktop', icon: <FaDesktop /> };
+    }
+  };
+
+  // Obtener color del nivel de log
+  const getLevelColor = (level) => {
+    switch (level) {
+      case 'error': return '#e74c3c';
+      case 'warn': return '#f39c12';
+      case 'info': return '#2ecc71';
+      default: return '#95a5a6';
+    }
+  };
+
+  // Obtener icono del nivel de log
+  const getLevelIcon = (level) => {
+    switch (level) {
+      case 'error': return <FaExclamationTriangle />;
+      case 'warn': return <FaExclamationTriangle />;
+      case 'info': return <FaInfoCircle />;
+      default: return <FaInfoCircle />;
+    }
+  };
+
+  // Formatear datos JSON de forma legible
+  const formatJsonData = (data) => {
+    if (!data) return 'N/A';
+    try {
+      return JSON.stringify(data, null, 2);
+    } catch (e) {
+      return String(data);
+    }
+  };
+
+  // Truncar texto largo
+  const truncateText = (text, maxLength = 100) => {
+    if (!text) return '';
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
   };
 
   if (loading) {
