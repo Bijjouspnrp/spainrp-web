@@ -144,7 +144,7 @@ async function robustNotificationsFix() {
       // Insertar registro de prueba
       const insertResult = await new Promise((resolve, reject) => {
         db.run(`
-          INSERT INTO notifications (user_id, title, message, type, priority, read, createdAt)
+          INSERT INTO notifications (userId, title, message, type, priority, read, createdAt)
           VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
         `, [testId, 'Test Robust', 'Test message', 'info', 'normal', 0], function(err) {
           if (err) reject(err);
@@ -156,7 +156,7 @@ async function robustNotificationsFix() {
       
       // Leer registro insertado
       const testRecord = await new Promise((resolve, reject) => {
-        db.get("SELECT * FROM notifications WHERE user_id = ?", [testId], (err, row) => {
+        db.get("SELECT * FROM notifications WHERE userId = ?", [testId], (err, row) => {
           if (err) reject(err);
           else resolve(row);
         });
@@ -166,7 +166,7 @@ async function robustNotificationsFix() {
       
       // Limpiar registro de prueba
       await new Promise((resolve, reject) => {
-        db.run("DELETE FROM notifications WHERE user_id = ?", [testId], (err) => {
+        db.run("DELETE FROM notifications WHERE userId = ?", [testId], (err) => {
           if (err) reject(err);
           else resolve();
         });

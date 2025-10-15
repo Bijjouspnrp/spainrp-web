@@ -21,7 +21,7 @@ import {
   FaQuestionCircle, FaBell, FaUserCircle, FaSignOutAlt,
   FaHome, FaHandcuffs, FaChartBar, FaExclamationCircle, 
   FaInfoCircle, FaCheck, FaTimes as FaX, FaCog as FaSettings,
-  FaRefresh, FaDownload, FaUpload, FaSave, FaPrint,
+  FaSync, FaDownload, FaUpload, FaSave, FaPrint,
   FaMapPin, FaRoute, FaTrafficLight, FaCarSide, FaMotorcycle,
   FaTruck, FaBus, FaBicycle, FaWalking, FaRunning
 } from 'react-icons/fa';
@@ -778,7 +778,7 @@ const CitizenPanel = ({ data, onRefresh, userId }) => {
         <h2>Panel de Ciudadano</h2>
         <div className="mdt-panel-controls">
           <button className="mdt-refresh-btn" onClick={onRefresh} title="Actualizar Datos">
-            <FaRefresh />
+            <FaSync />
           </button>
         </div>
       </div>
@@ -834,7 +834,7 @@ const PolicePanel = ({ data, onSearch, onRefresh }) => {
         <h2>Panel Policial</h2>
         <div className="mdt-panel-controls">
           <button className="mdt-refresh-btn" onClick={onRefresh} title="Actualizar Datos">
-            <FaRefresh />
+            <FaSync />
           </button>
         </div>
       </div>

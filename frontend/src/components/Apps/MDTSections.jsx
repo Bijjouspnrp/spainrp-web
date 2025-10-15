@@ -745,18 +745,7 @@ export const InventarioSection = ({ data }) => {
       'bm_marten': 'Marta',
       'bm_fisher': 'Pescador',
       'bm_wolverine': 'Glotón',
-      'bm_badger': 'Tejón',
-      'bm_skunk': 'Mofeta',
-      'bm_raccoon': 'Mapache',
-      'bm_opposum': 'Zarigüeya',
-      'bm_squirrel': 'Ardilla',
-      'bm_chipmunk': 'Ardilla Listada',
-      'bm_groundhog': 'Marmota',
-      'bm_beaver': 'Castor',
-      'bm_otter': 'Nutria',
-      'bm_weasel': 'Comadreja',
-      'bm_stoat': 'Armiño',
-      'bm_mink': 'Visón'
+      'bm_badger': 'Tejón'
     };
     
     return itemNames[itemId] || itemId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
