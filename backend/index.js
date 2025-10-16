@@ -22,7 +22,18 @@ const githubBackup = require('./utils/githubBackup');
 const adminRecordsRoutes = require('./routes/adminRecords');
 const notificationRoutes = require('./routes/notifications');
 const logsRoutes = require('./routes/logs');
-const { createLogger, logRequest } = require('./utils/logger');
+// Logger functions - inline implementation
+const createLogger = (module) => ({
+  info: (message, data) => console.log(`[${module}] ${message}`, data || ''),
+  error: (message, error) => console.error(`[${module}] ${message}`, error || ''),
+  warn: (message, data) => console.warn(`[${module}] ${message}`, data || ''),
+  debug: (message, data) => console.debug(`[${module}] ${message}`, data || '')
+});
+
+const logRequest = (req, res, next) => {
+  console.log(`[REQUEST] ${req.method} ${req.originalUrl} - ${req.ip}`);
+  next();
+};
 const { migrateDatabase } = require('./db/migrate');
 const session = require('express-session');
 const passport = require('passport');
@@ -9146,7 +9157,7 @@ migrateDatabase()
     
     server.listen(PORT, () => {
       console.log(`Backend SpainRP escuchando en puerto ${PORT}`);
-      logger.info('Servidor iniciado exitosamente', {
+      console.log('✅ Servidor iniciado exitosamente', {
         port: PORT,
         environment: process.env.NODE_ENV || 'development',
         timestamp: new Date().toISOString()
@@ -9154,7 +9165,7 @@ migrateDatabase()
       
       // Inicializar sistema de backup
       console.log('💾 Inicializando sistema de backup...');
-      logger.info('Inicializando sistema de backup automático');
+      console.log('✅ Inicializando sistema de backup automático');
       githubBackup.startScheduledBackup();
       
       // Intentar restaurar backup al iniciar
