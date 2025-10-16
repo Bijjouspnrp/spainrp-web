@@ -350,6 +350,7 @@ const MDTPolicial = () => {
   const [activeTab, setActiveTab] = useState('citizen');
   const [error, setError] = useState(null);
   const [terminalActive, setTerminalActive] = useState(false);
+  const [bannerVisible, setBannerVisible] = useState(true);
 
   // Estados para ciudadanos
   const [citizenData, setCitizenData] = useState({
@@ -533,6 +534,27 @@ const MDTPolicial = () => {
 
   return (
     <div className="mdt-container">
+      {/* Banner informativo */}
+      {bannerVisible && (
+        <div className="mdt-banner">
+          <div className="banner-content">
+            <FaExclamationTriangle className="banner-icon" />
+            <div className="banner-text">
+              <strong>Nota Importante:</strong> Sabemos que hay funciones en desarrollo, pendientes de configuración o ciertos errores. 
+              El programador <strong>BijjouPro08</strong> está al tanto y trabajando en las mejoras. 
+              <em>Gracias por su comprensión y paciencia.</em>
+            </div>
+            <button 
+              className="banner-close" 
+              onClick={() => setBannerVisible(false)}
+              title="Cerrar banner"
+            >
+              <FaTimes />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header simplificado */}
       <div className="mdt-header">
         <div className="header-left">

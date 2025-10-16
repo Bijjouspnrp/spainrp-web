@@ -47,7 +47,93 @@ body {
   background: var(--police-gradient-primary);
   position: relative;
   overflow: hidden;
-  padding-top: 80px; /* Espacio para la navbar */
+  padding-top: 120px; /* Espacio para la navbar + banner */
+}
+
+/* Banner informativo */
+.mdt-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+  color: white;
+  padding: 12px 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  animation: slideDown 0.5s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.banner-content {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.banner-icon {
+  font-size: 1.2rem;
+  color: #fff;
+  flex-shrink: 0;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.banner-text {
+  flex: 1;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.banner-text strong {
+  font-weight: 700;
+  color: #fff;
+}
+
+.banner-text em {
+  font-style: italic;
+  opacity: 0.9;
+}
+
+.banner-close {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.banner-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.banner-close svg {
+  font-size: 0.8rem;
 }
 
 /* Fondo minimalista sin partículas */
@@ -334,8 +420,8 @@ body {
 
 /* Tarjeta de identificación policial - Diseño minimalista */
 .police-id-card {
-  width: 360px;
-  height: 220px;
+  width: 420px;
+  height: 260px;
   perspective: 1000px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -1694,6 +1780,30 @@ body {
 }
 
 @media (max-width: 768px) {
+  .mdt-banner {
+    padding: 10px 15px;
+  }
+  
+  .banner-content {
+    gap: 10px;
+  }
+  
+  .banner-text {
+    font-size: 0.8rem;
+    text-align: left;
+  }
+  
+  .banner-close {
+    position: static;
+    transform: none;
+    width: 25px;
+    height: 25px;
+  }
+  
+  .mdt-container {
+    padding-top: 140px; /* Más espacio en móvil */
+  }
+  
   .mdt-header {
   flex-direction: column;
   gap: 20px;
@@ -2034,8 +2144,8 @@ body {
 
 .dni-card-interactive {
   width: 100%;
-  max-width: 500px;
-  height: 320px;
+  max-width: 650px;
+  height: 420px;
   position: relative;
   transform-style: preserve-3d;
   transition: transform 0.6s ease;
@@ -2114,8 +2224,8 @@ body {
 }
 
 .dni-photo-container {
-  width: 100px;
-  height: 120px;
+  width: 140px;
+  height: 170px;
   border: 2px solid var(--police-accent);
   border-radius: 8px;
   overflow: hidden;
@@ -3101,10 +3211,12 @@ body {
 .status-indicator {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--police-success);
+  text-align: center;
 }
 
 .status-dot {
