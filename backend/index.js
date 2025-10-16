@@ -7992,19 +7992,23 @@ app.get('/api/proxy/admin/dni/search', async (req, res) => {
   }
 });
 
-// Proxy para MDT Policial - Búsqueda exacta por número de DNI
+// Proxy para MDT Policial - Búsqueda exacta de DNI
 app.get('/api/proxy/admin/dni/search/exact/:dni', async (req, res) => {
   try {
     const { dni } = req.params;
+    
+    // Validar que el DNI tenga al menos 8 caracteres
     if (!dni || dni.trim().length < 8) {
-      return res.status(400).json({ error: 'Número de DNI requerido (mínimo 8 caracteres)' });
+      return res.status(400).json({ 
+        success: false,
+        error: 'Número de DNI requerido (mínimo 8 caracteres)',
+        dni: dni || ''
+      });
     }
 
-    // Usar el endpoint correcto del servidor externo
     const proxyUrl = `http://37.27.21.91:5021/api/proxy/admin/dni/search/exact/${encodeURIComponent(dni)}`;
     
-    console.log('[MDT PROXY] Buscando DNI exacto:', dni);
-    console.log('[MDT PROXY] URL del servidor externo:', proxyUrl);
+    console.log('[MDT PROXY] Búsqueda exacta de DNI:', dni);
     
     const response = await fetch(proxyUrl);
     
@@ -8013,25 +8017,30 @@ app.get('/api/proxy/admin/dni/search/exact/:dni', async (req, res) => {
     if (contentType && contentType.includes('text/html')) {
       console.warn('[MDT PROXY] El servidor proxy devolvió HTML en lugar de JSON');
       return res.json({ 
-        success: true, 
+        success: true,
         dni: dni,
         dniData: null,
-        message: 'Búsqueda de DNI no disponible temporalmente'
+        message: 'Búsqueda exacta no disponible temporalmente'
       });
     }
     
     const data = await response.json();
-    console.log('[MDT PROXY] Respuesta del servidor externo:', data);
+    
+    // Log del resultado
+    if (data.success && data.dniData) {
+      console.log('[MDT PROXY] ✅ DNI encontrado:', data.dniData.numeroDNI);
+    } else {
+      console.log('[MDT PROXY] ❌ DNI no encontrado:', dni);
+    }
+    
     res.json(data);
   } catch (err) {
-    console.error('[MDT PROXY] Error buscando DNI exacto:', err);
-    // Devolver respuesta de respaldo en lugar de error
+    console.error('[MDT PROXY] Error en búsqueda exacta de DNI:', err);
     res.json({ 
-      success: true, 
+      success: false,
+      error: 'Error de conexión en la búsqueda exacta',
       dni: req.params.dni || '',
-      dniData: null,
-      message: 'Error de conexión en la búsqueda de DNI',
-      error: err.message
+      details: err.message
     });
   }
 });

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import GlobalDMCollectorPanel from './GlobalDMCollectorPanel';
 import { apiUrl } from '../utils/api';
 import { useToast } from './ToastProvider';
-import { createLogger, getCurrentUser, logAction, logError, logApiCall } from '../utils/logger';
 import './AdminPanel.css';
 import { 
   FaBan, 
@@ -63,9 +62,6 @@ const AdminPanel = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   
-  // Logger para el AdminPanel
-  const logger = createLogger('ADMIN');
-  
   // Helper function para mostrar notificaciones
   const showToast = (message, type = 'success') => {
     notify(message, { type, duration: 3000 });
@@ -81,15 +77,6 @@ const AdminPanel = () => {
     window.addEventListener('resize', checkScreenSize);
     
     return () => window.removeEventListener('resize', checkScreenSize);
-  }, []);
-
-  // Log de acceso al AdminPanel
-  useEffect(() => {
-    const user = getCurrentUser();
-    logger.admin('Acceso al AdminPanel', {
-      screenSize: isMobile ? 'mobile' : 'desktop',
-      activeTab: activeTab
-    }, user?.username || user?.id);
   }, []);
 
   // Hacer showToast accesible globalmente para MaintenanceControl
@@ -132,67 +119,35 @@ const AdminPanel = () => {
     e.preventDefault();
     setDmResult(null);
     setDmError('');
-    
-    const user = getCurrentUser();
-    logger.communication('Iniciando envío de DM', {
-      targetUserId: dmUserId,
-      type: dmType,
-      hasMessage: !!dmMessage.trim(),
-      hasEmbed: dmType === 'embed' && !!dmEmbedTitle.trim() && !!dmEmbedDesc.trim()
-    }, user?.username || user?.id);
-
     if (!dmUserId.trim()) {
       setDmError('Debes ingresar el ID de usuario.');
       showToast('Debes ingresar el ID de usuario.', 'error');
-      logger.warn('Intento de envío de DM sin ID de usuario', null, user?.username || user?.id);
       return;
     }
     if (dmType === 'text' && !dmMessage.trim()) {
       setDmError('Debes escribir el mensaje.');
       showToast('Debes escribir el mensaje.', 'error');
-      logger.warn('Intento de envío de DM sin mensaje', null, user?.username || user?.id);
       return;
     }
     if (dmType === 'embed' && (!dmEmbedTitle.trim() || !dmEmbedDesc.trim())) {
       setDmError('Debes completar título y descripción del embed.');
       showToast('Debes completar título y descripción del embed.', 'error');
-      logger.warn('Intento de envío de DM embed incompleto', null, user?.username || user?.id);
       return;
     }
     try {
       const body = dmType === 'text'
         ? { userId: dmUserId.trim(), type: 'text', message: dmMessage.trim() }
         : { userId: dmUserId.trim(), type: 'embed', embed: { title: dmEmbedTitle.trim(), description: dmEmbedDesc.trim() } };
-      
-      logApiCall('POST', '/api/discord/senddm', true, { targetUserId: dmUserId, type: dmType });
-      
       const res = await fetch(apiUrl('/api/discord/senddm'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
       const data = await res.json();
-      
-      if (data.success) {
-        setDmResult('✅ Mensaje enviado correctamente.');
-        showToast('Mensaje enviado correctamente.', 'success');
-        logger.communication('DM enviado exitosamente', {
-          targetUserId: dmUserId,
-          type: dmType,
-          messageId: data.messageId
-        }, user?.username || user?.id);
-      } else {
-        setDmResult(`❌ ${data.error || 'Error'}`);
-        showToast(data.error || 'Error', 'error');
-        logger.error('Error enviando DM', {
-          error: data.error,
-          targetUserId: dmUserId,
-          type: dmType
-        }, user?.username || user?.id);
-      }
+      setDmResult(data.success ? '✅ Mensaje enviado correctamente.' : `❌ ${data.error || 'Error'}`);
+      showToast(data.success ? 'Mensaje enviado correctamente.' : (data.error || 'Error'), data.success ? 'success' : 'error');
     } catch (err) {
       setDmResult('Error al enviar mensaje');
-      logError(err, 'handleSendDM');
       showToast('Error al enviar mensaje', 'error');
     }
   };
@@ -435,26 +390,13 @@ const AdminPanel = () => {
     setLoading(true);
     setBanResult(null);
     setBanError('');
-    
-    const user = getCurrentUser();
-    logger.moderation('Iniciando proceso de ban', {
-      targetUserId: userId,
-      reason: banReason
-    }, user?.username || user?.id);
-
     if (!userId.trim() || !banReason.trim()) {
       setBanError('Debes ingresar ID y motivo.');
       showToast('Debes ingresar ID y motivo.', 'error');
-      logger.warn('Intento de ban sin datos completos', {
-        hasUserId: !!userId.trim(),
-        hasReason: !!banReason.trim()
-      }, user?.username || user?.id);
       setLoading(false);
       return;
     }
     try {
-      logApiCall('POST', '/api/discord/ban', true, { targetUserId: userId, reason: banReason });
-      
       const res = await fetch(`/api/discord/ban`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -462,26 +404,10 @@ const AdminPanel = () => {
       });
       const data = await res.json();
       setBanResult(data);
-      
-      if (data.error) {
-        showToast(data.error, 'error');
-        logger.error('Error en ban de usuario', {
-          error: data.error,
-          targetUserId: userId,
-          reason: banReason
-        }, user?.username || user?.id);
-      } else {
-        showToast('Usuario baneado correctamente.', 'success');
-        logger.moderation('Usuario baneado exitosamente', {
-          targetUserId: userId,
-          reason: banReason,
-          banId: data.banId
-        }, user?.username || user?.id);
-      }
+      showToast(data.error ? data.error : 'Usuario baneado correctamente.', data.error ? 'error' : 'success');
     } catch (err) {
       setBanResult({ error: 'Error al banear usuario.' });
       showToast('Error al banear usuario.', 'error');
-      logError(err, 'handleBan');
     }
     setLoading(false);
   };
@@ -491,21 +417,12 @@ const AdminPanel = () => {
     e.preventDefault();
     setUnbanResult(null);
     setUnbanError('');
-    
-    const user = getCurrentUser();
-    logger.moderation('Iniciando proceso de unban', {
-      targetUserId: unbanId
-    }, user?.username || user?.id);
-
     if (!unbanId.trim()) {
       setUnbanError('Debes ingresar ID de usuario.');
       showToast('Debes ingresar ID de usuario.', 'error');
-      logger.warn('Intento de unban sin ID de usuario', null, user?.username || user?.id);
       return;
     }
     try {
-      logApiCall('POST', '/api/discord/unban', true, { targetUserId: unbanId });
-      
       const res = await fetch(`/api/discord/unban`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -513,23 +430,10 @@ const AdminPanel = () => {
       });
       const data = await res.json();
       setUnbanResult(data);
-      
-      if (data.error) {
-        showToast(data.error, 'error');
-        logger.error('Error en unban de usuario', {
-          error: data.error,
-          targetUserId: unbanId
-        }, user?.username || user?.id);
-      } else {
-        showToast('Usuario desbaneado correctamente.', 'success');
-        logger.moderation('Usuario desbaneado exitosamente', {
-          targetUserId: unbanId
-        }, user?.username || user?.id);
-      }
+      showToast(data.error ? data.error : 'Usuario desbaneado correctamente.', data.error ? 'error' : 'success');
     } catch (err) {
       setUnbanResult({ error: 'Error al desbanear usuario.' });
       showToast('Error al desbanear usuario.', 'error');
-      logError(err, 'handleUnban');
     }
   };
 
@@ -538,21 +442,12 @@ const AdminPanel = () => {
     e.preventDefault();
     setKickResult(null);
     setKickError('');
-    
-    const user = getCurrentUser();
-    logger.moderation('Iniciando proceso de kick', {
-      targetUserId: kickId
-    }, user?.username || user?.id);
-
     if (!kickId.trim()) {
       setKickError('Debes ingresar ID de usuario.');
       showToast('Debes ingresar ID de usuario.', 'error');
-      logger.warn('Intento de kick sin ID de usuario', null, user?.username || user?.id);
       return;
     }
     try {
-      logApiCall('POST', '/api/discord/kick', true, { targetUserId: kickId });
-      
       const res = await fetch(`/api/discord/kick`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -560,23 +455,10 @@ const AdminPanel = () => {
       });
       const data = await res.json();
       setKickResult(data);
-      
-      if (data.error) {
-        showToast(data.error, 'error');
-        logger.error('Error en kick de usuario', {
-          error: data.error,
-          targetUserId: kickId
-        }, user?.username || user?.id);
-      } else {
-        showToast('Usuario kickeado correctamente.', 'success');
-        logger.moderation('Usuario kickeado exitosamente', {
-          targetUserId: kickId
-        }, user?.username || user?.id);
-      }
+      showToast(data.error ? data.error : 'Usuario kickeado correctamente.', data.error ? 'error' : 'success');
     } catch (err) {
       setKickResult({ error: 'Error al kickear usuario.' });
       showToast('Error al kickear usuario.', 'error');
-      logError(err, 'handleKick');
     }
   };
 
@@ -585,25 +467,12 @@ const AdminPanel = () => {
     e.preventDefault();
     setMuteResult(null);
     setMuteError('');
-    
-    const user = getCurrentUser();
-    logger.moderation('Iniciando proceso de mute', {
-      targetUserId: muteId,
-      time: muteTime
-    }, user?.username || user?.id);
-
     if (!muteId.trim() || !muteTime) {
       setMuteError('Debes ingresar ID y tiempo.');
       showToast('Debes ingresar ID y tiempo.', 'error');
-      logger.warn('Intento de mute sin datos completos', {
-        hasUserId: !!muteId.trim(),
-        hasTime: !!muteTime
-      }, user?.username || user?.id);
       return;
     }
     try {
-      logApiCall('POST', '/api/discord/mute', true, { targetUserId: muteId, time: muteTime });
-      
       const res = await fetch(`/api/discord/mute`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -611,26 +480,10 @@ const AdminPanel = () => {
       });
       const data = await res.json();
       setMuteResult(data);
-      
-      if (data.error) {
-        showToast(data.error, 'error');
-        logger.error('Error en mute de usuario', {
-          error: data.error,
-          targetUserId: muteId,
-          time: muteTime
-        }, user?.username || user?.id);
-      } else {
-        showToast('Usuario muteado correctamente.', 'success');
-        logger.moderation('Usuario muteado exitosamente', {
-          targetUserId: muteId,
-          time: muteTime,
-          muteId: data.muteId
-        }, user?.username || user?.id);
-      }
+      showToast(data.error ? data.error : 'Usuario muteado correctamente.', data.error ? 'error' : 'success');
     } catch (err) {
       setMuteResult({ error: 'Error al mutear usuario.' });
       showToast('Error al mutear usuario.', 'error');
-      logError(err, 'handleMute');
     }
   };
 
@@ -638,34 +491,12 @@ const AdminPanel = () => {
   const handleSearch = async (e) => {
     e.preventDefault();
     setSearchResult(null);
-    
-    const user = getCurrentUser();
-    logger.admin('Buscando información de usuario', {
-      targetUserId: searchId
-    }, user?.username || user?.id);
-
     try {
-      logApiCall('GET', `/api/member/1212556680911650866/${searchId}`, true, { targetUserId: searchId });
-      
       const res = await fetch(`/api/member/1212556680911650866/${searchId}`);
       const data = await res.json();
       setSearchResult(data);
-      
-      if (data.error) {
-        logger.warn('Error en búsqueda de usuario', {
-          error: data.error,
-          targetUserId: searchId
-        }, user?.username || user?.id);
-      } else {
-        logger.admin('Usuario encontrado exitosamente', {
-          targetUserId: searchId,
-          hasRoles: !!data.roles,
-          roleCount: data.roles?.length || 0
-        }, user?.username || user?.id);
-      }
     } catch (err) {
       setSearchResult({ error: 'Error al buscar usuario.' });
-      logError(err, 'handleSearch');
     }
   };
 
@@ -675,26 +506,12 @@ const AdminPanel = () => {
     e.preventDefault();
     setRoleResult(null);
     setRoleError('');
-    
-    const user = getCurrentUser();
-    logger.roles('Iniciando cambio de rol', {
-      targetUserId: roleUserId,
-      roleId: roleId,
-      action: roleAction
-    }, user?.username || user?.id);
-
     if (!roleUserId.trim() || !roleId.trim()) {
       setRoleError('Debes ingresar ID de usuario y seleccionar un rol.');
       showToast('Debes ingresar ID de usuario y seleccionar un rol.', 'error');
-      logger.warn('Intento de cambio de rol sin datos completos', {
-        hasUserId: !!roleUserId.trim(),
-        hasRoleId: !!roleId.trim()
-      }, user?.username || user?.id);
       return;
     }
     try {
-      logApiCall('POST', '/api/discord/role', true, { targetUserId: roleUserId, roleId, action: roleAction });
-      
       const res = await fetch(`/api/discord/role`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -702,27 +519,10 @@ const AdminPanel = () => {
       });
       const data = await res.json();
       setRoleResult(data);
-      
-      if (data.error) {
-        showToast(data.error, 'error');
-        logger.error('Error en cambio de rol', {
-          error: data.error,
-          targetUserId: roleUserId,
-          roleId: roleId,
-          action: roleAction
-        }, user?.username || user?.id);
-      } else {
-        showToast('Rol actualizado correctamente.', 'success');
-        logger.roles('Rol actualizado exitosamente', {
-          targetUserId: roleUserId,
-          roleId: roleId,
-          action: roleAction
-        }, user?.username || user?.id);
-      }
+      showToast(data.error ? data.error : 'Rol actualizado correctamente.', data.error ? 'error' : 'success');
     } catch (err) {
       setRoleResult({ error: 'Error al cambiar rol.' });
       showToast('Error al cambiar rol.', 'error');
-      logError(err, 'handleRole');
     }
   };
 
@@ -775,12 +575,6 @@ const AdminPanel = () => {
 
   // Función para cambiar de pestaña y cerrar sidebar en móvil
   const handleTabChange = (tabId) => {
-    const user = getCurrentUser();
-    logger.admin('Cambio de pestaña en AdminPanel', {
-      fromTab: activeTab,
-      toTab: tabId
-    }, user?.username || user?.id);
-    
     setActiveTab(tabId);
     if (isMobile) {
       setSidebarOpen(false);

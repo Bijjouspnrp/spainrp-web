@@ -3,10 +3,6 @@ const router = express.Router();
 const fs = require('fs');
 const path = require('path');
 const { verifyToken } = require('../middleware/jwt');
-const { createLogger } = require('../utils/logger');
-
-// Logger para logs
-const logger = createLogger('LOGS');
 
 // Directorio de logs
 const LOG_DIR = path.join(__dirname, '..', 'logs');
@@ -395,119 +391,49 @@ router.delete('/clear', (req, res) => {
   }
 });
 
-// Obtener estadísticas de logs mejoradas
+// Obtener estadísticas de logs
 router.get('/stats', (req, res) => {
   try {
     const accessLogs = readLogFile(ACCESS_LOG);
     const errorLogs = readLogFile(ERROR_LOG);
     const systemLogs = readLogFile(SYSTEM_LOG);
-    const allLogs = [...accessLogs, ...errorLogs, ...systemLogs];
     
-    const now = new Date();
     const stats = {
-      total: allLogs.length,
+      total: accessLogs.length + errorLogs.length + systemLogs.length,
       byType: {
         access: accessLogs.length,
         error: errorLogs.length,
         system: systemLogs.length
       },
-      byLevel: {
-        info: 0,
-        warn: 0,
-        error: 0
-      },
       byHour: {},
       byDay: {},
-      byUser: {},
-      byIP: {},
       recentActivity: {
-        last1h: 0,
         last24h: 0,
         last7d: 0,
         last30d: 0
-      },
-      topUsers: [],
-      topIPs: [],
-      errorRate: 0,
-      averageLogsPerHour: 0,
-      peakHour: 0,
-      systemHealth: 'good'
+      }
     };
     
-    // Procesar todos los logs
+    // Calcular actividad por hora y día
+    const now = new Date();
+    const allLogs = [...accessLogs, ...errorLogs, ...systemLogs];
+    
     allLogs.forEach(log => {
       const logDate = new Date(log.timestamp);
       const hour = logDate.getHours();
       const day = logDate.toISOString().split('T')[0];
       
-      // Estadísticas por hora y día
       stats.byHour[hour] = (stats.byHour[hour] || 0) + 1;
       stats.byDay[day] = (stats.byDay[day] || 0) + 1;
       
-      // Estadísticas por nivel
-      if (log.level) {
-        stats.byLevel[log.level] = (stats.byLevel[log.level] || 0) + 1;
-      }
-      
-      // Estadísticas por usuario
-      if (log.user) {
-        stats.byUser[log.user] = (stats.byUser[log.user] || 0) + 1;
-      }
-      
-      // Estadísticas por IP
-      if (log.ip) {
-        stats.byIP[log.ip] = (stats.byIP[log.ip] || 0) + 1;
-      }
-      
       // Actividad reciente
       const diffMs = now - logDate;
-      const diffHours = diffMs / (1000 * 60 * 60);
       const diffDays = diffMs / (1000 * 60 * 60 * 24);
       
-      if (diffHours <= 1) stats.recentActivity.last1h++;
       if (diffDays <= 1) stats.recentActivity.last24h++;
       if (diffDays <= 7) stats.recentActivity.last7d++;
       if (diffDays <= 30) stats.recentActivity.last30d++;
     });
-    
-    // Calcular métricas adicionales
-    stats.errorRate = allLogs.length > 0 ? 
-      ((stats.byLevel.error || 0) / allLogs.length * 100).toFixed(2) : 0;
-    
-    // Encontrar hora pico
-    const peakHourData = Object.entries(stats.byHour).reduce((max, [hour, count]) => 
-      count > max.count ? { hour: parseInt(hour), count } : max, 
-      { hour: 0, count: 0 }
-    );
-    stats.peakHour = peakHourData.hour;
-    
-    // Calcular promedio de logs por hora
-    const totalHours = Object.keys(stats.byHour).length;
-    stats.averageLogsPerHour = totalHours > 0 ? 
-      (allLogs.length / totalHours).toFixed(2) : 0;
-    
-    // Top usuarios
-    stats.topUsers = Object.entries(stats.byUser)
-      .sort(([,a], [,b]) => b - a)
-      .slice(0, 10)
-      .map(([user, count]) => ({ user, count }));
-    
-    // Top IPs
-    stats.topIPs = Object.entries(stats.byIP)
-      .sort(([,a], [,b]) => b - a)
-      .slice(0, 10)
-      .map(([ip, count]) => ({ ip, count }));
-    
-    // Determinar salud del sistema
-    if (stats.errorRate > 10) {
-      stats.systemHealth = 'critical';
-    } else if (stats.errorRate > 5) {
-      stats.systemHealth = 'warning';
-    } else if (stats.errorRate > 2) {
-      stats.systemHealth = 'caution';
-    } else {
-      stats.systemHealth = 'good';
-    }
     
     res.json({
       success: true,
@@ -523,10 +449,10 @@ router.get('/stats', (req, res) => {
   }
 });
 
-// Exportar logs mejorado
+// Exportar logs
 router.get('/export', (req, res) => {
   try {
-    const { type, format = 'json', startDate, endDate, level, user, ip } = req.query;
+    const { type, format = 'json' } = req.query;
     
     let logs = [];
     if (type && ['access', 'error', 'system'].includes(type)) {
@@ -551,69 +477,25 @@ router.get('/export', (req, res) => {
         .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     }
     
-    // Aplicar filtros
-    if (startDate || endDate) {
-      logs = logs.filter(log => {
-        const logDate = new Date(log.timestamp);
-        const start = startDate ? new Date(startDate) : new Date(0);
-        const end = endDate ? new Date(endDate) : new Date();
-        return logDate >= start && logDate <= end;
-      });
-    }
-    
-    if (level) {
-      logs = logs.filter(log => log.level === level);
-    }
-    
-    if (user) {
-      logs = logs.filter(log => log.user && log.user.includes(user));
-    }
-    
-    if (ip) {
-      logs = logs.filter(log => log.ip && log.ip.includes(ip));
-    }
-    
     if (format === 'csv') {
-      // Exportar como CSV mejorado
-      const csvHeader = 'Timestamp,Type,Level,Message,User,IP,UserAgent,Source,Data\n';
+      // Exportar como CSV
+      const csvHeader = 'Timestamp,Type,Message,User,IP,UserAgent\n';
       const csvData = logs.map(log => 
-        `"${log.timestamp}","${log.type || ''}","${log.level || ''}","${(log.message || '').replace(/"/g, '""')}","${log.user || ''}","${log.ip || ''}","${(log.userAgent || '').replace(/"/g, '""')}","${log.source || ''}","${JSON.stringify(log.data || {}).replace(/"/g, '""')}"`
+        `"${log.timestamp}","${log.type}","${log.message}","${log.user || ''}","${log.ip || ''}","${log.userAgent || ''}"`
       ).join('\n');
       
-      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', `attachment; filename="spainrp-logs-${type || 'all'}-${new Date().toISOString().split('T')[0]}.csv"`);
-      res.send('\ufeff' + csvHeader + csvData); // BOM para Excel
-    } else if (format === 'txt') {
-      // Exportar como texto plano
-      const txtData = logs.map(log => 
-        `[${log.timestamp}] ${log.type?.toUpperCase() || 'UNKNOWN'} - ${log.message || 'No message'}\n` +
-        `  User: ${log.user || 'N/A'}\n` +
-        `  IP: ${log.ip || 'N/A'}\n` +
-        `  Level: ${log.level || 'N/A'}\n` +
-        `  Source: ${log.source || 'N/A'}\n` +
-        (log.data ? `  Data: ${JSON.stringify(log.data, null, 2)}\n` : '') +
-        '---\n'
-      ).join('\n');
-      
-      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-      res.setHeader('Content-Disposition', `attachment; filename="spainrp-logs-${type || 'all'}-${new Date().toISOString().split('T')[0]}.txt"`);
-      res.send(txtData);
+      res.send(csvHeader + csvData);
     } else {
-      // Exportar como JSON mejorado
-      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      // Exportar como JSON
+      res.setHeader('Content-Type', 'application/json');
       res.setHeader('Content-Disposition', `attachment; filename="spainrp-logs-${type || 'all'}-${new Date().toISOString().split('T')[0]}.json"`);
       res.json({
         export: {
           timestamp: new Date().toISOString(),
           type: type || 'all',
           total: logs.length,
-          filters: {
-            startDate,
-            endDate,
-            level,
-            user,
-            ip
-          },
           logs: logs
         }
       });
@@ -623,210 +505,6 @@ router.get('/export', (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Error interno del servidor al exportar logs'
-    });
-  }
-});
-
-// Buscar logs con filtros avanzados
-router.get('/search', (req, res) => {
-  try {
-    const { 
-      q: searchTerm, 
-      type, 
-      level, 
-      user, 
-      ip, 
-      startDate, 
-      endDate, 
-      limit = 100,
-      offset = 0 
-    } = req.query;
-    
-    let logs = [];
-    if (type && ['access', 'error', 'system'].includes(type)) {
-      let filePath;
-      switch (type) {
-        case 'access':
-          filePath = ACCESS_LOG;
-          break;
-        case 'error':
-          filePath = ERROR_LOG;
-          break;
-        case 'system':
-          filePath = SYSTEM_LOG;
-          break;
-      }
-      logs = readLogFile(filePath);
-    } else {
-      const accessLogs = readLogFile(ACCESS_LOG);
-      const errorLogs = readLogFile(ERROR_LOG);
-      const systemLogs = readLogFile(SYSTEM_LOG);
-      logs = [...accessLogs, ...errorLogs, ...systemLogs];
-    }
-    
-    // Aplicar filtros
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      logs = logs.filter(log => 
-        log.message?.toLowerCase().includes(term) ||
-        log.user?.toLowerCase().includes(term) ||
-        log.ip?.toLowerCase().includes(term) ||
-        log.userAgent?.toLowerCase().includes(term) ||
-        log.source?.toLowerCase().includes(term) ||
-        JSON.stringify(log.data || {}).toLowerCase().includes(term)
-      );
-    }
-    
-    if (level) {
-      logs = logs.filter(log => log.level === level);
-    }
-    
-    if (user) {
-      logs = logs.filter(log => log.user && log.user.includes(user));
-    }
-    
-    if (ip) {
-      logs = logs.filter(log => log.ip && log.ip.includes(ip));
-    }
-    
-    if (startDate || endDate) {
-      logs = logs.filter(log => {
-        const logDate = new Date(log.timestamp);
-        const start = startDate ? new Date(startDate) : new Date(0);
-        const end = endDate ? new Date(endDate) : new Date();
-        return logDate >= start && logDate <= end;
-      });
-    }
-    
-    // Ordenar por timestamp descendente
-    logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    
-    // Paginación
-    const total = logs.length;
-    const paginatedLogs = logs.slice(offset, offset + parseInt(limit));
-    
-    res.json({
-      success: true,
-      logs: paginatedLogs,
-      total,
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-      hasMore: offset + parseInt(limit) < total,
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    console.error('Error buscando logs:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Error interno del servidor al buscar logs'
-    });
-  }
-});
-
-// Obtener logs en tiempo real (WebSocket simulation)
-router.get('/realtime', (req, res) => {
-  try {
-    // Simular logs en tiempo real
-    const realtimeLogs = [];
-    const now = new Date();
-    
-    // Generar algunos logs de ejemplo para demostración
-    for (let i = 0; i < 10; i++) {
-      const logTypes = ['access', 'error', 'system'];
-      const randomType = logTypes[Math.floor(Math.random() * logTypes.length)];
-      
-      realtimeLogs.push({
-        id: `realtime_${Date.now()}_${i}`,
-        timestamp: new Date(now.getTime() - (i * 60000)).toISOString(),
-        type: randomType,
-        level: ['info', 'warn', 'error'][Math.floor(Math.random() * 3)],
-        message: `Log en tiempo real ${i + 1}`,
-        user: `user_${Math.floor(Math.random() * 100)}`,
-        ip: `192.168.1.${Math.floor(Math.random() * 255)}`,
-        source: 'realtime'
-      });
-    }
-    
-    res.json({
-      success: true,
-      logs: realtimeLogs,
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    console.error('Error obteniendo logs en tiempo real:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Error interno del servidor al obtener logs en tiempo real'
-    });
-  }
-});
-
-// Recibir logs del frontend
-router.post('/frontend', (req, res) => {
-  try {
-    const logEntry = req.body;
-    const user = req.user?.username || req.user?.id || 'anonymous';
-    const ip = req.ip || req.connection.remoteAddress;
-    const userAgent = req.get('User-Agent');
-
-    // Validar entrada
-    if (!logEntry.message || !logEntry.level) {
-      return res.status(400).json({
-        success: false,
-        error: 'Log entry debe contener message y level'
-      });
-    }
-
-    // Determinar archivo de log basado en el módulo
-    let logFile = SYSTEM_LOG;
-    if (logEntry.module === 'ADMIN') {
-      logFile = path.join(LOG_DIR, 'admin.log');
-    } else if (logEntry.module === 'MODERATION') {
-      logFile = path.join(LOG_DIR, 'moderation.log');
-    } else if (logEntry.module === 'COMMUNICATION') {
-      logFile = path.join(LOG_DIR, 'communication.log');
-    } else if (logEntry.module === 'CNI') {
-      logFile = path.join(LOG_DIR, 'cni.log');
-    } else if (logEntry.module === 'ROLES') {
-      logFile = path.join(LOG_DIR, 'roles.log');
-    } else if (logEntry.module === 'SECURITY') {
-      logFile = path.join(LOG_DIR, 'security.log');
-    } else if (logEntry.module === 'API') {
-      logFile = path.join(LOG_DIR, 'api.log');
-    } else if (logEntry.level === 'error' || logEntry.level === 'critical') {
-      logFile = ERROR_LOG;
-    } else if (logEntry.level === 'access') {
-      logFile = ACCESS_LOG;
-    }
-
-    // Crear entrada de log completa
-    const fullLogEntry = {
-      ...logEntry,
-      user: user,
-      ip: ip,
-      userAgent: userAgent,
-      source: 'frontend',
-      timestamp: new Date().toISOString()
-    };
-
-    // Escribir al archivo
-    fs.appendFileSync(logFile, JSON.stringify(fullLogEntry) + '\n');
-
-    logger.info(`Log recibido del frontend: ${logEntry.message}`, {
-      module: logEntry.module,
-      level: logEntry.level,
-      user: user
-    }, user, ip, userAgent);
-
-    res.json({
-      success: true,
-      message: 'Log recibido exitosamente'
-    });
-  } catch (error) {
-    logger.error('Error procesando log del frontend:', error, req.user?.username || req.user?.id, req.ip, req.get('User-Agent'));
-    res.status(500).json({
-      success: false,
-      error: 'Error interno del servidor al procesar log'
     });
   }
 });

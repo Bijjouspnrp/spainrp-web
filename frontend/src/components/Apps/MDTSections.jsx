@@ -33,11 +33,11 @@ export const DNISection = ({ data }) => {
 
   return (
     <div className="mdt-section">
-      <div className="mdt-section-header">
+      <div className="dni-section-header">
         <h3><FaIdCard /> Mi DNI</h3>
-        <div className="mdt-section-controls">
+        <div className="dni-controls">
           <button 
-            className="mdt-btn mdt-btn-primary"
+            className="dni-flip-btn"
             onClick={handleFlip}
             title={isFlipped ? "Ver frente" : "Ver reverso"}
           >
@@ -239,9 +239,7 @@ export const MultasSection = ({ data, userId, onRefresh }) => {
   if (!data || data.length === 0) {
     return (
       <div className="mdt-section">
-        <div className="mdt-section-header">
-          <h3><FaMoneyBillWave /> Mis Multas</h3>
-        </div>
+        <h3><FaMoneyBillWave /> Mis Multas</h3>
         <div className="mdt-no-data">
           <FaCheckCircle />
           <p>No tienes multas pendientes</p>
@@ -258,14 +256,7 @@ export const MultasSection = ({ data, userId, onRefresh }) => {
 
   return (
     <div className="mdt-section">
-      <div className="mdt-section-header">
-        <h3><FaMoneyBillWave /> Mis Multas ({data.length})</h3>
-        <div className="mdt-section-controls">
-          <button className="mdt-refresh-btn" onClick={onRefresh} title="Actualizar Multas">
-            <FaRefresh />
-          </button>
-        </div>
-      </div>
+      <h3><FaMoneyBillWave /> Mis Multas ({data.length})</h3>
       
       {/* Resumen de multas */}
       <div className="multas-summary">
@@ -400,9 +391,7 @@ export const AntecedentesSection = ({ data }) => {
   if (!data || data.length === 0) {
     return (
       <div className="mdt-section">
-        <div className="mdt-section-header">
-          <h3><FaHistory /> Mis Antecedentes</h3>
-        </div>
+        <h3><FaHistory /> Mis Antecedentes</h3>
         <div className="mdt-no-data">
           <FaCheckCircle />
           <p>No tienes antecedentes penales</p>
@@ -413,9 +402,7 @@ export const AntecedentesSection = ({ data }) => {
 
   return (
     <div className="mdt-section">
-      <div className="mdt-section-header">
-        <h3><FaHistory /> Mis Antecedentes ({data.length})</h3>
-      </div>
+      <h3><FaHistory /> Mis Antecedentes ({data.length})</h3>
       <div className="antecedentes-list">
         {data.map((antecedente, index) => (
           <div key={antecedente.id || index} className="antecedente-card">
@@ -501,9 +488,7 @@ export const InventarioSection = ({ data }) => {
   if (!data || data.length === 0) {
     return (
       <div className="mdt-section">
-        <div className="mdt-section-header">
-          <h3><FaClipboardList /> Mi Inventario</h3>
-        </div>
+        <h3><FaClipboardList /> Mi Inventario</h3>
         <div className="mdt-no-data">
           <FaExclamationTriangle />
           <p>No tienes objetos en tu inventario</p>
@@ -617,6 +602,7 @@ export const InventarioSection = ({ data }) => {
       'bm_lock': 'Candado',
       'bm_key': 'Llave',
       'bm_chain': 'Cadena',
+      'bm_rope': 'Cuerda',
       'bm_wire': 'Cable',
       'bm_cord': 'Cordón',
       'bm_string': 'Cuerda',
@@ -744,7 +730,18 @@ export const InventarioSection = ({ data }) => {
       'bm_marten': 'Marta',
       'bm_fisher': 'Pescador',
       'bm_wolverine': 'Glotón',
-      'bm_badger': 'Tejón'
+      'bm_badger': 'Tejón',
+      'bm_skunk': 'Mofeta',
+      'bm_raccoon': 'Mapache',
+      'bm_opposum': 'Zarigüeya',
+      'bm_squirrel': 'Ardilla',
+      'bm_chipmunk': 'Ardilla Listada',
+      'bm_groundhog': 'Marmota',
+      'bm_beaver': 'Castor',
+      'bm_otter': 'Nutria',
+      'bm_weasel': 'Comadreja',
+      'bm_stoat': 'Armiño',
+      'bm_mink': 'Visón'
     };
     
     return itemNames[itemId] || itemId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -775,9 +772,7 @@ export const InventarioSection = ({ data }) => {
 
   return (
     <div className="mdt-section">
-      <div className="mdt-section-header">
-        <h3><FaClipboardList /> Mi Inventario ({data.length})</h3>
-      </div>
+      <h3><FaClipboardList /> Mi Inventario ({data.length})</h3>
       <div className="inventario-grid">
         {data.map((item, index) => (
           <div key={index} className="inventario-item">
@@ -880,50 +875,62 @@ export const SearchSection = ({ onSearch }) => {
 
     try {
       let discordId = searchValue;
+      let dniData = null;
       
       // Si buscan por DNI o nombre, primero obtener el Discord ID
       if (searchType === 'dni' || searchType === 'nombre') {
         let dniResponse;
         
         if (searchType === 'dni') {
-          dniResponse = await fetch(apiUrl(`/api/proxy/admin/dni/ver/${searchValue}`));
+          // Usar el nuevo endpoint de búsqueda exacta de DNI
+          console.log('🔍 Buscando DNI exacto:', searchValue);
+          dniResponse = await fetch(apiUrl(`/api/proxy/admin/dni/search/exact/${searchValue}`));
+          
+          if (dniResponse.ok) {
+            const exactDniData = await dniResponse.json();
+            console.log('📋 Respuesta búsqueda exacta DNI:', exactDniData);
+            
+            if (exactDniData.success && exactDniData.dniData) {
+              discordId = exactDniData.dniData.discordId;
+              dniData = exactDniData.dniData;
+              console.log('✅ DNI encontrado:', exactDniData.dniData.numeroDNI);
+            } else {
+              setError(`❌ No se encontró DNI con el número: ${searchValue}`);
+              setLoading(false);
+              return;
+            }
+          } else {
+            setError('❌ Error consultando DNI exacto');
+            setLoading(false);
+            return;
+          }
         } else {
           // Para búsqueda por nombre, usar el endpoint de búsqueda
+          console.log('🔍 Buscando por nombre:', searchValue);
           const searchResponse = await fetch(apiUrl(`/api/proxy/admin/dni/search?q=${encodeURIComponent(searchValue)}`));
           const searchData = await searchResponse.json();
+          console.log('📋 Respuesta búsqueda por nombre:', searchData);
           
           if (searchData.success && searchData.dniPorNombre && searchData.dniPorNombre.length > 0) {
             // Usar el primer resultado encontrado
             const firstResult = searchData.dniPorNombre[0];
             discordId = firstResult.discordId;
+            dniData = firstResult;
+            console.log('✅ Ciudadano encontrado por nombre:', firstResult.nombre, firstResult.apellidos);
           } else if (searchData.success && searchData.discordUsers && searchData.discordUsers.length > 0) {
             // Usar el primer usuario de Discord encontrado
             const firstUser = searchData.discordUsers[0];
             discordId = firstUser.id;
+            console.log('✅ Usuario Discord encontrado:', firstUser.username);
           } else {
-            setError('❌ No se encontró ningún ciudadano con ese nombre');
-            setLoading(false);
-            return;
-          }
-        }
-        
-        if (searchType === 'dni' && dniResponse) {
-          if (dniResponse.ok) {
-            const dniData = await dniResponse.json();
-            if (dniData.success && dniData.dni) {
-              discordId = dniData.dni.discordId;
-            } else {
-              setError('❌ No se encontró DNI con ese número');
-              setLoading(false);
-              return;
-            }
-          } else {
-            setError('❌ Error consultando DNI');
+            setError(`❌ No se encontró ningún ciudadano con el nombre: ${searchValue}`);
             setLoading(false);
             return;
           }
         }
       }
+
+      console.log('🆔 Discord ID obtenido:', discordId);
 
       // Consultar múltiples endpoints en paralelo
       const [antecedentesRes, multasRes, dniRes, inventarioRes] = await Promise.all([
@@ -933,19 +940,26 @@ export const SearchSection = ({ onSearch }) => {
         fetch(apiUrl(`/api/proxy/admin/inventario/${discordId}`))
       ]);
 
-      const [antecedentesData, multasData, dniData, inventarioData] = await Promise.all([
+      const [antecedentesData, multasData, dniDataFromVer, inventarioData] = await Promise.all([
         antecedentesRes.json(),
         multasRes.json(),
         dniRes.json(),
         inventarioRes.json()
       ]);
 
+      console.log('📊 Datos obtenidos:', {
+        antecedentes: antecedentesData.success ? antecedentesData.antecedentes?.length : 0,
+        multas: multasData.success ? multasData.multas?.length : 0,
+        dni: dniDataFromVer.success ? 'Sí' : 'No',
+        inventario: inventarioData.success ? inventarioData.inventario?.length : 0
+      });
+
       // Compilar resultados
       const searchResults = {
         discordId: discordId,
         searchValue: searchValue,
         searchType: searchType,
-        dni: dniData.success ? dniData.dni : null,
+        dni: dniData || (dniDataFromVer.success ? dniDataFromVer.dni : null),
         antecedentes: antecedentesData.success ? antecedentesData.antecedentes : [],
         multas: multasData.success ? multasData.multas : [],
         inventario: inventarioData.success ? inventarioData.inventario : [],
@@ -959,13 +973,15 @@ export const SearchSection = ({ onSearch }) => {
           searchResults.inventario.length > 0) {
         searchResults.hasData = true;
         setResults(searchResults);
+        console.log('✅ Búsqueda exitosa, datos encontrados');
       } else {
         setError('ℹ️ No se encontraron datos para este usuario');
+        console.log('ℹ️ No se encontraron datos para el usuario');
       }
 
     } catch (err) {
-      console.error('Error en búsqueda:', err);
-      setError('❌ Error de conexión en la búsqueda');
+      console.error('❌ Error en búsqueda:', err);
+      setError(`❌ Error de conexión en la búsqueda: ${err.message}`);
     } finally {
       setLoading(false);
     }

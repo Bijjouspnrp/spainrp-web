@@ -12,63 +12,7 @@ const SCROLL_THRESHOLD = 24;
 const SCROLL_OFFSET = 80;
 const RETRY_ATTEMPTS = 12;
 const RETRY_DELAY = 100;
-
-// Sistema de breakpoints mejorado para máxima responsividad
-const BREAKPOINTS = {
-  mobile: 480,
-  tablet: 768,
-  desktop: 1024,
-  large: 1200,
-  xlarge: 1440
-};
-
-// Hook mejorado para detección de dispositivos con más granularidad
-const useResponsive = () => {
-  const [screenSize, setScreenSize] = useState(() => {
-    const width = window.innerWidth;
-    if (width <= BREAKPOINTS.mobile) return 'mobile';
-    if (width <= BREAKPOINTS.tablet) return 'tablet';
-    if (width <= BREAKPOINTS.desktop) return 'desktop';
-    if (width <= BREAKPOINTS.large) return 'large';
-    return 'xlarge';
-  });
-
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= BREAKPOINTS.tablet);
-  const [isTablet, setIsTablet] = useState(
-    window.innerWidth > BREAKPOINTS.mobile && window.innerWidth <= BREAKPOINTS.desktop
-  );
-  const [isDesktop, setIsDesktop] = useState(window.innerWidth > BREAKPOINTS.desktop);
-
-  useEffect(() => {
-    const handleResize = () => {
-      const width = window.innerWidth;
-      const newScreenSize = width <= BREAKPOINTS.mobile ? 'mobile' : 
-                           width <= BREAKPOINTS.tablet ? 'tablet' :
-                           width <= BREAKPOINTS.desktop ? 'desktop' :
-                           width <= BREAKPOINTS.large ? 'large' : 'xlarge';
-      
-      setScreenSize(newScreenSize);
-      setIsMobile(width <= BREAKPOINTS.tablet);
-      setIsTablet(width > BREAKPOINTS.mobile && width <= BREAKPOINTS.desktop);
-      setIsDesktop(width > BREAKPOINTS.desktop);
-    };
-
-    // Debounce mejorado para mejor rendimiento
-    let timeoutId;
-    const debouncedResize = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(handleResize, 50);
-    };
-
-    window.addEventListener('resize', debouncedResize);
-    return () => {
-      window.removeEventListener('resize', debouncedResize);
-      clearTimeout(timeoutId);
-    };
-  }, []);
-
-  return { screenSize, isMobile, isTablet, isDesktop };
-};
+const MOBILE_BREAKPOINT = 900;
 
 // Configuración de enlaces centralizada
 const NAVIGATION_CONFIG = {
@@ -217,47 +161,34 @@ const useScrollDetection = (threshold = SCROLL_THRESHOLD) => {
   return scrolled;
 };
 
-// Hook mejorado para detección de zoom y viewport
-const useViewport = () => {
-  const [viewport, setViewport] = useState(() => ({
-    width: window.innerWidth,
-    height: window.innerHeight,
-    devicePixelRatio: window.devicePixelRatio || 1,
-    zoom: Math.round(window.devicePixelRatio * 100) / 100
-  }));
+// Hook para detección de dispositivos móviles
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= MOBILE_BREAKPOINT);
 
   useEffect(() => {
     const handleResize = () => {
-      setViewport({
-        width: window.innerWidth,
-        height: window.innerHeight,
-        devicePixelRatio: window.devicePixelRatio || 1,
-        zoom: Math.round(window.devicePixelRatio * 100) / 100
-      });
+      setIsMobile(window.innerWidth <= MOBILE_BREAKPOINT);
     };
 
-    // Throttle para mejor rendimiento
+    // Debounce del resize para mejor rendimiento
     let timeoutId;
-    const throttledResize = () => {
+    const debouncedResize = () => {
       clearTimeout(timeoutId);
-      timeoutId = setTimeout(handleResize, 16); // ~60fps
+      timeoutId = setTimeout(handleResize, 150);
     };
 
-    window.addEventListener('resize', throttledResize);
-    window.addEventListener('orientationchange', handleResize);
-    
+    window.addEventListener('resize', debouncedResize);
     return () => {
-      window.removeEventListener('resize', throttledResize);
-      window.removeEventListener('orientationchange', handleResize);
+      window.removeEventListener('resize', debouncedResize);
       clearTimeout(timeoutId);
     };
   }, []);
 
-  return viewport;
+  return isMobile;
 };
 
-// Componente para el dropdown mejorado con responsividad
-const NavigationDropdown = ({ isOpen, onClose, links, dark, screenSize, viewport }) => {
+// Componente para el dropdown
+const NavigationDropdown = ({ isOpen, onClose, links, dark, isMobile }) => {
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -268,76 +199,36 @@ const NavigationDropdown = ({ isOpen, onClose, links, dark, screenSize, viewport
         }
       };
 
-      const handleEscape = (event) => {
-        if (event.key === 'Escape') {
-          onClose();
-        }
-      };
-
       document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleEscape);
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-        document.removeEventListener('keydown', handleEscape);
-      };
+      return () => document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
-  // Cálculo dinámico de estilos basado en el tamaño de pantalla
-  const getDropdownStyles = () => {
-    const baseStyles = {
-      position: 'absolute',
-      top: '100%',
-      background: dark ? 'rgba(35, 39, 42, 0.98)' : 'rgba(255, 255, 255, 0.98)',
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
-      boxShadow: '0 12px 40px rgba(114, 137, 218, 0.4), 0 0 0 1px rgba(114, 137, 218, 0.15)',
-      borderRadius: '16px',
-      padding: '16px 0',
-      zIndex: 1003,
-      border: '1px solid rgba(114, 137, 218, 0.25)',
-      marginTop: '8px',
-      display: 'block',
-      opacity: 1,
-      visibility: 'visible',
-      transform: 'translateY(0)',
-      animation: 'dropdownSlideIn 0.3s ease-out'
-    };
-
-    // Ajustes responsivos
-    switch (screenSize) {
-      case 'mobile':
-        return {
-          ...baseStyles,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          minWidth: '280px',
-          maxWidth: `${Math.min(viewport.width - 32, 320)}px`,
-          width: 'auto'
-        };
-      case 'tablet':
-        return {
-          ...baseStyles,
-          left: 0,
-          minWidth: '300px',
-          maxWidth: `${Math.min(viewport.width * 0.8, 400)}px`
-        };
-      default:
-        return {
-          ...baseStyles,
-          left: 0,
-          minWidth: '320px',
-          maxWidth: '400px'
-        };
-    }
-  };
-
   return (
     <div 
       ref={dropdownRef}
-      style={getDropdownStyles()}
+      style={{
+        position: 'absolute',
+        top: '100%',
+        left: 0,
+        minWidth: '300px',
+        background: dark ? 'rgba(35, 39, 42, 0.98)' : 'rgba(255, 255, 255, 0.98)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        boxShadow: '0 12px 40px rgba(114, 137, 218, 0.4), 0 0 0 1px rgba(114, 137, 218, 0.15)',
+        borderRadius: '16px',
+        padding: '16px 0',
+        zIndex: 1003,
+        border: '1px solid rgba(114, 137, 218, 0.25)',
+        marginTop: '8px',
+        display: 'block',
+        opacity: 1,
+        visibility: 'visible',
+        transform: 'translateY(0)',
+        animation: 'dropdownSlideIn 0.3s ease-out'
+      }}
     >
       {links.map((link, index) => (
         <a
@@ -346,26 +237,26 @@ const NavigationDropdown = ({ isOpen, onClose, links, dark, screenSize, viewport
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: screenSize === 'mobile' ? '8px' : '12px',
-            padding: screenSize === 'mobile' ? '12px 16px' : '14px 20px',
+            gap: '12px',
+            padding: '14px 20px',
             borderRadius: '10px',
             fontWeight: 600,
             color: dark ? '#fff' : '#23272a',
             background: 'none',
             border: 'none',
-            fontSize: screenSize === 'mobile' ? '14px' : '15px',
+            fontSize: '15px',
             textDecoration: 'none',
             transition: 'all 0.2s ease',
             margin: '4px 12px',
             width: 'calc(100% - 24px)',
             position: 'relative',
-            minHeight: screenSize === 'mobile' ? '40px' : '44px',
+            minHeight: '44px',
             cursor: 'pointer'
           }}
           onMouseEnter={(e) => {
             e.target.style.background = 'rgba(114, 137, 218, 0.15)';
             e.target.style.color = '#7289da';
-            e.target.style.transform = screenSize === 'mobile' ? 'translateX(3px)' : 'translateX(6px)';
+            e.target.style.transform = 'translateX(6px)';
             e.target.style.boxShadow = '0 4px 12px rgba(114, 137, 218, 0.25)';
             e.target.style.borderLeft = '3px solid #7289da';
           }}
@@ -394,12 +285,11 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
 
-  // Hooks personalizados mejorados
+  // Hooks personalizados
   const { dark, toggleTheme } = useTheme();
   const { user, loading } = useAuth();
   const scrolled = useScrollDetection();
-  const { screenSize, isMobile, isTablet, isDesktop } = useResponsive();
-  const viewport = useViewport();
+  const isMobile = useIsMobile();
 
   // Hooks de React Router
   const navigate = useNavigate();
@@ -483,144 +373,86 @@ const Navbar = () => {
     return location.pathname + location.hash;
   }, [location.pathname, location.hash]);
 
-  // Estilos memoizados mejorados con responsividad completa
-  const navbarStyles = useMemo(() => {
-    const baseHeight = screenSize === 'mobile' ? 48 : screenSize === 'tablet' ? 56 : 64;
-    const paddingX = screenSize === 'mobile' ? '0.5rem' : screenSize === 'tablet' ? '1rem' : '1.5rem';
-    
-    return {
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '100%',
-      zIndex: 100,
-      backdropFilter: 'blur(12px)',
-      WebkitBackdropFilter: 'blur(12px)',
-      background: dark 
-        ? 'rgba(24, 27, 38, 0.85)' 
-        : 'rgba(255, 255, 255, 0.85)',
-      boxShadow: scrolled 
-        ? '0 2px 16px rgba(0, 0, 0, 0.08)' 
-        : 'none',
-      transition: 'background 0.3s ease, box-shadow 0.3s ease',
-      minHeight: `${baseHeight}px`,
-      maxHeight: `${baseHeight}px`
-    };
-  }, [dark, scrolled, screenSize]);
+  // Estilos memoizados para mejor rendimiento
+  const navbarStyles = useMemo(() => ({
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100%',
+    zIndex: 100,
+    backdropFilter: 'blur(12px)',
+    background: dark 
+      ? 'rgba(24, 27, 38, 0.85)' 
+      : 'rgba(255, 255, 255, 0.85)',
+    boxShadow: scrolled 
+      ? '0 2px 16px rgba(0, 0, 0, 0.08)' 
+      : 'none',
+    transition: 'background 0.3s ease, box-shadow 0.3s ease'
+  }), [dark, scrolled]);
 
-  const containerStyles = useMemo(() => {
-    const baseHeight = screenSize === 'mobile' ? 48 : screenSize === 'tablet' ? 56 : 64;
-    const paddingX = screenSize === 'mobile' ? '0.5rem' : screenSize === 'tablet' ? '1rem' : '1.5rem';
-    const gap = screenSize === 'mobile' ? 8 : screenSize === 'tablet' ? 12 : 16;
-    
-    return {
-      display: 'flex',
-      alignItems: 'center',
-      width: '100%',
-      maxWidth: '100vw',
-      margin: 0,
-      padding: `0 ${paddingX}`,
-      height: `${baseHeight}px`,
-      gap: `${gap}px`,
-      overflow: 'hidden',
-      flexWrap: 'nowrap'
-    };
-  }, [screenSize]);
+  const containerStyles = useMemo(() => ({
+    display: 'flex',
+    alignItems: 'center',
+    width: '100%',
+    maxWidth: '100vw',
+    margin: 0,
+    padding: isMobile ? '0 0.5rem' : '0 1.5rem',
+    height: isMobile ? 48 : 64,
+    gap: isMobile ? 8 : 16
+  }), [isMobile]);
 
-  const brandStyles = useMemo(() => {
-    const gap = screenSize === 'mobile' ? 6 : screenSize === 'tablet' ? 8 : 12;
-    const maxWidth = screenSize === 'mobile' ? '40%' : screenSize === 'tablet' ? '50%' : 'none';
-    
-    return {
-      display: 'flex',
-      alignItems: 'center',
-      gap: `${gap}px`,
-      justifyContent: 'center',
-      flexShrink: 0,
-      minWidth: 0,
-      maxWidth: maxWidth
-    };
-  }, [screenSize]);
+  const brandStyles = useMemo(() => ({
+    display: 'flex',
+    alignItems: 'center',
+    gap: isMobile ? 6 : 12,
+    justifyContent: 'center',
+    flexShrink: 0,
+    minWidth: 0,
+    maxWidth: isMobile ? '40%' : 'none'
+  }), [isMobile]);
 
-  const logoStyles = useMemo(() => {
-    const size = screenSize === 'mobile' ? 20 : screenSize === 'tablet' ? 24 : 30;
-    
-    return {
-      width: `${size}px`,
-      height: `${size}px`,
-      borderRadius: '50%',
-      boxShadow: '0 2px 8px rgba(114, 137, 218, 0.33)',
-      flexShrink: 0,
-      objectFit: 'cover'
-    };
-  }, [screenSize]);
+  const logoStyles = useMemo(() => ({
+    width: isMobile ? 20 : 30,
+    height: isMobile ? 20 : 30,
+    borderRadius: '50%',
+    boxShadow: '0 2px 8px rgba(114, 137, 218, 0.33)',
+    flexShrink: 0
+  }), [isMobile]);
 
-  const brandTextStyles = useMemo(() => {
-    const fontSize = screenSize === 'mobile' ? 16 : screenSize === 'tablet' ? 18 : 22;
-    const maxWidth = screenSize === 'mobile' ? 120 : screenSize === 'tablet' ? 150 : 'none';
-    
-    return {
-      fontWeight: 800,
-      fontSize: `${fontSize}px`,
-      color: dark ? '#fff' : '#23272a',
-      letterSpacing: 1,
-      whiteSpace: 'nowrap',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      maxWidth: maxWidth === 'none' ? 'none' : `${maxWidth}px`
-    };
-  }, [dark, screenSize]);
+  const brandTextStyles = useMemo(() => ({
+    fontWeight: 800,
+    fontSize: isMobile ? 16 : 22,
+    color: dark ? '#fff' : '#23272a',
+    letterSpacing: 1,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    maxWidth: isMobile ? 120 : 'none'
+  }), [dark, isMobile]);
 
-  // Función para renderizar enlaces de navegación mejorada
+  // Función para renderizar enlaces de navegación
   const renderNavigationLink = useCallback((link, index) => {
     // Deshabilitar marcado de elementos activos - ningún elemento debe brillar
     const isActive = false;
     
-    // Cálculo dinámico de estilos basado en el tamaño de pantalla
-    const getLinkStyles = () => {
-      const baseStyles = {
-        display: 'inline-flex',
-        alignItems: 'center',
-        borderRadius: 8,
-        fontWeight: 500,
-        color: dark ? '#fff' : '#23272a',
-        background: isActive ? 'rgba(114, 137, 218, 0.12)' : 'none',
-        border: isActive ? '2px solid #7289da' : 'none',
-        textDecoration: 'none',
-        transition: 'background 0.2s ease',
-        position: 'relative',
-        boxShadow: isActive ? '0 2px 8px rgba(114, 137, 218, 0.22)' : 'none',
-        flexShrink: 0,
-        whiteSpace: 'nowrap'
-      };
-
-      // Ajustes responsivos
-      switch (screenSize) {
-        case 'mobile':
-          return {
-            ...baseStyles,
-            gap: '4px',
-            padding: '4px 8px',
-            fontSize: '13px'
-          };
-        case 'tablet':
-          return {
-            ...baseStyles,
-            gap: '5px',
-            padding: '5px 10px',
-            fontSize: '14px'
-          };
-        default:
-          return {
-            ...baseStyles,
-            gap: '6px',
-            padding: '6px 12px',
-            fontSize: '15px'
-          };
-      }
+    const linkStyles = {
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: isMobile ? 4 : 6,
+      padding: isMobile ? '4px 8px' : '6px 12px',
+      borderRadius: 8,
+      fontWeight: 500,
+      color: dark ? '#fff' : '#23272a',
+      background: isActive ? 'rgba(114, 137, 218, 0.12)' : 'none',
+      border: isActive ? '2px solid #7289da' : 'none',
+      fontSize: isMobile ? 13 : 15,
+      textDecoration: 'none',
+      transition: 'background 0.2s ease',
+      position: 'relative',
+      boxShadow: isActive ? '0 2px 8px rgba(114, 137, 218, 0.22)' : 'none',
+      flexShrink: 0,
+      whiteSpace: 'nowrap'
     };
-    
-    const linkStyles = getLinkStyles();
 
     return (
       <a
@@ -647,20 +479,15 @@ const Navbar = () => {
         )}
       </a>
     );
-  }, [dark, handleSectionClick, closeMenu, screenSize]);
+  }, [dark, handleSectionClick, closeMenu]);
 
-  // Función para renderizar el componente de usuario/login mejorada
+  // Función para renderizar el componente de usuario/login
   const renderUserSection = useCallback(() => {
     if (loading) {
-      const loadingWidth = screenSize === 'mobile' ? 60 : screenSize === 'tablet' ? 80 : 100;
-      const loadingHeight = screenSize === 'mobile' ? 32 : screenSize === 'tablet' ? 36 : 40;
-      const fontSize = screenSize === 'mobile' ? 10 : screenSize === 'tablet' ? 11 : 12;
-      const loadingText = screenSize === 'mobile' ? '...' : screenSize === 'tablet' ? 'Cargando...' : 'Cargando...';
-      
       return (
         <div style={{
-          width: `${loadingWidth}px`,
-          height: `${loadingHeight}px`,
+          width: isMobile ? 60 : 100,
+          height: 36,
           background: dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
           borderRadius: 8,
           display: 'flex',
@@ -670,39 +497,26 @@ const Navbar = () => {
         }}>
           <span style={{ 
             color: dark ? '#fff' : '#23272a', 
-            fontSize: `${fontSize}px`,
+            fontSize: isMobile ? 10 : 12,
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis'
           }}>
-            {loadingText}
+            {isMobile ? '...' : 'Cargando...'}
           </span>
         </div>
       );
     }
 
     if (user) {
-      // Cálculo dinámico de estilos para usuario logueado
-      const userGap = screenSize === 'mobile' ? 2 : screenSize === 'tablet' ? 4 : 6;
-      const userPadding = screenSize === 'mobile' ? '3px 6px' : screenSize === 'tablet' ? '3px 7px' : '4px 8px';
-      const userMaxWidth = screenSize === 'mobile' ? 120 : screenSize === 'tablet' ? 160 : 200;
-      const avatarSize = screenSize === 'mobile' ? 16 : screenSize === 'tablet' ? 18 : 20;
-      const fontSize = screenSize === 'mobile' ? 10 : screenSize === 'tablet' ? 11 : 12;
-      const usernameMaxWidth = screenSize === 'mobile' ? 40 : screenSize === 'tablet' ? 60 : 80;
-      const displayUsername = screenSize === 'mobile' ? 
-        user.username.substring(0, 6) + '...' : 
-        screenSize === 'tablet' ? 
-        user.username.substring(0, 8) + '...' : 
-        user.username;
-      
       return (
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: `${userGap}px`,
+          gap: isMobile ? 2 : 6,
           flexShrink: 0,
           minWidth: 0,
-          maxWidth: `${userMaxWidth}px`,
+          maxWidth: isMobile ? 120 : 200,
           position: 'relative',
           zIndex: 1002
         }}>
@@ -712,16 +526,16 @@ const Navbar = () => {
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: `${userGap}px`,
+              gap: isMobile ? 2 : 6,
               textDecoration: 'none',
               background: 'rgba(114, 137, 218, 0.15)',
               border: '1px solid #7289da',
-              padding: userPadding,
+              padding: isMobile ? '3px 6px' : '4px 8px',
               borderRadius: 6,
               boxShadow: '0 2px 8px rgba(114, 137, 218, 0.22)',
               minWidth: 0,
               flexShrink: 1,
-              maxWidth: screenSize === 'mobile' ? '80px' : screenSize === 'tablet' ? '120px' : '150px',
+              maxWidth: isMobile ? 80 : 150,
               position: 'relative',
               zIndex: 1002
             }}
@@ -730,8 +544,8 @@ const Navbar = () => {
               src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`}
               alt="Avatar de usuario"
               style={{
-                width: `${avatarSize}px`,
-                height: `${avatarSize}px`,
+                width: isMobile ? 16 : 20,
+                height: isMobile ? 16 : 20,
                 borderRadius: '50%',
                 border: '1px solid #7289da',
                 objectFit: 'cover',
@@ -742,13 +556,13 @@ const Navbar = () => {
             <span style={{
               fontWeight: 600,
               color: '#7289da',
-              fontSize: `${fontSize}px`,
+              fontSize: isMobile ? 10 : 12,
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
-              maxWidth: `${usernameMaxWidth}px`
+              maxWidth: isMobile ? 40 : 80
             }}>
-              {displayUsername}
+              {isMobile ? user.username.substring(0, 6) + '...' : user.username}
             </span>
           </a>
           {!isMobile && (
@@ -781,12 +595,12 @@ const Navbar = () => {
                 marginLeft: 4,
                 color: '#e74c3c',
                 fontWeight: 600,
-                fontSize: screenSize === 'tablet' ? 11 : 12,
+                fontSize: 12,
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
                 textDecoration: 'none',
-                padding: screenSize === 'tablet' ? '2px 5px' : '2px 6px',
+                padding: '2px 6px',
                 borderRadius: 4,
                 flexShrink: 0,
                 position: 'relative',
@@ -800,13 +614,6 @@ const Navbar = () => {
       );
     }
 
-    // Cálculo dinámico de estilos para botón de login
-    const loginGap = screenSize === 'mobile' ? 2 : screenSize === 'tablet' ? 4 : 6;
-    const loginPadding = screenSize === 'mobile' ? '3px 6px' : screenSize === 'tablet' ? '3px 7px' : '4px 8px';
-    const loginFontSize = screenSize === 'mobile' ? 10 : screenSize === 'tablet' ? 11 : 12;
-    const loginIconSize = screenSize === 'mobile' ? 14 : screenSize === 'tablet' ? 16 : 18;
-    const loginText = screenSize === 'mobile' ? 'Login' : screenSize === 'tablet' ? 'Login' : 'Iniciar sesión';
-    
     return (
       <a
         href="/auth/login"
@@ -814,26 +621,26 @@ const Navbar = () => {
         style={{
           display: 'inline-flex',
           alignItems: 'center',
-          gap: `${loginGap}px`,
+          gap: isMobile ? 2 : 6,
           textDecoration: 'none',
           background: 'rgba(114, 137, 218, 0.15)',
           border: '1px solid #7289da',
-          padding: loginPadding,
+          padding: isMobile ? '3px 6px' : '4px 8px',
           borderRadius: 6,
           boxShadow: '0 2px 8px rgba(114, 137, 218, 0.22)',
           fontWeight: 600,
           color: '#7289da',
-          fontSize: `${loginFontSize}px`,
+          fontSize: isMobile ? 10 : 12,
           flexShrink: 0,
           position: 'relative',
           zIndex: 1002
         }}
       >
-        <FaUserCircle size={loginIconSize} color="#7289da" />
-        <span>{loginText}</span>
+        <FaUserCircle size={isMobile ? 14 : 18} color="#7289da" />
+        <span>{isMobile ? 'Login' : 'Iniciar sesión'}</span>
       </a>
     );
-  }, [user, loading, dark, screenSize]);
+  }, [user, loading, dark, isMobile]);
 
   return (
     <nav 
@@ -917,13 +724,13 @@ const Navbar = () => {
           </span>
         </a>
 
-        {/* Menú de navegación mejorado */}
+        {/* Menú de navegación */}
         <div 
           className={`navbar-menu${isMenuOpen ? ' active' : ''}`}
           style={{
             display: isMobile ? 'none' : 'flex',
             alignItems: 'center',
-            gap: screenSize === 'mobile' ? 4 : screenSize === 'tablet' ? 8 : 16,
+            gap: isMobile ? 4 : 16,
             flexWrap: 'nowrap',
             minWidth: 0,
             flex: 1,
@@ -941,36 +748,34 @@ const Navbar = () => {
             </div>
           )}
           
-          {/* Dropdown de apps y servicios mejorado */}
+          {/* Dropdown de apps y servicios */}
           <div style={{ position: 'relative', zIndex: 1002 }} data-tutorial="apps-dropdown">
             <button
               onClick={toggleDropdown}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: screenSize === 'mobile' ? 4 : screenSize === 'tablet' ? 6 : 8,
-                padding: screenSize === 'mobile' ? '4px 8px' : screenSize === 'tablet' ? '6px 12px' : '8px 16px',
+                gap: isMobile ? 4 : 8,
+                padding: isMobile ? '4px 8px' : '8px 16px',
                 borderRadius: 8,
                 fontWeight: 600,
                 color: dark ? '#fff' : '#23272a',
                 background: showDropdown ? 'rgba(114, 137, 218, 0.15)' : 'none',
                 border: 'none',
-                fontSize: screenSize === 'mobile' ? 13 : screenSize === 'tablet' ? 14 : 15,
+                fontSize: isMobile ? 13 : 15,
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
                 flexShrink: 0,
                 transition: 'all 0.2s ease',
                 textDecoration: 'none',
-                minHeight: screenSize === 'mobile' ? '32px' : screenSize === 'tablet' ? '36px' : '40px',
+                minHeight: isMobile ? '32px' : '40px',
                 justifyContent: 'center'
               }}
               aria-expanded={showDropdown}
               aria-haspopup="true"
             >
-              <FaAppStore size={screenSize === 'mobile' ? 14 : screenSize === 'tablet' ? 15 : 16} /> 
-              <span style={{ display: isMobile ? 'none' : 'inline' }}>
-                {screenSize === 'tablet' ? 'Apps' : 'Apps & Servicios'}
-              </span>
+              <FaAppStore size={isMobile ? 14 : 16} /> 
+              <span style={{ display: isMobile ? 'none' : 'inline' }}>Apps & Servicios</span>
               <span style={{ display: isMobile ? 'inline' : 'none' }}>Apps</span>
               ▾
             </button>
@@ -980,8 +785,7 @@ const Navbar = () => {
               onClose={closeDropdown}
               links={NAVIGATION_CONFIG.externalLinks}
               dark={dark}
-              screenSize={screenSize}
-              viewport={viewport}
+              isMobile={isMobile}
             />
           </div>
 
@@ -1156,15 +960,15 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Sección de acciones mejorada */}
+        {/* Sección de acciones */}
         <div className="navbar-actions" style={{
           display: 'flex',
           alignItems: 'center',
-          gap: screenSize === 'mobile' ? '4px' : screenSize === 'tablet' ? '6px' : '8px',
+          gap: isMobile ? '4px' : '8px',
           justifyContent: 'center',
           flexShrink: 0,
           minWidth: 0,
-          maxWidth: screenSize === 'mobile' ? '120px' : screenSize === 'tablet' ? '160px' : '200px'
+          maxWidth: isMobile ? '120px' : '200px'
         }}>
           {/* Sección de usuario/login */}
           <div data-tutorial="user-panel">
@@ -1182,12 +986,12 @@ const Navbar = () => {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 4,
-                padding: screenSize === 'tablet' ? '3px 6px' : '4px 8px',
+                padding: '4px 8px',
                 background: '#7289da',
                 color: '#fff',
                 borderRadius: 6,
                 fontWeight: 600,
-                fontSize: screenSize === 'tablet' ? 11 : 12,
+                fontSize: 12,
                 boxShadow: '0 2px 8px rgba(114, 137, 218, 0.33)',
                 textDecoration: 'none',
                 transition: 'background 0.2s ease',
@@ -1198,17 +1002,17 @@ const Navbar = () => {
                 zIndex: 1002
               }}
             >
-              <FaDiscord size={screenSize === 'tablet' ? 11 : 12} /> Unirse
+              <FaDiscord size={12} /> Unirse
             </a>
           )}
 
-          {/* Botón de cambio de tema mejorado */}
+          {/* Botón de cambio de tema */}
           <button
             onClick={toggleTheme}
             style={{
               background: 'none',
               border: 'none',
-              padding: screenSize === 'mobile' ? 4 : screenSize === 'tablet' ? 6 : 8,
+              padding: isMobile ? 4 : 8,
               borderRadius: 8,
               cursor: 'pointer',
               transition: 'background 0.2s ease',
@@ -1218,13 +1022,13 @@ const Navbar = () => {
             aria-label={dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
           >
             {dark ? (
-              <FaSun size={screenSize === 'mobile' ? 16 : screenSize === 'tablet' ? 18 : 20} color="#FFD700" />
+              <FaSun size={isMobile ? 16 : 20} color="#FFD700" />
             ) : (
-              <FaMoon size={screenSize === 'mobile' ? 16 : screenSize === 'tablet' ? 18 : 20} color="#7289da" />
+              <FaMoon size={isMobile ? 16 : 20} color="#7289da" />
             )}
           </button>
 
-          {/* Botón de tutorial mejorado */}
+          {/* Botón de tutorial */}
           <button
             onClick={() => {
               // Disparar evento para abrir tutorial
@@ -1233,7 +1037,7 @@ const Navbar = () => {
             style={{
               background: 'none',
               border: 'none',
-              padding: screenSize === 'mobile' ? 4 : screenSize === 'tablet' ? 6 : 8,
+              padding: isMobile ? 4 : 8,
               borderRadius: 8,
               cursor: 'pointer',
               transition: 'background 0.2s ease',
@@ -1243,19 +1047,19 @@ const Navbar = () => {
             title="Ver tutorial interactivo"
             aria-label="Ver tutorial interactivo"
           >
-            <FaHandPointer size={screenSize === 'mobile' ? 16 : screenSize === 'tablet' ? 18 : 20} />
+            <FaHandPointer size={isMobile ? 16 : 20} />
           </button>
         </div>
 
-        {/* Botón del menú hamburguesa mejorado */}
+        {/* Botón del menú hamburguesa */}
         <button
           className="navbar-toggle"
           onClick={toggleMenu}
           style={{
-            marginLeft: screenSize === 'mobile' ? 4 : screenSize === 'tablet' ? 8 : 16,
+            marginLeft: isMobile ? 4 : 16,
             background: 'none',
             border: 'none',
-            padding: screenSize === 'mobile' ? 4 : screenSize === 'tablet' ? 6 : 8,
+            padding: isMobile ? 4 : 8,
             borderRadius: 8,
             cursor: 'pointer',
             zIndex: 101,
@@ -1269,9 +1073,9 @@ const Navbar = () => {
           aria-label={isMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
         >
           {isMenuOpen ? (
-            <FaTimes size={screenSize === 'mobile' ? 20 : screenSize === 'tablet' ? 22 : 24} color="#7289da" />
+            <FaTimes size={isMobile ? 20 : 24} color="#7289da" />
           ) : (
-            <FaBars size={screenSize === 'mobile' ? 20 : screenSize === 'tablet' ? 22 : 24} color={dark ? '#fff' : '#7289da'} />
+            <FaBars size={isMobile ? 20 : 24} color={dark ? '#fff' : '#7289da'} />
           )}
         </button>
       </div>
