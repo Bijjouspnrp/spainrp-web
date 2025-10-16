@@ -13,7 +13,18 @@ import {
 } from 'react-icons/fa';
 import { apiUrl } from '../../utils/api';
 import { CNI_CONFIG, getLogoPath, getBestLogoPath, checkImageExists } from '../../config/cniConfig';
-import { createLogger, getCurrentUser, logAction, logError, logApiCall } from '../../utils/logger';
+// Logger functions - inline implementation
+const logAction = (action, details = {}) => {
+  console.log(`[CNI ACTION] ${action}:`, details);
+};
+
+const logError = (error, context = '') => {
+  console.error(`[CNI ERROR] ${context}:`, error);
+};
+
+const logApiCall = (method, endpoint, success = true, data = {}) => {
+  console.log(`[CNI API] ${method} ${endpoint} - ${success ? 'SUCCESS' : 'FAILED'}:`, data);
+};
 import './CNISection.css';
 import './BusinessRecords.css';
 import './CNIBlog.css';
@@ -861,7 +872,7 @@ const CNISection = () => {
   const [showHelp, setShowHelp] = useState(false);
 
   // Logger para el sistema CNI
-  const logger = createLogger('CNI');
+  // Logger instance removed - using inline functions
 
   // Hook de caché avanzado (deshabilitado temporalmente)
   // const { getCachedData, setCachedData, clearExpiredCache, clearCache, getCacheStats } = useAdvancedCache();
@@ -907,7 +918,7 @@ const CNISection = () => {
         if (!token) {
           setError('Debes iniciar sesión para acceder al CNI');
           setLoading(false);
-          logger.security('Intento de acceso al CNI sin token', null, null);
+          logError('Intento de acceso al CNI sin token', 'AUTH');
           return;
         }
 
@@ -919,7 +930,7 @@ const CNISection = () => {
         if (!userRes.ok) {
           setError('Token inválido');
           setLoading(false);
-          logger.security('Token inválido para acceso al CNI', null, null);
+          logError('Token inválido para acceso al CNI', 'AUTH');
           return;
         }
 
@@ -933,7 +944,7 @@ const CNISection = () => {
           setIsCNI(cniData.hasRole);
           
           if (cniData.hasRole) {
-            logger.cni('Acceso autorizado al CNI', {
+            logAction('Acceso autorizado al CNI', {
               userId: userData.user.id,
               username: userData.user.username,
               hasRole: true
@@ -943,10 +954,10 @@ const CNISection = () => {
             const hasSeenWelcome = localStorage.getItem('cni-welcome-seen');
             if (!hasSeenWelcome) {
               setShowWelcomeModal(true);
-              logger.cni('Mostrando modal de bienvenida CNI', null, userData.user.username);
+              logAction('Mostrando modal de bienvenida CNI', { username: userData.user.username });
             }
           } else {
-            logger.security('Intento de acceso al CNI sin permisos', {
+            logError('Intento de acceso al CNI sin permisos', {
               userId: userData.user.id,
               username: userData.user.username
             }, userData.user.username);
@@ -1573,8 +1584,8 @@ const AdvancedSearchTab = () => {
     setLoading(true);
     setResults([]);
     
-    const user = getCurrentUser();
-    logger.cni('Iniciando búsqueda CNI avanzada', {
+    const user = { username: 'Usuario', id: 'unknown' }; // Simplified user object
+    logAction('Iniciando búsqueda CNI avanzada', {
       query: searchForm.query,
       searchType: searchForm.searchType,
       filters: searchForm.filters
@@ -1663,7 +1674,7 @@ const AdvancedSearchTab = () => {
       setResults(searchResults);
       
       if (searchResults.success) {
-        logger.cni('Búsqueda CNI exitosa', {
+        logAction('Búsqueda CNI exitosa', {
           query: searchForm.query,
           searchType: searchForm.searchType,
           dniCount: searchResults.dniPorNombre.length,
@@ -1671,7 +1682,7 @@ const AdvancedSearchTab = () => {
           hasResults: searchResults.dniPorNombre.length > 0 || searchResults.discordUsers.length > 0
         }, user?.username || user?.id);
       } else {
-        logger.warn('Búsqueda CNI sin resultados', {
+        logAction('Búsqueda CNI sin resultados', {
           query: searchForm.query,
           searchType: searchForm.searchType,
           error: searchResults.error || 'No se encontraron resultados'
