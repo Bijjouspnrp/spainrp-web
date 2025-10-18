@@ -267,80 +267,6 @@ const CommandTerminal = ({ isActive, onCommand }) => {
   );
 };
 
-// Componente de información del sistema
-const SystemInfoPanel = () => {
-  const [systemStats, setSystemStats] = useState({
-    onlineUsers: 0,
-    activeSearches: 0,
-    systemLoad: 0,
-    lastUpdate: new Date()
-  });
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setSystemStats(prev => ({
-        ...prev,
-        onlineUsers: Math.floor(Math.random() * 50) + 20,
-        activeSearches: Math.floor(Math.random() * 10) + 1,
-        systemLoad: Math.floor(Math.random() * 30) + 10,
-        lastUpdate: new Date()
-      }));
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="system-info-panel">
-      <div className="panel-header">
-        <FaDatabase />
-        <span>INFORMACIÓN DEL SISTEMA</span>
-      </div>
-      
-      <div className="system-stats">
-        <div className="stat-item">
-          <div className="stat-icon">
-            <FaUsers />
-          </div>
-          <div className="stat-content">
-            <span className="stat-label">USUARIOS ONLINE</span>
-            <span className="stat-value">{systemStats.onlineUsers}</span>
-          </div>
-        </div>
-        
-        <div className="stat-item">
-          <div className="stat-icon">
-            <FaSearch />
-          </div>
-          <div className="stat-content">
-            <span className="stat-label">BÚSQUEDAS ACTIVAS</span>
-            <span className="stat-value">{systemStats.activeSearches}</span>
-          </div>
-        </div>
-        
-        <div className="stat-item">
-          <div className="stat-icon">
-            <FaCog />
-          </div>
-          <div className="stat-content">
-            <span className="stat-label">CARGA DEL SISTEMA</span>
-            <span className="stat-value">{systemStats.systemLoad}%</span>
-          </div>
-        </div>
-      </div>
-      
-      <div className="system-status">
-        <div className="status-indicator">
-          <div className="status-dot online"></div>
-          <span>SISTEMA MDT</span>
-        </div>
-        <div className="last-update">
-          Última actualización: {systemStats.lastUpdate.toLocaleTimeString()}
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const MDTPolicial = () => {
   const [user, setUser] = useState(null);
@@ -567,18 +493,6 @@ const MDTPolicial = () => {
           </div>
         </div>
         
-        <div className="header-center">
-          <div className="system-status">
-            <div className="status-item">
-              <span className="status-label">MDT</span>
-              <span className="status-value online">ACTIVO</span>
-            </div>
-            <div className="status-item">
-              <span className="status-label">USUARIO</span>
-              <span className="status-value online">{isPolice ? 'POLICÍA' : isCNI ? 'CNI' : 'CIUDADANO'}</span>
-            </div>
-          </div>
-        </div>
         
         <div className="header-right">
           <div className="system-controls">
@@ -652,17 +566,6 @@ const MDTPolicial = () => {
           </div>
         </div>
         
-        <div className="toolbar-center">
-          <div className="id-card-compact">
-            <PoliceIDCard 
-              user={user} 
-              isPolice={isPolice} 
-              isCNI={isCNI}
-              onFlip={() => console.log('Tarjeta volteada')}
-              compact={true}
-            />
-          </div>
-        </div>
       </div>
 
       {/* Contenido principal */}
@@ -699,8 +602,6 @@ const MDTPolicial = () => {
             />
           )}
           
-          {/* Panel de información del sistema */}
-          <SystemInfoPanel />
         </div>
       </div>
 
