@@ -7,9 +7,9 @@ import {
   FaUserShield, FaDatabase, FaClipboardList, FaHistory,
   FaSatellite, FaFingerprint, FaBrain, FaRobot,
   FaWifi, FaSignal, FaBolt, FaCog, FaGlobeAmericas, FaShieldVirus,
-  FaCctv, FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock,
+  FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock,
   FaChartLine, FaUsers, FaCar, FaBuilding, FaNewspaper,
-  FaMicrochip, FaSatelliteDish, FaBroadcastTower, FaWifi2,
+  FaMicrochip, FaSatelliteDish, FaBroadcastTower,
   FaQrcode, FaBarcode, FaKey, FaCrosshairs, FaBullseye
 } from 'react-icons/fa';
 import { apiUrl } from '../../utils/api';
