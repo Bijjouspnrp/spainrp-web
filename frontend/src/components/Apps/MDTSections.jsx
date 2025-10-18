@@ -3,7 +3,8 @@ import {
   FaIdCard, FaMoneyBillWave, FaHistory, FaClipboardList, 
   FaSearch, FaGavel, FaLock, FaTrophy, FaEye, 
   FaEdit, FaTrash, FaCheckCircle, FaTimes, FaExclamationTriangle,
-  FaUser, FaFileAlt, FaCarCrash, FaShieldAlt, FaSpinner
+  FaUser, FaFileAlt, FaCarCrash, FaShieldAlt, FaSpinner,
+  FaFingerprint
 } from 'react-icons/fa';
 import { apiUrl } from '../../utils/api';
 import codigoPenal from '../../utils/codigoPenal';
