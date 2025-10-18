@@ -78,6 +78,8 @@ export default function ModernCalendar() {
     
     setIsClaiming(true);
     try {
+      console.log('[CALENDAR] Claiming day:', { year: currentYear, month: currentMonth + 1, day });
+      
       const response = await fetch(apiUrl('/api/calendar/claim'), {
         method: 'POST',
         headers: {
@@ -91,18 +93,22 @@ export default function ModernCalendar() {
         })
       });
 
+      console.log('[CALENDAR] Response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('[CALENDAR] Success data:', data);
         setClaimedDays(prev => [...prev, day]);
         setStreak(data.streak || streak + 1);
         setLongestStreak(data.longestStreak || Math.max(longestStreak, data.streak || streak + 1));
         setTotalClaims(data.totalClaims || totalClaims + 1);
       } else {
         const errorData = await response.json();
-        alert(errorData.message || 'Error al reclamar el día');
+        console.error('[CALENDAR] Error response:', errorData);
+        alert(errorData.error || 'Error al reclamar el día');
       }
     } catch (error) {
-      console.error('Error claiming day:', error);
+      console.error('[CALENDAR] Error claiming day:', error);
       alert('Error al reclamar el día');
     } finally {
       setIsClaiming(false);
