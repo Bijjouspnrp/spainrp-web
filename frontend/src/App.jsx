@@ -44,6 +44,7 @@ const ModeratorDashboard = lazy(() => import('./components/ModeratorDashboard'))
 const NotFound = lazy(() => import('./components/NotFound'));
 const SimuladorTienda = lazy(() => import('./components/Apps/SimuladorTienda'));
 const MDTPolicial = lazy(() => import('./components/Apps/MDTPolicial'));
+const GaleriaRP = lazy(() => import('./components/GaleriaRP'));
 const GlobalSearch = lazy(() => import('./components/GlobalSearch'));
 
 // Componente de Login
@@ -954,7 +955,7 @@ function App() {
 
   // Páginas especiales sin Navbar
   const noNavbarRoutes = [
-    '/blackmarket', '/news', '/stockmarket', '/apps', '/apps/tinder', '/apps/banco', '/apps/minijuegos', '/apps/tienda', '/rules'
+    '/blackmarket', '/news', '/stockmarket', '/apps', '/apps/tinder', '/apps/banco', '/apps/minijuegos', '/apps/tienda', '/galeria', '/rules'
   ];
 
   if (maintenance) {
@@ -1077,6 +1078,7 @@ function AppContent({ noNavbarRoutes, memberCount, totalMembers, loading }) {
           <Route path="/apps/minijuegos" element={<BanErrorHandler><MinijuegosRP /></BanErrorHandler>} />
           <Route path="/apps/tienda" element={<BanErrorHandler><SimuladorTienda /></BanErrorHandler>} />
           <Route path="/apps/mdt" element={<BanErrorHandler><MDTPolicial /></BanErrorHandler>} />
+          <Route path="/galeria" element={<BanErrorHandler><GaleriaRP /></BanErrorHandler>} />
           <Route path="/panel" element={<BanErrorHandler><Panel /></BanErrorHandler>} />
           <Route path="/panel/bans" element={<BanErrorHandler><Panel /></BanErrorHandler>} />
           <Route path="/admin" element={<PrivateRoute><BanErrorHandler><AdminPanel /></BanErrorHandler></PrivateRoute>} />

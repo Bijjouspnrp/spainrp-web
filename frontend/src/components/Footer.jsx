@@ -15,6 +15,7 @@ const Footer = () => {
     'Comunidad': [
       { name: 'Reglas', href: '/rules' },
       { name: 'Eventos', href: '#events' },
+      { name: 'GaleríaRP', href: '/galeria' },
       { name: 'Soporte', href: '#support' },
       { name: 'FAQ', href: '#faq' }
     ],
