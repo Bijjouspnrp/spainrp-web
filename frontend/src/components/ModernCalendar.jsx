@@ -78,13 +78,21 @@ export default function ModernCalendar() {
     
     setIsClaiming(true);
     try {
+      // Usar la zona horaria local del usuario
       const today = new Date();
-      const claimYear = today.getFullYear();
-      const claimMonth = today.getMonth() + 1;
-      const claimDay = today.getDate();
+      const localYear = today.getFullYear();
+      const localMonth = today.getMonth() + 1;
+      const localDay = today.getDate();
       
-      console.log('[CALENDAR] Claiming day:', { year: claimYear, month: claimMonth, day: claimDay });
-      console.log('[CALENDAR] Current date:', today.toISOString());
+      // También enviar la zona horaria para que el servidor pueda validar correctamente
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const utcOffset = today.getTimezoneOffset();
+      
+      console.log('[CALENDAR] Local date:', { year: localYear, month: localMonth, day: localDay });
+      console.log('[CALENDAR] Timezone:', timezone);
+      console.log('[CALENDAR] UTC offset (minutes):', utcOffset);
+      console.log('[CALENDAR] Current date (ISO):', today.toISOString());
+      console.log('[CALENDAR] Current date (local):', today.toLocaleString());
       
       const response = await fetch(apiUrl('/api/calendar/claim'), {
         method: 'POST',
@@ -93,9 +101,11 @@ export default function ModernCalendar() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          year: claimYear,
-          month: claimMonth,
-          day: claimDay
+          year: localYear,
+          month: localMonth,
+          day: localDay,
+          timezone: timezone,
+          utcOffset: utcOffset
         })
       });
 
@@ -114,7 +124,12 @@ export default function ModernCalendar() {
         
         let errorMessage = errorData.error || 'Error al reclamar el día';
         if (errorData.details) {
-          errorMessage += `\n\nDetalles:\nHoy: ${errorData.details.today.year}/${errorData.details.today.month}/${errorData.details.today.day}\nSolicitado: ${errorData.details.requested.year}/${errorData.details.requested.month}/${errorData.details.requested.day}`;
+          errorMessage += `\n\nDetalles de zona horaria:\n`;
+          errorMessage += `Servidor (UTC): ${errorData.details.serverTime}\n`;
+          errorMessage += `Tu zona horaria: ${errorData.details.clientTimezone}\n`;
+          errorMessage += `Tu offset UTC: ${errorData.details.clientUtcOffset} minutos\n`;
+          errorMessage += `Fecha calculada para ti: ${errorData.details.calculatedClientDate.year}/${errorData.details.calculatedClientDate.month}/${errorData.details.calculatedClientDate.day}\n`;
+          errorMessage += `Fecha solicitada: ${errorData.details.requested.year}/${errorData.details.requested.month}/${errorData.details.requested.day}`;
         }
         
         alert(errorMessage);

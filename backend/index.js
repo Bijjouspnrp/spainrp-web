@@ -7408,10 +7408,10 @@ app.get('/api/calendar', verifyToken, async (req, res) => {
 // Reclamar día del calendario
 app.post('/api/calendar/claim', verifyToken, async (req, res) => {
   try {
-    const { year, month, day } = req.body;
+    const { year, month, day, timezone, utcOffset } = req.body;
     const userId = req.user?.id;
     
-    console.log('[CALENDAR] Request body:', { year, month, day });
+    console.log('[CALENDAR] Request body:', { year, month, day, timezone, utcOffset });
     console.log('[CALENDAR] User from JWT:', req.user);
     console.log('[CALENDAR] Extracted userId:', userId);
     
@@ -7441,13 +7441,31 @@ const ADMIN_USER_ID = '710112055985963090';
       return res.status(400).json({ error: 'Este día ya fue reclamado' });
     }
     
-    // Verificar que sea el día actual
-    const today = new Date();
-    const todayYear = today.getFullYear();
-    const todayMonth = today.getMonth() + 1;
-    const todayDay = today.getDate();
+    // Verificar que sea el día actual usando la zona horaria del usuario
+    const now = new Date();
     
-    console.log('[CALENDAR] Today:', { year: todayYear, month: todayMonth, day: todayDay });
+    // Si tenemos offset UTC del cliente, usarlo para calcular la fecha local del servidor
+    let clientDate;
+    if (utcOffset !== undefined) {
+      // Calcular la fecha local del cliente basada en su offset UTC
+      const serverUtcOffset = now.getTimezoneOffset(); // Offset del servidor en minutos
+      const clientUtcOffset = -utcOffset; // El offset del cliente (negativo porque getTimezoneOffset() es negativo)
+      const offsetDiff = clientUtcOffset - serverUtcOffset;
+      
+      clientDate = new Date(now.getTime() + (offsetDiff * 60000));
+    } else {
+      // Fallback: usar la fecha del servidor
+      clientDate = now;
+    }
+    
+    const todayYear = clientDate.getFullYear();
+    const todayMonth = clientDate.getMonth() + 1;
+    const todayDay = clientDate.getDate();
+    
+    console.log('[CALENDAR] Server UTC time:', now.toISOString());
+    console.log('[CALENDAR] Client timezone:', timezone);
+    console.log('[CALENDAR] Client UTC offset:', utcOffset);
+    console.log('[CALENDAR] Calculated client date:', { year: todayYear, month: todayMonth, day: todayDay });
     console.log('[CALENDAR] Request:', { year: parseInt(year), month: parseInt(month), day: parseInt(day) });
     
     const isToday = todayYear === parseInt(year) && 
@@ -7460,7 +7478,10 @@ const ADMIN_USER_ID = '710112055985963090';
       return res.status(400).json({ 
         error: 'Solo puedes reclamar el día actual',
         details: {
-          today: { year: todayYear, month: todayMonth, day: todayDay },
+          serverTime: now.toISOString(),
+          clientTimezone: timezone,
+          clientUtcOffset: utcOffset,
+          calculatedClientDate: { year: todayYear, month: todayMonth, day: todayDay },
           requested: { year: parseInt(year), month: parseInt(month), day: parseInt(day) }
         }
       });
