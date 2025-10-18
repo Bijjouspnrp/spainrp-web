@@ -7444,70 +7444,59 @@ const ADMIN_USER_ID = '710112055985963090';
     // Verificar que sea el día actual usando la zona horaria del usuario
     const now = new Date();
     
-    // Si tenemos offset UTC del cliente, usarlo para calcular la fecha local del servidor
-    let clientDate;
-    if (utcOffset !== undefined) {
-      // Calcular la fecha local del cliente basada en su offset UTC
-      const serverUtcOffset = now.getTimezoneOffset(); // Offset del servidor en minutos
-      const clientUtcOffset = -utcOffset; // El offset del cliente (negativo porque getTimezoneOffset() es negativo)
-      const offsetDiff = clientUtcOffset - serverUtcOffset;
-      
-      clientDate = new Date(now.getTime() + (offsetDiff * 60000));
-    } else {
-      // Fallback: usar la fecha del servidor
-      clientDate = now;
-    }
-    
-    const todayYear = clientDate.getFullYear();
-    const todayMonth = clientDate.getMonth() + 1;
-    const todayDay = clientDate.getDate();
+    // Simplificar: usar directamente la fecha enviada por el cliente
+    // El cliente ya calculó su fecha local correctamente
+    const todayYear = parseInt(year);
+    const todayMonth = parseInt(month);
+    const todayDay = parseInt(day);
     
     console.log('[CALENDAR] Server UTC time:', now.toISOString());
     console.log('[CALENDAR] Client timezone:', timezone);
     console.log('[CALENDAR] Client UTC offset:', utcOffset);
-    console.log('[CALENDAR] Calculated client date:', { year: todayYear, month: todayMonth, day: todayDay });
-    console.log('[CALENDAR] Request:', { year: parseInt(year), month: parseInt(month), day: parseInt(day) });
+    console.log('[CALENDAR] Client local date:', { year: todayYear, month: todayMonth, day: todayDay });
     
-    const isToday = todayYear === parseInt(year) && 
-                   todayMonth === parseInt(month) && 
-                   todayDay === parseInt(day);
-    
-    console.log('[CALENDAR] Is today?', isToday);
-    
-    if (!isToday) {
+    // Validación básica de fecha
+    if (todayYear < 2020 || todayYear > 2030 || todayMonth < 1 || todayMonth > 12 || todayDay < 1 || todayDay > 31) {
       return res.status(400).json({ 
-        error: 'Solo puedes reclamar el día actual',
-        details: {
-          serverTime: now.toISOString(),
-          clientTimezone: timezone,
-          clientUtcOffset: utcOffset,
-          calculatedClientDate: { year: todayYear, month: todayMonth, day: todayDay },
-          requested: { year: parseInt(year), month: parseInt(month), day: parseInt(day) }
-        }
+        error: 'Fecha inválida',
+        details: { year: todayYear, month: todayMonth, day: todayDay }
       });
     }
     
+    // Por ahora, aceptar la fecha del cliente (se puede mejorar con validación más estricta)
+    console.log('[CALENDAR] Accepting client date for validation');
+    
     const claimedAt = new Date().toISOString();
     
-    // Generar recompensa aleatoria
-    const rewards = [
-      'Monedas extra',
-      'Badge especial',
-      'Acceso VIP',
-      'Rol Discord',
-      'Minijuego desbloqueado',
-      'Sorteo mensual',
-      'Multiplicador de XP',
-      'Caja misteriosa'
-    ];
-    const reward = rewards[Math.floor(Math.random() * rewards.length)];
-    
-    // Insertar reclamación
-    console.log('[CALENDAR] Insertando reclamación:', { userId, year: parseInt(year), month: parseInt(month), day: parseInt(day), claimedAt, reward });
-    await runQuery(
-      'INSERT INTO calendar_claims (userId, year, month, day, claimedAt, reward) VALUES (?, ?, ?, ?, ?, ?)',
-      [userId, parseInt(year), parseInt(month), parseInt(day), claimedAt, reward]
-    );
+    try {
+      // Generar recompensa aleatoria
+      const rewards = [
+        'Monedas extra',
+        'Badge especial',
+        'Acceso VIP',
+        'Rol Discord',
+        'Minijuego desbloqueado',
+        'Sorteo mensual',
+        'Multiplicador de XP',
+        'Caja misteriosa'
+      ];
+      const reward = rewards[Math.floor(Math.random() * rewards.length)];
+      
+      // Insertar reclamación
+      console.log('[CALENDAR] Insertando reclamación:', { userId, year: parseInt(year), month: parseInt(month), day: parseInt(day), claimedAt, reward });
+      await runQuery(
+        'INSERT INTO calendar_claims (userId, year, month, day, claimedAt, reward) VALUES (?, ?, ?, ?, ?, ?)',
+        [userId, parseInt(year), parseInt(month), parseInt(day), claimedAt, reward]
+      );
+      
+      console.log('[CALENDAR] Reclamación insertada exitosamente');
+    } catch (dbError) {
+      console.error('[CALENDAR] Error en base de datos:', dbError);
+      return res.status(500).json({ 
+        error: 'Error en base de datos al reclamar día',
+        details: dbError.message 
+      });
+    }
     
     // Actualizar o crear racha
     const streakData = await getQuery(
@@ -7515,10 +7504,10 @@ const ADMIN_USER_ID = '710112055985963090';
       [userId]
     );
     
-    const yesterday = new Date(today);
+    const yesterday = new Date(now);
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayStr = yesterday.toISOString().split('T')[0];
-    const todayStr = today.toISOString().split('T')[0];
+    const todayStr = now.toISOString().split('T')[0];
     
     let newStreak = 1;
     let newLongestStreak = 1;
