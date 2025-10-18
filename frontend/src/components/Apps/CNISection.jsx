@@ -1641,9 +1641,9 @@ const AdvancedSearchTab = () => {
           !searchResults.discordUsers.length && 
           !/^\d{8,}$/.test(searchForm.query.trim())) {
         console.log('🔍 CNI: Búsqueda por Discord:', searchForm.query);
-        logApiCall('GET', `/api/proxy/admin/search?query=${encodeURIComponent(searchForm.query)}`, true, { query: searchForm.query });
+        logApiCall('GET', `/api/proxy/admin/search/${encodeURIComponent(searchForm.query)}`, true, { query: searchForm.query });
         
-        const discordRes = await fetch(apiUrl(`/api/proxy/admin/search?query=${encodeURIComponent(searchForm.query)}`));
+        const discordRes = await fetch(apiUrl(`/api/proxy/admin/search/${encodeURIComponent(searchForm.query)}`));
         const discordData = await discordRes.json();
         
         if (discordData.success && discordData.results) {

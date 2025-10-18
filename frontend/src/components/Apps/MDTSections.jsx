@@ -8,7 +8,7 @@ import {
 import { apiUrl } from '../../utils/api';
 import codigoPenal from '../../utils/codigoPenal';
 
-// Sección DNI
+// Sección DNI - Diseño Completamente Renovado
 export const DNISection = ({ data }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -49,151 +49,203 @@ export const DNISection = ({ data }) => {
       
       <div className="dni-container">
         <div 
-          className={`dni-card-interactive ${isFlipped ? 'flipped' : ''} ${isHovered ? 'hovered' : ''}`}
+          className={`modern-dni-card ${isFlipped ? 'flipped' : ''} ${isHovered ? 'hovered' : ''}`}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
-          {/* Frente del DNI */}
-          <div className="dni-card-front">
-            <div className="dni-header-real">
-              <div className="dni-logo">
-                <span className="dni-logo-text">ESPAÑA</span>
+          {/* Frente del DNI Renovado */}
+          <div className="modern-dni-front">
+            {/* Header con bandera española */}
+            <div className="dni-header-modern">
+              <div className="spain-flag">
+                <div className="flag-stripe red"></div>
+                <div className="flag-stripe yellow"></div>
+                <div className="flag-stripe red"></div>
               </div>
-              <div className="dni-title">
-                <span className="dni-title-text">DOCUMENTO NACIONAL DE IDENTIDAD</span>
+              <div className="dni-title-modern">
+                <h1>ESPAÑA</h1>
+                <p>DOCUMENTO NACIONAL DE IDENTIDAD</p>
+              </div>
+              <div className="dni-logo-modern">
+                <div className="european-flag">
+                  <div className="stars">⭐⭐⭐⭐⭐</div>
+                </div>
               </div>
             </div>
-            
-            <div className="dni-content">
-              <div className="dni-photo-section">
-                <div className="dni-photo-container">
+
+            {/* Contenido principal */}
+            <div className="dni-main-content">
+              {/* Sección izquierda - Foto y DNI */}
+              <div className="dni-left-section">
+                <div className="photo-container-modern">
                   {dni.robloxAvatar ? (
                     <img 
                       src={dni.robloxAvatar} 
                       alt="Foto DNI" 
-                      className="dni-photo"
+                      className="dni-photo-modern"
                       onError={(e) => {
                         e.target.style.display = 'none';
                         e.target.nextSibling.style.display = 'flex';
                       }}
                     />
                   ) : null}
-                  <div className="dni-photo-placeholder" style={{ display: dni.robloxAvatar ? 'none' : 'flex' }}>
-                    <FaUser size={40} />
+                  <div className="photo-placeholder-modern" style={{ display: dni.robloxAvatar ? 'none' : 'flex' }}>
+                    <FaUser size={50} />
+                  </div>
+                  <div className="photo-overlay-modern">
+                    <div className="security-stamp">OFICIAL</div>
                   </div>
                 </div>
-                <div className="dni-number">
-                  <span className="dni-number-text">{dni.numeroDNI}</span>
+                
+                <div className="dni-number-modern">
+                  <div className="number-label">NÚMERO</div>
+                  <div className="number-value">{dni.numeroDNI}</div>
                 </div>
               </div>
-              
-              <div className="dni-info-real">
-                <div className="dni-name-section">
-                  <div className="dni-name">
-                    <span className="dni-name-text">{dni.nombre} {dni.apellidos}</span>
+
+              {/* Sección derecha - Información personal */}
+              <div className="dni-right-section">
+                <div className="personal-info-modern">
+                  <div className="name-section-modern">
+                    <h2 className="full-name">{dni.nombre} {dni.apellidos}</h2>
+                    <div className="roblox-info">
+                      <span className="roblox-label">Roblox:</span>
+                      <span className="roblox-user">{dni.robloxUser || 'No verificado'}</span>
+                    </div>
                   </div>
-                  <div className="dni-roblox">
-                    <span className="dni-roblox-text">Roblox: {dni.robloxUser || 'N/A'}</span>
+
+                  <div className="details-grid-modern">
+                    <div className="detail-item-modern">
+                      <div className="detail-icon">📅</div>
+                      <div className="detail-content">
+                        <span className="detail-label">NACIMIENTO</span>
+                        <span className="detail-value">{dni.fechaNacimiento}</span>
+                      </div>
+                    </div>
+
+                    <div className="detail-item-modern">
+                      <div className="detail-icon">👤</div>
+                      <div className="detail-content">
+                        <span className="detail-label">SEXO</span>
+                        <span className="detail-value">{dni.sexo}</span>
+                      </div>
+                    </div>
+
+                    <div className="detail-item-modern">
+                      <div className="detail-icon">🏳️</div>
+                      <div className="detail-content">
+                        <span className="detail-label">NACIONALIDAD</span>
+                        <span className="detail-value">{dni.nacionalidad}</span>
+                      </div>
+                    </div>
+
+                    <div className="detail-item-modern">
+                      <div className="detail-icon">💼</div>
+                      <div className="detail-content">
+                        <span className="detail-label">PROFESIÓN</span>
+                        <span className="detail-value">{dni.trabajo || 'Sin especificar'}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                
-                <div className="dni-details">
-                  <div className="dni-detail-row">
-                    <span className="dni-detail-label">NACIMIENTO:</span>
-                    <span className="dni-detail-value">{dni.fechaNacimiento}</span>
+
+                <div className="dates-section-modern">
+                  <div className="date-item-modern">
+                    <span className="date-label">EXPEDICIÓN</span>
+                    <span className="date-value">{dni.fechaEmision}</span>
                   </div>
-                  <div className="dni-detail-row">
-                    <span className="dni-detail-label">SEXO:</span>
-                    <span className="dni-detail-value">{dni.sexo}</span>
-                  </div>
-                  <div className="dni-detail-row">
-                    <span className="dni-detail-label">NACIONALIDAD:</span>
-                    <span className="dni-detail-value">{dni.nacionalidad}</span>
-                  </div>
-                  <div className="dni-detail-row">
-                    <span className="dni-detail-label">PROFESIÓN:</span>
-                    <span className="dni-detail-value">{dni.trabajo || 'N/A'}</span>
-                  </div>
-                </div>
-                
-                <div className="dni-dates">
-                  <div className="dni-date-row">
-                    <span className="dni-date-label">EXPEDICIÓN:</span>
-                    <span className="dni-date-value">{dni.fechaEmision}</span>
-                  </div>
-                  <div className="dni-date-row">
-                    <span className="dni-date-label">VÁLIDO HASTA:</span>
-                    <span className="dni-date-value">{dni.caducidad}</span>
+                  <div className="date-item-modern">
+                    <span className="date-label">VÁLIDO HASTA</span>
+                    <span className="date-value">{dni.caducidad}</span>
                   </div>
                 </div>
               </div>
             </div>
-            
-            <div className="dni-footer">
-              <div className={`dni-status-real ${dni.arrestado ? 'arrestado' : 'activo'}`}>
+
+            {/* Footer con estado */}
+            <div className="dni-footer-modern">
+              <div className="security-features">
+                <div className="security-item">
+                  <FaShieldAlt />
+                  <span>SEGURO</span>
+                </div>
+                <div className="security-item">
+                  <FaFingerprint />
+                  <span>BIOMÉTRICO</span>
+                </div>
+                <div className="security-item">
+                  <FaIdCard />
+                  <span>OFICIAL</span>
+                </div>
+              </div>
+              
+              <div className={`status-badge-modern ${dni.arrestado ? 'arrestado' : 'activo'}`}>
                 {dni.arrestado ? 'ARRESTADO' : 'VÁLIDO'}
               </div>
             </div>
           </div>
 
-          {/* Reverso del DNI */}
-          <div className="dni-card-back">
-            <div className="dni-back-header">
-              <div className="dni-back-logo">
-                <span className="dni-back-logo-text">ESPAÑA</span>
+          {/* Reverso del DNI Renovado */}
+          <div className="modern-dni-back">
+            <div className="dni-back-header-modern">
+              <div className="back-flag">
+                <div className="flag-stripe red"></div>
+                <div className="flag-stripe yellow"></div>
+                <div className="flag-stripe red"></div>
               </div>
-              <div className="dni-back-title">
-                <span className="dni-back-title-text">DOCUMENTO NACIONAL DE IDENTIDAD</span>
-              </div>
+              <h1>ESPAÑA</h1>
+              <p>DOCUMENTO NACIONAL DE IDENTIDAD</p>
             </div>
-            
-            <div className="dni-back-content">
-              <div className="dni-back-info">
-                <div className="dni-back-section">
-                  <h4>Información Adicional</h4>
-                  <div className="dni-back-details">
-                    <div className="dni-back-field">
-                      <span className="dni-back-label">Número de DNI:</span>
-                      <span className="dni-back-value">{dni.numeroDNI}</span>
+
+            <div className="back-content-modern">
+              <div className="magnetic-stripe-modern"></div>
+              
+              <div className="back-info-modern">
+                <div className="info-section-modern">
+                  <h4>INFORMACIÓN ADICIONAL</h4>
+                  <div className="info-grid-modern">
+                    <div className="info-item-modern">
+                      <span className="info-label">Número DNI:</span>
+                      <span className="info-value">{dni.numeroDNI}</span>
                     </div>
-                    <div className="dni-back-field">
-                      <span className="dni-back-label">Estado:</span>
-                      <span className={`dni-back-value ${dni.arrestado ? 'arrestado' : 'activo'}`}>
+                    <div className="info-item-modern">
+                      <span className="info-label">Estado:</span>
+                      <span className={`info-value ${dni.arrestado ? 'arrestado' : 'activo'}`}>
                         {dni.arrestado ? 'ARRESTADO' : 'ACTIVO'}
                       </span>
                     </div>
-                    <div className="dni-back-field">
-                      <span className="dni-back-label">Usuario Roblox:</span>
-                      <span className="dni-back-value">{dni.robloxUser || 'No verificado'}</span>
+                    <div className="info-item-modern">
+                      <span className="info-label">Usuario Roblox:</span>
+                      <span className="info-value">{dni.robloxUser || 'No verificado'}</span>
                     </div>
                   </div>
                 </div>
-                
-                <div className="dni-back-section">
-                  <h4>Datos de Expedición</h4>
-                  <div className="dni-back-details">
-                    <div className="dni-back-field">
-                      <span className="dni-back-label">Fecha de Emisión:</span>
-                      <span className="dni-back-value">{dni.fechaEmision}</span>
+
+                <div className="dates-info-modern">
+                  <h4>FECHAS IMPORTANTES</h4>
+                  <div className="dates-grid-modern">
+                    <div className="date-info-modern">
+                      <span className="date-info-label">Emisión:</span>
+                      <span className="date-info-value">{dni.fechaEmision}</span>
                     </div>
-                    <div className="dni-back-field">
-                      <span className="dni-back-label">Fecha de Caducidad:</span>
-                      <span className="dni-back-value">{dni.caducidad}</span>
+                    <div className="date-info-modern">
+                      <span className="date-info-label">Caducidad:</span>
+                      <span className="date-info-value">{dni.caducidad}</span>
                     </div>
                   </div>
                 </div>
               </div>
-              
-              <div className="dni-back-footer">
-                <div className="dni-back-qr">
-                  <div className="qr-placeholder">
-                    <FaIdCard size={40} />
-                    <span>QR Code</span>
+
+              <div className="back-footer-modern">
+                <div className="qr-section-modern">
+                  <div className="qr-code-modern">
+                    <FaIdCard size={30} />
+                    <span>QR CODE</span>
                   </div>
                 </div>
-                <div className="dni-back-signature">
-                  <span>Firma del titular</span>
-                  <div className="signature-line"></div>
+                <div className="signature-section-modern">
+                  <span className="signature-label">Firma del titular</span>
+                  <div className="signature-line-modern"></div>
                 </div>
               </div>
             </div>
@@ -1881,3 +1933,4 @@ export const RankingSection = ({ data, message }) => {
     </div>
   );
 };
+
