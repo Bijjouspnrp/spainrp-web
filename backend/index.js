@@ -7406,165 +7406,52 @@ app.get('/api/calendar', verifyToken, async (req, res) => {
 });
 
 // Reclamar día del calendario
+// Reclamar día del calendario - VERSIÓN ULTRA SIMPLE
 app.post('/api/calendar/claim', verifyToken, async (req, res) => {
   try {
-    const { year, month, day, timezone, utcOffset } = req.body;
+    const { year, month, day } = req.body;
     const userId = req.user?.id;
     
-    console.log('[CALENDAR] Request body:', { year, month, day, timezone, utcOffset });
-    console.log('[CALENDAR] User from JWT:', req.user);
-    console.log('[CALENDAR] Extracted userId:', userId);
+    console.log('[CALENDAR] Simple claim:', { userId, year, month, day });
     
-    if (!year || !month || !day) {
-      return res.status(400).json({ error: 'Año, mes y día son requeridos' });
-    }
-    
-    if (!userId) {
-      console.error('[CALENDAR] Error: userId is undefined');
-      return res.status(401).json({ error: 'Usuario no autenticado correctamente' });
+    if (!year || !month || !day || !userId) {
+      return res.status(400).json({ error: 'Datos faltantes' });
     }
 
     const { getQuery, runQuery, allQuery } = require('./db/database');
-
-// === SISTEMA DE BANS Y TRACKING ===
-const ADMIN_USER_ID = '710112055985963090';
-
-
     
-    // Verificar si el día ya fue reclamado
-    const existingClaim = await getQuery(
+    // Verificar si ya fue reclamado
+    const existing = await getQuery(
       'SELECT id FROM calendar_claims WHERE userId = ? AND year = ? AND month = ? AND day = ?',
       [userId, parseInt(year), parseInt(month), parseInt(day)]
     );
     
-    if (existingClaim) {
-      return res.status(400).json({ error: 'Este día ya fue reclamado' });
+    if (existing) {
+      return res.status(400).json({ error: 'Ya reclamado' });
     }
     
-    // Verificar que sea el día actual usando la zona horaria del usuario
-    const now = new Date();
-    
-    // Simplificar: usar directamente la fecha enviada por el cliente
-    // El cliente ya calculó su fecha local correctamente
-    const todayYear = parseInt(year);
-    const todayMonth = parseInt(month);
-    const todayDay = parseInt(day);
-    
-    console.log('[CALENDAR] Server UTC time:', now.toISOString());
-    console.log('[CALENDAR] Client timezone:', timezone);
-    console.log('[CALENDAR] Client UTC offset:', utcOffset);
-    console.log('[CALENDAR] Client local date:', { year: todayYear, month: todayMonth, day: todayDay });
-    
-    // Validación básica de fecha
-    if (todayYear < 2020 || todayYear > 2030 || todayMonth < 1 || todayMonth > 12 || todayDay < 1 || todayDay > 31) {
-      return res.status(400).json({ 
-        error: 'Fecha inválida',
-        details: { year: todayYear, month: todayMonth, day: todayDay }
-      });
-    }
-    
-    // Por ahora, aceptar la fecha del cliente (se puede mejorar con validación más estricta)
-    console.log('[CALENDAR] Accepting client date for validation');
-    
-    const claimedAt = new Date().toISOString();
-    
-    try {
-      // Generar recompensa aleatoria
-      const rewards = [
-        'Monedas extra',
-        'Badge especial',
-        'Acceso VIP',
-        'Rol Discord',
-        'Minijuego desbloqueado',
-        'Sorteo mensual',
-        'Multiplicador de XP',
-        'Caja misteriosa'
-      ];
-      const reward = rewards[Math.floor(Math.random() * rewards.length)];
-      
-      // Insertar reclamación
-      console.log('[CALENDAR] Insertando reclamación:', { userId, year: parseInt(year), month: parseInt(month), day: parseInt(day), claimedAt, reward });
-      await runQuery(
-        'INSERT INTO calendar_claims (userId, year, month, day, claimedAt, reward) VALUES (?, ?, ?, ?, ?, ?)',
-        [userId, parseInt(year), parseInt(month), parseInt(day), claimedAt, reward]
-      );
-      
-      console.log('[CALENDAR] Reclamación insertada exitosamente');
-    } catch (dbError) {
-      console.error('[CALENDAR] Error en base de datos:', dbError);
-      return res.status(500).json({ 
-        error: 'Error en base de datos al reclamar día',
-        details: dbError.message 
-      });
-    }
-    
-    // Actualizar o crear racha
-    const streakData = await getQuery(
-      'SELECT * FROM calendar_streaks WHERE userId = ?',
-      [userId]
+    // Insertar reclamación
+    await runQuery(
+      'INSERT INTO calendar_claims (userId, year, month, day, claimedAt, reward) VALUES (?, ?, ?, ?, ?, ?)',
+      [userId, parseInt(year), parseInt(month), parseInt(day), new Date().toISOString(), 'Recompensa diaria']
     );
     
-    const yesterday = new Date(now);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
-    const todayStr = now.toISOString().split('T')[0];
-    
-    let newStreak = 1;
-    let newLongestStreak = 1;
-    let newTotalClaims = 1;
-    
-    if (streakData) {
-      newTotalClaims = streakData.totalClaims + 1;
-      
-      // Verificar si la racha continúa
-      if (streakData.lastClaimedDate === yesterdayStr) {
-        newStreak = streakData.currentStreak + 1;
-        newLongestStreak = Math.max(streakData.longestStreak, newStreak);
-      } else if (streakData.lastClaimedDate !== todayStr) {
-        newStreak = 1; // Racha rota
-        newLongestStreak = streakData.longestStreak;
-      } else {
-        newStreak = streakData.currentStreak;
-        newLongestStreak = streakData.longestStreak;
-      }
-      
-      await runQuery(
-        'UPDATE calendar_streaks SET currentStreak = ?, longestStreak = ?, lastClaimedDate = ?, totalClaims = ? WHERE userId = ?',
-        [newStreak, newLongestStreak, todayStr, newTotalClaims, userId]
-      );
-    } else {
-      await runQuery(
-        'INSERT INTO calendar_streaks (userId, currentStreak, longestStreak, lastClaimedDate, totalClaims) VALUES (?, ?, ?, ?, ?)',
-        [userId, newStreak, newLongestStreak, todayStr, newTotalClaims]
-      );
-    }
-    
-    // Obtener días reclamados actualizados
-    const claimedDaysQuery = `
-      SELECT day FROM calendar_claims 
-      WHERE userId = ? AND year = ? AND month = ?
-      ORDER BY day ASC
-    `;
-    const claimedDaysRows = await allQuery(claimedDaysQuery, [userId, parseInt(year), parseInt(month)]);
-    const claimedDays = claimedDaysRows.map(row => row.day);
-    
-    // Calcular progreso actualizado
-    const daysInMonth = new Date(parseInt(year), parseInt(month), 0).getDate();
-    const progress = Math.round((claimedDays.length / daysInMonth) * 100);
+    // Obtener días reclamados
+    const claimedDays = await allQuery(
+      'SELECT day FROM calendar_claims WHERE userId = ? AND year = ? AND month = ? ORDER BY day',
+      [userId, parseInt(year), parseInt(month)]
+    );
     
     res.json({
       success: true,
-      claimedDays,
-      streak: newStreak,
-      longestStreak: newLongestStreak,
-      totalClaims: newTotalClaims,
-      progress,
-      reward,
-      message: `¡Día reclamado! Recompensa: ${reward}`
+      message: '¡Día reclamado!',
+      claimedDays: claimedDays.map(r => r.day),
+      totalClaims: claimedDays.length
     });
-  } catch (err) {
-    console.error('[CALENDAR] Error reclamando día:', err);
-    res.status(500).json({ error: 'Error reclamando día del calendario' });
+    
+  } catch (error) {
+    console.error('[CALENDAR] Error:', error);
+    res.status(500).json({ error: 'Error interno' });
   }
 });
 
