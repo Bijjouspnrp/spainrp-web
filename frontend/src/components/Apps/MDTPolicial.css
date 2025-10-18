@@ -1,30 +1,37 @@
-/* MDT Policial - Diseño Moderno y Tecnológico */
+/* MDT Policial - Diseño Reformado y Moderno */
 
-/* Variables CSS para el tema policial minimalista */
+/* Variables CSS para el tema policial reformado */
 :root {
-  --police-primary: #0f0f23;
+  --police-primary: #0a0a0f;
   --police-secondary: #1a1a2e;
   --police-accent: #16213e;
-  --police-highlight: #4a9eff;
-  --police-danger: #ff6b6b;
-  --police-warning: #ffd93d;
-  --police-success: #6bcf7f;
+  --police-highlight: #00d4ff;
+  --police-danger: #ff4757;
+  --police-warning: #ffa502;
+  --police-success: #2ed573;
   --police-text: #ffffff;
-  --police-text-secondary: #b0b0b0;
-  --police-border: rgba(255, 255, 255, 0.1);
-  --police-glow: rgba(74, 158, 255, 0.2);
-  --police-shadow: rgba(0, 0, 0, 0.3);
+  --police-text-secondary: #a4b0be;
+  --police-border: rgba(0, 212, 255, 0.2);
+  --police-glow: rgba(0, 212, 255, 0.3);
+  --police-shadow: rgba(0, 0, 0, 0.4);
   
-  /* Gradientes minimalistas */
-  --police-gradient-primary: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
-  --police-gradient-accent: linear-gradient(135deg, #4a9eff 0%, #357abd 100%);
-  --police-gradient-danger: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
-  --police-gradient-success: linear-gradient(135deg, #6bcf7f 0%, #5bbf6f 100%);
+  /* Gradientes reformados */
+  --police-gradient-primary: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
+  --police-gradient-accent: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+  --police-gradient-danger: linear-gradient(135deg, #ff4757 0%, #ff3742 100%);
+  --police-gradient-success: linear-gradient(135deg, #2ed573 0%, #20bf6b 100%);
+  --police-gradient-card: linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
   
-  /* Efectos sutiles */
-  --particle-color-1: rgba(74, 158, 255, 0.05);
-  --particle-color-2: rgba(255, 107, 107, 0.05);
-  --particle-color-3: rgba(107, 207, 127, 0.05);
+  /* Efectos mejorados */
+  --particle-color-1: rgba(0, 212, 255, 0.08);
+  --particle-color-2: rgba(255, 71, 87, 0.08);
+  --particle-color-3: rgba(46, 213, 115, 0.08);
+  
+  /* Sombras mejoradas */
+  --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
+  --shadow-medium: 0 4px 20px rgba(0, 0, 0, 0.2);
+  --shadow-heavy: 0 8px 30px rgba(0, 0, 0, 0.3);
+  --shadow-glow: 0 0 20px rgba(0, 212, 255, 0.3);
 }
 
 /* Reset y base */
@@ -249,140 +256,97 @@ body {
   100% { transform: translateX(10px); }
 }
 
-/* Header principal minimalista */
+/* Header principal reformado */
 .mdt-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 24px;
-  background: rgba(15, 15, 35, 0.8);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--police-border);
+  padding: 20px 30px;
+  background: var(--police-gradient-card);
+  backdrop-filter: blur(25px);
+  border-bottom: 2px solid var(--police-border);
   position: relative;
   z-index: 10;
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-medium);
+  min-height: 80px;
 }
 
-/* Sistema de estado en el header */
-.system-status {
-  display: flex;
-  gap: 30px;
-  align-items: center;
-}
-
-.status-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-}
-
-.status-label {
-  font-size: 0.8rem;
-  color: var(--police-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-weight: 600;
-}
-
-.status-value {
-  font-size: 0.9rem;
-  font-weight: 700;
-  padding: 4px 12px;
-  border-radius: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.status-value.online {
-  background: rgba(46, 213, 115, 0.2);
-  color: var(--police-success);
-  border: 1px solid rgba(46, 213, 115, 0.3);
-}
-
-.header-center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex: 1;
+.mdt-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--police-gradient-accent);
+  animation: gradientShift 3s ease-in-out infinite;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 25px;
+  flex: 1;
 }
 
 .mdt-logo {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 15px;
+  padding: 10px 20px;
+  background: rgba(0, 212, 255, 0.1);
+  border-radius: 12px;
+  border: 1px solid var(--police-border);
+  transition: all 0.3s ease;
+}
+
+.mdt-logo:hover {
+  background: rgba(0, 212, 255, 0.15);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
 }
 
 .mdt-logo svg {
-  font-size: 2rem;
+  font-size: 2.2rem;
   color: var(--police-highlight);
+  filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.5));
 }
 
 .logo-text {
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 
 .main-title {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 1.6rem;
+  font-weight: 700;
   color: var(--police-text);
   letter-spacing: -0.5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .subtitle {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: var(--police-text-secondary);
-  font-weight: 400;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .header-center {
-  flex: 1;
   display: flex;
   justify-content: center;
-}
-
-.mdt-status-indicator {
-  display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 16px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 20px;
-  border: 1px solid var(--police-border);
-  backdrop-filter: blur(10px);
-}
-
-.mdt-status-indicator .status-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-.mdt-status-indicator .status-dot.online {
-  background: var(--police-success);
-  box-shadow: 0 0 8px rgba(46, 213, 115, 0.5);
-}
-
-.mdt-status-indicator .status-text {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--police-text);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-  letter-spacing: 0.5px;
+  flex: 1;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 25px;
+  flex: 1;
+  justify-content: flex-end;
 }
 
 .system-controls {
@@ -392,76 +356,108 @@ body {
 }
 
 .control-btn {
-  width: 40px;
-  height: 40px;
+  width: 45px;
+  height: 45px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.05);
   color: var(--police-text-secondary);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.control-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.control-btn:hover::before {
+  left: 100%;
 }
 
 .control-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--police-text);
+  background: rgba(0, 212, 255, 0.1);
+  color: var(--police-highlight);
   border-color: var(--police-highlight);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
 }
 
 .control-btn.active {
-  background: var(--police-highlight);
+  background: var(--police-gradient-accent);
   color: white;
   border-color: var(--police-highlight);
+  box-shadow: var(--shadow-glow);
 }
 
 .status-indicators {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 15px;
 }
 
 .indicator {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 20px;
-  font-size: 0.8rem;
+  gap: 10px;
+  padding: 10px 15px;
+  border-radius: 25px;
+  font-size: 0.85rem;
   font-weight: 600;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.indicator:hover {
+  background: rgba(0, 0, 0, 0.4);
+  transform: translateY(-1px);
 }
 
 .indicator.online {
-  background: rgba(46, 213, 115, 0.1);
+  background: rgba(46, 213, 115, 0.15);
   color: var(--police-success);
   border: 1px solid rgba(46, 213, 115, 0.3);
+  box-shadow: 0 0 15px rgba(46, 213, 115, 0.2);
 }
 
 .indicator .dot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: var(--police-success);
   animation: pulse 2s ease-in-out infinite;
+  box-shadow: 0 0 10px rgba(46, 213, 115, 0.5);
 }
 
-/* Tarjeta de identificación policial - Diseño minimalista */
+/* Tarjeta de identificación policial - Diseño reformado completamente nuevo */
 .police-id-card {
-  width: 420px;
-  height: 260px;
+  width: 100%;
+  max-width: 500px;
+  height: 320px;
   perspective: 1000px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  margin: 0 auto;
 }
 
 .police-id-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: var(--shadow-heavy), var(--shadow-glow);
 }
 
 .police-id-card.flipped {
@@ -469,23 +465,25 @@ body {
 }
 
 .police-id-card.hovered {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  transform: translateY(-10px) scale(1.03);
+  box-shadow: var(--shadow-heavy), 0 0 30px rgba(0, 212, 255, 0.4);
 }
 
-/* Tarjeta compacta para la barra de herramientas - Rediseño completo */
+/* Tarjeta compacta para la barra de herramientas - Diseño completamente nuevo */
 .police-id-card.compact {
-  width: 320px;
-  height: 100px;
+  width: 100%;
+  max-width: 400px;
+  height: 120px;
   perspective: none;
   margin: 0 auto;
   position: relative;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .police-id-card.compact:hover {
-  transform: translateY(-3px) scale(1.02);
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: var(--shadow-medium), var(--shadow-glow);
 }
 
 .id-card-compact-content {
@@ -2134,12 +2132,12 @@ body {
   color: #a0a0a0 !important;
 }
 
-/* ===== DNI COMPLETAMENTE RENOVADO ===== */
+/* ===== SECCIÓN DNI ===== */
 .dni-section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 
 .dni-controls {
@@ -2151,740 +2149,420 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
-  background: linear-gradient(135deg, var(--police-highlight) 0%, var(--police-accent) 100%);
-  border: none;
-  border-radius: 8px;
-  color: white;
+  padding: 8px 16px;
+  background: rgba(0, 212, 255, 0.1);
+  border: 1px solid var(--police-highlight);
+  border-radius: 6px;
+  color: var(--police-highlight);
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 0.9rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+  font-weight: 500;
 }
 
 .dni-flip-btn:hover {
+  background: rgba(0, 212, 255, 0.2);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
 }
 
 .dni-container {
   display: flex;
   justify-content: center;
-  margin: 25px 0;
+  margin: 20px 0;
 }
 
-/* Tarjeta DNI Moderna */
-.modern-dni-card {
+.dni-card-interactive {
   width: 100%;
-  max-width: 700px;
-  height: 450px;
+  max-width: 650px;
+  height: 420px;
   position: relative;
   transform-style: preserve-3d;
-  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.6s ease;
   cursor: pointer;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
-.modern-dni-card.flipped {
+.dni-card-interactive.flipped {
   transform: rotateY(180deg);
 }
 
-.modern-dni-card.hovered {
+.dni-card-interactive.hovered {
   transform: scale(1.02);
-  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
 }
 
-.modern-dni-front,
-.modern-dni-back {
+.dni-card-front,
+.dni-card-back {
   position: absolute;
   width: 100%;
   height: 100%;
   backface-visibility: hidden;
-  border-radius: 20px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 2px solid var(--police-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   overflow: hidden;
-  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
-  border: 3px solid #e9ecef;
-  box-shadow: 
-    0 20px 60px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
-.modern-dni-back {
+.dni-card-back {
   transform: rotateY(180deg);
-  background: linear-gradient(145deg, #2c3e50 0%, #34495e 100%);
-  border-color: #34495e;
 }
 
-/* Header del DNI con bandera española */
-.dni-header-modern {
-  background: linear-gradient(135deg, #c8102e 0%, #dc143c 50%, #c8102e 100%);
+/* Frente del DNI - Diseño minimalista */
+.dni-header-real {
+  background: var(--police-gradient-danger);
+  padding: 16px 20px;
+  color: white;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.dni-logo-text {
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  position: relative;
+  z-index: 2;
+}
+
+.dni-title-text {
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  opacity: 0.9;
+  margin-top: 4px;
+  position: relative;
+  z-index: 2;
+}
+
+.dni-content {
   padding: 20px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: relative;
-  overflow: hidden;
-}
-
-.spain-flag {
-  display: flex;
-  flex-direction: column;
-  width: 60px;
-  height: 40px;
-  border-radius: 4px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.flag-stripe {
-  height: 33.33%;
-  width: 100%;
-}
-
-.flag-stripe.red {
-  background: #c8102e;
-}
-
-.flag-stripe.yellow {
-  background: #ffd700;
-}
-
-.dni-title-modern {
-  text-align: center;
-  flex: 1;
-  margin: 0 20px;
-}
-
-.dni-title-modern h1 {
-  color: white;
-  font-size: 1.8rem;
-  font-weight: 800;
-  margin: 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  letter-spacing: 2px;
-}
-
-.dni-title-modern p {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 0.7rem;
-  font-weight: 600;
-  margin: 5px 0 0 0;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.dni-logo-modern {
-  display: flex;
-  align-items: center;
-}
-
-.european-flag {
-  width: 50px;
-  height: 35px;
-  background: #003399;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.stars {
-  color: #ffd700;
-  font-size: 0.6rem;
-  letter-spacing: 1px;
-}
-
-/* Contenido principal del DNI */
-.dni-main-content {
-  padding: 25px;
-  display: flex;
-  gap: 25px;
-  height: calc(100% - 140px);
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-}
-
-/* Sección izquierda - Foto y número */
-.dni-left-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   gap: 20px;
-  flex-shrink: 0;
-  width: 200px;
+  height: calc(100% - 60px);
+  flex-direction: row;
+  align-items: flex-start;
+  background: rgba(255, 255, 255, 0.95);
 }
 
-.photo-container-modern {
-  width: 160px;
-  height: 200px;
-  border: 3px solid #2c3e50;
-  border-radius: 12px;
+.dni-photo-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.dni-photo-container {
+  width: 140px;
+  height: 170px;
+  border: 2px solid var(--police-accent);
+  border-radius: 8px;
   overflow: hidden;
   position: relative;
-  background: #f8f9fa;
-  box-shadow: 
-    0 8px 25px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  transition: all 0.3s ease;
+  background: var(--police-accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
 }
 
-.photo-container-modern:hover {
+.dni-photo-container:hover {
   transform: scale(1.02);
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.dni-photo-modern {
+.dni-photo {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
-.photo-placeholder-modern {
+.dni-photo-placeholder {
   width: 100%;
   height: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
-  color: #6c757d;
-  font-size: 3rem;
+  background: var(--police-accent);
+  color: var(--police-text-secondary);
+  font-size: 1.5rem;
 }
 
-.photo-overlay-modern {
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.6rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+.dni-photo-placeholder svg {
+  margin-bottom: 8px;
 }
 
-.security-stamp {
-  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.6rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
-}
-
-.dni-number-modern {
-  text-align: center;
-  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-  color: white;
-  padding: 15px 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(44, 62, 80, 0.3);
-  border: 2px solid #34495e;
-}
-
-.number-label {
-  font-size: 0.7rem;
+.dni-number-text {
+  font-size: 0.9rem;
   font-weight: 600;
-  text-transform: uppercase;
+  color: var(--police-accent);
   letter-spacing: 1px;
-  margin-bottom: 5px;
-  opacity: 0.8;
-}
-
-.number-value {
-  font-size: 1.2rem;
-  font-weight: 800;
-  letter-spacing: 2px;
-  font-family: 'Courier New', monospace;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-/* Sección derecha - Información personal */
-.dni-right-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.personal-info-modern {
-  flex: 1;
-}
-
-.name-section-modern {
-  margin-bottom: 25px;
-  padding-bottom: 15px;
-  border-bottom: 2px solid #e9ecef;
-}
-
-.full-name {
-  color: #2c3e50;
-  font-size: 1.6rem;
-  font-weight: 700;
-  margin: 0 0 10px 0;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  letter-spacing: 0.5px;
-}
-
-.roblox-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.roblox-label {
-  color: #6c757d;
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.roblox-user {
-  color: #2c3e50;
-  font-size: 0.9rem;
-  font-weight: 600;
-  background: rgba(0, 123, 255, 0.1);
-  padding: 4px 8px;
+  text-align: center;
+  background: rgba(22, 33, 62, 0.1);
+  padding: 6px 10px;
   border-radius: 6px;
-  border: 1px solid rgba(0, 123, 255, 0.2);
+  border: 1px solid var(--police-accent);
 }
 
-/* Grid de detalles */
-.details-grid-modern {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
-  margin-bottom: 20px;
-}
-
-.detail-item-modern {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 15px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border-radius: 10px;
-  border: 1px solid #dee2e6;
-  transition: all 0.3s ease;
-}
-
-.detail-item-modern:hover {
-  background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-.detail-icon {
-  font-size: 1.2rem;
-  width: 30px;
-  text-align: center;
-}
-
-.detail-content {
+.dni-info-real {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  flex: 1;
+  gap: 12px;
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
-.detail-label {
-  font-size: 0.7rem;
-  color: #6c757d;
+.dni-name-section {
+  border-bottom: 1px solid var(--police-accent);
+  padding-bottom: 12px;
+  margin-bottom: 8px;
+}
+
+.dni-name-text {
+  font-size: 1.2rem;
   font-weight: 600;
-  text-transform: uppercase;
+  color: var(--police-accent);
   letter-spacing: 0.5px;
+  margin-bottom: 4px;
 }
 
-.detail-value {
-  font-size: 0.9rem;
-  color: #2c3e50;
-  font-weight: 600;
-  font-family: 'Courier New', monospace;
+.dni-roblox-text {
+  font-size: 0.8rem;
+  color: var(--police-text-secondary);
+  margin-top: 4px;
+  font-weight: 500;
+  font-style: italic;
 }
 
-/* Sección de fechas */
-.dates-section-modern {
+.dni-details {
   display: flex;
-  gap: 20px;
-  margin-top: auto;
-}
-
-.date-item-modern {
+  flex-direction: column;
+  gap: 8px;
   flex: 1;
-  text-align: center;
-  padding: 12px 15px;
-  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-  color: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 15px rgba(44, 62, 80, 0.3);
 }
 
-.date-label {
-  display: block;
+.dni-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  background: rgba(22, 33, 62, 0.05);
+  border-radius: 4px;
+  border-left: 3px solid var(--police-accent);
+  transition: all 0.2s ease;
+}
+
+.dni-detail-row:hover {
+  background: rgba(22, 33, 62, 0.1);
+}
+
+.dni-detail-label {
   font-size: 0.7rem;
+  color: var(--police-accent);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 5px;
-  opacity: 0.8;
+  min-width: 70px;
 }
 
-.date-value {
-  display: block;
-  font-size: 0.9rem;
-  font-weight: 700;
-  font-family: 'Courier New', monospace;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+.dni-detail-value {
+  font-size: 0.8rem;
+  color: var(--police-accent);
+  font-weight: 500;
+  background: rgba(22, 33, 62, 0.1);
+  padding: 3px 6px;
+  border-radius: 3px;
+  border: 1px solid rgba(22, 33, 62, 0.2);
 }
 
-/* Footer del DNI */
-.dni-footer-modern {
+.dni-dates {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.dni-date-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dni-date-label {
+  font-size: 0.7rem;
+  color: #95a5a6;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dni-date-value {
+  font-size: 0.8rem;
+  color: #ffffff;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.dni-footer {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 15px 25px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border-top: 2px solid #dee2e6;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  padding: 10px 20px;
+  background: rgba(0, 0, 0, 0.3);
+  text-align: center;
 }
 
-.security-features {
-  display: flex;
-  gap: 15px;
-}
-
-.security-item {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  color: #6c757d;
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.security-item svg {
-  color: #28a745;
-  font-size: 0.8rem;
-}
-
-.status-badge-modern {
-  padding: 8px 16px;
-  border-radius: 20px;
+.dni-status-real {
   font-size: 0.8rem;
   font-weight: 700;
+  padding: 5px 15px;
+  border-radius: 15px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  text-align: center;
-  min-width: 80px;
 }
 
-.status-badge-modern.activo {
-  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+.dni-status-real.activo {
+  background: #27ae60;
   color: white;
-  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
 }
 
-.status-badge-modern.arrestado {
-  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+.dni-status-real.arrestado {
+  background: #e74c3c;
   color: white;
-  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
 }
 
 /* Reverso del DNI */
-.dni-back-header-modern {
-  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-  padding: 20px;
-  text-align: center;
+.dni-back-header {
+  background: linear-gradient(90deg, #2c3e50 0%, #34495e 100%);
+  padding: 15px 20px;
   color: white;
-  position: relative;
-  overflow: hidden;
+  text-align: center;
 }
 
-.back-flag {
-  position: absolute;
-  top: 10px;
-  left: 20px;
-  display: flex;
-  flex-direction: column;
-  width: 40px;
-  height: 25px;
-  border-radius: 3px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.dni-back-header-modern h1 {
-  font-size: 1.6rem;
-  font-weight: 800;
-  margin: 0 0 5px 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+.dni-back-logo-text {
+  font-size: 1.2rem;
+  font-weight: 700;
   letter-spacing: 2px;
 }
 
-.dni-back-header-modern p {
+.dni-back-title-text {
   font-size: 0.7rem;
-  font-weight: 600;
-  margin: 0;
-  text-transform: uppercase;
+  font-weight: 500;
   letter-spacing: 1px;
   opacity: 0.9;
 }
 
-.back-content-modern {
-  padding: 25px;
-  height: calc(100% - 80px);
+.dni-back-content {
+  padding: 20px;
+  height: calc(100% - 60px);
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.magnetic-stripe-modern {
-  height: 25px;
-  background: linear-gradient(90deg, #000 0%, #333 50%, #000 100%);
-  border-radius: 4px;
-  position: relative;
-  overflow: hidden;
-  margin-bottom: 10px;
-}
-
-.magnetic-stripe-modern::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-  animation: stripeShine 2s ease-in-out infinite;
-}
-
-.back-info-modern {
+.dni-back-info {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 20px;
 }
 
-.info-section-modern h4,
-.dates-info-modern h4 {
-  color: #ffd700;
-  font-size: 1rem;
+.dni-back-section h4 {
+  color: var(--police-highlight);
+  font-size: 0.9rem;
   font-weight: 700;
-  margin: 0 0 15px 0;
+  margin-bottom: 10px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-.info-grid-modern,
-.dates-grid-modern {
+.dni-back-details {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
-.info-item-modern,
-.date-info-modern {
+.dni-back-field {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 15px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 8px;
-  border-left: 4px solid #ffd700;
 }
 
-.info-label,
-.date-info-label {
-  font-size: 0.8rem;
-  color: #bdc3c7;
+.dni-back-label {
+  font-size: 0.7rem;
+  color: #95a5a6;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.info-value,
-.date-info-value {
-  font-size: 0.9rem;
-  color: white;
-  font-weight: 600;
-  font-family: 'Courier New', monospace;
+.dni-back-value {
+  font-size: 0.8rem;
+  color: #ffffff;
+  font-weight: 500;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-.info-value.activo {
-  color: #2ed573;
-}
-
-.info-value.arrestado {
+.dni-back-value.arrestado {
   color: #e74c3c;
 }
 
-.back-footer-modern {
+.dni-back-value.activo {
+  color: #27ae60;
+}
+
+.dni-back-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: auto;
-  padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.qr-section-modern {
+.dni-back-qr {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
 }
 
-.qr-code-modern {
+.qr-placeholder {
   width: 60px;
   height: 60px;
-  background: rgba(0, 0, 0, 0.5);
-  border: 2px solid #ffd700;
+  border: 2px solid var(--police-border);
   border-radius: 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #ffd700;
-  font-size: 0.6rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  background: #2c3e50;
+  color: #bdc3c7;
+  font-size: 0.7rem;
 }
 
-.signature-section-modern {
+.dni-back-signature {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  align-items: center;
+  gap: 5px;
 }
 
-.signature-label {
+.dni-back-signature span {
   font-size: 0.7rem;
-  color: #bdc3c7;
+  color: #95a5a6;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.signature-line-modern {
-  width: 100px;
+.signature-line {
+  width: 120px;
   height: 2px;
   background: #bdc3c7;
   border-radius: 1px;
-}
-
-/* Responsive para DNI */
-@media (max-width: 768px) {
-  .modern-dni-card {
-    max-width: 100%;
-    height: 400px;
-  }
-  
-  .dni-main-content {
-    flex-direction: column;
-    gap: 20px;
-    padding: 20px;
-  }
-  
-  .dni-left-section {
-    width: 100%;
-    flex-direction: row;
-    justify-content: space-between;
-  }
-  
-  .photo-container-modern {
-    width: 120px;
-    height: 150px;
-  }
-  
-  .dni-number-modern {
-    flex: 1;
-    margin-left: 15px;
-  }
-  
-  .details-grid-modern {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-  
-  .dates-section-modern {
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  .dni-footer-modern {
-    flex-direction: column;
-    gap: 10px;
-    text-align: center;
-  }
-  
-  .security-features {
-    justify-content: center;
-  }
-}
-
-@media (max-width: 480px) {
-  .modern-dni-card {
-    height: 350px;
-  }
-  
-  .dni-header-modern {
-    padding: 15px;
-  }
-  
-  .dni-title-modern h1 {
-    font-size: 1.4rem;
-  }
-  
-  .dni-main-content {
-    padding: 15px;
-  }
-  
-  .dni-left-section {
-    flex-direction: column;
-    width: 100%;
-    align-items: center;
-  }
-  
-  .photo-container-modern {
-    width: 100px;
-    height: 125px;
-  }
-  
-  .dni-number-modern {
-    margin-left: 0;
-    width: 100%;
-  }
-  
-  .full-name {
-    font-size: 1.3rem;
-  }
-  
-  .detail-item-modern {
-    padding: 10px 12px;
-  }
-  
-  .back-content-modern {
-    padding: 15px;
-  }
 }
 
 /* ===== SECCIÓN MULTAS ===== */
@@ -3431,6 +3109,116 @@ body {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
+}
+
+/* Avatar de Roblox en resultados */
+.dni-avatar-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  border: 1px solid var(--police-border);
+}
+
+.dni-avatar-container {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid var(--police-highlight);
+  background: var(--police-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.dni-avatar-container:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
+}
+
+.dni-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: all 0.3s ease;
+}
+
+.dni-avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--police-accent);
+  color: var(--police-text-secondary);
+  font-size: 2rem;
+}
+
+.dni-avatar-info {
+  flex: 1;
+}
+
+.dni-field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  border-left: 3px solid var(--police-highlight);
+  transition: all 0.2s ease;
+}
+
+.dni-field:hover {
+  background: rgba(0, 0, 0, 0.3);
+  transform: translateX(3px);
+}
+
+.dni-field label {
+  font-size: 0.8rem;
+  color: var(--police-text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-width: 120px;
+}
+
+.dni-field span {
+  color: #ffffff !important;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  font-family: 'Courier New', monospace;
+}
+
+.dni-status {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+.dni-status.activo {
+  background: rgba(46, 213, 115, 0.2);
+  color: #2ed573;
+  border: 1px solid rgba(46, 213, 115, 0.3);
+}
+
+.dni-status.arrestado {
+  background: rgba(255, 71, 87, 0.2);
+  color: #ff4757;
+  border: 1px solid rgba(255, 71, 87, 0.3);
 }
 
 /* ===== MENSAJES DE RESULTADO ===== */
@@ -4321,775 +4109,6 @@ body {
   
   .ranking-tabs {
     flex-direction: column;
-  }
-}
-
-/* ===== NUEVA PLACA POLICIAL MODERNA ===== */
-.modern-police-badge {
-  width: 100%;
-  max-width: 350px;
-  height: 120px;
-  background: linear-gradient(145deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
-  border: 2px solid var(--police-border);
-  border-radius: 16px;
-  padding: 16px;
-  position: relative;
-  overflow: hidden;
-  backdrop-filter: blur(15px);
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(0, 212, 255, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-}
-
-.modern-police-badge::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #00d4ff, #5865f2, #00d4ff);
-  background-size: 200% 100%;
-  animation: gradientShift 3s ease-in-out infinite;
-}
-
-.modern-police-badge:hover {
-  transform: translateY(-3px) scale(1.02);
-  border-color: var(--police-highlight);
-  box-shadow: 
-    0 12px 40px rgba(0, 212, 255, 0.2),
-    0 0 0 1px rgba(0, 212, 255, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.badge-container {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  position: relative;
-  z-index: 2;
-}
-
-.badge-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.badge-icon {
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, var(--police-highlight) 0%, var(--police-accent) 100%);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  color: white;
-  box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
-}
-
-.badge-title {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: 1;
-  margin: 0 15px;
-}
-
-.title-main {
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: var(--police-highlight);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
-  letter-spacing: 2px;
-}
-
-.title-sub {
-  font-size: 0.7rem;
-  color: var(--police-text-secondary);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-top: 2px;
-}
-
-.badge-status {
-  display: flex;
-  align-items: center;
-}
-
-.status-indicator {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-.status-indicator.active {
-  background: var(--police-success);
-  box-shadow: 0 0 8px rgba(46, 213, 115, 0.5);
-}
-
-.status-indicator.inactive {
-  background: var(--police-danger);
-  box-shadow: 0 0 8px rgba(255, 71, 87, 0.5);
-}
-
-.badge-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex: 1;
-}
-
-.officer-info {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex: 1;
-}
-
-.officer-name {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.name {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--police-text);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
-  letter-spacing: 0.5px;
-}
-
-.id {
-  font-size: 0.7rem;
-  color: var(--police-text-secondary);
-  font-weight: 600;
-  font-family: 'Courier New', monospace;
-}
-
-.officer-role {
-  display: flex;
-  align-items: center;
-}
-
-.role-badge {
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  text-align: center;
-  min-width: 60px;
-}
-
-.role-badge.police {
-  background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(0, 212, 255, 0.1));
-  color: var(--police-highlight);
-  border: 1px solid rgba(0, 212, 255, 0.4);
-}
-
-.role-badge.cni {
-  background: linear-gradient(135deg, rgba(255, 193, 7, 0.3), rgba(255, 193, 7, 0.1));
-  color: #ffc107;
-  border: 1px solid rgba(255, 193, 7, 0.4);
-}
-
-.role-badge.citizen {
-  background: linear-gradient(135deg, rgba(108, 117, 125, 0.3), rgba(108, 117, 125, 0.1));
-  color: #6c757d;
-  border: 1px solid rgba(108, 117, 125, 0.4);
-}
-
-.badge-footer {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.security-level {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-.level-text {
-  font-size: 0.6rem;
-  color: var(--police-text-secondary);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.level-number {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--police-highlight);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
-}
-
-.badge-qr {
-  width: 24px;
-  height: 24px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--police-highlight);
-  font-size: 0.8rem;
-  border: 1px solid var(--police-border);
-}
-
-/* ===== BÚSQUEDA DE CIUDADANOS ===== */
-.citizen-search-section {
-  padding: 25px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 12px;
-  border: 1px solid var(--police-border);
-  backdrop-filter: blur(10px);
-}
-
-.search-header {
-  margin-bottom: 25px;
-  text-align: center;
-}
-
-.search-header h3 {
-  color: #ffffff !important;
-  font-size: 1.4rem;
-  font-weight: 700;
-  margin: 0 0 10px 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-
-.search-header h3 svg {
-  color: var(--police-highlight);
-  font-size: 1.2rem;
-}
-
-.search-header p {
-  color: #e0e0e0 !important;
-  font-size: 0.9rem;
-  margin: 0;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-}
-
-.search-form-container {
-  margin-bottom: 25px;
-}
-
-.search-form {
-  width: 100%;
-}
-
-.search-input-group {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.search-input {
-  flex: 1;
-  padding: 12px 16px;
-  background: rgba(0, 0, 0, 0.6) !important;
-  border: 1px solid var(--police-border) !important;
-  border-radius: 8px;
-  color: #ffffff !important;
-  font-size: 0.9rem;
-  transition: all 0.2s ease;
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: var(--police-highlight) !important;
-  box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.1);
-  background: rgba(0, 0, 0, 0.8) !important;
-}
-
-.search-input::placeholder {
-  color: #a0a0a0 !important;
-}
-
-.search-btn {
-  padding: 12px 16px;
-  background: linear-gradient(135deg, var(--police-highlight) 0%, var(--police-accent) 100%);
-  border: none;
-  border-radius: 8px;
-  color: white;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 50px;
-}
-
-.search-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
-}
-
-.search-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.spinning {
-  animation: spin 1s linear infinite;
-}
-
-.search-loading {
-  text-align: center;
-  padding: 40px 20px;
-  color: #a0a0a0;
-}
-
-.search-loading .loading-spinner {
-  margin: 0 auto 20px;
-  width: 60px;
-  height: 60px;
-}
-
-.search-loading p {
-  font-size: 1rem;
-  margin: 0;
-  color: #a0a0a0 !important;
-}
-
-.search-results {
-  margin-top: 25px;
-}
-
-.results-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid var(--police-border);
-}
-
-.results-header h4 {
-  color: #ffffff !important;
-  font-size: 1.2rem;
-  font-weight: 700;
-  margin: 0;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-}
-
-.results-count {
-  color: var(--police-highlight) !important;
-  font-size: 0.9rem;
-  font-weight: 600;
-  background: rgba(0, 212, 255, 0.1);
-  padding: 4px 12px;
-  border-radius: 15px;
-  border: 1px solid var(--police-border);
-}
-
-.citizens-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-}
-
-.citizen-card {
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid var(--police-border);
-  border-radius: 12px;
-  padding: 20px;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-}
-
-.citizen-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background: var(--police-border);
-  transition: all 0.3s ease;
-}
-
-.citizen-card:hover {
-  background: rgba(0, 0, 0, 0.5);
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-  border-color: var(--police-highlight);
-}
-
-.citizen-card:hover::before {
-  background: var(--police-highlight);
-  width: 6px;
-}
-
-.citizen-card.selected {
-  background: rgba(0, 212, 255, 0.1);
-  border-color: var(--police-highlight);
-  box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
-}
-
-.citizen-card.selected::before {
-  background: var(--police-highlight);
-  width: 6px;
-}
-
-.citizen-avatar {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  overflow: hidden;
-  margin: 0 auto 15px;
-  border: 3px solid var(--police-border);
-  position: relative;
-  background: #2c3e50;
-}
-
-.citizen-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.avatar-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #34495e;
-  color: #bdc3c7;
-  font-size: 1.5rem;
-}
-
-.citizen-info {
-  text-align: center;
-  margin-bottom: 15px;
-}
-
-.citizen-name {
-  color: #ffffff !important;
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin: 0 0 10px 0;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-}
-
-.citizen-details {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.detail-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 4px 8px;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.detail-item .label {
-  font-size: 0.8rem;
-  color: #95a5a6;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.detail-item .value {
-  font-size: 0.8rem;
-  color: #ffffff;
-  font-weight: 500;
-  font-family: 'Courier New', monospace;
-}
-
-.citizen-status {
-  margin-top: 10px;
-}
-
-.status-badge {
-  padding: 4px 12px;
-  border-radius: 15px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  text-align: center;
-}
-
-.status-badge.active {
-  background: rgba(46, 213, 115, 0.2);
-  color: #2ed573;
-  border: 1px solid rgba(46, 213, 115, 0.3);
-}
-
-.status-badge.inactive {
-  background: rgba(231, 76, 60, 0.2);
-  color: #e74c3c;
-  border: 1px solid rgba(231, 76, 60, 0.3);
-}
-
-.citizen-actions {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 15px;
-}
-
-.action-btn {
-  width: 35px;
-  height: 35px;
-  border: none;
-  border-radius: 50%;
-  background: rgba(0, 212, 255, 0.1);
-  color: var(--police-highlight);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.9rem;
-  border: 1px solid var(--police-border);
-}
-
-.action-btn:hover {
-  background: rgba(0, 212, 255, 0.2);
-  transform: scale(1.1);
-  border-color: var(--police-highlight);
-}
-
-.no-results {
-  text-align: center;
-  padding: 40px 20px;
-  color: #a0a0a0;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 12px;
-  border: 1px solid var(--police-border);
-}
-
-.no-results svg {
-  font-size: 3rem;
-  margin-bottom: 15px;
-  color: var(--police-text-secondary);
-}
-
-.no-results h4 {
-  color: #a0a0a0 !important;
-  font-size: 1.1rem;
-  margin: 0 0 10px 0;
-  font-weight: 600;
-}
-
-.no-results p {
-  color: #95a5a6 !important;
-  font-size: 0.9rem;
-  margin: 0;
-  font-style: italic;
-}
-
-/* Modal de detalles del ciudadano */
-.citizen-detail-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(10px);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid var(--police-border);
-}
-
-.modal-header h4 {
-  color: #ffffff !important;
-  font-size: 1.3rem;
-  font-weight: 700;
-  margin: 0;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-}
-
-.close-btn {
-  width: 35px;
-  height: 35px;
-  border: none;
-  border-radius: 50%;
-  background: rgba(231, 76, 60, 0.1);
-  color: #e74c3c;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  border: 1px solid rgba(231, 76, 60, 0.3);
-}
-
-.close-btn:hover {
-  background: rgba(231, 76, 60, 0.2);
-  transform: scale(1.1);
-}
-
-.modal-content {
-  background: rgba(0, 0, 0, 0.9);
-  border-radius: 16px;
-  padding: 30px;
-  border: 1px solid var(--police-border);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-  max-width: 500px;
-  width: 90%;
-  max-height: 80vh;
-  overflow-y: auto;
-}
-
-.citizen-detail-avatar {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  overflow: hidden;
-  margin: 0 auto 20px;
-  border: 3px solid var(--police-border);
-  background: #2c3e50;
-}
-
-.citizen-detail-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.citizen-detail-info {
-  text-align: center;
-}
-
-.citizen-detail-info h5 {
-  color: #ffffff !important;
-  font-size: 1.4rem;
-  font-weight: 700;
-  margin: 0 0 20px 0;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-}
-
-.detail-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.detail-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.detail-row .label {
-  font-size: 0.9rem;
-  color: #95a5a6;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.detail-row .value {
-  font-size: 0.9rem;
-  color: #ffffff;
-  font-weight: 500;
-  font-family: 'Courier New', monospace;
-}
-
-.detail-row .value.status.active {
-  color: #2ed573;
-  font-weight: 600;
-}
-
-.detail-row .value.status.inactive {
-  color: #e74c3c;
-  font-weight: 600;
-}
-
-/* Responsive para búsqueda de ciudadanos */
-@media (max-width: 768px) {
-  .citizens-grid {
-    grid-template-columns: 1fr;
-    gap: 15px;
-  }
-  
-  .citizen-card {
-    padding: 15px;
-  }
-  
-  .citizen-avatar {
-    width: 50px;
-    height: 50px;
-    margin-bottom: 10px;
-  }
-  
-  .citizen-name {
-    font-size: 1rem;
-  }
-  
-  .detail-item {
-    padding: 3px 6px;
-  }
-  
-  .detail-item .label,
-  .detail-item .value {
-    font-size: 0.7rem;
-  }
-  
-  .modal-content {
-    padding: 20px;
-    width: 95%;
-  }
-  
-  .citizen-detail-avatar {
-    width: 80px;
-    height: 80px;
-    margin-bottom: 15px;
-  }
-  
-  .citizen-detail-info h5 {
-    font-size: 1.2rem;
   }
 }
 

@@ -7,10 +7,16 @@ import {
   FaUserShield, FaDatabase, FaClipboardList, FaHistory,
   FaSatellite, FaFingerprint, FaBrain, FaRobot,
   FaWifi, FaSignal, FaBolt, FaCog, FaGlobeAmericas, FaShieldVirus,
-  FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock,
+  FaCctv, FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock,
   FaChartLine, FaUsers, FaCar, FaBuilding, FaNewspaper,
-  FaMicrochip, FaSatelliteDish, FaBroadcastTower,
-  FaQrcode, FaBarcode, FaKey, FaCrosshairs, FaBullseye
+  FaMicrochip, FaSatelliteDish, FaBroadcastTower, FaWifi2,
+  FaFingerprint as FaFingerprintIcon, FaQrcode, FaBarcode,
+  FaKey, FaLock as FaLockIcon, FaUnlock as FaUnlockIcon,
+  FaShieldAlt as FaShieldIcon, FaCrosshairs, FaBullseye,
+  FaSatellite as FaRadarIcon, FaSatellite as FaSatelliteIcon,
+  FaWifi as FaWifiIcon, FaSignal as FaSignalIcon,
+  FaBolt as FaBoltIcon, FaCog as FaCogIcon,
+  FaGlobeAmericas as FaGlobeIcon, FaShieldVirus as FaShieldVirusIcon
 } from 'react-icons/fa';
 import { apiUrl } from '../../utils/api';
 import './MDTPolicial.css';
@@ -21,214 +27,7 @@ import {
 import CNISection from './CNISection';
 import DashboardAdmin from './DashboardAdmin';
 
-// Componente de búsqueda de ciudadanos con avatares
-const CitizenSearchSection = ({ 
-  searchResults, 
-  searchLoading, 
-  searchQuery, 
-  setSearchQuery, 
-  onSearch, 
-  getRobloxAvatar 
-}) => {
-  const [selectedCitizen, setSelectedCitizen] = useState(null);
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    onSearch(searchQuery);
-  };
-
-  const handleInputChange = (e) => {
-    const value = e.target.value;
-    setSearchQuery(value);
-    if (value.length > 2) {
-      onSearch(value);
-    } else {
-      onSearch('');
-    }
-  };
-
-  return (
-    <div className="citizen-search-section">
-      <div className="search-header">
-        <h3>
-          <FaSearch />
-          Búsqueda de Ciudadanos
-        </h3>
-        <p>Busca ciudadanos por nombre de Discord, Roblox o ID</p>
-      </div>
-
-      <div className="search-form-container">
-        <form onSubmit={handleSearch} className="search-form">
-          <div className="search-input-group">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={handleInputChange}
-              placeholder="Buscar por nombre, Roblox o ID..."
-              className="search-input"
-            />
-            <button type="submit" className="search-btn" disabled={searchLoading}>
-              {searchLoading ? <FaCog className="spinning" /> : <FaSearch />}
-            </button>
-          </div>
-        </form>
-      </div>
-
-      {searchLoading && (
-        <div className="search-loading">
-          <div className="loading-spinner">
-            <div className="spinner-ring"></div>
-            <div className="spinner-ring"></div>
-            <div className="spinner-ring"></div>
-          </div>
-          <p>Buscando ciudadanos...</p>
-        </div>
-      )}
-
-      {searchResults.length > 0 && (
-        <div className="search-results">
-          <div className="results-header">
-            <h4>Resultados de Búsqueda</h4>
-            <span className="results-count">{searchResults.length} ciudadano(s) encontrado(s)</span>
-          </div>
-          
-          <div className="citizens-grid">
-            {searchResults.map((citizen, index) => (
-              <div 
-                key={citizen.id || index} 
-                className={`citizen-card ${selectedCitizen?.id === citizen.id ? 'selected' : ''}`}
-                onClick={() => setSelectedCitizen(citizen)}
-              >
-                <div className="citizen-avatar">
-                  {citizen.roblox_name ? (
-                    <img 
-                      src={getRobloxAvatar(citizen.roblox_name)} 
-                      alt={citizen.discord_name || citizen.roblox_name}
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.nextSibling.style.display = 'flex';
-                      }}
-                    />
-                  ) : null}
-                  <div className="avatar-placeholder" style={{ display: citizen.roblox_name ? 'none' : 'flex' }}>
-                    <FaUser />
-                  </div>
-                </div>
-                
-                <div className="citizen-info">
-                  <h5 className="citizen-name">
-                    {citizen.discord_name || citizen.roblox_name || 'Sin nombre'}
-                  </h5>
-                  <div className="citizen-details">
-                    {citizen.roblox_name && (
-                      <div className="detail-item">
-                        <span className="label">Roblox:</span>
-                        <span className="value">{citizen.roblox_name}</span>
-                      </div>
-                    )}
-                    {citizen.discord_id && (
-                      <div className="detail-item">
-                        <span className="label">Discord ID:</span>
-                        <span className="value">{citizen.discord_id}</span>
-                      </div>
-                    )}
-                    {citizen.dni && (
-                      <div className="detail-item">
-                        <span className="label">DNI:</span>
-                        <span className="value">{citizen.dni}</span>
-                      </div>
-                    )}
-                    <div className="citizen-status">
-                      <span className={`status-badge ${citizen.estado === 'activo' ? 'active' : 'inactive'}`}>
-                        {citizen.estado || 'Desconocido'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="citizen-actions">
-                  <button className="action-btn" title="Ver detalles">
-                    <FaEye />
-                  </button>
-                  <button className="action-btn" title="Ver DNI">
-                    <FaIdCard />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {searchQuery && !searchLoading && searchResults.length === 0 && (
-        <div className="no-results">
-          <FaSearch />
-          <h4>No se encontraron ciudadanos</h4>
-          <p>Intenta con un término de búsqueda diferente</p>
-        </div>
-      )}
-
-      {selectedCitizen && (
-        <div className="citizen-detail-modal">
-          <div className="modal-header">
-            <h4>Detalles del Ciudadano</h4>
-            <button 
-              className="close-btn" 
-              onClick={() => setSelectedCitizen(null)}
-            >
-              <FaTimes />
-            </button>
-          </div>
-          <div className="modal-content">
-            <div className="citizen-detail-avatar">
-              {selectedCitizen.roblox_name ? (
-                <img 
-                  src={getRobloxAvatar(selectedCitizen.roblox_name)} 
-                  alt={selectedCitizen.discord_name || selectedCitizen.roblox_name}
-                />
-              ) : (
-                <div className="avatar-placeholder">
-                  <FaUser />
-                </div>
-              )}
-            </div>
-            <div className="citizen-detail-info">
-              <h5>{selectedCitizen.discord_name || selectedCitizen.roblox_name || 'Sin nombre'}</h5>
-              <div className="detail-grid">
-                {selectedCitizen.roblox_name && (
-                  <div className="detail-row">
-                    <span className="label">Nombre Roblox:</span>
-                    <span className="value">{selectedCitizen.roblox_name}</span>
-                  </div>
-                )}
-                {selectedCitizen.discord_id && (
-                  <div className="detail-row">
-                    <span className="label">Discord ID:</span>
-                    <span className="value">{selectedCitizen.discord_id}</span>
-                  </div>
-                )}
-                {selectedCitizen.dni && (
-                  <div className="detail-row">
-                    <span className="label">DNI:</span>
-                    <span className="value">{selectedCitizen.dni}</span>
-                  </div>
-                )}
-                <div className="detail-row">
-                  <span className="label">Estado:</span>
-                  <span className={`value status ${selectedCitizen.estado === 'activo' ? 'active' : 'inactive'}`}>
-                    {selectedCitizen.estado || 'Desconocido'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Componente de tarjeta de identificación policial moderna
+// Componente de tarjeta de identificación policial animada
 const PoliceIDCard = ({ user, isPolice, isCNI, onFlip, compact = false }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -241,45 +40,44 @@ const PoliceIDCard = ({ user, isPolice, isCNI, onFlip, compact = false }) => {
   if (compact) {
     return (
       <div 
-        className={`modern-police-badge ${isFlipped ? 'flipped' : ''} ${isHovered ? 'hovered' : ''}`}
+        className={`police-id-card compact ${isFlipped ? 'flipped' : ''} ${isHovered ? 'hovered' : ''}`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={handleFlip}
       >
-        <div className="badge-container">
-          <div className="badge-header">
-            <div className="badge-icon">
+        <div className="id-card-compact-content">
+          <div className="compact-header">
+            <div className="police-badge-small">
               <FaShieldAlt />
+              <span>POLICÍA</span>
             </div>
-            <div className="badge-title">
-              <span className="title-main">MDT</span>
-              <span className="title-sub">SISTEMA</span>
-            </div>
-            <div className="badge-status">
-              <div className={`status-indicator ${isPolice ? 'active' : 'inactive'}`}></div>
+            <div className="security-level-small">
+              <div className="security-dots">
+                <span className="dot active"></span>
+                <span className="dot active"></span>
+                <span className="dot active"></span>
+              </div>
             </div>
           </div>
           
-          <div className="badge-content">
-            <div className="officer-info">
-              <div className="officer-name">
-                <span className="name">{user?.username || 'USUARIO'}</span>
-                <span className="id">ID: {user?.id?.slice(-4) || '0000'}</span>
-              </div>
-              <div className="officer-role">
-                <span className={`role-badge ${isCNI ? 'cni' : isPolice ? 'police' : 'citizen'}`}>
+          <div className="compact-info">
+            <div className="officer-name-compact">
+              <h4>{user?.username || 'OFICIAL'}</h4>
+              <span className="badge-number">#{user?.id?.slice(-6) || '000000'}</span>
+            </div>
+            
+            <div className="officer-details-compact">
+              <div className="detail-row">
+                <span className="label">RANGO:</span>
+                <span className="value">
                   {isCNI ? 'CNI' : isPolice ? 'POLICÍA' : 'CIUDADANO'}
                 </span>
               </div>
-            </div>
-            
-            <div className="badge-footer">
-              <div className="security-level">
-                <span className="level-text">NIVEL</span>
-                <span className="level-number">3</span>
-              </div>
-              <div className="badge-qr">
-                <FaQrcode />
+              <div className="detail-row">
+                <span className="label">ESTADO:</span>
+                <span className={`status ${isPolice ? 'active' : 'inactive'}`}>
+                  {isPolice ? 'ACTIVO' : 'INACTIVO'}
+                </span>
               </div>
             </div>
           </div>
@@ -319,7 +117,7 @@ const PoliceIDCard = ({ user, isPolice, isCNI, onFlip, compact = false }) => {
                 <FaUserShield />
               </div>
               <div className="photo-overlay">
-                <FaFingerprint />
+                <FaFingerprintIcon />
               </div>
             </div>
           </div>
@@ -383,7 +181,7 @@ const PoliceIDCard = ({ user, isPolice, isCNI, onFlip, compact = false }) => {
                   <span>Chip de Seguridad</span>
                 </div>
                 <div className="feature-item">
-                  <FaFingerprint />
+                  <FaFingerprintIcon />
                   <span>Biometría</span>
                 </div>
                 <div className="feature-item">
@@ -391,7 +189,7 @@ const PoliceIDCard = ({ user, isPolice, isCNI, onFlip, compact = false }) => {
                   <span>Código QR</span>
                 </div>
                 <div className="feature-item">
-                  <FaShieldAlt />
+                  <FaShieldIcon />
                   <span>Encriptación</span>
                 </div>
               </div>
@@ -534,7 +332,7 @@ const SystemInfoPanel = () => {
       <div className="system-status">
         <div className="status-indicator">
           <div className="status-dot online"></div>
-          <span>SISTEMA OPERATIVO</span>
+          <span>SISTEMA MDT</span>
         </div>
         <div className="last-update">
           Última actualización: {systemStats.lastUpdate.toLocaleTimeString()}
@@ -770,9 +568,15 @@ const MDTPolicial = () => {
         </div>
         
         <div className="header-center">
-          <div className="mdt-status-indicator">
-            <div className="status-dot online"></div>
-            <span className="status-text">MDT ACTIVO</span>
+          <div className="system-status">
+            <div className="status-item">
+              <span className="status-label">MDT</span>
+              <span className="status-value online">ACTIVO</span>
+            </div>
+            <div className="status-item">
+              <span className="status-label">USUARIO</span>
+              <span className="status-value online">{isPolice ? 'POLICÍA' : isCNI ? 'CNI' : 'CIUDADANO'}</span>
+            </div>
           </div>
         </div>
         
@@ -928,40 +732,9 @@ const MDTPolicial = () => {
   );
 };
 
-// Panel de Ciudadano Reformado
+// Panel de Ciudadano
 const CitizenPanel = ({ data, onRefresh, userId }) => {
-  const [activeSection, setActiveSection] = useState('mi-dni');
-  const [searchResults, setSearchResults] = useState([]);
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-
-  // Función para buscar ciudadanos
-  const searchCitizens = async (query) => {
-    if (!query.trim()) {
-      setSearchResults([]);
-      return;
-    }
-
-    setSearchLoading(true);
-    try {
-      const response = await fetch(apiUrl(`/api/proxy/admin/buscar-ciudadanos?q=${encodeURIComponent(query)}`));
-      if (response.ok) {
-        const results = await response.json();
-        setSearchResults(results.ciudadanos || []);
-      }
-    } catch (error) {
-      console.error('Error buscando ciudadanos:', error);
-      setSearchResults([]);
-    } finally {
-      setSearchLoading(false);
-    }
-  };
-
-  // Función para obtener avatar de Roblox
-  const getRobloxAvatar = (robloxName) => {
-    if (!robloxName) return null;
-    return `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${robloxName}&size=150x150&format=Png&isCircular=true`;
-  };
+  const [activeSection, setActiveSection] = useState('dni');
 
   return (
     <div className="citizen-panel">
@@ -976,18 +749,11 @@ const CitizenPanel = ({ data, onRefresh, userId }) => {
       
       <div className="citizen-nav">
         <button 
-          className={`nav-btn ${activeSection === 'mi-dni' ? 'active' : ''}`}
-          onClick={() => setActiveSection('mi-dni')}
+          className={`nav-btn ${activeSection === 'dni' ? 'active' : ''}`}
+          onClick={() => setActiveSection('dni')}
         >
           <FaIdCard />
           <span>Mi DNI</span>
-        </button>
-        <button 
-          className={`nav-btn ${activeSection === 'buscar-ciudadanos' ? 'active' : ''}`}
-          onClick={() => setActiveSection('buscar-ciudadanos')}
-        >
-          <FaSearch />
-          <span>Buscar Ciudadanos</span>
         </button>
         <button 
           className={`nav-btn ${activeSection === 'multas' ? 'active' : ''}`}
@@ -1013,17 +779,7 @@ const CitizenPanel = ({ data, onRefresh, userId }) => {
       </div>
 
       <div className="citizen-content">
-        {activeSection === 'mi-dni' && <DNISection data={data.dni} />}
-        {activeSection === 'buscar-ciudadanos' && (
-          <CitizenSearchSection 
-            searchResults={searchResults}
-            searchLoading={searchLoading}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            onSearch={searchCitizens}
-            getRobloxAvatar={getRobloxAvatar}
-          />
-        )}
+        {activeSection === 'dni' && <DNISection data={data.dni} />}
         {activeSection === 'multas' && <MultasSection data={data.multas} userId={userId} onRefresh={onRefresh} />}
         {activeSection === 'antecedentes' && <AntecedentesSection data={data.antecedentes} />}
         {activeSection === 'inventario' && <InventarioSection data={data.inventario} />}
