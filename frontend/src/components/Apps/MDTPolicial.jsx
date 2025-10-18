@@ -10,13 +10,7 @@ import {
   FaCctv, FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock,
   FaChartLine, FaUsers, FaCar, FaBuilding, FaNewspaper,
   FaMicrochip, FaSatelliteDish, FaBroadcastTower, FaWifi2,
-  FaFingerprint as FaFingerprintIcon, FaQrcode, FaBarcode,
-  FaKey, FaLock as FaLockIcon, FaUnlock as FaUnlockIcon,
-  FaShieldAlt as FaShieldIcon, FaCrosshairs, FaBullseye,
-  FaSatellite as FaRadarIcon, FaSatellite as FaSatelliteIcon,
-  FaWifi as FaWifiIcon, FaSignal as FaSignalIcon,
-  FaBolt as FaBoltIcon, FaCog as FaCogIcon,
-  FaGlobeAmericas as FaGlobeIcon, FaShieldVirus as FaShieldVirusIcon
+  FaQrcode, FaBarcode, FaKey, FaCrosshairs, FaBullseye
 } from 'react-icons/fa';
 import { apiUrl } from '../../utils/api';
 import './MDTPolicial.css';
@@ -325,7 +319,7 @@ const PoliceIDCard = ({ user, isPolice, isCNI, onFlip, compact = false }) => {
                 <FaUserShield />
               </div>
               <div className="photo-overlay">
-                <FaFingerprintIcon />
+                <FaFingerprint />
               </div>
             </div>
           </div>
@@ -389,7 +383,7 @@ const PoliceIDCard = ({ user, isPolice, isCNI, onFlip, compact = false }) => {
                   <span>Chip de Seguridad</span>
                 </div>
                 <div className="feature-item">
-                  <FaFingerprintIcon />
+                  <FaFingerprint />
                   <span>Biometría</span>
                 </div>
                 <div className="feature-item">
@@ -397,7 +391,7 @@ const PoliceIDCard = ({ user, isPolice, isCNI, onFlip, compact = false }) => {
                   <span>Código QR</span>
                 </div>
                 <div className="feature-item">
-                  <FaShieldIcon />
+                  <FaShieldAlt />
                   <span>Encriptación</span>
                 </div>
               </div>
