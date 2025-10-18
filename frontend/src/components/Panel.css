@@ -8,19 +8,63 @@
     transform: scale(1);
   }
 }
+/* --- Variables CSS para temas --- */
+:root {
+  /* Tema claro (por defecto) */
+  --bg-primary: #f4f6fa;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f8fafc;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --border-color: #e2e8f0;
+  --shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-medium: 0 8px 32px rgba(0, 0, 0, 0.12);
+  --accent-primary: #667eea;
+  --accent-secondary: #764ba2;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-card: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+}
+
+/* Tema oscuro */
+[data-theme="dark"] {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --border-color: #475569;
+  --shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  --shadow-medium: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --accent-primary: #8b5cf6;
+  --accent-secondary: #a855f7;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --gradient-primary: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+  --gradient-card: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+}
+
 /* --- Adaptabilidad global --- */
 html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
   font-family: 'Inter', Arial, sans-serif;
-  background: #f4f6fa;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .panel-container {
   display: flex;
   min-height: 100vh;
-  background: #f4f6fa;
+  background: var(--bg-primary);
+  transition: background-color 0.3s ease;
 }
 
 /* Sidebar adaptativo */
@@ -537,6 +581,31 @@ html, body, #root {
   margin-left: auto;
   display: flex;
   gap: 1rem;
+  align-items: center;
+}
+
+.theme-toggle-btn {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 12px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  width: 44px;
+  height: 44px;
+  box-shadow: var(--shadow-light);
+}
+
+.theme-toggle-btn:hover {
+  background: var(--accent-primary);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
 }
 
 .notification-btn {
@@ -1552,14 +1621,15 @@ html, body, #root {
 
 /* Welcome Card Moderno */
 .welcome-card-modern {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   border-radius: 20px;
   padding: 2rem;
   color: white;
-  box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+  box-shadow: var(--shadow-medium);
   margin-bottom: 2rem;
   position: relative;
   overflow: hidden;
+  transition: all 0.3s ease;
 }
 
 .welcome-card-modern::before {
@@ -1618,14 +1688,18 @@ html, body, #root {
   font-size: 2.5rem;
   font-weight: 800;
   margin: 0 0 0.5rem 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  color: white;
+  letter-spacing: -0.02em;
 }
 
 .welcome-subtitle {
   font-size: 1.2rem;
   margin: 0 0 1rem 0;
-  opacity: 0.9;
+  opacity: 0.95;
   font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .welcome-badges {
@@ -1882,17 +1956,17 @@ html, body, #root {
 
 /* Stat Cards Modernos */
 .stat-card-modern {
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-light);
+  border: 1px solid var(--border-color);
   transition: all 0.3s ease;
 }
 
 .stat-card-modern:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-medium);
 }
 
 .stat-header {
@@ -1929,7 +2003,7 @@ html, body, #root {
   margin: 0;
   font-size: 1.2rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
 }
 
 .stat-content-modern {
@@ -1939,45 +2013,45 @@ html, body, #root {
 .stat-value-modern {
   font-size: 2.5rem;
   font-weight: 800;
-  color: #1e293b;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
   line-height: 1;
 }
 
 .stat-label-modern {
   font-size: 1rem;
-  color: #64748b;
+  color: var(--text-secondary);
   font-weight: 600;
   margin-bottom: 0.5rem;
 }
 
 .stat-global {
   font-size: 0.85rem;
-  color: #94a3b8;
+  color: var(--text-muted);
   font-weight: 500;
 }
 
 /* Chart Card Moderno */
 .chart-card-modern {
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-light);
+  border: 1px solid var(--border-color);
   grid-column: span 2;
 }
 
 .chart-header {
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #f1f5f9;
+  border-bottom: 2px solid var(--border-color);
 }
 
 .chart-header h3 {
   margin: 0;
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
 }
 
 .chart-content {
@@ -1986,12 +2060,13 @@ html, body, #root {
 
 /* Calendar Section Moderna */
 .calendar-section-modern {
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 20px;
   padding: 2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-light);
+  border: 1px solid var(--border-color);
   margin-top: 2rem;
+  transition: all 0.3s ease;
 }
 
 .calendar-header-modern {
@@ -2000,20 +2075,17 @@ html, body, #root {
 }
 
 .calendar-header-modern h2 {
+  color: var(--text-primary);
+  font-size: 1.75rem;
+  font-weight: 700;
   margin: 0 0 0.5rem 0;
-  font-size: 2rem;
-  font-weight: 800;
-  color: #1e293b;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .calendar-header-modern p {
+  color: var(--text-secondary);
+  font-size: 1rem;
   margin: 0;
-  color: #64748b;
-  font-size: 1.1rem;
   font-weight: 500;
 }
 

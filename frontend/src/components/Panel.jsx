@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import DailyCalendar from './DailyCalendar.jsx';
+import ModernCalendar from './ModernCalendar.jsx';
 import AdminPanel from './AdminPanel.jsx';
 import BanManagement from './BanManagement.jsx';
 import StatsChart from './Charts/StatsChart.jsx';
@@ -60,12 +60,18 @@ const Panel = () => {
   const [activeSection, setActiveSection] = useState('overview');
   const [showNotificationSender, setShowNotificationSender] = useState(false);
   const [showDNIShare, setShowDNIShare] = useState(false);
+  const [theme, setTheme] = useState('light');
 
   // Estado para imagen real de DNI
   const [dniImgUrl, setDniImgUrl] = useState(null);
 
 
   useEffect(() => {
+    // Cargar tema desde localStorage
+    const savedTheme = localStorage.getItem('spainrp_theme') || 'light';
+    setTheme(savedTheme);
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    
     // Mostrar términos si no se han aceptado
     if (!localStorage.getItem(TERMS_KEY)) {
       setShowTerms(true);
@@ -236,6 +242,14 @@ const Panel = () => {
   const [dniFlipped, setDniFlipped] = useState(false);
   // Estado para mostrar modal de reporte
   const [showReport, setShowReport] = useState(false);
+
+  // Función para cambiar tema
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('spainrp_theme', newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+  };
 
 
   // Estado para totales generales
@@ -466,7 +480,7 @@ const Panel = () => {
           <h2><FaCalendarCheck /> Registro Diario</h2>
           <p>Mantén tu racha diaria para obtener recompensas</p>
         </div>
-        <DailyCalendar />
+        <ModernCalendar />
       </div>
     </div>
   );
@@ -960,6 +974,13 @@ const Panel = () => {
           </button>
           <h1>Panel de Control</h1>
           <div className="header-actions">
+            <button 
+              className="theme-toggle-btn"
+              onClick={toggleTheme}
+              title={`Cambiar a modo ${theme === 'light' ? 'oscuro' : 'claro'}`}
+            >
+              {theme === 'light' ? '🌙' : '☀️'}
+            </button>
             <NotificationCenter />
             {isAdmin && (
               <button 
