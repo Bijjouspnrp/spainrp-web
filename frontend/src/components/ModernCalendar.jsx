@@ -78,7 +78,13 @@ export default function ModernCalendar() {
     
     setIsClaiming(true);
     try {
-      console.log('[CALENDAR] Claiming day:', { year: currentYear, month: currentMonth + 1, day });
+      const today = new Date();
+      const claimYear = today.getFullYear();
+      const claimMonth = today.getMonth() + 1;
+      const claimDay = today.getDate();
+      
+      console.log('[CALENDAR] Claiming day:', { year: claimYear, month: claimMonth, day: claimDay });
+      console.log('[CALENDAR] Current date:', today.toISOString());
       
       const response = await fetch(apiUrl('/api/calendar/claim'), {
         method: 'POST',
@@ -87,9 +93,9 @@ export default function ModernCalendar() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          year: currentYear,
-          month: currentMonth + 1,
-          day: day
+          year: claimYear,
+          month: claimMonth,
+          day: claimDay
         })
       });
 
@@ -105,7 +111,13 @@ export default function ModernCalendar() {
       } else {
         const errorData = await response.json();
         console.error('[CALENDAR] Error response:', errorData);
-        alert(errorData.error || 'Error al reclamar el día');
+        
+        let errorMessage = errorData.error || 'Error al reclamar el día';
+        if (errorData.details) {
+          errorMessage += `\n\nDetalles:\nHoy: ${errorData.details.today.year}/${errorData.details.today.month}/${errorData.details.today.day}\nSolicitado: ${errorData.details.requested.year}/${errorData.details.requested.month}/${errorData.details.requested.day}`;
+        }
+        
+        alert(errorMessage);
       }
     } catch (error) {
       console.error('[CALENDAR] Error claiming day:', error);

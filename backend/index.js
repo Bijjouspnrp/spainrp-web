@@ -7443,12 +7443,27 @@ const ADMIN_USER_ID = '710112055985963090';
     
     // Verificar que sea el día actual
     const today = new Date();
-    const isToday = today.getFullYear() === parseInt(year) && 
-                   today.getMonth() + 1 === parseInt(month) && 
-                   today.getDate() === parseInt(day);
+    const todayYear = today.getFullYear();
+    const todayMonth = today.getMonth() + 1;
+    const todayDay = today.getDate();
+    
+    console.log('[CALENDAR] Today:', { year: todayYear, month: todayMonth, day: todayDay });
+    console.log('[CALENDAR] Request:', { year: parseInt(year), month: parseInt(month), day: parseInt(day) });
+    
+    const isToday = todayYear === parseInt(year) && 
+                   todayMonth === parseInt(month) && 
+                   todayDay === parseInt(day);
+    
+    console.log('[CALENDAR] Is today?', isToday);
     
     if (!isToday) {
-      return res.status(400).json({ error: 'Solo puedes reclamar el día actual' });
+      return res.status(400).json({ 
+        error: 'Solo puedes reclamar el día actual',
+        details: {
+          today: { year: todayYear, month: todayMonth, day: todayDay },
+          requested: { year: parseInt(year), month: parseInt(month), day: parseInt(day) }
+        }
+      });
     }
     
     const claimedAt = new Date().toISOString();
