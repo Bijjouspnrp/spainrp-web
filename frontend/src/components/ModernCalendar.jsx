@@ -114,10 +114,18 @@ export default function ModernCalendar() {
       if (response.ok) {
         const data = await response.json();
         console.log('[CALENDAR] Success data:', data);
-        setClaimedDays(prev => [...prev, day]);
-        setStreak(data.streak || streak + 1);
-        setLongestStreak(data.longestStreak || Math.max(longestStreak, data.streak || streak + 1));
-        setTotalClaims(data.totalClaims || totalClaims + 1);
+        
+        // Actualizar todos los datos con los valores del servidor
+        setClaimedDays(data.claimedDays || []);
+        setStreak(data.streak || 0);
+        setLongestStreak(data.longestStreak || 0);
+        setTotalClaims(data.totalClaims || 0);
+        setProgress(data.progress || 0);
+        
+        // Mostrar mensaje de éxito
+        if (data.message) {
+          alert(data.message);
+        }
       } else {
         const errorData = await response.json();
         console.error('[CALENDAR] Error response:', errorData);

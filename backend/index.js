@@ -7406,13 +7406,13 @@ app.get('/api/calendar', verifyToken, async (req, res) => {
 });
 
 // Reclamar día del calendario
-// Reclamar día del calendario - VERSIÓN ULTRA SIMPLE
+// Reclamar día del calendario - VERSIÓN FUNCIONAL COMPLETA
 app.post('/api/calendar/claim', verifyToken, async (req, res) => {
   try {
     const { year, month, day } = req.body;
     const userId = req.user?.id;
     
-    console.log('[CALENDAR] Simple claim:', { userId, year, month, day });
+    console.log('[CALENDAR] Claim request:', { userId, year, month, day });
     
     if (!year || !month || !day || !userId) {
       return res.status(400).json({ error: 'Datos faltantes' });
@@ -7427,31 +7427,96 @@ app.post('/api/calendar/claim', verifyToken, async (req, res) => {
     );
     
     if (existing) {
-      return res.status(400).json({ error: 'Ya reclamado' });
+      return res.status(400).json({ error: 'Este día ya fue reclamado' });
     }
     
     // Insertar reclamación
+    const claimedAt = new Date().toISOString();
+    const reward = 'Recompensa diaria';
+    
     await runQuery(
       'INSERT INTO calendar_claims (userId, year, month, day, claimedAt, reward) VALUES (?, ?, ?, ?, ?, ?)',
-      [userId, parseInt(year), parseInt(month), parseInt(day), new Date().toISOString(), 'Recompensa diaria']
+      [userId, parseInt(year), parseInt(month), parseInt(day), claimedAt, reward]
     );
     
-    // Obtener días reclamados
+    console.log('[CALENDAR] Reclamación insertada exitosamente');
+    
+    // Obtener días reclamados del mes actual
     const claimedDays = await allQuery(
       'SELECT day FROM calendar_claims WHERE userId = ? AND year = ? AND month = ? ORDER BY day',
       [userId, parseInt(year), parseInt(month)]
     );
     
+    // Obtener o crear datos de racha
+    let streakData = await getQuery(
+      'SELECT * FROM calendar_streaks WHERE userId = ?',
+      [userId]
+    );
+    
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    
+    let newStreak = 1;
+    let newLongestStreak = 1;
+    let newTotalClaims = 1;
+    
+    if (streakData) {
+      newTotalClaims = streakData.totalClaims + 1;
+      
+      // Verificar si la racha continúa
+      if (streakData.lastClaimedDate === yesterdayStr) {
+        newStreak = streakData.currentStreak + 1;
+        newLongestStreak = Math.max(streakData.longestStreak, newStreak);
+      } else if (streakData.lastClaimedDate !== todayStr) {
+        newStreak = 1; // Racha rota
+        newLongestStreak = streakData.longestStreak;
+      } else {
+        newStreak = streakData.currentStreak;
+        newLongestStreak = streakData.longestStreak;
+      }
+      
+      // Actualizar racha existente
+      await runQuery(
+        'UPDATE calendar_streaks SET currentStreak = ?, longestStreak = ?, lastClaimedDate = ?, totalClaims = ? WHERE userId = ?',
+        [newStreak, newLongestStreak, todayStr, newTotalClaims, userId]
+      );
+    } else {
+      // Crear nueva racha
+      await runQuery(
+        'INSERT INTO calendar_streaks (userId, currentStreak, longestStreak, lastClaimedDate, totalClaims) VALUES (?, ?, ?, ?, ?)',
+        [userId, newStreak, newLongestStreak, todayStr, newTotalClaims]
+      );
+    }
+    
+    // Calcular progreso del mes
+    const daysInMonth = new Date(parseInt(year), parseInt(month), 0).getDate();
+    const progress = Math.round((claimedDays.length / daysInMonth) * 100);
+    
+    console.log('[CALENDAR] Respuesta:', {
+      claimedDays: claimedDays.map(r => r.day),
+      streak: newStreak,
+      longestStreak: newLongestStreak,
+      totalClaims: newTotalClaims,
+      progress
+    });
+    
     res.json({
       success: true,
-      message: '¡Día reclamado!',
+      message: `¡Día reclamado! Recompensa: ${reward}`,
       claimedDays: claimedDays.map(r => r.day),
-      totalClaims: claimedDays.length
+      streak: newStreak,
+      longestStreak: newLongestStreak,
+      totalClaims: newTotalClaims,
+      progress,
+      reward
     });
     
   } catch (error) {
     console.error('[CALENDAR] Error:', error);
-    res.status(500).json({ error: 'Error interno' });
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
