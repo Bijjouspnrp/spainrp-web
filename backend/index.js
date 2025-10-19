@@ -3401,31 +3401,80 @@ app.use(banCheckMiddleware);
 // Endpoint público para la galería (antes del middleware de autenticación)
 app.get('/api/discord/members', async (req, res) => {
   try {
-    console.log('[GALERIA] Obteniendo miembros de Discord...');
+    console.log('[GALERIA] Obteniendo miembros de Discord desde el servidor...');
     
-    const { allQuery } = require('./db/database');
+    // Verificar si el bot de Discord está disponible
+    if (!discordClient || !discordClient.readyAt) {
+      console.log('[GALERIA] Bot de Discord no disponible, usando datos de muestra');
+      const sampleMembers = [
+        {
+          id: 'sample-1',
+          username: 'bijjoupro08',
+          discriminator: '0001',
+          avatar: 'https://cdn.discordapp.com/embed/avatars/0.png',
+          status: 'online'
+        },
+        {
+          id: 'sample-2',
+          username: 'SpainRP',
+          discriminator: '0002',
+          avatar: 'https://cdn.discordapp.com/embed/avatars/1.png',
+          status: 'online'
+        },
+        {
+          id: 'sample-3',
+          username: 'Moderador',
+          discriminator: '0003',
+          avatar: 'https://cdn.discordapp.com/embed/avatars/2.png',
+          status: 'idle'
+        },
+        {
+          id: 'sample-4',
+          username: 'Policia',
+          discriminator: '0004',
+          avatar: 'https://cdn.discordapp.com/embed/avatars/3.png',
+          status: 'online'
+        },
+        {
+          id: 'sample-5',
+          username: 'Medico',
+          discriminator: '0005',
+          avatar: 'https://cdn.discordapp.com/embed/avatars/4.png',
+          status: 'dnd'
+        }
+      ];
+      
+      return res.json({
+        success: true,
+        members: sampleMembers,
+        total: sampleMembers.length
+      });
+    }
     
-    // Obtener miembros de la base de datos
-    const members = await allQuery(`
-      SELECT DISTINCT 
-        userId, 
-        username, 
-        discriminator, 
-        avatar,
-        'online' as status
-      FROM ip_tracking 
-      WHERE username IS NOT NULL 
-        AND username != '' 
-        AND avatar IS NOT NULL
-      ORDER BY lastSeen DESC 
-      LIMIT 20
-    `);
+    // Obtener el servidor de Discord
+    const guild = discordClient.guilds.cache.get(process.env.GUILD_ID);
+    if (!guild) {
+      throw new Error('Servidor de Discord no encontrado');
+    }
     
-    console.log(`[GALERIA] Encontrados ${members ? members.length : 0} miembros`);
+    // Obtener miembros del servidor
+    await guild.members.fetch();
+    const discordMembers = guild.members.cache
+      .filter(member => !member.user.bot) // Excluir bots
+      .map(member => ({
+        id: member.user.id,
+        username: member.user.username,
+        discriminator: member.user.discriminator,
+        avatar: member.user.displayAvatarURL({ format: 'png', size: 128 }),
+        status: member.presence?.status || 'offline'
+      }))
+      .slice(0, 20); // Limitar a 20 miembros
     
-    // Verificar si hay miembros
-    if (!members || members.length === 0) {
-      console.log('[GALERIA] No hay miembros en la base de datos, usando datos de muestra');
+    console.log(`[GALERIA] Encontrados ${discordMembers.length} miembros del servidor Discord`);
+    
+    // Si no hay suficientes miembros, agregar algunos de muestra
+    if (discordMembers.length < 3) {
+      console.log('[GALERIA] Pocos miembros encontrados, agregando datos de muestra');
       const sampleMembers = [
         {
           id: 'sample-1',
@@ -3442,34 +3491,47 @@ app.get('/api/discord/members', async (req, res) => {
           status: 'online'
         }
       ];
-      
-      return res.json({
-        success: true,
-        members: sampleMembers,
-        total: sampleMembers.length
-      });
+      discordMembers.push(...sampleMembers);
     }
-    
-    // Formatear datos para el frontend
-    const formattedMembers = members.map(member => ({
-      id: member.userId,
-      username: member.username,
-      discriminator: member.discriminator || '0000',
-      avatar: member.avatar || `https://cdn.discordapp.com/embed/avatars/${parseInt(member.discriminator || '0') % 5}.png`,
-      status: 'online' // Por ahora todos aparecen como online
-    }));
     
     res.json({
       success: true,
-      members: formattedMembers,
-      total: formattedMembers.length
+      members: discordMembers,
+      total: discordMembers.length
     });
     
   } catch (error) {
-    console.error('[GALERIA] Error obteniendo miembros:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Error obteniendo miembros de Discord' 
+    console.error('[GALERIA] Error obteniendo miembros de Discord:', error);
+    
+    // Fallback con datos de muestra en caso de error
+    const fallbackMembers = [
+      {
+        id: 'fallback-1',
+        username: 'bijjoupro08',
+        discriminator: '0001',
+        avatar: 'https://cdn.discordapp.com/embed/avatars/0.png',
+        status: 'online'
+      },
+      {
+        id: 'fallback-2',
+        username: 'SpainRP',
+        discriminator: '0002',
+        avatar: 'https://cdn.discordapp.com/embed/avatars/1.png',
+        status: 'online'
+      },
+      {
+        id: 'fallback-3',
+        username: 'Comunidad',
+        discriminator: '0003',
+        avatar: 'https://cdn.discordapp.com/embed/avatars/2.png',
+        status: 'idle'
+      }
+    ];
+    
+    res.json({
+      success: true,
+      members: fallbackMembers,
+      total: fallbackMembers.length
     });
   }
 });
