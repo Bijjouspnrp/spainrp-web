@@ -3459,7 +3459,7 @@ app.get('/api/discord/members', async (req, res) => {
     
     // Obtener miembros del servidor
     await guild.members.fetch();
-    const discordMembers = guild.members.cache
+    const allMembers = guild.members.cache
       .filter(member => !member.user.bot) // Excluir bots
       .map(member => ({
         id: member.user.id,
@@ -3468,7 +3468,15 @@ app.get('/api/discord/members', async (req, res) => {
         avatar: member.user.displayAvatarURL({ format: 'png', size: 128 }),
         status: member.presence?.status || 'offline'
       }))
-      .slice(0, 20); // Limitar a 20 miembros
+      .sort(() => Math.random() - 0.5); // Mezclar aleatoriamente
+    
+    // Obtener página actual (0 por defecto)
+    const page = parseInt(req.query.page) || 0;
+    const membersPerPage = 50;
+    const startIndex = page * membersPerPage;
+    const endIndex = startIndex + membersPerPage;
+    
+    const discordMembers = allMembers.slice(startIndex, endIndex);
     
     console.log(`[GALERIA] Encontrados ${discordMembers.length} miembros del servidor Discord`);
     
@@ -3497,7 +3505,11 @@ app.get('/api/discord/members', async (req, res) => {
     res.json({
       success: true,
       members: discordMembers,
-      total: discordMembers.length
+      total: discordMembers.length,
+      page: page,
+      membersPerPage: membersPerPage,
+      totalMembers: allMembers.length,
+      hasMore: endIndex < allMembers.length
     });
     
   } catch (error) {

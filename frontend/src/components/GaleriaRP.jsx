@@ -3,12 +3,84 @@ import { FaPlay, FaPause, FaChevronLeft, FaChevronRight, FaImages, FaVideo, FaHe
 import { apiUrl } from '../utils/api';
 import './GaleriaRP.css';
 
+// Array de imágenes reales de SpainRP
+const galleryItems = [
+  {
+    type: 'image',
+    src: 'https://media.discordapp.net/attachments/1387914767276048445/1428442996944146442/image.png?ex=68f47ef5&is=68f32d75&hm=41f01724ebc83b98db670b0f0e550781a527532c8d620d11925a1b631b76a2b2&=&format=webp&quality=lossless',
+    alt: '🚔 Guardia Civil y UMS en acción'
+  },
+  {
+    type: 'image',
+    src: 'https://media.discordapp.net/attachments/1387914767276048445/1428442997430816858/image.png?ex=68f47ef5&is=68f32d75&hm=8b1af42158cfa763a9e6836c07706a5e7e9d73d3bc146b0853f6dfbd1aae9dac&=&format=webp&quality=lossless&width=1734&height=975',
+    alt: '🇪🇸 Desfile Día Nacional España - UMS, UME y Policía Nacional'
+  },
+  {
+    type: 'image',
+    src: 'https://media.discordapp.net/attachments/1387914767276048445/1428442999007875252/image.png?ex=68f47ef6&is=68f32d76&hm=8eba1daaf99c29e5d97957fa0fb50e94e4e8ed3196941ac57ea552d9121ba2c4&=&format=webp&quality=lossless&width=1734&height=975',
+    alt: '🎖️ Desfile con Guardia Civil incluida'
+  },
+  {
+    type: 'image',
+    src: 'https://media.discordapp.net/attachments/1387914767276048445/1427294202664058920/IMG-20250829-WA0001.jpg?ex=68f4ee4f&is=68f39ccf&hm=013ef2e7313b6cf6f9b00fd5a2821ac00e83448260fd302f03f29ceeb681128d&=&format=webp&width=607&height=1080',
+    alt: '🍩 Manolo (MrPro21) disfrutando de unos churros'
+  },
+  {
+    type: 'image',
+    src: 'https://media.discordapp.net/attachments/1387914767276048445/1418906049695449138/IMG_0971.png?ex=68f4bcbc&is=68f36b3c&hm=1e1c95fab983e3590bc8e3d00dc16bfc8d0ff384fee740a7574cab26159df3e2&=&format=webp&quality=lossless&width=1768&height=817',
+    alt: '💛 Los Vagos robando joyería '
+  },
+  {
+    type: 'image',
+    src: 'https://media.discordapp.net/attachments/1387914767276048445/1416718668812779541/Anadir_un_titulo.png?ex=68f4b094&is=68f35f14&hm=4e88fc07f344e39c49c64825737ed46697327c445c757245a18dd1a174016055&=&format=webp&quality=lossless',
+    alt: '⚡ Sergiojpni el electricista en acción'
+  },
+  {
+    type: 'image',
+    src: 'https://media.discordapp.net/attachments/1387914767276048445/1414282400246136852/Staff.png?ex=68f46560&is=68f313e0&hm=f933cf0d00e29717edd20facbf3a19a98d594890a87c8c7f698a09d55e100e5b&=&format=webp&quality=lossless',
+    alt: '👑 Moderadores OG SpainRP: Pato, Rafamonterox y Pietro'
+  },
+  {
+    type: 'image',
+    src: 'https://media.discordapp.net/attachments/1361508961307725887/1429262886282334288/image.png?ex=68f5804a&is=68f42eca&hm=3f91e53ed72d51e3676a9321a5a67f73bb319005e37fe4a0024f1946f2873551&=&format=webp&quality=lossless',
+    alt: 'Benjaelp el developer con sus hijos 👶'
+  },
+  {
+    type: 'image',
+    src: 'https://media.discordapp.net/attachments/1387914767276048445/1406761063659212902/image.png?ex=68f4b815&is=68f36695&hm=9692c624dfa035d5617fa05b139ed2f8713aafc6205509fa10a396559c88a65f&=&format=webp&quality=lossless&width=1735&height=976',
+    alt: '🌿 Amigodedoc y Julepe fumando un porro'
+  },
+  {
+    type: 'image',
+    src: 'https://media.discordapp.net/attachments/1387914767276048445/1406649595475529749/image.png?ex=68f45045&is=68f2fec5&hm=8dc025e42262f81211da26c3212b0892d6f5ccc52caf8349fdeaf91ab1a095cc&=&format=webp&quality=lossless&width=1734&height=975',
+    alt: '👥 Staff SpainRP - El equipo que lo hace posible'
+  },
+  {
+    type: 'image',
+    src: 'https://media.discordapp.net/attachments/1387914767276048445/1393655223456891040/5B25AEF3-964D-4592-9C4B-641BB94398FA.png?ex=68f48052&is=68f32ed2&hm=892a39c7a27b2a74ab5589883b822de674aa922b7de691dfdf197bc1b902e93a&=&format=webp&quality=lossless',
+    alt: '🏋️‍♂️ Antiguo entrenamiento CNP'
+  },
+  {
+    type: 'image',
+    src: 'https://media.discordapp.net/attachments/1387914767276048445/1387922970340753408/image.png?ex=68f5667e&is=68f414fe&hm=85dfd0733d3fc2c07e03e7d609173b6ec8ab69b17bbbd2063e89e31950a452ab&=&format=webp&quality=lossless',
+    alt: '💙 Los Aztecas'
+  },
+  {
+    type: 'image',
+    src: 'https://media.discordapp.net/attachments/1387914767276048445/1387925137365667970/image.png?ex=68f56883&is=68f41703&hm=e0255470e1350a936f4d36aa80e3145d594d19d5937279ef2e56d8780ea39d33&=&format=webp&quality=lossless&width=1857&height=976',
+    alt: '🏗️ Obras del gobierno - Construyendo el futuro'
+  }
+];
+
 const GaleriaRP = () => {
   const [discordMembers, setDiscordMembers] = useState([]);
   const [currentMemberIndex, setCurrentMemberIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalMembers, setTotalMembers] = useState(0);
 
   // Cargar miembros de Discord
   useEffect(() => {
@@ -20,23 +92,38 @@ const GaleriaRP = () => {
     if (!isPlaying || discordMembers.length === 0) return;
 
     const interval = setInterval(() => {
-      setCurrentMemberIndex((prev) => (prev + 1) % discordMembers.length);
+      setCurrentMemberIndex((prev) => {
+        const nextIndex = (prev + 1) % discordMembers.length;
+        
+        // Si llegamos al final de la tanda actual y hay más páginas, cargar siguiente tanda
+        if (nextIndex === 0 && hasMore) {
+          console.log('[GALERIA] Fin de tanda, cargando siguiente página...');
+          loadDiscordMembers(currentPage + 1);
+          return 0; // Mantener índice en 0 para la nueva tanda
+        }
+        
+        return nextIndex;
+      });
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [isPlaying, discordMembers.length]);
+  }, [isPlaying, discordMembers.length, hasMore, currentPage]);
 
-  const loadDiscordMembers = async () => {
+  const loadDiscordMembers = async (page = 0) => {
     try {
       setLoading(true);
-      console.log('[GALERIA] Cargando miembros de Discord...');
+      console.log(`[GALERIA] Cargando miembros de Discord - Página ${page}...`);
       
-      const response = await fetch(apiUrl('/api/discord/members'));
+      const response = await fetch(apiUrl(`/api/discord/members?page=${page}`));
       const data = await response.json();
       
       if (data.success && data.members) {
-        console.log(`[GALERIA] Cargados ${data.members.length} miembros`);
+        console.log(`[GALERIA] Cargados ${data.members.length} miembros de la página ${page}`);
         setDiscordMembers(data.members);
+        setCurrentPage(page);
+        setHasMore(data.hasMore);
+        setTotalMembers(data.totalMembers);
+        setCurrentMemberIndex(0); // Resetear índice al cargar nueva tanda
         setError(null);
       } else {
         throw new Error(data.error || 'Error en la respuesta del servidor');
@@ -141,11 +228,11 @@ const GaleriaRP = () => {
           </div>
           <div className="stat-item">
             <FaVideo />
-            <span>12 Videos</span>
+            <span>{galleryItems.length} Imágenes</span>
           </div>
           <div className="stat-item">
             <FaHeart />
-            <span>156 Me gusta</span>
+            <span>{totalMembers} Total</span>
           </div>
         </div>
       </div>
@@ -175,6 +262,16 @@ const GaleriaRP = () => {
             >
               <FaChevronRight />
             </button>
+            {hasMore && (
+              <button 
+                className="control-btn next-tanda-btn" 
+                onClick={() => loadDiscordMembers(currentPage + 1)}
+                disabled={loading}
+                title="Siguiente tanda"
+              >
+                {loading ? '...' : '→→'}
+              </button>
+            )}
           </div>
         </div>
 
@@ -232,7 +329,7 @@ const GaleriaRP = () => {
       {/* Sección de contenido multimedia */}
       <div className="media-section">
         <div className="media-header">
-          <h2>Mejores Momentos</h2>
+          <h2>Mejores Momentos de SpainRP</h2>
           <div className="media-filters">
             <button className="filter-btn active">Todos</button>
             <button className="filter-btn">Fotos</button>
@@ -242,23 +339,40 @@ const GaleriaRP = () => {
         </div>
 
         <div className="media-grid">
-          {/* Placeholder para contenido futuro */}
-          <div className="media-placeholder">
-            <FaImages className="placeholder-icon" />
-            <h3>Contenido próximamente</h3>
-            <p>Aquí se mostrarán las mejores fotos y videos de SpainRP</p>
-            <div className="placeholder-actions">
-              <button className="action-btn">
-                <FaHeart /> Me gusta
-              </button>
-              <button className="action-btn">
-                <FaComments /> Comentar
-              </button>
-              <button className="action-btn">
-                <FaShare /> Compartir
-              </button>
+          {galleryItems.map((item, index) => (
+            <div key={index} className="media-item">
+              {item.type === 'image' && (
+                <img 
+                  src={item.src} 
+                  alt={item.alt} 
+                  className="media-image"
+                  loading="lazy"
+                />
+              )}
+              {item.type === 'video' && (
+                <video 
+                  src={item.src} 
+                  controls 
+                  className="media-video"
+                  preload="metadata"
+                />
+              )}
+              <div className="media-overlay">
+                <h3 className="media-title">{item.alt}</h3>
+                <div className="media-actions">
+                  <button className="action-btn">
+                    <FaHeart /> Me gusta
+                  </button>
+                  <button className="action-btn">
+                    <FaComments /> Comentar
+                  </button>
+                  <button className="action-btn">
+                    <FaShare /> Compartir
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
+          ))}
         </div>
       </div>
 
