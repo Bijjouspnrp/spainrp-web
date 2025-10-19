@@ -710,16 +710,6 @@ global.broadcastNotification = broadcastNotification;
 // SISTEMA DE CHAT EN VIVO - SOCKET.IO
 // =============================================================================
 
-// Crear tabla live_chats si no existe
-db.run(`CREATE TABLE IF NOT EXISTS live_chats (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  userId TEXT NOT NULL,
-  user_name TEXT NOT NULL,
-  status TEXT DEFAULT 'active',
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  closed_at DATETIME
-)`);
-
 // Almacenar chats activos y moderadores online
 const activeChats = new Map(); // chatId -> { user_id, user_name, socket_id, status }
 const moderatorsOnline = new Map(); // user_id -> { socket_id, user_name, last_seen }

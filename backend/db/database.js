@@ -278,6 +278,17 @@ const initializeTables = (database) => {
             visitCount INTEGER DEFAULT 1,
             isActive INTEGER DEFAULT 1
           )`
+        },
+        {
+          name: 'live_chats',
+          sql: `CREATE TABLE IF NOT EXISTS live_chats (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            userId TEXT NOT NULL,
+            user_name TEXT NOT NULL,
+            status TEXT DEFAULT 'active',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            closed_at DATETIME
+          )`
         }
   ];
 
