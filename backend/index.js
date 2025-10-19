@@ -3403,10 +3403,10 @@ app.get('/api/discord/members', async (req, res) => {
   try {
     console.log('[GALERIA] Obteniendo miembros de Discord...');
     
-    const { getQuery } = require('./db/database');
+    const { allQuery } = require('./db/database');
     
     // Obtener miembros de la base de datos
-    const members = await getQuery(`
+    const members = await allQuery(`
       SELECT DISTINCT 
         userId, 
         username, 
@@ -3421,7 +3421,34 @@ app.get('/api/discord/members', async (req, res) => {
       LIMIT 20
     `);
     
-    console.log(`[GALERIA] Encontrados ${members.length} miembros`);
+    console.log(`[GALERIA] Encontrados ${members ? members.length : 0} miembros`);
+    
+    // Verificar si hay miembros
+    if (!members || members.length === 0) {
+      console.log('[GALERIA] No hay miembros en la base de datos, usando datos de muestra');
+      const sampleMembers = [
+        {
+          id: 'sample-1',
+          username: 'bijjoupro08',
+          discriminator: '0001',
+          avatar: 'https://cdn.discordapp.com/embed/avatars/0.png',
+          status: 'online'
+        },
+        {
+          id: 'sample-2',
+          username: 'SpainRP',
+          discriminator: '0002',
+          avatar: 'https://cdn.discordapp.com/embed/avatars/1.png',
+          status: 'online'
+        }
+      ];
+      
+      return res.json({
+        success: true,
+        members: sampleMembers,
+        total: sampleMembers.length
+      });
+    }
     
     // Formatear datos para el frontend
     const formattedMembers = members.map(member => ({
