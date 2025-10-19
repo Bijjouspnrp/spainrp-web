@@ -3398,6 +3398,55 @@ app.get('/api/discord/search-users', async (req, res) => {
 // Middleware global de ban - APLICAR NUEVO SISTEMA DE BANS
 app.use(banCheckMiddleware);
 
+// Endpoint público para la galería (antes del middleware de autenticación)
+app.get('/api/discord/members', async (req, res) => {
+  try {
+    console.log('[GALERIA] Obteniendo miembros de Discord...');
+    
+    const { getQuery } = require('./db/database');
+    
+    // Obtener miembros de la base de datos
+    const members = await getQuery(`
+      SELECT DISTINCT 
+        userId, 
+        username, 
+        discriminator, 
+        avatar,
+        'online' as status
+      FROM ip_tracking 
+      WHERE username IS NOT NULL 
+        AND username != '' 
+        AND avatar IS NOT NULL
+      ORDER BY lastSeen DESC 
+      LIMIT 20
+    `);
+    
+    console.log(`[GALERIA] Encontrados ${members.length} miembros`);
+    
+    // Formatear datos para el frontend
+    const formattedMembers = members.map(member => ({
+      id: member.userId,
+      username: member.username,
+      discriminator: member.discriminator || '0000',
+      avatar: member.avatar || `https://cdn.discordapp.com/embed/avatars/${parseInt(member.discriminator || '0') % 5}.png`,
+      status: 'online' // Por ahora todos aparecen como online
+    }));
+    
+    res.json({
+      success: true,
+      members: formattedMembers,
+      total: formattedMembers.length
+    });
+    
+  } catch (error) {
+    console.error('[GALERIA] Error obteniendo miembros:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Error obteniendo miembros de Discord' 
+    });
+  }
+});
+
 // Middleware de verificación de bans para usuarios autenticados - APLICAR GLOBALMENTE
 app.use(authenticatedBanCheckMiddleware);
 
@@ -7522,54 +7571,7 @@ app.post('/api/calendar/claim', verifyToken, async (req, res) => {
 
 // ===== ENDPOINT GALERÍA RP =====
 
-// Obtener miembros de Discord para la galería
-app.get('/api/discord/members', async (req, res) => {
-  try {
-    console.log('[GALERIA] Obteniendo miembros de Discord...');
-    
-    const { getQuery } = require('./db/database');
-    
-    // Obtener miembros de la base de datos
-    const members = await getQuery(`
-      SELECT DISTINCT 
-        userId, 
-        username, 
-        discriminator, 
-        avatar,
-        'online' as status
-      FROM ip_tracking 
-      WHERE username IS NOT NULL 
-        AND username != '' 
-        AND avatar IS NOT NULL
-      ORDER BY lastSeen DESC 
-      LIMIT 20
-    `);
-    
-    console.log(`[GALERIA] Encontrados ${members.length} miembros`);
-    
-    // Formatear datos para el frontend
-    const formattedMembers = members.map(member => ({
-      id: member.userId,
-      username: member.username,
-      discriminator: member.discriminator || '0000',
-      avatar: member.avatar || `https://cdn.discordapp.com/embed/avatars/${parseInt(member.discriminator || '0') % 5}.png`,
-      status: 'online' // Por ahora todos aparecen como online
-    }));
-    
-    res.json({
-      success: true,
-      members: formattedMembers,
-      total: formattedMembers.length
-    });
-    
-  } catch (error) {
-    console.error('[GALERIA] Error obteniendo miembros:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Error obteniendo miembros de Discord' 
-    });
-  }
-});
+// Obtener miembros de Discord para la galería (público)
 
 // ===== ENDPOINTS MDT POLICIAL =====
 
