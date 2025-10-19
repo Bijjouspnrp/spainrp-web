@@ -283,6 +283,17 @@
   font-family: 'Courier New', monospace;
 }
 
+.member-status-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.member-status-icon {
+  font-size: 0.7rem;
+}
+
 .member-status-text {
   font-size: 0.9rem;
   font-weight: 600;

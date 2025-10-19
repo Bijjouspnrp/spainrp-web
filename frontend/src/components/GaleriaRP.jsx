@@ -93,6 +93,16 @@ const GaleriaRP = () => {
     }
   };
 
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'online': return '🟢';
+      case 'idle': return '🟡';
+      case 'dnd': return '🔴';
+      case 'offline': return '⚫';
+      default: return '⚫';
+    }
+  };
+
   if (loading) {
     return (
       <div className="galeria-loading">
@@ -127,7 +137,7 @@ const GaleriaRP = () => {
         <div className="galeria-stats">
           <div className="stat-item">
             <FaImages />
-            <span>24 Fotos</span>
+            <span>{discordMembers.length} Miembros</span>
           </div>
           <div className="stat-item">
             <FaVideo />
@@ -192,12 +202,15 @@ const GaleriaRP = () => {
                   <div className="member-info">
                     <h3 className="member-username">{member.username}</h3>
                     <p className="member-discriminator">#{member.discriminator}</p>
-                    <span 
-                      className="member-status-text"
-                      style={{ color: getStatusColor(member.status) }}
-                    >
-                      {getStatusText(member.status)}
-                    </span>
+                    <div className="member-status-container">
+                      <span className="member-status-icon">{getStatusIcon(member.status)}</span>
+                      <span 
+                        className="member-status-text"
+                        style={{ color: getStatusColor(member.status) }}
+                      >
+                        {getStatusText(member.status)}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
