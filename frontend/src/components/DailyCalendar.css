@@ -1,5 +1,24 @@
 /* === CALENDARIO MODERNO COMPLETAMENTE REDISEÑADO === */
 
+.daily-calendar-container {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+@media (max-width: 1200px) {
+  .daily-calendar-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .calendar-rewards-panel {
+    order: -1;
+  }
+}
+
 .daily-calendar {
   background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
   border-radius: 24px;
@@ -407,6 +426,51 @@
   color: #fbbf24;
   margin-bottom: 1.5rem;
   animation: rewardBounce 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.calendar-reward-emoji-large {
+  font-size: 5rem;
+  margin-bottom: 1.5rem;
+  animation: rewardBounce 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.calendar-reward-subtitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0.5rem 0;
+}
+
+.calendar-reward-details {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.calendar-reward-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  font-size: 1.1rem;
+}
+
+.calendar-reward-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
   position: relative;
   z-index: 1;
 }
@@ -724,5 +788,384 @@
   
   .calendar-day-number {
     font-size: 0.7rem;
+  }
+}
+
+/* === TOASTS MEJORADOS === */
+.calendar-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  min-width: 320px;
+  max-width: 500px;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(20px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  animation: toastSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+@keyframes toastSlideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.calendar-toast .toast-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  color: white;
+  font-weight: 600;
+  position: relative;
+}
+
+.calendar-toast .toast-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.calendar-toast .toast-message {
+  flex: 1;
+  white-space: pre-line;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.calendar-toast .toast-close {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.2s;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.calendar-toast .toast-close:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.calendar-toast-success {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.9) 0%, rgba(5, 150, 105, 0.9) 100%);
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+.calendar-toast-error {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.9) 0%, rgba(220, 38, 38, 0.9) 100%);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.calendar-toast-loading {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(37, 99, 235, 0.9) 100%);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.calendar-toast-reward {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.95) 0%, rgba(245, 158, 11, 0.95) 100%);
+  border-color: rgba(251, 191, 36, 0.6);
+  box-shadow: 0 20px 60px rgba(251, 191, 36, 0.4);
+  animation: rewardPulse 0.6s cubic-bezier(0.4, 0, 0.2, 1), toastSlideIn 0.4s;
+}
+
+@keyframes rewardPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* === PANEL DE RECOMPENSAS === */
+.calendar-rewards-panel {
+  background: linear-gradient(135deg, rgba(30, 58, 138, 0.95) 0%, rgba(55, 48, 163, 0.95) 100%);
+  border-radius: 20px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 1;
+}
+
+.rewards-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.rewards-panel-header h3 {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.rewards-panel-toggle {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+
+.rewards-panel-toggle:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.rewards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 500px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.rewards-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.rewards-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.rewards-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+}
+
+.rewards-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.reward-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.reward-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #10b981, #059669);
+  transform: scaleX(0);
+  transition: transform 0.3s;
+}
+
+.reward-item.unlocked::before {
+  transform: scaleX(1);
+}
+
+.reward-item.unlocked {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.2) 100%);
+  border-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.reward-item.next {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(245, 158, 11, 0.2) 100%);
+  border-color: rgba(251, 191, 36, 0.5);
+  animation: nextRewardPulse 2s ease-in-out infinite;
+}
+
+@keyframes nextRewardPulse {
+  0%, 100% {
+    box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 25px rgba(251, 191, 36, 0.6);
+  }
+}
+
+.reward-item.locked {
+  opacity: 0.6;
+}
+
+.reward-emoji {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.reward-item.unlocked .reward-emoji {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(5, 150, 105, 0.3));
+  border-color: rgba(16, 185, 129, 0.5);
+  animation: emojiBounce 0.6s ease;
+}
+
+@keyframes emojiBounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2) rotate(5deg);
+  }
+}
+
+.reward-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.reward-days {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.reward-item.unlocked .reward-days::after {
+  content: ' ✓';
+  color: #10b981;
+  font-size: 1.2rem;
+}
+
+.reward-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.reward-description {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.reward-progress {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.progress-text {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+}
+
+.progress-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  border-radius: 10px;
+  transition: width 0.5s ease;
+}
+
+.reward-item.next .progress-fill {
+  background: linear-gradient(90deg, #fbbf24, #f59e0b);
+}
+
+.show-rewards-btn {
+  background: linear-gradient(135deg, rgba(30, 58, 138, 0.9), rgba(55, 48, 163, 0.9));
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s;
+  backdrop-filter: blur(10px);
+}
+
+.show-rewards-btn:hover {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.9), rgba(67, 56, 202, 0.9));
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive para panel de recompensas */
+@media (max-width: 768px) {
+  .calendar-rewards-panel {
+    padding: 1rem;
+  }
+  
+  .rewards-panel-header h3 {
+    font-size: 1.25rem;
+  }
+  
+  .reward-item {
+    padding: 1rem;
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .reward-emoji {
+    width: 50px;
+    height: 50px;
+    font-size: 2rem;
+  }
+  
+  .calendar-toast {
+    min-width: 280px;
+    max-width: calc(100vw - 40px);
+    right: 10px;
+    top: 10px;
   }
 }

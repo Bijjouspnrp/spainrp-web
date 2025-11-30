@@ -10,24 +10,23 @@ import {
   FaSpinner,
   FaFire,
   FaTrophy,
-  FaStar
+  FaStar,
+  FaTimes,
+  FaCrown,
+  FaGem
 } from 'react-icons/fa';
 import './DailyCalendar.css';
 
-const REWARD_DAYS = [7, 14, 21, 30];
-const REWARDS = [
-  'Monedas extra',
-  'Badge especial',
-  'Acceso VIP',
-  'Rol Discord',
-  'Minijuego desbloqueado',
-  'Sorteo mensual',
-  'Multiplicador de XP',
-  'Caja misteriosa',
-  'Skin exclusiva',
-  'Poder especial',
-  'Descuento en tienda',
-  'Experiencia bonus'
+// Recompensas de racha
+const STREAK_REWARDS = [
+  { days: 15, reward: '💰 10.000 dinero', emoji: '💰', description: 'Recibe 10.000€ en tu cuenta', unlocked: false },
+  { days: 30, reward: '👤 Segundo personaje', emoji: '👤', description: 'Segundo personaje durante 10 días', unlocked: false },
+  { days: 45, reward: '🔫 AK-47 o PPSH', emoji: '🔫', description: 'Arma especial durante 3 días', unlocked: false },
+  { days: 60, reward: '⭐ Basic Premium', emoji: '⭐', description: 'Basic Premium permanente', unlocked: false },
+  { days: 90, reward: '💎 Ultra Premium', emoji: '💎', description: 'Ultra Premium 1 mes', unlocked: false },
+  { days: 120, reward: '💠 Diamond Premium', emoji: '💠', description: 'Diamond Premium', unlocked: false },
+  { days: 200, reward: '👑 Legend Premium', emoji: '👑', description: 'Legend Premium', unlocked: false },
+  { days: 290, reward: '⚫ Obsidian Premium', emoji: '⚫', description: 'Obsidian Premium permanente', unlocked: false }
 ];
 
 const WEEKDAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
@@ -64,6 +63,8 @@ export default function DailyCalendar() {
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const [isClaiming, setIsClaiming] = useState(false);
+  const [toast, setToast] = useState(null);
+  const [showRewardsPanel, setShowRewardsPanel] = useState(true);
 
   // Cargar progreso desde backend
   const loadCalendarData = useCallback(async () => {
@@ -104,12 +105,22 @@ export default function DailyCalendar() {
 
   // Reclamar día y guardar en backend
   const handleClaim = async (day) => {
-    if (claimedDays.includes(day) || isClaiming ||
-      year !== today.getFullYear() || month !== today.getMonth() || day !== today.getDate()) {
+    // Validación estricta: solo permitir reclamar el día de hoy
+    const todayDate = new Date();
+    const isToday = year === todayDate.getFullYear() && 
+                    month === todayDate.getMonth() && 
+                    day === todayDate.getDate();
+    
+    if (claimedDays.includes(day) || isClaiming || !isToday) {
+      if (!isToday) {
+        showToast('❌ Solo puedes reclamar el día de hoy', 'error', 3000);
+      }
       return;
     }
 
     setIsClaiming(true);
+    showToast('⏳ Procesando reclamación...', 'loading', 2000);
+    
     try {
       const response = await fetch(apiUrl('/api/calendar/claim'), {
         method: 'POST',
@@ -128,20 +139,34 @@ export default function DailyCalendar() {
         setTotalClaims(data.totalClaims || 0);
         setProgress(data.progress || 0);
         
-        // Mostrar recompensa si se proporciona
-        if (data.reward) {
-          setShowReward(data.reward);
-          setTimeout(() => setShowReward(null), 5000);
+        // Mostrar toast de éxito
+        showToast(`✅ ¡Día reclamado! Racha: ${data.streak} días 🔥`, 'success', 4000);
+        
+        // Mostrar recompensa de racha si se alcanzó un hito
+        if (data.streakReward) {
+          const reward = data.streakReward;
+          setTimeout(() => {
+            showToast(
+              `🎉 ¡FELICIDADES! ${reward.emoji} Has alcanzado ${reward.days} días de racha!\n${reward.reward}`,
+              'reward',
+              8000
+            );
+            setShowReward(reward);
+          }, 1500);
+        } else if (data.reward) {
+          // Recompensa diaria normal - solo toast, no modal
+          setTimeout(() => {
+            showToast(`✅ ${data.reward}`, 'success', 3000);
+          }, 500);
         }
       } else {
         const errorData = await response.json().catch(() => ({}));
         console.error('Error claiming day:', errorData.error || 'Error desconocido');
-        // Mostrar mensaje de error al usuario
-        alert(`Error al reclamar el día: ${errorData.error || 'Error desconocido'}`);
+        showToast(`❌ ${errorData.error || 'Error al reclamar el día'}`, 'error', 4000);
       }
     } catch (error) {
       console.error('Error claiming day:', error);
-      alert('Error de conexión al reclamar el día. Inténtalo de nuevo.');
+      showToast('❌ Error de conexión. Inténtalo de nuevo.', 'error', 4000);
     } finally {
       setIsClaiming(false);
     }
@@ -193,10 +218,111 @@ export default function DailyCalendar() {
     setShowReward(null);
   };
 
+  // Mostrar toast mejorado
+  const showToast = (message, type = 'success', duration = 4000) => {
+    setToast({ message, type, id: Date.now() });
+    setTimeout(() => setToast(null), duration);
+  };
+
+  // Obtener recompensas desbloqueadas
+  const getUnlockedRewards = () => {
+    return STREAK_REWARDS.map(reward => ({
+      ...reward,
+      unlocked: streak >= reward.days,
+      next: streak < reward.days && (streak >= reward.days - 5 || streak === 0)
+    }));
+  };
+
+  const unlockedRewards = getUnlockedRewards();
+
   return (
-    <div className="daily-calendar">
-      {/* Header del calendario */}
-      <div className="calendar-header">
+    <div className="daily-calendar-container">
+      {/* Toast Notifications */}
+      {toast && (
+        <div className={`calendar-toast calendar-toast-${toast.type}`}>
+          <div className="toast-content">
+            <div className="toast-icon">
+              {toast.type === 'loading' ? (
+                <FaSpinner className="fa-spin" />
+              ) : toast.type === 'error' ? (
+                '❌'
+              ) : toast.type === 'reward' ? (
+                '🎉'
+              ) : (
+                '✅'
+              )}
+            </div>
+            <div className="toast-message">{toast.message}</div>
+            <button className="toast-close" onClick={() => setToast(null)}>
+              <FaTimes />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Panel de Recompensas de Racha */}
+      {showRewardsPanel && (
+        <div className="calendar-rewards-panel">
+          <div className="rewards-panel-header">
+            <h3>
+              <FaTrophy /> Recompensas de Racha
+            </h3>
+            <button 
+              className="rewards-panel-toggle"
+              onClick={() => setShowRewardsPanel(false)}
+              title="Ocultar panel"
+            >
+              <FaTimes />
+            </button>
+          </div>
+          <div className="rewards-list">
+            {unlockedRewards.map((reward, index) => (
+              <div 
+                key={reward.days} 
+                className={`reward-item ${reward.unlocked ? 'unlocked' : reward.next ? 'next' : 'locked'}`}
+              >
+                <div className="reward-emoji">{reward.emoji}</div>
+                <div className="reward-info">
+                  <div className="reward-days">
+                    {reward.days} días {reward.unlocked && '✓'}
+                  </div>
+                  <div className="reward-name">{reward.reward}</div>
+                  <div className="reward-description">{reward.description}</div>
+                  {!reward.unlocked && (
+                    <div className="reward-progress">
+                      {streak < reward.days ? (
+                        <span className="progress-text">
+                          {reward.days - streak} días restantes
+                        </span>
+                      ) : null}
+                      <div className="progress-bar">
+                        <div 
+                          className="progress-fill" 
+                          style={{ width: `${Math.min((streak / reward.days) * 100, 100)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {!showRewardsPanel && (
+        <button 
+          className="show-rewards-btn"
+          onClick={() => setShowRewardsPanel(true)}
+          title="Mostrar recompensas"
+        >
+          <FaTrophy /> Ver Recompensas
+        </button>
+      )}
+
+      <div className="daily-calendar">
+        {/* Header del calendario */}
+        <div className="calendar-header">
         <button 
           className="calendar-nav" 
           onClick={handlePrevMonth} 
@@ -325,18 +451,26 @@ export default function DailyCalendar() {
         </div>
       )}
 
-      {/* Modal de recompensa */}
-      {showReward && (
+      {/* Modal de recompensa mejorado */}
+      {showReward && typeof showReward === 'object' && showReward.emoji && (
         <div className="calendar-reward-modal" onClick={closeRewardModal}>
           <div className="calendar-reward-content" onClick={(e) => e.stopPropagation()}>
-            <FaGift className="calendar-reward-icon" />
+            <button className="calendar-reward-close" onClick={closeRewardModal}>
+              <FaTimes />
+            </button>
+            <div className="calendar-reward-emoji-large">{showReward.emoji}</div>
             <div className="calendar-reward-text">
-              <div className="calendar-reward-title">¡Recompensa desbloqueada!</div>
-              <div className="calendar-reward-description">{showReward}</div>
+              <div className="calendar-reward-title">🎉 ¡FELICIDADES! 🎉</div>
+              <div className="calendar-reward-subtitle">Has alcanzado {showReward.days} días de racha</div>
+              <div className="calendar-reward-description">{showReward.reward}</div>
+              {showReward.description && (
+                <div className="calendar-reward-details">{showReward.description}</div>
+              )}
             </div>
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

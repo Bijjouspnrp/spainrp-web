@@ -7649,6 +7649,22 @@ app.post('/api/calendar/claim', verifyToken, async (req, res) => {
     const monthNum = parseInt(month);
     const dayNum = parseInt(day);
     
+    // Validación estricta: solo permitir reclamar el día de hoy
+    const today = new Date();
+    const todayYear = today.getFullYear();
+    const todayMonth = today.getMonth() + 1; // getMonth() devuelve 0-11
+    const todayDay = today.getDate();
+    
+    if (yearNum !== todayYear || monthNum !== todayMonth || dayNum !== todayDay) {
+      return res.status(400).json({ 
+        error: 'Solo puedes reclamar el día de hoy',
+        details: {
+          requested: { year: yearNum, month: monthNum, day: dayNum },
+          today: { year: todayYear, month: todayMonth, day: todayDay }
+        }
+      });
+    }
+    
     // Usar MongoDB si está disponible
     if (mongoConnected) {
       const models = loadCalendarModels();
@@ -7731,6 +7747,30 @@ app.post('/api/calendar/claim', verifyToken, async (req, res) => {
         const daysInMonth = new Date(yearNum, monthNum, 0).getDate();
         const progress = Math.round((claimedDays.length / daysInMonth) * 100);
         
+        // Verificar recompensas de racha
+        const streakRewards = [
+          { days: 15, reward: '💰 10.000 dinero', emoji: '💰', type: 'money', amount: 10000, description: 'Recibe 10.000€ en tu cuenta' },
+          { days: 30, reward: '👤 Segundo personaje durante 10 días', emoji: '👤', type: 'character', duration: 10, description: 'Segundo personaje durante 10 días' },
+          { days: 45, reward: '🔫 AK-47 o PPSH durante 3 días', emoji: '🔫', type: 'weapon', duration: 3, description: 'Arma especial durante 3 días' },
+          { days: 60, reward: '⭐ Basic Premium permanente', emoji: '⭐', type: 'premium', tier: 'basic', permanent: true, description: 'Basic Premium permanente' },
+          { days: 90, reward: '💎 Ultra Premium 1 mes', emoji: '💎', type: 'premium', tier: 'ultra', duration: 30, description: 'Ultra Premium 1 mes' },
+          { days: 120, reward: '💠 Diamond Premium', emoji: '💠', type: 'premium', tier: 'diamond', description: 'Diamond Premium' },
+          { days: 200, reward: '👑 Legend Premium', emoji: '👑', type: 'premium', tier: 'legend', description: 'Legend Premium' },
+          { days: 290, reward: '⚫ Obsidian Premium permanente', emoji: '⚫', type: 'premium', tier: 'obsidian', permanent: true, description: 'Obsidian Premium permanente' }
+        ];
+        
+        let unlockedReward = null;
+        const previousStreak = streakData ? streakData.currentStreak : 0;
+        
+        // Verificar si se alcanzó un nuevo hito
+        for (const milestone of streakRewards) {
+          if (newStreak === milestone.days && previousStreak < milestone.days) {
+            unlockedReward = milestone;
+            console.log(`[CALENDAR REWARD] Usuario ${userId} alcanzó ${milestone.days} días de racha: ${milestone.reward}`);
+            break;
+          }
+        }
+        
         res.json({
           success: true,
           message: `¡Día reclamado! Recompensa: ${reward}`,
@@ -7739,7 +7779,8 @@ app.post('/api/calendar/claim', verifyToken, async (req, res) => {
           longestStreak: newLongestStreak,
           totalClaims: newTotalClaims,
           progress,
-          reward
+          reward,
+          streakReward: unlockedReward
         });
         return;
       }
@@ -7749,6 +7790,22 @@ app.post('/api/calendar/claim', verifyToken, async (req, res) => {
     {
       // SQLite fallback
       const { getQuery, runQuery, allQuery } = require('./db/database');
+      
+      // Validación estricta: solo permitir reclamar el día de hoy (SQLite)
+      const todayCheck = new Date();
+      const todayYear = todayCheck.getFullYear();
+      const todayMonth = todayCheck.getMonth() + 1;
+      const todayDay = todayCheck.getDate();
+      
+      if (yearNum !== todayYear || monthNum !== todayMonth || dayNum !== todayDay) {
+        return res.status(400).json({ 
+          error: 'Solo puedes reclamar el día de hoy',
+          details: {
+            requested: { year: yearNum, month: monthNum, day: dayNum },
+            today: { year: todayYear, month: todayMonth, day: todayDay }
+          }
+        });
+      }
       
       const existing = await getQuery(
         'SELECT id FROM calendar_claims WHERE userId = ? AND year = ? AND month = ? AND day = ?',
@@ -7815,6 +7872,30 @@ app.post('/api/calendar/claim', verifyToken, async (req, res) => {
       const daysInMonth = new Date(yearNum, monthNum, 0).getDate();
       const progress = Math.round((claimedDays.length / daysInMonth) * 100);
       
+      // Verificar recompensas de racha (SQLite)
+      const streakRewards = [
+        { days: 15, reward: '💰 10.000 dinero', emoji: '💰', type: 'money', amount: 10000, description: 'Recibe 10.000€ en tu cuenta' },
+        { days: 30, reward: '👤 Segundo personaje durante 10 días', emoji: '👤', type: 'character', duration: 10, description: 'Segundo personaje durante 10 días' },
+        { days: 45, reward: '🔫 AK-47 o PPSH durante 3 días', emoji: '🔫', type: 'weapon', duration: 3, description: 'Arma especial durante 3 días' },
+        { days: 60, reward: '⭐ Basic Premium permanente', emoji: '⭐', type: 'premium', tier: 'basic', permanent: true, description: 'Basic Premium permanente' },
+        { days: 90, reward: '💎 Ultra Premium 1 mes', emoji: '💎', type: 'premium', tier: 'ultra', duration: 30, description: 'Ultra Premium 1 mes' },
+        { days: 120, reward: '💠 Diamond Premium', emoji: '💠', type: 'premium', tier: 'diamond', description: 'Diamond Premium' },
+        { days: 200, reward: '👑 Legend Premium', emoji: '👑', type: 'premium', tier: 'legend', description: 'Legend Premium' },
+        { days: 290, reward: '⚫ Obsidian Premium permanente', emoji: '⚫', type: 'premium', tier: 'obsidian', permanent: true, description: 'Obsidian Premium permanente' }
+      ];
+      
+      let unlockedReward = null;
+      const previousStreak = streakData ? streakData.currentStreak : 0;
+      
+      // Verificar si se alcanzó un nuevo hito
+      for (const milestone of streakRewards) {
+        if (newStreak === milestone.days && previousStreak < milestone.days) {
+          unlockedReward = milestone;
+          console.log(`[CALENDAR REWARD] Usuario ${userId} alcanzó ${milestone.days} días de racha: ${milestone.reward}`);
+          break;
+        }
+      }
+      
       res.json({
         success: true,
         message: `¡Día reclamado! Recompensa: ${reward}`,
@@ -7823,7 +7904,8 @@ app.post('/api/calendar/claim', verifyToken, async (req, res) => {
         longestStreak: newLongestStreak,
         totalClaims: newTotalClaims,
         progress,
-        reward
+        reward,
+        streakReward: unlockedReward
       });
     }
   } catch (error) {
