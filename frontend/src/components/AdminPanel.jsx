@@ -647,7 +647,6 @@ function OverviewTab() {
     memberCount: 0,
     onlineCount: 0,
     bannedCount: 0,
-    todayActions: 0,
     mutedCount: 0,
     channelsCount: 0,
     rolesCount: 0
@@ -686,7 +685,6 @@ function OverviewTab() {
         memberCount: memberData.memberCount || 0,
         onlineCount: widgetData.presence_count || 0,
         bannedCount: bannedData.count || bannedData.bans?.length || 0,
-        todayActions: logs.length,
         mutedCount: 0, // Se calculará si hay endpoint específico
         channelsCount: 0, // Se calculará si hay endpoint específico
         rolesCount: rolesData.roles?.length || 0
@@ -770,17 +768,6 @@ function OverviewTab() {
             <h3>Baneados</h3>
             <p className="stat-value">{loading ? 'Cargando...' : stats.bannedCount}</p>
             <span className="stat-label">Usuarios sancionados</span>
-        </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-icon">
-            <FaGavel />
-        </div>
-          <div className="stat-content">
-            <h3>Acciones Hoy</h3>
-            <p className="stat-value">{loading ? 'Cargando...' : logs.length}</p>
-            <span className="stat-label">Moderaciones</span>
         </div>
         </div>
 

@@ -29,6 +29,7 @@ export default function ModernCalendar() {
   const [streak, setStreak] = useState(0);
   const [longestStreak, setLongestStreak] = useState(0);
   const [totalClaims, setTotalClaims] = useState(0);
+  const [progress, setProgress] = useState(0);
   const [loading, setLoading] = useState(true);
   const [isClaiming, setIsClaiming] = useState(false);
 
@@ -54,6 +55,7 @@ export default function ModernCalendar() {
         setStreak(data.streak || 0);
         setLongestStreak(data.longestStreak || 0);
         setTotalClaims(data.totalClaims || 0);
+        setProgress(data.progress || 0);
       } else {
         throw new Error('Error loading calendar data');
       }
@@ -63,6 +65,7 @@ export default function ModernCalendar() {
       setStreak(0);
       setLongestStreak(0);
       setTotalClaims(0);
+      setProgress(0);
     } finally {
       setLoading(false);
     }

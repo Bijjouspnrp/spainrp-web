@@ -106,6 +106,15 @@ const BancoCentralRP = () => {
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('success');
   const [loadingAction, setLoadingAction] = useState(false);
+  const [loadingBalance, setLoadingBalance] = useState(false);
+  const [loadingTransactions, setLoadingTransactions] = useState(false);
+  const [actionLoading, setActionLoading] = useState({
+    deposit: false,
+    withdraw: false,
+    transfer: false,
+    work: false,
+    salary: false
+  });
   
   // Estados para formularios
   const [transferData, setTransferData] = useState({ toId: '', amount: '', note: '' });
@@ -124,16 +133,25 @@ const BancoCentralRP = () => {
     const loadUserData = async () => {
       try {
         setLoading(true);
+        showLoadingMessage('Conectando con el banco...');
+        
         const response = await authFetch('/auth/me');
         const data = await response.json();
         
         if (data && data.user) {
           setUser(data.user);
-          await loadBalance(data.user.id);
-          await loadTransactions(data.user.id);
+          showLoadingMessage('Cargando información de cuenta...');
+          await Promise.all([
+            loadBalance(data.user.id, false),
+            loadTransactions(data.user.id, false)
+          ]);
+          showMessage('Bienvenido al Banco Central RP', 'success', 2000);
+        } else {
+          showMessage('Error al cargar datos de usuario', 'error');
         }
       } catch (error) {
         console.error('Error loading user data:', error);
+        showMessage('Error de conexión. Intenta recargar la página.', 'error');
       } finally {
         setLoading(false);
       }
@@ -142,8 +160,13 @@ const BancoCentralRP = () => {
     loadUserData();
   }, []);
 
-  const loadBalance = async (userId) => {
+  const loadBalance = async (userId, showToast = false) => {
     try {
+      setLoadingBalance(true);
+      if (showToast) {
+        showLoadingMessage('Actualizando saldo...');
+      }
+      
       console.log('[BANCO-FRONTEND] 🏦 Cargando saldo para usuario:', userId);
       
       const response = await authFetch(`/api/proxy/balance/${userId}`);
@@ -153,18 +176,34 @@ const BancoCentralRP = () => {
       if (data.success && data.balance) {
         console.log('[BANCO-FRONTEND] ✅ Saldo cargado correctamente:', data.balance);
         setBalance(data.balance);
+        if (showToast) {
+          showMessage('Saldo actualizado correctamente', 'success', 2000);
+        }
       } else {
         console.warn('[BANCO-FRONTEND] ⚠️ No se pudo cargar el saldo:', data);
         setBalance({ cash: 0, bank: 0 });
+        if (showToast) {
+          showMessage('No se pudo cargar el saldo. Intenta más tarde.', 'error');
+        }
       }
     } catch (error) {
       console.error('[BANCO-FRONTEND] ❌ Error cargando saldo:', error);
       setBalance({ cash: 0, bank: 0 });
+      if (showToast) {
+        showMessage('Error de conexión al cargar saldo', 'error');
+      }
+    } finally {
+      setLoadingBalance(false);
     }
   };
 
-  const loadTransactions = async (userId) => {
+  const loadTransactions = async (userId, showToast = false) => {
     try {
+      setLoadingTransactions(true);
+      if (showToast) {
+        showLoadingMessage('Cargando transacciones...');
+      }
+      
       console.log('[BANCO-FRONTEND] 📊 Cargando transacciones para usuario:', userId);
       
       // Primero intentar cargar desde localStorage
@@ -176,6 +215,9 @@ const BancoCentralRP = () => {
           ...tx,
           icon: getTransactionIcon(tx.type)
         })));
+        if (showToast) {
+          showMessage(`${parsed.length} transacciones cargadas`, 'info', 2000);
+        }
         return;
       }
       
@@ -192,13 +234,24 @@ const BancoCentralRP = () => {
         setTransactions(transactionsWithIcons);
         // Guardar en localStorage para futuras cargas
         localStorage.setItem(`transactions_${userId}`, JSON.stringify(transactionsWithIcons));
+        if (showToast) {
+          showMessage(`${data.transactions.length} transacciones cargadas`, 'success', 2000);
+        }
       } else {
         console.log('[BANCO-FRONTEND] ⚠️ No hay transacciones disponibles');
         setTransactions([]);
+        if (showToast) {
+          showMessage('No hay transacciones disponibles', 'info', 2000);
+        }
       }
     } catch (error) {
       console.error('[BANCO-FRONTEND] ❌ Error cargando transacciones:', error);
       setTransactions([]);
+      if (showToast) {
+        showMessage('Error al cargar transacciones', 'error');
+      }
+    } finally {
+      setLoadingTransactions(false);
     }
   };
 
@@ -252,10 +305,15 @@ const BancoCentralRP = () => {
     }
   };
 
-  const showMessage = (msg, type = 'success') => {
+  const showMessage = (msg, type = 'success', duration = 4000) => {
     setMessage(msg);
     setMessageType(type);
-    setTimeout(() => setMessage(''), 3000);
+    setTimeout(() => setMessage(''), duration);
+  };
+
+  const showLoadingMessage = (msg) => {
+    setMessage(msg);
+    setMessageType('loading');
   };
 
   // Funciones para la tarjeta de crédito
@@ -290,7 +348,15 @@ const BancoCentralRP = () => {
       return;
     }
     
+    if (parseInt(depositAmount) > balance.cash) {
+      showMessage('No tienes suficiente efectivo', 'error');
+      return;
+    }
+    
+    setActionLoading(prev => ({ ...prev, deposit: true }));
     setLoadingAction(true);
+    showLoadingMessage('Procesando depósito...');
+    
     try {
       const amount = parseInt(depositAmount);
       console.log('[BANCO-FRONTEND] 💰 Realizando depósito:', { userId: user.id, amount });
@@ -306,14 +372,15 @@ const BancoCentralRP = () => {
       
       if (data.success) {
         console.log('[BANCO-FRONTEND] ✅ Depósito exitoso');
-        await loadBalance(user.id);
+        showLoadingMessage('Actualizando saldo...');
+        await loadBalance(user.id, false);
         addTransaction({
           type: 'deposit',
           amount: amount,
           description: 'Depósito a cuenta bancaria',
           date: new Date().toISOString()
         });
-        showMessage(`Depósito de ${formatCurrency(amount)} realizado correctamente`, 'success');
+        showMessage(`✅ Depósito de ${formatCurrency(amount)} realizado correctamente`, 'success');
         setDepositAmount('');
         setShowDeposit(false);
       } else {
@@ -322,8 +389,9 @@ const BancoCentralRP = () => {
       }
     } catch (error) {
       console.error('[BANCO-FRONTEND] ❌ Error en depósito:', error);
-      showMessage('Error al realizar depósito', 'error');
+      showMessage('Error de conexión al realizar depósito', 'error');
     } finally {
+      setActionLoading(prev => ({ ...prev, deposit: false }));
       setLoadingAction(false);
     }
   };
@@ -334,7 +402,15 @@ const BancoCentralRP = () => {
       return;
     }
     
+    if (parseInt(withdrawAmount) > balance.bank) {
+      showMessage('No tienes suficiente saldo en el banco', 'error');
+      return;
+    }
+    
+    setActionLoading(prev => ({ ...prev, withdraw: true }));
     setLoadingAction(true);
+    showLoadingMessage('Procesando retiro...');
+    
     try {
       const amount = parseInt(withdrawAmount);
       console.log('[BANCO-FRONTEND] 💸 Realizando retiro:', { userId: user.id, amount });
@@ -350,14 +426,15 @@ const BancoCentralRP = () => {
       
       if (data.success) {
         console.log('[BANCO-FRONTEND] ✅ Retiro exitoso');
-        await loadBalance(user.id);
+        showLoadingMessage('Actualizando saldo...');
+        await loadBalance(user.id, false);
         addTransaction({
           type: 'withdraw',
           amount: -amount,
           description: 'Retiro de cuenta bancaria',
           date: new Date().toISOString()
         });
-        showMessage(`Retiro de ${formatCurrency(amount)} realizado correctamente`, 'success');
+        showMessage(`✅ Retiro de ${formatCurrency(amount)} realizado correctamente`, 'success');
         setWithdrawAmount('');
         setShowWithdraw(false);
       } else {
@@ -366,8 +443,9 @@ const BancoCentralRP = () => {
       }
     } catch (error) {
       console.error('[BANCO-FRONTEND] ❌ Error en retiro:', error);
-      showMessage('Error al realizar retiro', 'error');
+      showMessage('Error de conexión al realizar retiro', 'error');
     } finally {
+      setActionLoading(prev => ({ ...prev, withdraw: false }));
       setLoadingAction(false);
     }
   };
@@ -378,7 +456,15 @@ const BancoCentralRP = () => {
       return;
     }
     
+    if (parseInt(transferData.amount) > balance.bank) {
+      showMessage('No tienes suficiente saldo en el banco', 'error');
+      return;
+    }
+    
+    setActionLoading(prev => ({ ...prev, transfer: true }));
     setLoadingAction(true);
+    showLoadingMessage('Verificando destinatario...');
+    
     try {
       const amount = parseInt(transferData.amount);
       console.log('[BANCO-FRONTEND] ↔️ Realizando transferencia:', { 
@@ -386,6 +472,8 @@ const BancoCentralRP = () => {
         toId: transferData.toId, 
         amount 
       });
+      
+      showLoadingMessage('Procesando transferencia...');
       
       const response = await authFetch(`/api/proxy/transfer`, {
         method: 'POST',
@@ -403,14 +491,15 @@ const BancoCentralRP = () => {
       
       if (data.success) {
         console.log('[BANCO-FRONTEND] ✅ Transferencia exitosa');
-        await loadBalance(user.id);
+        showLoadingMessage('Actualizando saldo...');
+        await loadBalance(user.id, false);
         addTransaction({
           type: 'transfer',
           amount: -amount,
-          description: `Transferencia a ${transferData.toId}`,
+          description: `Transferencia a ${transferData.toId}${transferData.note ? ` - ${transferData.note}` : ''}`,
           date: new Date().toISOString()
         });
-        showMessage(`Transferencia de ${formatCurrency(amount)} realizada correctamente`, 'success');
+        showMessage(`✅ Transferencia de ${formatCurrency(amount)} a ${transferData.toId} realizada correctamente`, 'success');
         setTransferData({ toId: '', amount: '', note: '' });
         setShowTransfer(false);
       } else {
@@ -419,8 +508,9 @@ const BancoCentralRP = () => {
       }
     } catch (error) {
       console.error('[BANCO-FRONTEND] ❌ Error en transferencia:', error);
-      showMessage('Error al realizar transferencia', 'error');
+      showMessage('Error de conexión al realizar transferencia', 'error');
     } finally {
+      setActionLoading(prev => ({ ...prev, transfer: false }));
       setLoadingAction(false);
     }
   };
@@ -428,9 +518,14 @@ const BancoCentralRP = () => {
   const handleWork = async () => {
     if (!user) return;
     
+    setActionLoading(prev => ({ ...prev, work: true }));
     setLoadingAction(true);
+    showLoadingMessage('Buscando trabajo disponible...');
+    
     try {
       console.log('[BANCO-FRONTEND] 💼 Realizando trabajo:', { userId: user.id, username: user.username });
+      
+      showLoadingMessage('Realizando trabajo...');
       
       const response = await authFetch(`/api/proxy/trabajar`, {
         method: 'POST',
@@ -443,29 +538,32 @@ const BancoCentralRP = () => {
       
       if (data.success) {
         console.log('[BANCO-FRONTEND] ✅ Trabajo exitoso');
-        await loadBalance(user.id);
+        const reward = data.reward || 300;
+        showLoadingMessage('Procesando pago...');
+        await loadBalance(user.id, false);
         addTransaction({
           type: 'work',
-          amount: data.reward || 300,
+          amount: reward,
           description: 'Trabajo realizado',
           date: new Date().toISOString()
         });
-        showMessage(`Trabajo completado. Ganaste ${formatCurrency(data.reward || 300)}`, 'success');
+        showMessage(`✅ Trabajo completado. Ganaste ${formatCurrency(reward)}`, 'success');
         setWorkCooldown(90 * 60); // 90 minutos en segundos
         setShowWork(false);
       } else {
         console.error('[BANCO-FRONTEND] ❌ Error en trabajo:', data.error);
         if (data.error === 'Cooldown') {
           const minutes = Math.ceil(data.left / 60);
-          showMessage(`Debes esperar ${minutes} minutos para trabajar de nuevo`, 'error');
+          showMessage(`⏰ Debes esperar ${minutes} minutos para trabajar de nuevo`, 'error');
         } else {
           showMessage(data.error || 'Error al realizar trabajo', 'error');
         }
       }
     } catch (error) {
       console.error('[BANCO-FRONTEND] ❌ Error en trabajo:', error);
-      showMessage('Error al realizar trabajo', 'error');
+      showMessage('Error de conexión al realizar trabajo', 'error');
     } finally {
+      setActionLoading(prev => ({ ...prev, work: false }));
       setLoadingAction(false);
     }
   };
@@ -473,7 +571,10 @@ const BancoCentralRP = () => {
   const handleSalary = async () => {
     if (!user) return;
     
+    setActionLoading(prev => ({ ...prev, salary: true }));
     setLoadingAction(true);
+    showLoadingMessage('Verificando roles de Discord...');
+    
     try {
       // Obtener roles reales del usuario desde Discord
       const roles = await getUserRoles(user.id);
@@ -484,6 +585,8 @@ const BancoCentralRP = () => {
       }
       
       console.log('[BANCO-FRONTEND] 💳 Cobrando nómina:', { userId: user.id, roles });
+      
+      showLoadingMessage('Calculando nómina según tus roles...');
       
       const response = await authFetch(`/api/proxy/cobrar-nomina`, {
         method: 'POST',
@@ -496,24 +599,27 @@ const BancoCentralRP = () => {
       
       if (data.success) {
         console.log('[BANCO-FRONTEND] ✅ Nómina exitosa');
-        await loadBalance(user.id);
-        await loadTransactions(user.id); // Recargar transacciones reales
-        showMessage(`Nómina cobrada. Recibiste ${formatCurrency(data.neto || 1000)}`, 'success');
+        const neto = data.neto || 1000;
+        showLoadingMessage('Procesando pago de nómina...');
+        await loadBalance(user.id, false);
+        await loadTransactions(user.id, false); // Recargar transacciones reales
+        showMessage(`✅ Nómina cobrada. Recibiste ${formatCurrency(neto)}`, 'success');
         setSalaryCooldown(48 * 60 * 60); // 48 horas en segundos
         setShowSalary(false);
       } else {
         console.error('[BANCO-FRONTEND] ❌ Error en nómina:', data.error);
         if (data.error === 'Cooldown') {
           const hours = Math.ceil(data.restante / (60 * 60 * 1000));
-          showMessage(`Debes esperar ${hours} horas para cobrar nómina de nuevo`, 'error');
+          showMessage(`⏰ Debes esperar ${hours} horas para cobrar nómina de nuevo`, 'error');
         } else {
           showMessage(data.error || 'Error al cobrar nómina', 'error');
         }
       }
     } catch (error) {
       console.error('[BANCO-FRONTEND] ❌ Error en nómina:', error);
-      showMessage('Error al cobrar nómina', 'error');
+      showMessage('Error de conexión al cobrar nómina', 'error');
     } finally {
+      setActionLoading(prev => ({ ...prev, salary: false }));
       setLoadingAction(false);
     }
   };
@@ -781,74 +887,100 @@ const BancoCentralRP = () => {
           
           <div className="actions-grid">
             <button 
-              className="action-btn deposit" 
+              className={`action-btn deposit ${actionLoading.deposit ? 'loading' : ''}`}
               onClick={() => setShowDeposit(true)}
-              disabled={loadingAction}
+              disabled={loadingAction || actionLoading.deposit}
             >
               <div className="btn-icon">
-                <ArrowUpIcon />
+                {actionLoading.deposit ? (
+                  <div className="btn-spinner"></div>
+                ) : (
+                  <ArrowUpIcon />
+                )}
               </div>
               <div className="btn-content">
-                <span className="btn-title">Depositar</span>
+                <span className="btn-title">
+                  {actionLoading.deposit ? 'Procesando...' : 'Depositar'}
+                </span>
                 <span className="btn-subtitle">Efectivo → Banco</span>
               </div>
             </button>
             
             <button 
-              className="action-btn withdraw" 
+              className={`action-btn withdraw ${actionLoading.withdraw ? 'loading' : ''}`}
               onClick={() => setShowWithdraw(true)}
-              disabled={loadingAction}
+              disabled={loadingAction || actionLoading.withdraw}
             >
               <div className="btn-icon">
-                <ArrowDownIcon />
+                {actionLoading.withdraw ? (
+                  <div className="btn-spinner"></div>
+                ) : (
+                  <ArrowDownIcon />
+                )}
               </div>
               <div className="btn-content">
-                <span className="btn-title">Retirar</span>
+                <span className="btn-title">
+                  {actionLoading.withdraw ? 'Procesando...' : 'Retirar'}
+                </span>
                 <span className="btn-subtitle">Banco → Efectivo</span>
               </div>
             </button>
             
             <button 
-              className="action-btn transfer" 
+              className={`action-btn transfer ${actionLoading.transfer ? 'loading' : ''}`}
               onClick={() => setShowTransfer(true)}
-              disabled={loadingAction}
+              disabled={loadingAction || actionLoading.transfer}
             >
               <div className="btn-icon">
-                <ArrowRightIcon />
+                {actionLoading.transfer ? (
+                  <div className="btn-spinner"></div>
+                ) : (
+                  <ArrowRightIcon />
+                )}
               </div>
               <div className="btn-content">
-                <span className="btn-title">Transferir</span>
+                <span className="btn-title">
+                  {actionLoading.transfer ? 'Procesando...' : 'Transferir'}
+                </span>
                 <span className="btn-subtitle">A otro usuario</span>
               </div>
             </button>
             
             <button 
-              className="action-btn work" 
+              className={`action-btn work ${actionLoading.work ? 'loading' : ''}`}
               onClick={() => setShowWork(true)}
-              disabled={loadingAction || workCooldown > 0}
+              disabled={loadingAction || workCooldown > 0 || actionLoading.work}
             >
               <div className="btn-icon">
-                <BriefcaseIcon />
+                {actionLoading.work ? (
+                  <div className="btn-spinner"></div>
+                ) : (
+                  <BriefcaseIcon />
+                )}
               </div>
               <div className="btn-content">
                 <span className="btn-title">
-                  {workCooldown > 0 ? `Esperar ${formatTime(workCooldown)}` : 'Trabajar'}
+                  {actionLoading.work ? 'Trabajando...' : workCooldown > 0 ? `Esperar ${formatTime(workCooldown)}` : 'Trabajar'}
                 </span>
                 <span className="btn-subtitle">Gana dinero trabajando</span>
               </div>
             </button>
             
             <button 
-              className="action-btn salary" 
+              className={`action-btn salary ${actionLoading.salary ? 'loading' : ''}`}
               onClick={() => setShowSalary(true)}
-              disabled={loadingAction || salaryCooldown > 0}
+              disabled={loadingAction || salaryCooldown > 0 || actionLoading.salary}
             >
               <div className="btn-icon">
-                <DollarSignIcon />
+                {actionLoading.salary ? (
+                  <div className="btn-spinner"></div>
+                ) : (
+                  <DollarSignIcon />
+                )}
               </div>
               <div className="btn-content">
                 <span className="btn-title">
-                  {salaryCooldown > 0 ? `Esperar ${formatTime(salaryCooldown)}` : 'Nómina'}
+                  {actionLoading.salary ? 'Calculando...' : salaryCooldown > 0 ? `Esperar ${formatTime(salaryCooldown)}` : 'Nómina'}
                 </span>
                 <span className="btn-subtitle">Cobra según tu rol</span>
               </div>
@@ -929,9 +1061,16 @@ const BancoCentralRP = () => {
               <button 
                 onClick={handleDeposit} 
                 className="btn-primary"
-                disabled={loadingAction || !depositAmount || depositAmount <= 0}
+                disabled={actionLoading.deposit || !depositAmount || depositAmount <= 0 || parseInt(depositAmount) > balance.cash}
               >
-                {loadingAction ? 'Procesando...' : 'Depositar'}
+                {actionLoading.deposit ? (
+                  <>
+                    <div className="btn-spinner-small"></div>
+                    <span>Procesando...</span>
+                  </>
+                ) : (
+                  'Depositar'
+                )}
               </button>
             </div>
           </div>
@@ -971,9 +1110,16 @@ const BancoCentralRP = () => {
               <button 
                 onClick={handleWithdraw} 
                 className="btn-primary"
-                disabled={loadingAction || !withdrawAmount || withdrawAmount <= 0}
+                disabled={actionLoading.withdraw || !withdrawAmount || withdrawAmount <= 0 || parseInt(withdrawAmount) > balance.bank}
               >
-                {loadingAction ? 'Procesando...' : 'Retirar'}
+                {actionLoading.withdraw ? (
+                  <>
+                    <div className="btn-spinner-small"></div>
+                    <span>Procesando...</span>
+                  </>
+                ) : (
+                  'Retirar'
+                )}
               </button>
             </div>
           </div>
@@ -1026,9 +1172,16 @@ const BancoCentralRP = () => {
               <button
                 onClick={handleTransfer} 
                 className="btn-primary"
-                disabled={loadingAction || !transferData.toId || !transferData.amount}
+                disabled={actionLoading.transfer || !transferData.toId || !transferData.amount || parseInt(transferData.amount) > balance.bank}
               >
-                {loadingAction ? 'Procesando...' : 'Transferir'}
+                {actionLoading.transfer ? (
+                  <>
+                    <div className="btn-spinner-small"></div>
+                    <span>Procesando...</span>
+                  </>
+                ) : (
+                  'Transferir'
+                )}
               </button>
             </div>
           </div>
@@ -1060,9 +1213,16 @@ const BancoCentralRP = () => {
               <button
                 onClick={handleWork} 
                 className="btn-primary"
-                disabled={loadingAction || workCooldown > 0}
+                disabled={actionLoading.work || workCooldown > 0}
               >
-                {loadingAction ? 'Trabajando...' : 'Trabajar'}
+                {actionLoading.work ? (
+                  <>
+                    <div className="btn-spinner-small"></div>
+                    <span>Trabajando...</span>
+                  </>
+                ) : (
+                  'Trabajar'
+                )}
               </button>
             </div>
           </div>
@@ -1094,9 +1254,16 @@ const BancoCentralRP = () => {
               <button 
                 onClick={handleSalary} 
                 className="btn-primary"
-                disabled={loadingAction || salaryCooldown > 0}
+                disabled={actionLoading.salary || salaryCooldown > 0}
               >
-                {loadingAction ? 'Procesando...' : 'Cobrar Nómina'}
+                {actionLoading.salary ? (
+                  <>
+                    <div className="btn-spinner-small"></div>
+                    <span>Calculando nómina...</span>
+                  </>
+                ) : (
+                  'Cobrar Nómina'
+                )}
               </button>
           </div>
         </div>
@@ -1143,15 +1310,40 @@ const BancoCentralRP = () => {
         </div>
       </div>
 
-      {/* Message Toast */}
+      {/* Message Toast Mejorado */}
       {message && (
         <div className={`message-toast ${messageType}`}>
           <div className="toast-content">
             <div className="toast-icon">
-              {messageType === 'success' ? '✓' : '⚠'}
+              {messageType === 'loading' ? (
+                <div className="toast-spinner"></div>
+              ) : messageType === 'success' ? (
+                '✓'
+              ) : messageType === 'error' ? (
+                '✕'
+              ) : messageType === 'info' ? (
+                'ℹ'
+              ) : (
+                '⚠'
+              )}
             </div>
             <span>{message}</span>
           </div>
+        </div>
+      )}
+      
+      {/* Indicadores de carga en botones */}
+      {loadingBalance && (
+        <div className="loading-overlay-balance">
+          <div className="loading-spinner-small"></div>
+          <span>Actualizando saldo...</span>
+        </div>
+      )}
+      
+      {loadingTransactions && (
+        <div className="loading-overlay-transactions">
+          <div className="loading-spinner-small"></div>
+          <span>Cargando transacciones...</span>
         </div>
       )}
     </div>

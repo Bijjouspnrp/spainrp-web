@@ -1296,11 +1296,22 @@ app.use((req, res, next) => {
   }
   next();
 });
-// MongoDB connection
-// mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/spainrp', {
-//   useNewUrlParser: true,
-//   useUnifiedTopology: true,
-// });
+// MongoDB connection para calendario persistente
+let mongoConnected = false;
+if (process.env.MONGO_URI) {
+  mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  }).then(() => {
+    mongoConnected = true;
+    console.log('[MONGO] ✅ Conectado a MongoDB para calendario persistente');
+  }).catch(err => {
+    console.error('[MONGO] ❌ Error conectando a MongoDB:', err.message);
+    console.warn('[MONGO] ⚠️ El calendario usará SQLite como fallback');
+  });
+} else {
+  console.warn('[MONGO] ⚠️ MONGO_URI no configurado, usando SQLite como fallback');
+}
 
 // SQLite connection centralizada
 const { getDatabase } = require('./db/database');
@@ -5517,7 +5528,13 @@ app.get('/api/maintenance/subscribers', ensureJWTAdmin, (req, res) => {
 // Endpoint para obtener perfil de Roblox
 app.get('/api/roblox/profile/:userId', async (req, res) => {
   try {
-    const { userId } = req.params;
+    let { userId } = req.params;
+    
+    // Limpiar userId si viene con formato incorrecto (ej: "710112055985963090:1")
+    if (userId.includes(':')) {
+      userId = userId.split(':')[0];
+    }
+    
     console.log(`[ROBLOX PROFILE] Obteniendo perfil para: ${userId}`);
     
     // Buscar en la base de datos si el usuario está verificado
@@ -5530,13 +5547,13 @@ app.get('/api/roblox/profile/:userId', async (req, res) => {
     
     if (robloxData) {
       // Usuario verificado, devolver datos reales
-    res.json({
-      success: true,
-      profile: {
+      res.json({
+        success: true,
+        profile: {
           userId: robloxData.robloxId,
-          username: robloxData.username,
-          displayName: robloxData.displayName,
-          avatar: robloxData.avatarUrl,
+          username: robloxData.robloxUsername || robloxData.username,
+          displayName: robloxData.robloxUsername || robloxData.username,
+          avatar: robloxData.avatarUrl || `https://www.roblox.com/headshot-thumbnail/image?userId=${robloxData.robloxId}&width=150&height=150&format=png`,
           verified: true,
           verifiedAt: robloxData.verifiedAt
         }
@@ -7466,97 +7483,121 @@ app.post('/api/admin/multi-role', express.json(), async (req, res) => {
   }
 });
 
-// ===== ENDPOINTS DE CALENDARIO =====
-// Verificar y crear tablas del calendario si no existen
+// ===== ENDPOINTS DE CALENDARIO (MongoDB Persistente) =====
+// Verificar inicialización del calendario
 app.get('/api/calendar/init', async (req, res) => {
   try {
-    const { runQuery } = require('./db/database');
-    
-    // Crear tabla calendar_claims si no existe
-    await runQuery(`
-      CREATE TABLE IF NOT EXISTS calendar_claims (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        userId TEXT NOT NULL,
-        year INTEGER NOT NULL,
-        month INTEGER NOT NULL,
-        day INTEGER NOT NULL,
-        claimedAt TEXT NOT NULL,
-        reward TEXT,
-        UNIQUE(userId, year, month, day)
-      )
-    `);
-    
-    // Crear tabla calendar_streaks si no existe
-    await runQuery(`
-      CREATE TABLE IF NOT EXISTS calendar_streaks (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        userId TEXT UNIQUE NOT NULL,
-        currentStreak INTEGER DEFAULT 0,
-        longestStreak INTEGER DEFAULT 0,
-        lastClaimedDate TEXT,
-        totalClaims INTEGER DEFAULT 0
-      )
-    `);
-    
-    res.json({ success: true, message: 'Tablas del calendario inicializadas correctamente' });
+    if (mongoConnected) {
+      res.json({ success: true, message: 'Calendario usando MongoDB (persistente)', storage: 'mongodb' });
+    } else {
+      // Crear tablas SQLite como fallback
+      const { runQuery } = require('./db/database');
+      await runQuery(`
+        CREATE TABLE IF NOT EXISTS calendar_claims (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          userId TEXT NOT NULL,
+          year INTEGER NOT NULL,
+          month INTEGER NOT NULL,
+          day INTEGER NOT NULL,
+          claimedAt TEXT NOT NULL,
+          reward TEXT,
+          UNIQUE(userId, year, month, day)
+        )
+      `);
+      await runQuery(`
+        CREATE TABLE IF NOT EXISTS calendar_streaks (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          userId TEXT UNIQUE NOT NULL,
+          currentStreak INTEGER DEFAULT 0,
+          longestStreak INTEGER DEFAULT 0,
+          lastClaimedDate TEXT,
+          totalClaims INTEGER DEFAULT 0
+        )
+      `);
+      res.json({ success: true, message: 'Calendario usando SQLite (fallback)', storage: 'sqlite' });
+    }
   } catch (err) {
     console.error('[CALENDAR INIT] Error:', err);
-    res.status(500).json({ error: 'Error inicializando tablas del calendario' });
+    res.status(500).json({ error: 'Error verificando calendario' });
   }
 });
-// Obtener progreso del calendario
+// Obtener progreso del calendario (MongoDB o SQLite fallback)
 app.get('/api/calendar', verifyToken, async (req, res) => {
   try {
     const { year, month } = req.query;
     const userId = req.user?.id;
     
-    if (!year || !month) {
-      return res.status(400).json({ error: 'Año y mes son requeridos' });
+    if (!year || !month || !userId) {
+      return res.status(400).json({ error: 'Año, mes y usuario son requeridos' });
     }
 
-    const { getQuery, allQuery } = require('./db/database');
+    const yearNum = parseInt(year);
+    const monthNum = parseInt(month);
     
-    // Obtener días reclamados del mes
-    const claimedDaysQuery = `
-      SELECT day FROM calendar_claims 
-      WHERE userId = ? AND year = ? AND month = ?
-      ORDER BY day ASC
-    `;
-    const claimedDaysRows = await allQuery(claimedDaysQuery, [userId, parseInt(year), parseInt(month)]);
-    const claimedDays = claimedDaysRows.map(row => row.day);
-    
-    // Obtener información de racha
-    const streakQuery = `
-      SELECT currentStreak, longestStreak, totalClaims, lastClaimedDate 
-      FROM calendar_streaks 
-      WHERE userId = ?
-    `;
-    const streakData = await getQuery(streakQuery, [userId]);
-    
-    const currentStreak = streakData ? streakData.currentStreak : 0;
-    const longestStreak = streakData ? streakData.longestStreak : 0;
-    const totalClaims = streakData ? streakData.totalClaims : 0;
-    
-    // Calcular progreso del mes
-    const daysInMonth = new Date(parseInt(year), parseInt(month), 0).getDate();
-    const progress = Math.round((claimedDays.length / daysInMonth) * 100);
-    
-    res.json({
-      success: true,
-      claimedDays,
-      streak: currentStreak,
-      longestStreak,
-      totalClaims,
-      progress
-    });
+    // Usar MongoDB si está disponible, sino SQLite
+    if (mongoConnected) {
+      // MongoDB
+      const claimedDays = await CalendarClaim.find({
+        userId,
+        year: yearNum,
+        month: monthNum
+      }).select('day').sort({ day: 1 });
+      
+      const streakData = await CalendarStreak.findOne({ userId });
+      
+      const currentStreak = streakData?.currentStreak || 0;
+      const longestStreak = streakData?.longestStreak || 0;
+      const totalClaims = streakData?.totalClaims || 0;
+      
+      const daysInMonth = new Date(yearNum, monthNum, 0).getDate();
+      const progress = Math.round((claimedDays.length / daysInMonth) * 100);
+      
+      res.json({
+        success: true,
+        claimedDays: claimedDays.map(c => c.day),
+        streak: currentStreak,
+        longestStreak,
+        totalClaims,
+        progress
+      });
+    } else {
+      // SQLite fallback
+      const { getQuery, allQuery } = require('./db/database');
+      
+      const claimedDaysRows = await allQuery(
+        'SELECT day FROM calendar_claims WHERE userId = ? AND year = ? AND month = ? ORDER BY day ASC',
+        [userId, yearNum, monthNum]
+      );
+      const claimedDays = claimedDaysRows.map(row => row.day);
+      
+      const streakData = await getQuery(
+        'SELECT currentStreak, longestStreak, totalClaims FROM calendar_streaks WHERE userId = ?',
+        [userId]
+      );
+      
+      const currentStreak = streakData?.currentStreak || 0;
+      const longestStreak = streakData?.longestStreak || 0;
+      const totalClaims = streakData?.totalClaims || 0;
+      
+      const daysInMonth = new Date(yearNum, monthNum, 0).getDate();
+      const progress = Math.round((claimedDays.length / daysInMonth) * 100);
+      
+      res.json({
+        success: true,
+        claimedDays,
+        streak: currentStreak,
+        longestStreak,
+        totalClaims,
+        progress
+      });
+    }
   } catch (err) {
     console.error('[CALENDAR] Error obteniendo progreso:', err);
     res.status(500).json({ error: 'Error obteniendo progreso del calendario' });
   }
 });
 
-// Reclamar día del calendario
-// Reclamar día del calendario - VERSIÓN FUNCIONAL COMPLETA
+// Reclamar día del calendario (MongoDB o SQLite fallback)
 app.post('/api/calendar/claim', verifyToken, async (req, res) => {
   try {
     const { year, month, day } = req.body;
@@ -7568,102 +7609,180 @@ app.post('/api/calendar/claim', verifyToken, async (req, res) => {
       return res.status(400).json({ error: 'Datos faltantes' });
     }
 
-    const { getQuery, runQuery, allQuery } = require('./db/database');
+    const yearNum = parseInt(year);
+    const monthNum = parseInt(month);
+    const dayNum = parseInt(day);
     
-    // Verificar si ya fue reclamado
-    const existing = await getQuery(
-      'SELECT id FROM calendar_claims WHERE userId = ? AND year = ? AND month = ? AND day = ?',
-      [userId, parseInt(year), parseInt(month), parseInt(day)]
-    );
-    
-    if (existing) {
-      return res.status(400).json({ error: 'Este día ya fue reclamado' });
-    }
-    
-    // Insertar reclamación
-    const claimedAt = new Date().toISOString();
-    const reward = 'Recompensa diaria';
-    
-    await runQuery(
-      'INSERT INTO calendar_claims (userId, year, month, day, claimedAt, reward) VALUES (?, ?, ?, ?, ?, ?)',
-      [userId, parseInt(year), parseInt(month), parseInt(day), claimedAt, reward]
-    );
-    
-    console.log('[CALENDAR] Reclamación insertada exitosamente');
-    
-    // Obtener días reclamados del mes actual
-    const claimedDays = await allQuery(
-      'SELECT day FROM calendar_claims WHERE userId = ? AND year = ? AND month = ? ORDER BY day',
-      [userId, parseInt(year), parseInt(month)]
-    );
-    
-    // Obtener o crear datos de racha
-    let streakData = await getQuery(
-      'SELECT * FROM calendar_streaks WHERE userId = ?',
-      [userId]
-    );
-    
-    const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
-    
-    let newStreak = 1;
-    let newLongestStreak = 1;
-    let newTotalClaims = 1;
-    
-    if (streakData) {
-      newTotalClaims = streakData.totalClaims + 1;
+    // Usar MongoDB si está disponible
+    if (mongoConnected) {
+      // Verificar si ya fue reclamado
+      const existing = await CalendarClaim.findOne({
+        userId,
+        year: yearNum,
+        month: monthNum,
+        day: dayNum
+      });
       
-      // Verificar si la racha continúa
-      if (streakData.lastClaimedDate === yesterdayStr) {
-        newStreak = streakData.currentStreak + 1;
-        newLongestStreak = Math.max(streakData.longestStreak, newStreak);
-      } else if (streakData.lastClaimedDate !== todayStr) {
-        newStreak = 1; // Racha rota
-        newLongestStreak = streakData.longestStreak;
-      } else {
-        newStreak = streakData.currentStreak;
-        newLongestStreak = streakData.longestStreak;
+      if (existing) {
+        return res.status(400).json({ error: 'Este día ya fue reclamado' });
       }
       
-      // Actualizar racha existente
-      await runQuery(
-        'UPDATE calendar_streaks SET currentStreak = ?, longestStreak = ?, lastClaimedDate = ?, totalClaims = ? WHERE userId = ?',
-        [newStreak, newLongestStreak, todayStr, newTotalClaims, userId]
-      );
+      // Crear reclamación
+      const reward = 'Recompensa diaria';
+      await CalendarClaim.create({
+        userId,
+        year: yearNum,
+        month: monthNum,
+        day: dayNum,
+        reward
+      });
+      
+      // Obtener días reclamados del mes
+      const claimedDays = await CalendarClaim.find({
+        userId,
+        year: yearNum,
+        month: monthNum
+      }).select('day').sort({ day: 1 });
+      
+      // Gestionar racha
+      const today = new Date();
+      const todayStr = today.toISOString().split('T')[0];
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+      
+      let streakData = await CalendarStreak.findOne({ userId });
+      
+      let newStreak = 1;
+      let newLongestStreak = 1;
+      let newTotalClaims = 1;
+      
+      if (streakData) {
+        newTotalClaims = streakData.totalClaims + 1;
+        
+        if (streakData.lastClaimedDate === yesterdayStr) {
+          newStreak = streakData.currentStreak + 1;
+          newLongestStreak = Math.max(streakData.longestStreak, newStreak);
+        } else if (streakData.lastClaimedDate !== todayStr) {
+          newStreak = 1;
+          newLongestStreak = streakData.longestStreak;
+        } else {
+          newStreak = streakData.currentStreak;
+          newLongestStreak = streakData.longestStreak;
+        }
+        
+        await CalendarStreak.updateOne(
+          { userId },
+          {
+            currentStreak: newStreak,
+            longestStreak: newLongestStreak,
+            lastClaimedDate: todayStr,
+            totalClaims: newTotalClaims
+          }
+        );
+      } else {
+        await CalendarStreak.create({
+          userId,
+          currentStreak: newStreak,
+          longestStreak: newLongestStreak,
+          lastClaimedDate: todayStr,
+          totalClaims: newTotalClaims
+        });
+      }
+      
+      const daysInMonth = new Date(yearNum, monthNum, 0).getDate();
+      const progress = Math.round((claimedDays.length / daysInMonth) * 100);
+      
+      res.json({
+        success: true,
+        message: `¡Día reclamado! Recompensa: ${reward}`,
+        claimedDays: claimedDays.map(c => c.day),
+        streak: newStreak,
+        longestStreak: newLongestStreak,
+        totalClaims: newTotalClaims,
+        progress,
+        reward
+      });
     } else {
-      // Crear nueva racha
-      await runQuery(
-        'INSERT INTO calendar_streaks (userId, currentStreak, longestStreak, lastClaimedDate, totalClaims) VALUES (?, ?, ?, ?, ?)',
-        [userId, newStreak, newLongestStreak, todayStr, newTotalClaims]
+      // SQLite fallback
+      const { getQuery, runQuery, allQuery } = require('./db/database');
+      
+      const existing = await getQuery(
+        'SELECT id FROM calendar_claims WHERE userId = ? AND year = ? AND month = ? AND day = ?',
+        [userId, yearNum, monthNum, dayNum]
       );
+      
+      if (existing) {
+        return res.status(400).json({ error: 'Este día ya fue reclamado' });
+      }
+      
+      const claimedAt = new Date().toISOString();
+      const reward = 'Recompensa diaria';
+      
+      await runQuery(
+        'INSERT INTO calendar_claims (userId, year, month, day, claimedAt, reward) VALUES (?, ?, ?, ?, ?, ?)',
+        [userId, yearNum, monthNum, dayNum, claimedAt, reward]
+      );
+      
+      const claimedDays = await allQuery(
+        'SELECT day FROM calendar_claims WHERE userId = ? AND year = ? AND month = ? ORDER BY day',
+        [userId, yearNum, monthNum]
+      );
+      
+      let streakData = await getQuery(
+        'SELECT * FROM calendar_streaks WHERE userId = ?',
+        [userId]
+      );
+      
+      const today = new Date();
+      const todayStr = today.toISOString().split('T')[0];
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+      
+      let newStreak = 1;
+      let newLongestStreak = 1;
+      let newTotalClaims = 1;
+      
+      if (streakData) {
+        newTotalClaims = streakData.totalClaims + 1;
+        
+        if (streakData.lastClaimedDate === yesterdayStr) {
+          newStreak = streakData.currentStreak + 1;
+          newLongestStreak = Math.max(streakData.longestStreak, newStreak);
+        } else if (streakData.lastClaimedDate !== todayStr) {
+          newStreak = 1;
+          newLongestStreak = streakData.longestStreak;
+        } else {
+          newStreak = streakData.currentStreak;
+          newLongestStreak = streakData.longestStreak;
+        }
+        
+        await runQuery(
+          'UPDATE calendar_streaks SET currentStreak = ?, longestStreak = ?, lastClaimedDate = ?, totalClaims = ? WHERE userId = ?',
+          [newStreak, newLongestStreak, todayStr, newTotalClaims, userId]
+        );
+      } else {
+        await runQuery(
+          'INSERT INTO calendar_streaks (userId, currentStreak, longestStreak, lastClaimedDate, totalClaims) VALUES (?, ?, ?, ?, ?)',
+          [userId, newStreak, newLongestStreak, todayStr, newTotalClaims]
+        );
+      }
+      
+      const daysInMonth = new Date(yearNum, monthNum, 0).getDate();
+      const progress = Math.round((claimedDays.length / daysInMonth) * 100);
+      
+      res.json({
+        success: true,
+        message: `¡Día reclamado! Recompensa: ${reward}`,
+        claimedDays: claimedDays.map(r => r.day),
+        streak: newStreak,
+        longestStreak: newLongestStreak,
+        totalClaims: newTotalClaims,
+        progress,
+        reward
+      });
     }
-    
-    // Calcular progreso del mes
-    const daysInMonth = new Date(parseInt(year), parseInt(month), 0).getDate();
-    const progress = Math.round((claimedDays.length / daysInMonth) * 100);
-    
-    console.log('[CALENDAR] Respuesta:', {
-      claimedDays: claimedDays.map(r => r.day),
-      streak: newStreak,
-      longestStreak: newLongestStreak,
-      totalClaims: newTotalClaims,
-      progress
-    });
-    
-    res.json({
-      success: true,
-      message: `¡Día reclamado! Recompensa: ${reward}`,
-      claimedDays: claimedDays.map(r => r.day),
-      streak: newStreak,
-      longestStreak: newLongestStreak,
-      totalClaims: newTotalClaims,
-      progress,
-      reward
-    });
-    
   } catch (error) {
     console.error('[CALENDAR] Error:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
