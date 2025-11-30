@@ -318,23 +318,46 @@ const MDTPolicial = () => {
         const userData = await userRes.json();
         setUser(userData.user);
 
-        // Verificar si es policía
-        const policeRes = await fetch(apiUrl(`/api/discord/rolecheck/${userData.user.id}/1384340781392724171`));
-        if (policeRes.ok) {
-          const policeData = await policeRes.json();
-          setIsPolice(policeData.hasRole);
-        }
+        // Función helper para verificar roles con timeout
+        const checkRole = async (userId, roleId, timeout = 8000) => {
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeout);
+            
+            const res = await fetch(apiUrl(`/api/discord/rolecheck/${userId}/${roleId}`), {
+              signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (res.ok) {
+              const data = await res.json();
+              return data.hasRole || false;
+            }
+            return false;
+          } catch (err) {
+            if (err.name === 'AbortError') {
+              console.warn(`[MDT] Timeout verificando rol ${roleId}`);
+            } else {
+              console.warn(`[MDT] Error verificando rol ${roleId}:`, err);
+            }
+            return false;
+          }
+        };
 
-        // Verificar si es CNI
-        const cniRes = await fetch(apiUrl(`/api/discord/rolecheck/${userData.user.id}/1384340775772360841`));
-        if (cniRes.ok) {
-          const cniData = await cniRes.json();
-          setIsCNI(cniData.hasRole);
-        }
+        // Verificar roles en paralelo con timeout
+        const [isPoliceResult, isCNIResult] = await Promise.allSettled([
+          checkRole(userData.user.id, '1384340781392724171'),
+          checkRole(userData.user.id, '1384340775772360841')
+        ]);
+
+        setIsPolice(isPoliceResult.status === 'fulfilled' ? isPoliceResult.value : false);
+        setIsCNI(isCNIResult.status === 'fulfilled' ? isCNIResult.value : false);
 
         setLoading(false);
       } catch (err) {
-        setError('Error verificando permisos');
+        console.error('[MDT] Error verificando permisos:', err);
+        // Permitir acceso aunque falle la verificación de roles
         setLoading(false);
       }
     };

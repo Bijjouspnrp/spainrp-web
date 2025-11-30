@@ -7682,18 +7682,35 @@ app.get('/api/discord/rolecheck/:userId/:roleId', async (req, res) => {
     const { userId, roleId } = req.params;
     
     if (!discordClient || !discordClient.readyAt) {
-      return res.status(503).json({ error: 'Bot de Discord no disponible' });
+      return res.status(503).json({ error: 'Bot de Discord no disponible', hasRole: false });
     }
     
     const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
     const guild = discordClient.guilds.cache.get(guildId);
     
     if (!guild) {
-      return res.status(404).json({ error: 'Servidor no encontrado' });
+      return res.status(404).json({ error: 'Servidor no encontrado', hasRole: false });
     }
     
-    await guild.members.fetch();
-    const member = guild.members.cache.get(userId);
+    // ✅ Optimización: Intentar obtener desde cache primero
+    let member = guild.members.cache.get(userId);
+    
+    // Si no está en cache, intentar fetch solo de ese miembro específico (no todos)
+    if (!member) {
+      try {
+        // Usar fetch con timeout más corto y solo para el usuario específico
+        member = await Promise.race([
+          guild.members.fetch(userId),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Timeout')), 5000)
+          )
+        ]);
+      } catch (fetchErr) {
+        // Si falla el fetch, retornar false en lugar de error
+        console.warn(`[MDT] No se pudo obtener miembro ${userId} desde Discord:`, fetchErr.message);
+        return res.json({ hasRole: false, cached: false });
+      }
+    }
     
     if (!member) {
       return res.json({ hasRole: false });
@@ -7704,7 +7721,8 @@ app.get('/api/discord/rolecheck/:userId/:roleId', async (req, res) => {
     
   } catch (err) {
     console.error('[MDT] Error verificando rol:', err);
-    res.status(500).json({ error: 'Error verificando rol' });
+    // Retornar false en lugar de error 500 para que el frontend pueda continuar
+    res.json({ hasRole: false, error: err.message });
   }
 });
 
@@ -7714,18 +7732,33 @@ app.get('/api/discord/user-roles/:userId', async (req, res) => {
     const { userId } = req.params;
     
     if (!discordClient || !discordClient.readyAt) {
-      return res.status(503).json({ error: 'Bot de Discord no disponible' });
+      return res.status(503).json({ error: 'Bot de Discord no disponible', success: false, roles: [] });
     }
     
     const guildId = process.env.DISCORD_GUILD_ID || '1212556680911650866';
     const guild = discordClient.guilds.cache.get(guildId);
     
     if (!guild) {
-      return res.status(404).json({ error: 'Servidor no encontrado' });
+      return res.status(404).json({ error: 'Servidor no encontrado', success: false, roles: [] });
     }
     
-    await guild.members.fetch();
-    const member = guild.members.cache.get(userId);
+    // ✅ Optimización: Intentar obtener desde cache primero
+    let member = guild.members.cache.get(userId);
+    
+    // Si no está en cache, intentar fetch solo de ese miembro específico
+    if (!member) {
+      try {
+        member = await Promise.race([
+          guild.members.fetch(userId),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Timeout')), 5000)
+          )
+        ]);
+      } catch (fetchErr) {
+        console.warn(`[DISCORD] No se pudo obtener miembro ${userId} desde Discord:`, fetchErr.message);
+        return res.json({ success: true, roles: [] });
+      }
+    }
     
     if (!member) {
       return res.json({ success: true, roles: [] });
@@ -7738,7 +7771,8 @@ app.get('/api/discord/user-roles/:userId', async (req, res) => {
     
   } catch (err) {
     console.error('[DISCORD] Error obteniendo roles:', err);
-    res.status(500).json({ error: 'Error obteniendo roles' });
+    // Retornar array vacío en lugar de error para que el frontend pueda continuar
+    res.json({ success: false, roles: [], error: err.message });
   }
 });
 
