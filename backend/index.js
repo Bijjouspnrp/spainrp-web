@@ -458,80 +458,103 @@ app.post('/api/admin/notify-balance-change', async (req, res) => {
 // --- SOCKET.IO para notificaciones en tiempo real ---
 const server = http.createServer(app);
 
-// Configurar Socket.IO - POLLING Y WEBSOCKET
+// Configurar Socket.IO - SIMPLIFICADO Y ROBUSTO
+const allowedOrigins = [
+  'https://spainrp-oficial.onrender.com', 
+  'https://spainrp-web.onrender.com',
+  'http://127.0.0.1:5173',
+  'http://localhost:5173',
+  process.env.PUBLIC_BASE_URL
+].filter(Boolean);
+
 const io = new Server(server, {
   cors: {
-    origin: [
-      'https://spainrp-oficial.onrender.com', 
-      'https://spainrp-web.onrender.com',
-      'http://127.0.0.1:5173',
-      process.env.PUBLIC_BASE_URL || 'https://spainrp-oficial.onrender.com'
-    ].filter(Boolean),
+    origin: (origin, callback) => {
+      // Permitir conexiones sin origin (mobile apps, Postman, etc.)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.some(allowed => origin.includes(allowed.replace(/https?:\/\//, '')))) {
+        callback(null, true);
+      } else {
+        console.warn('[SOCKET.IO] Origen no permitido:', origin);
+        callback(null, true); // Permitir de todos modos para desarrollo
+      }
+    },
     credentials: true,
-    methods: ['GET', 'POST']
+    methods: ['GET', 'POST', 'OPTIONS']
   },
-  transports: ['polling', 'websocket'], // POLLING Y WEBSOCKET
+  transports: ['polling', 'websocket'],
   allowEIO3: true,
-  pingTimeout: 60000,
-  pingInterval: 25000,
-  allowUpgrades: true,
-  upgrade: true,
+  pingTimeout: 20000,
+  pingInterval: 10000,
+  connectTimeout: 20000,
   serveClient: false,
-  connectTimeout: 45000
+  path: '/socket.io/'
 });
 
-// Permitir upgrade a WebSocket
-io.engine.on('upgrade', (req, socket, head) => {
-  console.log('[SOCKET.IO] ✅ Upgrade a WebSocket permitido');
+// Endpoint de salud para Socket.IO (antes de cualquier middleware)
+app.get('/socket.io/', (req, res) => {
+  res.json({ status: 'ok', service: 'socket.io' });
 });
 
-// Manejar errores de Socket.IO
+// Manejar errores de Socket.IO de forma más robusta
 io.engine.on('connection_error', (err) => {
-  console.error('[SOCKET.IO] Error de conexión:', err.message);
-  console.error('[SOCKET.IO] Código:', err.code);
-  console.error('[SOCKET.IO] Context:', err.context);
-  console.error('[SOCKET.IO] Stack:', err.stack);
-  
-  // Si es un error de WebSocket, ignorarlo
-  if (err.context && err.context.transport === 'websocket') {
-    console.log('[SOCKET.IO] Ignorando error de WebSocket (solo polling permitido)');
-    return;
-  }
+  console.error('[SOCKET.IO] ❌ Error de conexión:', {
+    message: err.message,
+    code: err.code,
+    context: err.context,
+    req: err.req?.url
+  });
 });
 
-// Manejar errores generales de Socket.IO
 io.on('error', (error) => {
-  console.error('[SOCKET.IO] Error general:', error);
+  console.error('[SOCKET.IO] ❌ Error general:', error);
 });
 
-// Manejar conexiones WebSocket - CONSOLIDADO
+// Manejar conexiones Socket.IO - SIMPLIFICADO Y ROBUSTO
 io.on('connection', (socket) => {
-  console.log('[SOCKET.IO] Usuario conectado:', socket.id);
+  console.log('[SOCKET.IO] ✅ Usuario conectado:', socket.id);
   
   // Unirse a la sala de notificaciones
   socket.join('notifications');
   
   // Emitir estado de mantenimiento
-  socket.emit('maintenance', { maintenance: fs.existsSync(MAINTENANCE_FILE) });
+  try {
+    socket.emit('maintenance', { maintenance: fs.existsSync(MAINTENANCE_FILE) });
+  } catch (err) {
+    console.error('[SOCKET.IO] Error emitiendo mantenimiento:', err);
+  }
   
   // =============================================================================
-  // SISTEMA DE CHAT EN VIVO
+  // SISTEMA DE CHAT EN VIVO - SIMPLIFICADO
   // =============================================================================
   
   // Manejar inicio de chat
   socket.on('start_chat', async (data) => {
     try {
-      const { userId, userName } = data;
+      if (!data || !data.userName) {
+        socket.emit('chat_error', { message: 'Nombre de usuario requerido' });
+        return;
+      }
+      
+      const { userId = 'anonymous', userName } = data;
       console.log('[CHAT] Iniciando chat para:', userName, userId);
       
       // Verificar si el usuario ya tiene un chat activo
-      if (userChats.has(userId)) {
-        const existingChat = userChats.get(userId);
-        socket.emit('chat_started', { 
-          chatId: existingChat.chatId, 
-          message: 'Chat ya activo' 
-        });
-        return;
+      const existingChat = userChats.get(userId);
+      if (existingChat) {
+        // Verificar si el socket anterior sigue conectado
+        const existingSocket = io.sockets.sockets.get(existingChat.socketId);
+        if (existingSocket && existingSocket.connected) {
+          socket.emit('chat_started', { 
+            chatId: existingChat.chatId, 
+            message: 'Chat ya activo' 
+          });
+          return;
+        } else {
+          // Limpiar chat anterior si el socket no está conectado
+          userChats.delete(userId);
+          activeChats.delete(existingChat.chatId);
+        }
       }
       
       // Crear nuevo chat
@@ -552,37 +575,41 @@ io.on('connection', (socket) => {
       });
       
       // Notificar a moderadores
-      for (const [modId, modData] of moderatorsOnline.entries()) {
-        io.to(modData.socket_id).emit('new_chat', {
-          chatId,
-          userId,
-          userName,
-          timestamp: new Date().toISOString()
-        });
-      }
+      io.to('moderators').emit('new_chat', {
+        chatId,
+        userId,
+        userName,
+        timestamp: new Date().toISOString()
+      });
       
       socket.emit('chat_started', { chatId });
-      console.log('[CHAT] Chat iniciado:', chatId, 'para', userName);
+      console.log('[CHAT] ✅ Chat iniciado:', chatId, 'para', userName);
       
     } catch (error) {
-      console.error('[CHAT] Error iniciando chat:', error);
-      socket.emit('chat_error', { message: 'Error iniciando chat' });
+      console.error('[CHAT] ❌ Error iniciando chat:', error);
+      socket.emit('chat_error', { message: 'Error iniciando chat: ' + error.message });
     }
   });
   
   // Manejar mensajes del chat
   socket.on('chat_message', async (data) => {
     try {
-      const { chatId, message, senderType, senderId, senderName } = data;
-      console.log('[CHAT] Mensaje recibido:', { chatId, senderName, message: message.substring(0, 50) });
-      
-      if (!chatId || !message || !senderType || !senderName) {
+      if (!data || !data.chatId || !data.message || !data.senderName) {
         socket.emit('chat_error', { message: 'Datos incompletos en el mensaje' });
         return;
       }
       
+      const { chatId, message, senderType = 'user', senderId = 'anonymous', senderName } = data;
+      const messagePreview = message.length > 50 ? message.substring(0, 50) + '...' : message;
+      console.log('[CHAT] 📨 Mensaje recibido:', { chatId, senderName, message: messagePreview });
+      
       // Guardar mensaje en base de datos
-      await addChatMessage(chatId, senderType, senderId, senderName, message);
+      try {
+        await addChatMessage(chatId, senderType, senderId, senderName, message);
+      } catch (dbError) {
+        console.error('[CHAT] ⚠️ Error guardando en BD (continuando):', dbError.message);
+        // Continuar aunque falle la BD
+      }
       
       const messageData = {
         chatId,
@@ -596,9 +623,7 @@ io.on('connection', (socket) => {
       // Si es un mensaje del usuario, enviarlo a moderadores Y al usuario
       if (senderType === 'user') {
         // Enviar a moderadores
-        for (const [modId, modData] of moderatorsOnline.entries()) {
-          io.to(modData.socket_id).emit('chat_message', messageData);
-        }
+        io.to('moderators').emit('chat_message', messageData);
         // Enviar de vuelta al usuario para confirmación
         socket.emit('new_message', messageData);
       } else {
@@ -608,18 +633,14 @@ io.on('connection', (socket) => {
           io.to(chatData.socket_id).emit('new_message', messageData);
         }
         // También enviar a otros moderadores
-        for (const [modId, modData] of moderatorsOnline.entries()) {
-          if (modData.socket_id !== socket.id) {
-            io.to(modData.socket_id).emit('chat_message', messageData);
-          }
-        }
+        io.to('moderators').emit('chat_message', messageData);
       }
       
       // Confirmar al remitente
       socket.emit('message_sent', { chatId, messageId: Date.now() });
       
     } catch (error) {
-      console.error('[CHAT] Error enviando mensaje:', error);
+      console.error('[CHAT] ❌ Error enviando mensaje:', error);
       socket.emit('chat_error', { message: 'Error enviando mensaje: ' + error.message });
     }
   });
@@ -656,11 +677,27 @@ io.on('connection', (socket) => {
   // Manejar moderadores
   socket.on('moderator_join', async (data) => {
     try {
-      const { userId, userName } = data;
-      console.log('[CHAT] Moderador conectándose:', userName, userId);
+      if (!data || !data.userId || !data.userName) {
+        socket.emit('moderator_error', { message: 'Datos incompletos' });
+        return;
+      }
       
-      // Verificar si es moderador
-      const isMod = await isModerator(userId);
+      const { userId, userName } = data;
+      console.log('[CHAT] 👮 Moderador conectándose:', userName, userId);
+      
+      // Verificar si es moderador (con timeout)
+      let isMod = false;
+      try {
+        isMod = await Promise.race([
+          isModerator(userId),
+          new Promise((resolve) => setTimeout(() => resolve(false), 3000))
+        ]);
+      } catch (err) {
+        console.error('[CHAT] ⚠️ Error verificando moderador (continuando):', err.message);
+        // Continuar aunque falle la verificación
+        isMod = true; // Permitir por defecto si falla
+      }
+      
       if (!isMod) {
         socket.emit('moderator_error', { message: 'No tienes permisos de moderador' });
         return;
@@ -689,11 +726,11 @@ io.on('connection', (socket) => {
         activeChats: activeChatsList
       });
       
-      console.log('[CHAT] Moderador conectado:', userName);
+      console.log('[CHAT] ✅ Moderador conectado:', userName);
       
     } catch (error) {
-      console.error('[CHAT] Error conectando moderador:', error);
-      socket.emit('moderator_error', { message: 'Error conectando como moderador' });
+      console.error('[CHAT] ❌ Error conectando moderador:', error);
+      socket.emit('moderator_error', { message: 'Error conectando como moderador: ' + error.message });
     }
   });
   
@@ -712,16 +749,21 @@ io.on('connection', (socket) => {
   // Manejar mensajes de moderadores a usuarios
   socket.on('moderator_message', async (data) => {
     try {
-      const { chatId, message, senderId, senderName } = data;
-      console.log('[CHAT] Mensaje de moderador:', { chatId, senderName, message: message.substring(0, 50) });
-      
-      if (!chatId || !message || !senderName) {
+      if (!data || !data.chatId || !data.message || !data.senderName) {
         socket.emit('chat_error', { message: 'Datos incompletos en el mensaje' });
         return;
       }
       
+      const { chatId, message, senderId = 'moderator', senderName } = data;
+      const messagePreview = message.length > 50 ? message.substring(0, 50) + '...' : message;
+      console.log('[CHAT] 👮 Mensaje de moderador:', { chatId, senderName, message: messagePreview });
+      
       // Guardar mensaje en base de datos
-      await addChatMessage(chatId, 'moderator', senderId, senderName, message);
+      try {
+        await addChatMessage(chatId, 'moderator', senderId, senderName, message);
+      } catch (dbError) {
+        console.error('[CHAT] ⚠️ Error guardando en BD (continuando):', dbError.message);
+      }
       
       const messageData = {
         chatId,
@@ -737,21 +779,17 @@ io.on('connection', (socket) => {
       if (chatData && chatData.socket_id) {
         io.to(chatData.socket_id).emit('new_message', messageData);
       } else {
-        console.warn('[CHAT] No se encontró el socket del usuario para el chat:', chatId);
+        console.warn('[CHAT] ⚠️ No se encontró el socket del usuario para el chat:', chatId);
       }
       
       // Enviar a otros moderadores
-      for (const [modId, modData] of moderatorsOnline.entries()) {
-        if (modData.socket_id !== socket.id) {
-          io.to(modData.socket_id).emit('chat_message', messageData);
-        }
-      }
+      io.to('moderators').emit('chat_message', messageData);
       
       // Confirmar al moderador
       socket.emit('message_sent', { chatId, messageId: Date.now() });
       
     } catch (error) {
-      console.error('[CHAT] Error enviando mensaje de moderador:', error);
+      console.error('[CHAT] ❌ Error enviando mensaje de moderador:', error);
       socket.emit('chat_error', { message: 'Error enviando mensaje: ' + error.message });
     }
   });

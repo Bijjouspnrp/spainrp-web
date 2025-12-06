@@ -106,51 +106,45 @@ const Support = () => {
     getUserInfo();
   }, []);
 
-  // Configurar Socket.IO con mejor manejo de errores
+  // Configurar Socket.IO - SIMPLIFICADO Y ROBUSTO
   useEffect(() => {
-    console.log('[SUPPORT] Inicializando Socket.IO...');
-    console.log('[SUPPORT] Usuario actual:', user);
+    console.log('[SUPPORT] 🔌 Inicializando Socket.IO...');
     
-    // Inicializar Socket.IO independientemente del usuario
-    // El usuario se usará cuando esté disponible
+    const apiUrl = process.env.REACT_APP_API_URL || 'https://spainrp-oficial.onrender.com';
+    console.log('[SUPPORT] 🌐 URL del servidor:', apiUrl);
     
-    const newSocket = io(process.env.REACT_APP_API_URL || 'https://spainrp-oficial.onrender.com', {
-      transports: ['polling'], // Solo polling para compatibilidad con Render
-      upgrade: false, // Deshabilitar upgrade a WebSocket
-      timeout: 15000,
+    // Inicializar Socket.IO con configuración simplificada
+    const newSocket = io(apiUrl, {
+      transports: ['polling', 'websocket'],
+      upgrade: true,
+      rememberUpgrade: false,
+      timeout: 20000,
       reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 3000,
-      reconnectionDelayMax: 10000,
-      maxReconnectionAttempts: 5,
-      forceNew: true,
-      autoConnect: true
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      maxReconnectionAttempts: Infinity,
+      forceNew: false,
+      autoConnect: true,
+      path: '/socket.io/'
     });
 
-    // Eventos de conexión
+    // Eventos de conexión - SIMPLIFICADOS
     newSocket.on('connect', () => {
       console.log('[SUPPORT][Socket] ✅ Conectado a Socket.IO');
-      console.log('[SUPPORT][Socket] ID de conexión:', newSocket.id);
+      console.log('[SUPPORT][Socket] ID:', newSocket.id);
       setIsConnected(true);
     });
 
     newSocket.on('disconnect', (reason) => {
-      console.log('[SUPPORT][Socket] ❌ Desconectado de Socket.IO');
-      console.log('[SUPPORT][Socket] Razón:', reason);
+      console.log('[SUPPORT][Socket] ❌ Desconectado:', reason);
       setIsConnected(false);
     });
 
     newSocket.on('connect_error', (error) => {
-      console.error('[SUPPORT][Socket] ❌ Error de conexión:', error);
-      console.error('[SUPPORT][Socket] Tipo de error:', error.type);
-      console.error('[SUPPORT][Socket] Descripción:', error.description);
-      console.error('[SUPPORT][Socket] Mensaje:', error.message);
-      console.error('[SUPPORT][Socket] Stack:', error.stack);
-      
-      // Mostrar mensaje más amigable al usuario
-      if (error.message && error.message.includes('server error')) {
-        console.warn('[SUPPORT][Socket] ⚠️ El servidor está experimentando problemas. Intentando reconectar...');
-      }
+      console.error('[SUPPORT][Socket] ❌ Error de conexión:', error.message || error);
+      setIsConnected(false);
+      // No mostrar alertas, solo intentar reconectar automáticamente
     });
 
     newSocket.on('reconnect', (attemptNumber) => {
@@ -159,18 +153,16 @@ const Support = () => {
     });
 
     newSocket.on('reconnect_error', (error) => {
-      console.error('[SUPPORT][Socket] ❌ Error de reconexión:', error);
+      console.warn('[SUPPORT][Socket] ⚠️ Error de reconexión (intentando de nuevo):', error.message || error);
     });
 
     newSocket.on('reconnect_failed', () => {
-      console.error('[SUPPORT][Socket] ❌ Falló la reconexión después de todos los intentos');
+      console.warn('[SUPPORT][Socket] ⚠️ Falló la reconexión, pero seguirá intentando');
       setIsConnected(false);
-      alert('No se pudo conectar con el servidor de chat. Por favor, recarga la página o intenta más tarde.');
     });
     
-    // Manejar errores del socket
     newSocket.on('error', (error) => {
-      console.error('[SUPPORT][Socket] ❌ Error del socket:', error);
+      console.warn('[SUPPORT][Socket] ⚠️ Error del socket:', error.message || error);
     });
 
     // Eventos de chat
@@ -311,60 +303,18 @@ const Support = () => {
   };
 
   const startChat = () => {
-    console.log('[SUPPORT][startChat] Intentando iniciar chat');
-    console.log('[SUPPORT][startChat] Nombre de usuario:', userName);
-    console.log('[SUPPORT][startChat] Usuario ID:', user?.id);
-    console.log('[SUPPORT][startChat] Usuario completo:', user);
-    console.log('[SUPPORT][startChat] Token en localStorage:', localStorage.getItem('token') ? 'Presente' : 'Ausente');
-    console.log('[SUPPORT][startChat] Socket disponible:', !!socket);
-    console.log('[SUPPORT][startChat] Conectado:', isConnected);
-    
     if (!userName.trim()) {
-      console.warn('[SUPPORT][startChat] Nombre de usuario vacío');
       alert('Por favor, ingresa tu nombre para comenzar el chat');
       return;
     }
     
-    if (!socket || !isConnected) {
-      console.error('[SUPPORT][startChat] Socket no disponible o no conectado');
-      console.log('[SUPPORT][startChat] Intentando reconectar...');
-      
-      // Intentar reconectar el socket
-      const newSocket = io(process.env.REACT_APP_API_URL || 'https://spainrp-oficial.onrender.com', {
-        transports: ['polling'], // Solo polling para compatibilidad con Render
-        upgrade: false, // Deshabilitar upgrade a WebSocket
-        timeout: 15000,
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 3000,
-        reconnectionDelayMax: 10000,
-        maxReconnectionAttempts: 5,
-        forceNew: true,
-        autoConnect: true
-      });
-      
-      newSocket.on('connect', () => {
-        console.log('[SUPPORT][startChat] ✅ Reconectado a Socket.IO');
-        setSocket(newSocket);
-        setIsConnected(true);
-        
-        // Intentar iniciar chat después de reconectar
-        setTimeout(() => {
-          const chatData = {
-            userId: user?.id || 'anonymous',
-            userName: userName.trim()
-          };
-          
-          console.log('[SUPPORT][startChat] Enviando datos de inicio después de reconectar:', chatData);
-          newSocket.emit('start_chat', chatData);
-        }, 1000);
-      });
-      
-      newSocket.on('connect_error', (error) => {
-        console.error('[SUPPORT][startChat] ❌ Error de reconexión:', error);
-        alert('No se pudo conectar con el servidor. Intenta de nuevo más tarde.');
-      });
-      
+    if (!socket) {
+      alert('Conexión no disponible. Por favor, espera unos segundos e intenta de nuevo.');
+      return;
+    }
+    
+    if (!isConnected) {
+      alert('No estás conectado al servidor. Por favor, espera unos segundos e intenta de nuevo.');
       return;
     }
 
@@ -373,13 +323,12 @@ const Support = () => {
       userName: userName.trim()
     };
     
-    console.log('[SUPPORT][startChat] Enviando datos de inicio:', chatData);
+    console.log('[SUPPORT][startChat] Iniciando chat:', chatData);
     
     try {
       socket.emit('start_chat', chatData);
-      console.log('[SUPPORT][startChat] ✅ Solicitud de chat enviada');
     } catch (error) {
-      console.error('[SUPPORT][startChat] ❌ Error iniciando chat:', error);
+      console.error('[SUPPORT][startChat] Error:', error);
       alert('Error iniciando chat. Intenta de nuevo.');
     }
   };
