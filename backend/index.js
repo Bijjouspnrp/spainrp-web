@@ -490,12 +490,18 @@ io.engine.on('connection_error', (err) => {
   console.error('[SOCKET.IO] Error de conexión:', err.message);
   console.error('[SOCKET.IO] Código:', err.code);
   console.error('[SOCKET.IO] Context:', err.context);
+  console.error('[SOCKET.IO] Stack:', err.stack);
   
   // Si es un error de WebSocket, ignorarlo
   if (err.context && err.context.transport === 'websocket') {
     console.log('[SOCKET.IO] Ignorando error de WebSocket (solo polling permitido)');
     return;
   }
+});
+
+// Manejar errores generales de Socket.IO
+io.on('error', (error) => {
+  console.error('[SOCKET.IO] Error general:', error);
 });
 
 // Manejar conexiones WebSocket - CONSOLIDADO
@@ -529,12 +535,20 @@ io.on('connection', (socket) => {
       }
       
       // Crear nuevo chat
-      const chatId = createLiveChat(userId, userName);
+      const chatId = await createLiveChat(userId, userName);
       userChats.set(userId, { 
         chatId, 
         socketId: socket.id, 
         userName, 
         status: 'active' 
+      });
+      
+      // Guardar socketId en activeChats para poder enviar mensajes al usuario
+      activeChats.set(chatId, {
+        user_id: userId,
+        user_name: userName,
+        socket_id: socket.id,
+        status: 'active'
       });
       
       // Notificar a moderadores
@@ -562,27 +576,51 @@ io.on('connection', (socket) => {
       const { chatId, message, senderType, senderId, senderName } = data;
       console.log('[CHAT] Mensaje recibido:', { chatId, senderName, message: message.substring(0, 50) });
       
+      if (!chatId || !message || !senderType || !senderName) {
+        socket.emit('chat_error', { message: 'Datos incompletos en el mensaje' });
+        return;
+      }
+      
       // Guardar mensaje en base de datos
       await addChatMessage(chatId, senderType, senderId, senderName, message);
       
-      // Enviar a moderadores
-      for (const [modId, modData] of moderatorsOnline.entries()) {
-        io.to(modData.socket_id).emit('chat_message', {
-          chatId,
-          message,
-          senderType,
-          senderId,
-          senderName,
-          timestamp: new Date().toISOString()
-        });
+      const messageData = {
+        chatId,
+        message,
+        senderType,
+        senderId,
+        senderName,
+        timestamp: new Date().toISOString()
+      };
+      
+      // Si es un mensaje del usuario, enviarlo a moderadores Y al usuario
+      if (senderType === 'user') {
+        // Enviar a moderadores
+        for (const [modId, modData] of moderatorsOnline.entries()) {
+          io.to(modData.socket_id).emit('chat_message', messageData);
+        }
+        // Enviar de vuelta al usuario para confirmación
+        socket.emit('new_message', messageData);
+      } else {
+        // Si es un mensaje del moderador, enviarlo al usuario del chat
+        const chatData = activeChats.get(chatId);
+        if (chatData && chatData.socket_id) {
+          io.to(chatData.socket_id).emit('new_message', messageData);
+        }
+        // También enviar a otros moderadores
+        for (const [modId, modData] of moderatorsOnline.entries()) {
+          if (modData.socket_id !== socket.id) {
+            io.to(modData.socket_id).emit('chat_message', messageData);
+          }
+        }
       }
       
-      // Confirmar al usuario
+      // Confirmar al remitente
       socket.emit('message_sent', { chatId, messageId: Date.now() });
       
     } catch (error) {
       console.error('[CHAT] Error enviando mensaje:', error);
-      socket.emit('chat_error', { message: 'Error enviando mensaje' });
+      socket.emit('chat_error', { message: 'Error enviando mensaje: ' + error.message });
     }
   });
   
@@ -671,8 +709,55 @@ io.on('connection', (socket) => {
     }
   });
   
-  socket.on('disconnect', () => {
-    console.log('[SOCKET.IO] Usuario desconectado:', socket.id);
+  // Manejar mensajes de moderadores a usuarios
+  socket.on('moderator_message', async (data) => {
+    try {
+      const { chatId, message, senderId, senderName } = data;
+      console.log('[CHAT] Mensaje de moderador:', { chatId, senderName, message: message.substring(0, 50) });
+      
+      if (!chatId || !message || !senderName) {
+        socket.emit('chat_error', { message: 'Datos incompletos en el mensaje' });
+        return;
+      }
+      
+      // Guardar mensaje en base de datos
+      await addChatMessage(chatId, 'moderator', senderId, senderName, message);
+      
+      const messageData = {
+        chatId,
+        message,
+        senderType: 'moderator',
+        senderId,
+        senderName,
+        timestamp: new Date().toISOString()
+      };
+      
+      // Enviar al usuario del chat
+      const chatData = activeChats.get(chatId);
+      if (chatData && chatData.socket_id) {
+        io.to(chatData.socket_id).emit('new_message', messageData);
+      } else {
+        console.warn('[CHAT] No se encontró el socket del usuario para el chat:', chatId);
+      }
+      
+      // Enviar a otros moderadores
+      for (const [modId, modData] of moderatorsOnline.entries()) {
+        if (modData.socket_id !== socket.id) {
+          io.to(modData.socket_id).emit('chat_message', messageData);
+        }
+      }
+      
+      // Confirmar al moderador
+      socket.emit('message_sent', { chatId, messageId: Date.now() });
+      
+    } catch (error) {
+      console.error('[CHAT] Error enviando mensaje de moderador:', error);
+      socket.emit('chat_error', { message: 'Error enviando mensaje: ' + error.message });
+    }
+  });
+  
+  socket.on('disconnect', (reason) => {
+    console.log('[SOCKET.IO] Usuario desconectado:', socket.id, 'Razón:', reason);
     
     // Remover de moderadores online si estaba conectado
     for (const [userId, data] of moderatorsOnline.entries()) {
@@ -691,6 +776,20 @@ io.on('connection', (socket) => {
         break;
       }
     }
+    
+    // Remover de activeChats
+    for (const [chatId, chatData] of activeChats.entries()) {
+      if (chatData.socket_id === socket.id) {
+        activeChats.delete(chatId);
+        console.log('[CHAT] Chat removido de activeChats:', chatId);
+        break;
+      }
+    }
+  });
+  
+  // Manejar errores del socket
+  socket.on('error', (error) => {
+    console.error('[SOCKET.IO] Error en socket:', socket.id, error);
   });
 });
 

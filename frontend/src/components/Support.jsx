@@ -144,6 +144,13 @@ const Support = () => {
       console.error('[SUPPORT][Socket] ❌ Error de conexión:', error);
       console.error('[SUPPORT][Socket] Tipo de error:', error.type);
       console.error('[SUPPORT][Socket] Descripción:', error.description);
+      console.error('[SUPPORT][Socket] Mensaje:', error.message);
+      console.error('[SUPPORT][Socket] Stack:', error.stack);
+      
+      // Mostrar mensaje más amigable al usuario
+      if (error.message && error.message.includes('server error')) {
+        console.warn('[SUPPORT][Socket] ⚠️ El servidor está experimentando problemas. Intentando reconectar...');
+      }
     });
 
     newSocket.on('reconnect', (attemptNumber) => {
@@ -158,6 +165,12 @@ const Support = () => {
     newSocket.on('reconnect_failed', () => {
       console.error('[SUPPORT][Socket] ❌ Falló la reconexión después de todos los intentos');
       setIsConnected(false);
+      alert('No se pudo conectar con el servidor de chat. Por favor, recarga la página o intenta más tarde.');
+    });
+    
+    // Manejar errores del socket
+    newSocket.on('error', (error) => {
+      console.error('[SUPPORT][Socket] ❌ Error del socket:', error);
     });
 
     // Eventos de chat
@@ -174,19 +187,42 @@ const Support = () => {
       console.log('[SUPPORT][Chat] De:', data.senderName, '(' + data.senderType + ')');
       console.log('[SUPPORT][Chat] Contenido:', data.message);
       console.log('[SUPPORT][Chat] Timestamp:', data.timestamp);
+      console.log('[SUPPORT][Chat] Chat ID:', data.chatId);
+      
+      if (!data.message || !data.senderName) {
+        console.warn('[SUPPORT][Chat] ⚠️ Mensaje incompleto recibido:', data);
+        return;
+      }
       
       setChatMessages(prev => {
+        // Evitar duplicados
+        const messageExists = prev.some(msg => 
+          msg.message === data.message && 
+          msg.sender_name === data.senderName && 
+          Math.abs(new Date(msg.created_at) - new Date(data.timestamp || Date.now())) < 1000
+        );
+        
+        if (messageExists) {
+          console.log('[SUPPORT][Chat] Mensaje duplicado ignorado');
+          return prev;
+        }
+        
         const newMessage = {
           id: Date.now() + Math.random(), // ID único
-          sender_type: data.senderType,
+          sender_type: data.senderType || 'user',
           sender_id: data.senderId,
           sender_name: data.senderName,
           message: data.message,
-          created_at: data.timestamp
+          created_at: data.timestamp || new Date().toISOString()
         };
         console.log('[SUPPORT][Chat] Agregando mensaje al estado:', newMessage);
         return [...prev, newMessage];
       });
+    });
+    
+    // También escuchar 'message_sent' para confirmación
+    newSocket.on('message_sent', (data) => {
+      console.log('[SUPPORT][Chat] ✅ Mensaje confirmado por el servidor:', data);
     });
 
     newSocket.on('chat_error', (data) => {
