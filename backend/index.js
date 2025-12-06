@@ -4068,8 +4068,29 @@ async function proxyRemoveAdminItem(userId, itemId, amount) {
 
 // Proxy: consultar saldo de un usuario
 async function proxyGetUserBalance(userId) {
-    const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/admin/balance/${encodeURIComponent(userId)}`);
-    return await response.json();
+    try {
+        const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/admin/balance/${encodeURIComponent(userId)}`);
+        
+        // Verificar si la respuesta es válida
+        if (!response.ok) {
+            const text = await response.text();
+            console.warn(`[BANCO] [proxyGetUserBalance] Error ${response.status} desde API de economía:`, text.substring(0, 200));
+            throw new Error(`API returned ${response.status}: ${text.substring(0, 100)}`);
+        }
+        
+        // Verificar que el contenido sea JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            console.warn(`[BANCO] [proxyGetUserBalance] Respuesta no es JSON, es: ${contentType}`);
+            throw new Error(`Expected JSON but got ${contentType}`);
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error(`[BANCO] [proxyGetUserBalance] Error para userId ${userId}:`, error.message);
+        throw error;
+    }
 }
 
 // Proxy: consultar saldo de varios usuarios
@@ -5109,8 +5130,9 @@ app.post('/api/proxy/admin/cobrar-nomina', express.json(), async (req, res) => {
 
 // Consultar saldo propio (GET)
 app.get('/api/proxy/balance/:userId', async (req, res) => {
+  const { userId } = req.params; // Mover fuera del try para que esté disponible en el catch
+  
   try {
-    const { userId } = req.params;
     console.log(`[BANCO] [balance-user] GET request for userId: ${userId}`);
     
     const data = await proxyGetUserBalance(userId);
@@ -5121,10 +5143,10 @@ app.get('/api/proxy/balance/:userId', async (req, res) => {
     console.error('[BANCO] [balance-user] Error stack:', error.stack);
     
     // Fallback: devolver datos simulados si la API de economía no está disponible
-    console.log(`[BANCO] [balance-user] Using fallback data for userId: ${userId}`);
+    console.log(`[BANCO] [balance-user] Using fallback data for userId: ${userId || 'unknown'}`);
     const fallbackData = {
       success: true,
-      userId: userId,
+      userId: userId || 'unknown',
       balance: { cash: 1000, bank: 5000 },
       total: 6000,
       message: 'Datos simulados - API de economía no disponible'
@@ -5135,8 +5157,9 @@ app.get('/api/proxy/balance/:userId', async (req, res) => {
 
 // Consultar saldo propio (POST)
 app.post('/api/proxy/balance', express.json(), async (req, res) => {
+  const { userId } = req.body || {}; // Mover fuera del try y agregar fallback
+  
   try {
-    const { userId } = req.body;
     console.log(`[BANCO] [balance-user] POST request for userId: ${userId}`);
     
     if (!userId) {
@@ -5151,10 +5174,10 @@ app.post('/api/proxy/balance', express.json(), async (req, res) => {
     console.error('[BANCO] [balance-user] Error stack:', error.stack);
     
     // Fallback: devolver datos simulados si la API de economía no está disponible
-    console.log(`[BANCO] [balance-user] Using fallback data for userId: ${userId}`);
+    console.log(`[BANCO] [balance-user] Using fallback data for userId: ${userId || 'unknown'}`);
     const fallbackData = {
       success: true,
-      userId: userId,
+      userId: userId || 'unknown',
       balance: { cash: 1000, bank: 5000 },
       total: 6000,
       message: 'Datos simulados - API de economía no disponible'
