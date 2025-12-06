@@ -2907,19 +2907,28 @@ async function processSingleIP(ipData) {
           updateData.avatar = userInfo.avatar;
         }
         
-        const result = await IPTracking.findOneAndUpdate(
-          { ip },
-          {
-            $set: updateData,
-            $inc: { visitCount: 1 },
-            $setOnInsert: {
-              firstSeen: new Date(now),
-              ip,
-              visitCount: 1
-            }
-          },
-          { upsert: true, new: true }
-        );
+        // Primero verificar si existe el documento
+        const existing = await IPTracking.findOne({ ip });
+        
+        if (existing) {
+          // Si existe, actualizar e incrementar visitCount
+          const result = await IPTracking.findOneAndUpdate(
+            { ip },
+            {
+              $set: updateData,
+              $inc: { visitCount: 1 }
+            },
+            { new: true }
+          );
+        } else {
+          // Si no existe, crear nuevo documento con visitCount inicial
+          const result = await IPTracking.create({
+            ip,
+            ...updateData,
+            firstSeen: new Date(now),
+            visitCount: 1
+          });
+        }
         
         if (process.env.DEBUG_IP_TRACKING === 'true') {
           console.log(`[IP TRACKING] ✅ IP procesada en MongoDB: ${ip}`);
