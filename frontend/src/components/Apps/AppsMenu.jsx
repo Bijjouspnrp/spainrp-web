@@ -42,6 +42,7 @@ const AppsMenu = () => {
   const [loading, setLoading] = useState(true);
   const [clickedApp, setClickedApp] = useState(null);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   // Función para reproducir sonido de clic
   const playClickSound = () => {
@@ -107,6 +108,21 @@ const AppsMenu = () => {
     playHoverSound();
   };
 
+  // Actualizar hora en tiempo real
+  useEffect(() => {
+    const updateTime = () => {
+      setCurrentTime(new Date());
+    };
+    
+    // Actualizar inmediatamente
+    updateTime();
+    
+    // Actualizar cada minuto
+    const interval = setInterval(updateTime, 60000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     const token = localStorage.getItem('spainrp_token');
     const headers = token ? { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } : { 'Accept': 'application/json' };
@@ -130,6 +146,19 @@ const AppsMenu = () => {
         <div className="particle"></div>
         <div className="particle"></div>
         <div className="particle"></div>
+        <div className="particle"></div>
+        <div className="particle"></div>
+        <div className="particle"></div>
+      </div>
+      
+      {/* Elementos decorativos laterales */}
+      <div className="side-decorations">
+        <div className="decoration-circle decoration-left-1"></div>
+        <div className="decoration-circle decoration-left-2"></div>
+        <div className="decoration-circle decoration-right-1"></div>
+        <div className="decoration-circle decoration-right-2"></div>
+        <div className="decoration-line decoration-line-1"></div>
+        <div className="decoration-line decoration-line-2"></div>
       </div>
       
       <DiscordUserBar />
@@ -146,7 +175,9 @@ const AppsMenu = () => {
             {/* Status Bar */}
             <div className="status-bar">
               <div className="status-left">
-                <span className="time">9:41</span>
+                <span className="time">
+                  {currentTime.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                </span>
               </div>
               <div className="status-right">
                 <div className="signal-bars">
@@ -862,12 +893,159 @@ const AppsMenu = () => {
           border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        /* Responsive design para iPhone */
+        /* Elementos decorativos laterales */
+        .side-decorations {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          pointer-events: none;
+          z-index: 1;
+          overflow: hidden;
+        }
+        
+        .decoration-circle {
+          position: absolute;
+          border-radius: 50%;
+          background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(114, 137, 218, 0.1));
+          border: 2px solid rgba(0, 212, 255, 0.2);
+          animation: floatCircle 8s ease-in-out infinite;
+        }
+        
+        .decoration-left-1 {
+          width: 200px;
+          height: 200px;
+          top: 10%;
+          left: -100px;
+          animation-delay: 0s;
+        }
+        
+        .decoration-left-2 {
+          width: 150px;
+          height: 150px;
+          top: 60%;
+          left: -75px;
+          animation-delay: 2s;
+        }
+        
+        .decoration-right-1 {
+          width: 180px;
+          height: 180px;
+          top: 20%;
+          right: -90px;
+          animation-delay: 1s;
+        }
+        
+        .decoration-right-2 {
+          width: 120px;
+          height: 120px;
+          top: 70%;
+          right: -60px;
+          animation-delay: 3s;
+        }
+        
+        .decoration-line {
+          position: absolute;
+          background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+          height: 2px;
+          width: 300px;
+          animation: slideLine 10s linear infinite;
+        }
+        
+        .decoration-line-1 {
+          top: 30%;
+          left: -300px;
+          animation-delay: 0s;
+        }
+        
+        .decoration-line-2 {
+          top: 80%;
+          right: -300px;
+          animation-delay: 5s;
+        }
+        
+        @keyframes floatCircle {
+          0%, 100% {
+            transform: translateY(0) rotate(0deg);
+            opacity: 0.3;
+          }
+          50% {
+            transform: translateY(-30px) rotate(180deg);
+            opacity: 0.6;
+          }
+        }
+        
+        @keyframes slideLine {
+          0% {
+            transform: translateX(0);
+            opacity: 0;
+          }
+          50% {
+            opacity: 1;
+          }
+          100% {
+            transform: translateX(calc(100vw + 300px));
+            opacity: 0;
+          }
+        }
+        
+        /* Mejoras en la hora */
+        .time {
+          transition: all 0.3s ease;
+          text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Microinteracciones mejoradas para apps */
+        .apps-menu-link {
+          cursor: pointer;
+          user-select: none;
+        }
+        
+        .apps-menu-link:active {
+          transform: translateY(-2px) scale(0.98);
+        }
+        
+        .app-icon-container {
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .apps-menu-link:hover .app-icon-container {
+          transform: scale(1.1) rotate(5deg);
+        }
+        
+        .apps-menu-link:active .app-icon-container {
+          transform: scale(0.95) rotate(-5deg);
+        }
+        
+        /* Efecto de carga para apps */
+        .apps-menu-link::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 0;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+          transition: width 0.3s ease;
+        }
+        
+        .apps-menu-link:hover::after {
+          width: 100%;
+        }
+        
+        /* Animación de entrada mejorada */
+        .apps-menu-li {
+          will-change: transform, opacity;
+        }
+        
+        /* Responsive design mejorado para iPhone */
         @media (max-width: 500px) {
           .phone-mockup {
             width: 100vw;
             height: 100vh;
             max-width: 100vw;
+            border-radius: 0;
           }
           
           .phone-frame {
@@ -890,6 +1068,10 @@ const AppsMenu = () => {
             padding: 0 15px;
           }
           
+          .time {
+            font-size: 15px;
+          }
+          
           .phone-content {
             padding: 60px 15px 20px 15px;
           }
@@ -897,14 +1079,41 @@ const AppsMenu = () => {
           .apps-header {
             padding: 12px 15px;
             margin-bottom: 20px;
+            font-size: 0.9rem;
+          }
+          
+          .apps-header span {
+            font-size: 0.95rem;
           }
           
           .apps-menu-link {
-            padding: 15px 20px;
+            padding: 15px 18px;
+            flex-wrap: wrap;
+          }
+          
+          .app-icon-container {
+            margin-right: 15px;
+          }
+          
+          .apps-menu-icon {
+            font-size: 1.8rem;
+          }
+          
+          .apps-menu-name {
+            font-size: 1.1rem;
+          }
+          
+          .apps-menu-desc {
+            font-size: 0.85rem;
+            margin-top: 4px;
           }
           
           .home-indicator {
             bottom: 20px;
+          }
+          
+          .side-decorations {
+            display: none;
           }
         }
         
@@ -915,12 +1124,79 @@ const AppsMenu = () => {
           }
           
           .phone-content {
-            padding: 50px 10px 15px 10px;
+            padding: 50px 12px 15px 12px;
+          }
+          
+          .apps-header {
+            padding: 10px 12px;
+            margin-bottom: 15px;
           }
           
           .apps-menu-link {
             padding: 12px 15px;
           }
+          
+          .apps-menu-icon {
+            font-size: 1.6rem;
+          }
+          
+          .apps-menu-name {
+            font-size: 1rem;
+          }
+          
+          .apps-menu-desc {
+            font-size: 0.8rem;
+          }
+          
+          .apps-menu-title {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+          }
+        }
+        
+        @media (max-width: 320px) {
+          .phone-content {
+            padding: 45px 10px 12px 10px;
+          }
+          
+          .apps-menu-link {
+            padding: 10px 12px;
+          }
+          
+          .apps-menu-icon {
+            font-size: 1.4rem;
+          }
+          
+          .apps-menu-name {
+            font-size: 0.95rem;
+          }
+          
+          .apps-menu-desc {
+            font-size: 0.75rem;
+          }
+        }
+        
+        /* Mejoras para tablets */
+        @media (min-width: 768px) and (max-width: 1024px) {
+          .phone-mockup {
+            width: 400px;
+            height: 850px;
+          }
+          
+          .side-decorations {
+            display: block;
+          }
+        }
+        
+        /* Animación suave para el cambio de hora */
+        @keyframes timeUpdate {
+          0% { opacity: 1; }
+          50% { opacity: 0.5; }
+          100% { opacity: 1; }
+        }
+        
+        .time {
+          animation: timeUpdate 0.5s ease-in-out;
         }
       `}</style>
     </div>

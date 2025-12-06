@@ -2872,7 +2872,6 @@ async function processSingleIP(ipData) {
         
         const updateData = {
           lastSeen: new Date(now),
-          visitCount: 1,
           userAgent: userAgent,
           browser: deviceInfo.browser || 'Unknown',
           browserVersion: deviceInfo.browserVersion || 'Unknown',
@@ -2915,7 +2914,8 @@ async function processSingleIP(ipData) {
             $inc: { visitCount: 1 },
             $setOnInsert: {
               firstSeen: new Date(now),
-              ip
+              ip,
+              visitCount: 1
             }
           },
           { upsert: true, new: true }
