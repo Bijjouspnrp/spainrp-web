@@ -4105,9 +4105,15 @@ async function proxyGetUserBalances(userIds) {
 
 // Proxy: transferir dinero entre usuarios
 async function proxyTransferMoney(fromId, toId, amount, origen) {
+    if (!process.env.ECONOMIA_API_KEY) {
+        throw new Error('ECONOMIA_API_KEY no está configurada en las variables de entorno');
+    }
     const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/admin/transfer`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+            'Content-Type': 'application/json',
+            'X-API-Key': process.env.ECONOMIA_API_KEY
+        },
         body: JSON.stringify({ fromId, toId, amount, origen })
     });
     return await response.json();
@@ -4115,9 +4121,15 @@ async function proxyTransferMoney(fromId, toId, amount, origen) {
 
 // Proxy: realizar trabajo
 async function proxyWork(userId, username) {
+    if (!process.env.ECONOMIA_API_KEY) {
+        throw new Error('ECONOMIA_API_KEY no está configurada en las variables de entorno');
+    }
     const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/admin/trabajar`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+            'Content-Type': 'application/json',
+            'X-API-Key': process.env.ECONOMIA_API_KEY
+        },
         body: JSON.stringify({ userId, username })
     });
     return await response.json();
@@ -4125,9 +4137,15 @@ async function proxyWork(userId, username) {
 
 // Proxy: cobrar nómina
 async function proxyCollectSalary(userId, roles) {
+    if (!process.env.ECONOMIA_API_KEY) {
+        throw new Error('ECONOMIA_API_KEY no está configurada en las variables de entorno');
+    }
     const response = await fetch(`${process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021'}/api/proxy/admin/cobrar-nomina`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+            'Content-Type': 'application/json',
+            'X-API-Key': process.env.ECONOMIA_API_KEY
+        },
         body: JSON.stringify({ userId, roles })
     });
     return await response.json();
@@ -5308,9 +5326,16 @@ app.post('/api/proxy/deposit', express.json(), async (req, res) => {
     console.log(`[BANCO] [deposit-user] Calling economia API: ${economiaUrl}`);
     console.log(`[BANCO] [deposit-user] Request body:`, requestBody);
     
+    if (!process.env.ECONOMIA_API_KEY) {
+      return res.status(500).json({ error: 'ECONOMIA_API_KEY no está configurada en las variables de entorno' });
+    }
+    
     const response = await fetch(economiaUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-API-Key': process.env.ECONOMIA_API_KEY
+      },
       body: JSON.stringify(requestBody)
     });
     
@@ -5362,9 +5387,16 @@ app.post('/api/proxy/withdraw', express.json(), async (req, res) => {
     console.log(`[BANCO] [withdraw-user] Calling economia API: ${economiaUrl}`);
     console.log(`[BANCO] [withdraw-user] Request body:`, requestBody);
     
+    if (!process.env.ECONOMIA_API_KEY) {
+      return res.status(500).json({ error: 'ECONOMIA_API_KEY no está configurada en las variables de entorno' });
+    }
+    
     const response = await fetch(economiaUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-API-Key': process.env.ECONOMIA_API_KEY
+      },
       body: JSON.stringify(requestBody)
     });
     
