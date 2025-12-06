@@ -40,7 +40,7 @@ const staffMembers = [
     ]
   },
   {
-    name: "Co-Dueño",
+    name: "Ex-Co-Dueño",
     role: "Mimi_YTgamer100",
     robloxUserId: "1400001231", // Cambia este ID por el del usuario de Roblox
     color: "#ff6b6b",
@@ -51,7 +51,7 @@ const staffMembers = [
     ]
   },
   {
-    name: "Co-Dueño",
+    name: "Ex-Co-Dueño",
     role: "Sergiojpni",
     robloxUserId: "Sergiojpni",
     color: "#4ecdc4",
@@ -73,30 +73,6 @@ const staffMembers = [
     ]
   },
   {
-    name: "Asistente de Fundación",
-    role: "XxBoy931xX",
-    robloxUserId: "XxBoy931xX",
-    color: "#96ceb4",
-    icon: <FaUsers />,
-    medals: [
-      { icon: <FaTrophy />, text: "OG", color: "#ffd700" },
-      { icon: <FaDollarSign />, text: "Inversor", color: "#27ae60" },
-      { icon: <FaHandshake />, text: "Apoyo al Servidor", color: "#3498db" }
-    ]
-  },
-  {
-    name: "Asistente de Fundación",
-    role: "JoSEyALEx3000",
-    robloxUserId: "JoSEyALEx3000",
-    color: "#feca57",
-    icon: <FaUsers />,
-    medals: [
-      { icon: <FaTrophy />, text: "OG", color: "#ffd700" },
-      { icon: <FaDollarSign />, text: "Inversor", color: "#27ae60" },
-      { icon: <FaHandshake />, text: "Apoyo al Servidor", color: "#3498db" }
-    ]
-  },
-  {
     name: "Encargado del Consejo Directivo",
     role: "benjanaessens1234",
     robloxUserId: "benjanaessens1234",
@@ -109,17 +85,6 @@ const staffMembers = [
   },
   {
     name: "Directivo",
-    role: "EricPGarrido",
-    robloxUserId: "EricPGarrido",
-    color: "#9b59b6",
-    icon: <FaUsers />,
-    medals: [
-      { icon: <FaChartLine />, text: "Actividad", color: "#e74c3c" },
-      { icon: <FaGem />, text: "Lealtad al Servidor", color: "#9b59b6" }
-    ]
-  },
-  {
-    name: "Directivo",
     role: "Benj4XP",
     robloxUserId: "Benj4XP",
     color: "#8e44ad",
@@ -127,6 +92,50 @@ const staffMembers = [
     medals: [
       { icon: <FaGem />, text: "Developer Confianza SpainRP", color: "#8e44ad" },
       { icon: <FaTrophy />, text: "OG", color: "#800020" }
+    ]
+  },
+  {
+    name: "Directivo",
+    role: "Nicogamer",
+    robloxUserId: "1856014626",
+    color: "#3498db",
+    icon: <FaUsers />,
+    medals: [
+      { icon: <FaChartLine />, text: "Actividad", color: "#e74c3c" },
+      { icon: <FaGem />, text: "Lealtad al Servidor", color: "#3498db" }
+    ]
+  },
+  {
+    name: "Coordinador",
+    role: "ElproSamu0622",
+    robloxUserId: "2581232061",
+    color: "#16a085",
+    icon: <FaUserTie />,
+    medals: [
+      { icon: <FaHandshake />, text: "Coordinador", color: "#16a085" },
+      { icon: <FaStar />, text: "Dedicación", color: "#f39c12" }
+    ]
+  },
+  {
+    name: "Coordinador",
+    role: "alitacule",
+    robloxUserId: "1690657723",
+    color: "#e91e63",
+    icon: <FaUserTie />,
+    medals: [
+      { icon: <FaHandshake />, text: "Coordinador", color: "#16a085" },
+      { icon: <FaStar />, text: "Dedicación", color: "#f39c12" }
+    ]
+  },
+  {
+    name: "Jefe de Supervisión",
+    role: "nanobox_32",
+    robloxUserId: "2874054784",
+    color: "#8e44ad",
+    icon: <FaShieldAlt />,
+    medals: [
+      { icon: <FaShieldAlt />, text: "Supervisión", color: "#8e44ad" },
+      { icon: <FaMedal />, text: "Liderazgo", color: "#ffd700" }
     ]
   },
   {
@@ -350,11 +359,12 @@ const StaffSection = () => {
       'Mimi_YTgamer100': '#17ccc0ff',
       'Sergiojpni': '#17ccc0ff',
       'gamessss5025': '#030968ff',
-      'XxBoy931xX': '#96ceb4',
-      'JoSEyALEx3000': '#feca57',
       'benjanaessens1234': '#e67e22',
-      'EricPGarrido': '#9b59b6',
       'Benj4XP': '#8e44ad',
+      'Nicogamer': '#3498db',
+      'ElproSamu0622': '#16a085',
+      'alitacule': '#e91e63',
+      'nanobox_32': '#8e44ad',
       '???': '#2c3e50',
       'Soporte': '#45b7d1',
       'Eventos': '#96ceb4',

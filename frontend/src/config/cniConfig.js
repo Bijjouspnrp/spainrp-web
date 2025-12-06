@@ -9,7 +9,7 @@ export const CNI_CONFIG = {
     LOCAL: '/src/assets/CNIORIGINAl.png',
     
     // URL externa (si quieres usar una imagen desde internet)
-    EXTERNAL: 'https://imgur.com/acRv3nU.png', // Ejemplo
+    EXTERNAL: 'https://i.imgur.com/acRv3nU.png', // Ejemplo
     
     // Ruta de fallback
     FALLBACK: '/src/assets/cni-logo.svg'

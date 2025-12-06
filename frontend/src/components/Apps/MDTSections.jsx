@@ -118,38 +118,40 @@ export const DNISection = ({ data }) => {
                   </div>
                 </div>
                 
-                <div className="dni-details">
-                  <div className="dni-detail-row">
-                    <span className="dni-detail-label">NACIMIENTO:</span>
-                    <span className="dni-detail-value">{dni.fechaNacimiento}</span>
-                  </div>
-                  <div className="dni-detail-row">
-                    <span className="dni-detail-label">LUGAR NAC:</span>
-                    <span className="dni-detail-value">{dni.lugarNacimiento || 'N/A'}</span>
-                  </div>
-                  <div className="dni-detail-row">
-                    <span className="dni-detail-label">SEXO:</span>
-                    <span className="dni-detail-value">{dni.sexo}</span>
-                  </div>
-                  <div className="dni-detail-row">
-                    <span className="dni-detail-label">NACIONALIDAD:</span>
-                    <span className="dni-detail-value">{dni.nacionalidad}</span>
-                  </div>
-                  <div className="dni-detail-row">
-                    <span className="dni-detail-label">ESTADO CIVIL:</span>
-                    <span className="dni-detail-value">{dni.estadoCivil || 'Soltero/a'}</span>
-                  </div>
-                  <div className="dni-detail-row">
-                    <span className="dni-detail-label">PROFESIÓN:</span>
-                    <span className="dni-detail-value">{dni.trabajo || 'N/A'}</span>
-                  </div>
-                  <div className="dni-detail-row">
-                    <span className="dni-detail-label">DOMICILIO:</span>
-                    <span className="dni-detail-value">{dni.domicilio || 'N/A'}</span>
-                  </div>
-                  <div className="dni-detail-row">
-                    <span className="dni-detail-label">TELÉFONO:</span>
-                    <span className="dni-detail-value">{dni.telefono || 'N/A'}</span>
+                <div className="dni-details-scrollable">
+                  <div className="dni-details">
+                    <div className="dni-detail-row">
+                      <span className="dni-detail-label">NACIMIENTO:</span>
+                      <span className="dni-detail-value">{dni.fechaNacimiento}</span>
+                    </div>
+                    <div className="dni-detail-row">
+                      <span className="dni-detail-label">LUGAR NAC:</span>
+                      <span className="dni-detail-value">{dni.lugarNacimiento || 'N/A'}</span>
+                    </div>
+                    <div className="dni-detail-row">
+                      <span className="dni-detail-label">SEXO:</span>
+                      <span className="dni-detail-value">{dni.sexo}</span>
+                    </div>
+                    <div className="dni-detail-row">
+                      <span className="dni-detail-label">NACIONALIDAD:</span>
+                      <span className="dni-detail-value">{dni.nacionalidad}</span>
+                    </div>
+                    <div className="dni-detail-row">
+                      <span className="dni-detail-label">ESTADO CIVIL:</span>
+                      <span className="dni-detail-value">{dni.estadoCivil || 'Soltero/a'}</span>
+                    </div>
+                    <div className="dni-detail-row">
+                      <span className="dni-detail-label">PROFESIÓN:</span>
+                      <span className="dni-detail-value">{dni.trabajo || 'N/A'}</span>
+                    </div>
+                    <div className="dni-detail-row">
+                      <span className="dni-detail-label">DOMICILIO:</span>
+                      <span className="dni-detail-value">{dni.domicilio || 'N/A'}</span>
+                    </div>
+                    <div className="dni-detail-row">
+                      <span className="dni-detail-label">TELÉFONO:</span>
+                      <span className="dni-detail-value">{dni.telefono || 'N/A'}</span>
+                    </div>
                   </div>
                 </div>
                 
@@ -449,6 +451,22 @@ export const MultasSection = ({ data, userId, onRefresh }) => {
 
 // Sección Antecedentes
 export const AntecedentesSection = ({ data }) => {
+  const [expandedCards, setExpandedCards] = useState({});
+
+  const toggleCard = (index) => {
+    setExpandedCards(prev => ({
+      ...prev,
+      [index]: !prev[index]
+    }));
+  };
+
+  // Función para determinar si el contenido es largo
+  const isLongContent = (cargos, multa) => {
+    const cargosLength = cargos ? cargos.length : 0;
+    const multaLength = multa ? String(multa).length : 0;
+    return cargosLength > 50 || multaLength > 10;
+  };
+
   if (!data || data.length === 0) {
     return (
       <div className="mdt-section">
@@ -465,80 +483,112 @@ export const AntecedentesSection = ({ data }) => {
     <div className="mdt-section">
       <h3><FaHistory /> Mis Antecedentes ({data.length})</h3>
       <div className="antecedentes-list">
-        {data.map((antecedente, index) => (
-          <div key={antecedente.id || index} className="antecedente-card">
-            <div className="antecedente-header">
-              <h4>Antecedente #{antecedente.id || index + 1}</h4>
-              <span className="antecedente-fecha">
-                {antecedente.fecha ? (() => {
-                  try {
-                    const date = new Date(antecedente.fecha);
-                    return isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString('es-ES', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    });
-                  } catch {
-                    return 'N/A';
-                  }
-                })() : 'N/A'}
-              </span>
+        {data.map((antecedente, index) => {
+          const isExpanded = expandedCards[index];
+          const hasLongContent = isLongContent(antecedente.cargos, antecedente.multa);
+          const shouldCollapse = hasLongContent && !isExpanded;
+
+          return (
+            <div key={antecedente.id || index} className="antecedente-card">
+              <div className="antecedente-header">
+                <h4>Antecedente #{antecedente.id || index + 1}</h4>
+                <span className="antecedente-fecha">
+                  {antecedente.fecha ? (() => {
+                    try {
+                      const date = new Date(antecedente.fecha);
+                      return isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString('es-ES', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      });
+                    } catch {
+                      return 'N/A';
+                    }
+                  })() : 'N/A'}
+                </span>
+              </div>
+              <div className="antecedente-info">
+                <div className="antecedente-field">
+                  <label>DNI:</label>
+                  <span>{antecedente.dni || 'N/A'}</span>
+                </div>
+                <div className="antecedente-field">
+                  <label>Nombre:</label>
+                  <span>{antecedente.nombre} {antecedente.apellidos}</span>
+                </div>
+                <div className="antecedente-field">
+                  <label>Cargos:</label>
+                  <div className="cargos-container">
+                    {shouldCollapse ? (
+                      <>
+                        <span className="cargos">{antecedente.cargos ? antecedente.cargos.substring(0, 50) + '...' : 'N/A'}</span>
+                        <button 
+                          className="expand-btn"
+                          onClick={() => toggleCard(index)}
+                          title="Ver más"
+                        >
+                          <FaEye /> Ver más
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <span className="cargos">{antecedente.cargos || 'N/A'}</span>
+                        {hasLongContent && (
+                          <button 
+                            className="expand-btn"
+                            onClick={() => toggleCard(index)}
+                            title="Ver menos"
+                          >
+                            <FaEye /> Ver menos
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div className="antecedente-field">
+                  <label>Multa:</label>
+                  <span className="multa-amount">{antecedente.multa || 0}€</span>
+                </div>
+                {antecedente.tiempoC && (
+                  <div className="antecedente-field">
+                    <label>Tiempo Carcel:</label>
+                    <span className="tiempo-carcel">{antecedente.tiempoC}</span>
+                  </div>
+                )}
+                {antecedente.tiempoOOC && (
+                  <div className="antecedente-field">
+                    <label>Tiempo OOC:</label>
+                    <span className="tiempo-ooc">{antecedente.tiempoOOC}</span>
+                  </div>
+                )}
+                {antecedente.tiempoIC && (
+                  <div className="antecedente-field">
+                    <label>Tiempo IC:</label>
+                    <span className="tiempo-ic">{antecedente.tiempoIC}</span>
+                  </div>
+                )}
+                {antecedente.fotoUrl && (
+                  <div className="antecedente-field">
+                    <label>Foto:</label>
+                    <img 
+                      src={antecedente.fotoUrl} 
+                      alt="Foto del antecedente" 
+                      className="antecedente-foto"
+                      onError={(e) => e.target.style.display = 'none'}
+                    />
+                  </div>
+                )}
+                <div className="antecedente-field">
+                  <label>Oficial ID:</label>
+                  <span className="oficial-id">{antecedente.oficialId || 'N/A'}</span>
+                </div>
+              </div>
             </div>
-            <div className="antecedente-info">
-              <div className="antecedente-field">
-                <label>DNI:</label>
-                <span>{antecedente.dni || 'N/A'}</span>
-              </div>
-              <div className="antecedente-field">
-                <label>Nombre:</label>
-                <span>{antecedente.nombre} {antecedente.apellidos}</span>
-              </div>
-              <div className="antecedente-field">
-                <label>Cargos:</label>
-                <span className="cargos">{antecedente.cargos || 'N/A'}</span>
-              </div>
-              <div className="antecedente-field">
-                <label>Multa:</label>
-                <span className="multa-amount">{antecedente.multa || 0}€</span>
-              </div>
-              {antecedente.tiempoC && (
-                <div className="antecedente-field">
-                  <label>Tiempo Carcel:</label>
-                  <span className="tiempo-carcel">{antecedente.tiempoC}</span>
-                </div>
-              )}
-              {antecedente.tiempoOOC && (
-                <div className="antecedente-field">
-                  <label>Tiempo OOC:</label>
-                  <span className="tiempo-ooc">{antecedente.tiempoOOC}</span>
-                </div>
-              )}
-              {antecedente.tiempoIC && (
-                <div className="antecedente-field">
-                  <label>Tiempo IC:</label>
-                  <span className="tiempo-ic">{antecedente.tiempoIC}</span>
-                </div>
-              )}
-              {antecedente.fotoUrl && (
-                <div className="antecedente-field">
-                  <label>Foto:</label>
-                  <img 
-                    src={antecedente.fotoUrl} 
-                    alt="Foto del antecedente" 
-                    className="antecedente-foto"
-                    onError={(e) => e.target.style.display = 'none'}
-                  />
-                </div>
-              )}
-              <div className="antecedente-field">
-                <label>Oficial ID:</label>
-                <span className="oficial-id">{antecedente.oficialId || 'N/A'}</span>
-              </div>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -910,9 +960,53 @@ export const SearchSection = ({ onSearch }) => {
     
     if (searchType === 'nombre') {
       searchSuggestions(value);
+    } else if (searchType === 'discord') {
+      // Buscar usuarios de Discord cuando el tipo es discord
+      if (value.length >= 3) {
+        searchDiscordUsers(value);
+      } else {
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
     } else {
       setSuggestions([]);
       setShowSuggestions(false);
+    }
+  };
+
+  // Función para buscar usuarios de Discord
+  const searchDiscordUsers = async (query) => {
+    if (query.length < 3) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    setSearchingSuggestions(true);
+    try {
+      const response = await fetch(apiUrl(`/api/discord/search-users?q=${encodeURIComponent(query)}`));
+      if (response.ok) {
+        const users = await response.json();
+        const discordSuggestions = (users || []).slice(0, 10).map(user => ({
+          type: 'discord',
+          value: user.id,
+          label: `${user.username || user.displayName || 'Usuario'} (ID: ${user.id})`,
+          discordId: user.id,
+          username: user.username || user.displayName,
+          avatar: user.avatar
+        }));
+        setSuggestions(discordSuggestions);
+        setShowSuggestions(true);
+      } else {
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+    } catch (err) {
+      console.error('Error buscando usuarios Discord:', err);
+      setSuggestions([]);
+      setShowSuggestions(false);
+    } finally {
+      setSearchingSuggestions(false);
     }
   };
 
@@ -1095,6 +1189,15 @@ export const SearchSection = ({ onSearch }) => {
                     className="suggestion-item"
                     onClick={() => selectSuggestion(suggestion)}
                   >
+                    {suggestion.avatar && (
+                      <div className="suggestion-avatar">
+                        <img 
+                          src={`https://cdn.discordapp.com/avatars/${suggestion.discordId}/${suggestion.avatar}.png`} 
+                          alt={suggestion.username}
+                          onError={(e) => e.target.style.display = 'none'}
+                        />
+                      </div>
+                    )}
                     <span className="suggestion-type">
                       {suggestion.type === 'dni' ? '🆔' : '👤'}
                     </span>
@@ -1638,20 +1741,36 @@ export const ArrestarSection = ({ onRefresh }) => {
               placeholder="123456789012345678 o busca por nombre"
               required
             />
-            {searchingDiscord && <FaSpinner className="fa-spin search-spinner" />}
+            {searchingDiscord && (
+              <div className="search-spinner-wrapper">
+                <FaSpinner className="fa-spin search-spinner" />
+              </div>
+            )}
             {showDiscordSuggestions && discordSuggestions.length > 0 && (
               <div className="autocomplete-suggestions">
                 {discordSuggestions.map((user, index) => (
                   <div
                     key={index}
-                    className="suggestion-item"
+                    className="suggestion-item discord-suggestion"
                     onClick={() => selectDiscordUser(user)}
                   >
                     <div className="suggestion-avatar">
-                      <img src={user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : '/assets/spainrplogo.png'} alt="Avatar" />
+                      {user.avatar ? (
+                        <img 
+                          src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=64`} 
+                          alt={user.username || 'Usuario'}
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <div className="suggestion-avatar-placeholder" style={{ display: user.avatar ? 'none' : 'flex' }}>
+                        <FaUser />
+                      </div>
                     </div>
                     <div className="suggestion-info">
-                      <div className="suggestion-name">{user.username}</div>
+                      <div className="suggestion-name">{user.username || user.displayName || 'Usuario'}</div>
                       <div className="suggestion-id">ID: {user.id}</div>
                     </div>
                   </div>

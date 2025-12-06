@@ -8264,23 +8264,68 @@ app.get('/api/proxy/admin/top-multas', async (req, res) => {
     // Si tenemos datos del ranking, enriquecer con información de Discord
     if (data.success && data.top) {
       try {
-        // Enriquecer porImportePendiente
-        if (data.top.porImportePendiente && Array.isArray(data.top.porImportePendiente)) {
-          data.top.porImportePendiente = await Promise.all(data.top.porImportePendiente.map(async (user) => {
-            try {
-              const guild = discordClient.guilds.cache.get(process.env.DISCORD_GUILD_ID);
-              if (guild) {
-                await guild.members.fetch();
-                const member = guild.members.cache.get(user.discordId);
-                
-                if (member) {
-                  return {
-                    ...user,
-                    username: member.user.username,
-                    displayName: member.user.displayName || member.user.username,
-                    avatar: member.user.displayAvatarURL({ dynamic: true, size: 256 })
-                  };
+        // Función helper para obtener información de un usuario de Discord con timeout
+        const getDiscordUserInfo = async (discordId) => {
+          const timeout = 3000; // 3 segundos de timeout
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Timeout')), timeout)
+          );
+
+          try {
+            const guild = discordClient.guilds.cache.get(process.env.DISCORD_GUILD_ID || '1212556680911650866');
+            if (!guild) {
+              return null;
+            }
+
+            // Primero verificar el cache
+            let member = guild.members.cache.get(discordId);
+            
+            // Si no está en cache, intentar fetch solo de ese usuario específico
+            if (!member) {
+              try {
+                // Usar Promise.race para agregar timeout
+                await Promise.race([
+                  guild.members.fetch(discordId),
+                  timeoutPromise
+                ]);
+                member = guild.members.cache.get(discordId);
+              } catch (fetchErr) {
+                // Si falla el fetch o hay timeout, retornar null
+                if (fetchErr.message !== 'Timeout') {
+                  console.warn(`[MDT PROXY] Error fetching member ${discordId}:`, fetchErr.message);
                 }
+                return null;
+              }
+            }
+
+            if (member) {
+              return {
+                username: member.user.username,
+                displayName: member.displayName || member.user.username,
+                avatar: member.user.displayAvatarURL({ dynamic: true, size: 256 })
+              };
+            }
+          } catch (err) {
+            if (err.message !== 'Timeout') {
+              console.warn(`[MDT PROXY] Error obteniendo info de Discord para ${discordId}:`, err.message);
+            }
+          }
+          return null;
+        };
+
+        // Enriquecer porImportePendiente usando Promise.allSettled para que un error no detenga todo
+        if (data.top.porImportePendiente && Array.isArray(data.top.porImportePendiente)) {
+          const enrichedResults = await Promise.allSettled(
+            data.top.porImportePendiente.map(async (user) => {
+              const discordInfo = await getDiscordUserInfo(user.discordId);
+              
+              if (discordInfo) {
+                return {
+                  ...user,
+                  username: discordInfo.username,
+                  displayName: discordInfo.displayName,
+                  avatar: discordInfo.avatar
+                };
               }
               
               // Fallback si no se encuentra en Discord
@@ -8290,8 +8335,16 @@ app.get('/api/proxy/admin/top-multas', async (req, res) => {
                 displayName: `Usuario_${user.discordId.slice(-4)}`,
                 avatar: `https://cdn.discordapp.com/avatars/${user.discordId}/default.png`
               };
-            } catch (memberErr) {
-              console.warn(`[MDT PROXY] Error obteniendo info de Discord para ${user.discordId}:`, memberErr.message);
+            })
+          );
+
+          // Procesar resultados (Promise.allSettled siempre resuelve)
+          data.top.porImportePendiente = enrichedResults.map((result, index) => {
+            if (result.status === 'fulfilled') {
+              return result.value;
+            } else {
+              // Si falló, usar el usuario original con fallback
+              const user = data.top.porImportePendiente[index];
               return {
                 ...user,
                 username: `Usuario_${user.discordId.slice(-4)}`,
@@ -8299,26 +8352,22 @@ app.get('/api/proxy/admin/top-multas', async (req, res) => {
                 avatar: `https://cdn.discordapp.com/avatars/${user.discordId}/default.png`
               };
             }
-          }));
+          });
         }
         
-        // Enriquecer porNumeroPendientes
+        // Enriquecer porNumeroPendientes usando Promise.allSettled
         if (data.top.porNumeroPendientes && Array.isArray(data.top.porNumeroPendientes)) {
-          data.top.porNumeroPendientes = await Promise.all(data.top.porNumeroPendientes.map(async (user) => {
-            try {
-              const guild = discordClient.guilds.cache.get(process.env.DISCORD_GUILD_ID);
-              if (guild) {
-                await guild.members.fetch();
-                const member = guild.members.cache.get(user.discordId);
-                
-                if (member) {
-                  return {
-                    ...user,
-                    username: member.user.username,
-                    displayName: member.user.displayName || member.user.username,
-                    avatar: member.user.displayAvatarURL({ dynamic: true, size: 256 })
-                  };
-                }
+          const enrichedResults = await Promise.allSettled(
+            data.top.porNumeroPendientes.map(async (user) => {
+              const discordInfo = await getDiscordUserInfo(user.discordId);
+              
+              if (discordInfo) {
+                return {
+                  ...user,
+                  username: discordInfo.username,
+                  displayName: discordInfo.displayName,
+                  avatar: discordInfo.avatar
+                };
               }
               
               // Fallback si no se encuentra en Discord
@@ -8328,8 +8377,16 @@ app.get('/api/proxy/admin/top-multas', async (req, res) => {
                 displayName: `Usuario_${user.discordId.slice(-4)}`,
                 avatar: `https://cdn.discordapp.com/avatars/${user.discordId}/default.png`
               };
-            } catch (memberErr) {
-              console.warn(`[MDT PROXY] Error obteniendo info de Discord para ${user.discordId}:`, memberErr.message);
+            })
+          );
+
+          // Procesar resultados
+          data.top.porNumeroPendientes = enrichedResults.map((result, index) => {
+            if (result.status === 'fulfilled') {
+              return result.value;
+            } else {
+              // Si falló, usar el usuario original con fallback
+              const user = data.top.porNumeroPendientes[index];
               return {
                 ...user,
                 username: `Usuario_${user.discordId.slice(-4)}`,
@@ -8337,7 +8394,7 @@ app.get('/api/proxy/admin/top-multas', async (req, res) => {
                 avatar: `https://cdn.discordapp.com/avatars/${user.discordId}/default.png`
               };
             }
-          }));
+          });
         }
         
         console.log('[MDT PROXY] Datos del ranking enriquecidos con información de Discord');

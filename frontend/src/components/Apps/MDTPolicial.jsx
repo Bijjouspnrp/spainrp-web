@@ -278,6 +278,17 @@ const MDTPolicial = () => {
   const [terminalActive, setTerminalActive] = useState(false);
   const [bannerVisible, setBannerVisible] = useState(true);
 
+  // Auto-cerrar el banner después de 10 segundos
+  useEffect(() => {
+    if (bannerVisible) {
+      const timer = setTimeout(() => {
+        setBannerVisible(false);
+      }, 10000); // 10 segundos
+
+      return () => clearTimeout(timer);
+    }
+  }, [bannerVisible]);
+
   // Estados para ciudadanos
   const [citizenData, setCitizenData] = useState({
     dni: null,
@@ -483,24 +494,30 @@ const MDTPolicial = () => {
 
   return (
     <div className="mdt-container">
-      {/* Banner informativo */}
+      {/* Toast flotante informativo */}
       {bannerVisible && (
-        <div className="mdt-banner">
-          <div className="banner-content">
-            <FaExclamationTriangle className="banner-icon" />
-            <div className="banner-text">
-              <strong>Nota Importante:</strong> Sabemos que hay funciones en desarrollo, pendientes de configuración o ciertos errores. 
-              El programador <strong>BijjouPro08</strong> está al tanto y trabajando en las mejoras. 
-              <em>Gracias por su comprensión y paciencia.</em>
+        <div className="mdt-toast">
+          <div className="toast-content">
+            <div className="toast-icon-wrapper">
+              <FaExclamationTriangle className="toast-icon" />
+            </div>
+            <div className="toast-text">
+              <div className="toast-title">Nota Importante</div>
+              <div className="toast-message">
+                Sabemos que hay funciones en desarrollo, pendientes de configuración o ciertos errores. 
+                El programador <strong>BijjouPro08</strong> está al tanto y trabajando en las mejoras.
+              </div>
             </div>
             <button 
-              className="banner-close" 
+              className="toast-close" 
               onClick={() => setBannerVisible(false)}
-              title="Cerrar banner"
+              title="Cerrar"
+              aria-label="Cerrar notificación"
             >
               <FaTimes />
             </button>
           </div>
+          <div className="toast-progress-bar"></div>
         </div>
       )}
 
@@ -584,8 +601,26 @@ const MDTPolicial = () => {
         
         <div className="toolbar-right">
           <div className="user-info">
-            <span className="user-name">{user?.username || 'Usuario'}</span>
-            <span className="user-role">{isCNI ? 'CNI' : isPolice ? 'Policía' : 'Ciudadano'}</span>
+            <div className="user-avatar-container">
+              {user?.avatar ? (
+                <img 
+                  src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=64`}
+                  alt={user.username}
+                  className="user-avatar"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'flex';
+                  }}
+                />
+              ) : null}
+              <div className="user-avatar-placeholder" style={{ display: user?.avatar ? 'none' : 'flex' }}>
+                <FaUser />
+              </div>
+            </div>
+            <div className="user-details">
+              <span className="user-name">{user?.username || 'Usuario'}</span>
+              <span className="user-role">{isCNI ? 'CNI' : isPolice ? 'Policía' : 'Ciudadano'}</span>
+            </div>
           </div>
         </div>
         
