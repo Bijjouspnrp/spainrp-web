@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import GlobalDMCollectorPanel from './GlobalDMCollectorPanel';
+import DiscordAutocomplete from './DiscordAutocomplete';
 import { apiUrl } from '../utils/api';
 import { useToast } from './ToastProvider';
 import './AdminPanel.css';
@@ -437,7 +438,7 @@ const AdminPanel = () => {
     }
   };
 
-  // Kickear usuario
+  // Kickear usuario (función antigua, mantenida por compatibilidad)
   const handleKick = async (e) => {
     e.preventDefault();
     setKickResult(null);
@@ -448,7 +449,7 @@ const AdminPanel = () => {
       return;
     }
     try {
-      const res = await fetch(`/api/discord/kick`, {
+      const res = await fetch(apiUrl(`/api/discord/kick`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: kickId })
@@ -500,7 +501,7 @@ const AdminPanel = () => {
     }
   };
 
-  // Cambiar roles
+  // Cambiar roles (función antigua, mantenida por compatibilidad)
   const [roleError, setRoleError] = useState('');
   const handleRole = async (e) => {
     e.preventDefault();
@@ -512,7 +513,7 @@ const AdminPanel = () => {
       return;
     }
     try {
-      const res = await fetch(`/api/discord/role`, {
+      const res = await fetch(apiUrl(`/api/discord/role`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: roleUserId, roleId, action: roleAction })
@@ -947,12 +948,10 @@ function ModerationTab() {
           <form onSubmit={handleBan}>
             <div className="form-group">
               <label>ID de usuario</label>
-              <input 
-                type="text" 
-                value={userId} 
-                onChange={e => setUserId(e.target.value)}
-                placeholder="ID de Discord" 
-                required 
+              <DiscordAutocomplete
+                value={userId}
+                onChange={setUserId}
+                placeholder="ID de Discord o nombre de usuario"
               />
         </div>
             <div className="form-group">
@@ -977,12 +976,10 @@ function ModerationTab() {
           <form onSubmit={handleKick}>
             <div className="form-group">
               <label>ID de usuario</label>
-              <input 
-                type="text" 
-                value={userId} 
-                onChange={e => setUserId(e.target.value)}
-                placeholder="ID de Discord" 
-                required 
+              <DiscordAutocomplete
+                value={userId}
+                onChange={setUserId}
+                placeholder="ID de Discord o nombre de usuario"
               />
         </div>
             <button type="submit" className="btn-primary" disabled={loading}>
@@ -997,12 +994,10 @@ function ModerationTab() {
           <form onSubmit={handleMute}>
             <div className="form-group">
               <label>ID de usuario</label>
-              <input 
-                type="text" 
-                value={userId} 
-                onChange={e => setUserId(e.target.value)}
-                placeholder="ID de Discord" 
-                required 
+              <DiscordAutocomplete
+                value={userId}
+                onChange={setUserId}
+                placeholder="ID de Discord o nombre de usuario"
               />
         </div>
             <div className="form-group">
@@ -1036,12 +1031,10 @@ function ModerationTab() {
           <form onSubmit={handleUnban}>
             <div className="form-group">
               <label>ID de usuario</label>
-              <input 
-                type="text" 
-                value={userId} 
-                onChange={e => setUserId(e.target.value)}
-                placeholder="ID de Discord" 
-                required 
+              <DiscordAutocomplete
+                value={userId}
+                onChange={setUserId}
+                placeholder="ID de Discord o nombre de usuario"
               />
         </div>
             <button type="submit" className="btn-primary" disabled={loading}>
@@ -1429,12 +1422,10 @@ function RolesTab() {
           <form onSubmit={handleRole}>
             <div className="form-group">
               <label>ID de usuario</label>
-              <input 
-                type="text" 
-                value={roleUserId} 
-                onChange={e => setRoleUserId(e.target.value)}
-                placeholder="ID de Discord" 
-                required 
+              <DiscordAutocomplete
+                value={roleUserId}
+                onChange={setRoleUserId}
+                placeholder="ID de Discord o nombre de usuario"
               />
             </div>
             <div className="form-group">
@@ -1474,12 +1465,10 @@ function RolesTab() {
           <form onSubmit={handleTempRole}>
             <div className="form-group">
               <label>ID de usuario</label>
-              <input 
-                type="text" 
-                value={tempRoleUserId} 
-                onChange={e => setTempRoleUserId(e.target.value)}
-                placeholder="ID de Discord" 
-                required 
+              <DiscordAutocomplete
+                value={tempRoleUserId}
+                onChange={setTempRoleUserId}
+                placeholder="ID de Discord o nombre de usuario"
               />
             </div>
             <div className="form-group">
@@ -1516,12 +1505,10 @@ function RolesTab() {
           <form onSubmit={handleMultiRole}>
             <div className="form-group">
               <label>ID de usuario</label>
-              <input 
-                type="text" 
-                value={multiRoleUserId} 
-                onChange={e => setMultiRoleUserId(e.target.value)}
-                placeholder="ID de Discord" 
-                required 
+              <DiscordAutocomplete
+                value={multiRoleUserId}
+                onChange={setMultiRoleUserId}
+                placeholder="ID de Discord o nombre de usuario"
               />
             </div>
             <div className="form-group">
@@ -1571,18 +1558,42 @@ function LogsTab() {
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(false);
+  
+  // Estados para lista de baneados con paginación y filtros
+  const [bannedSearchTerm, setBannedSearchTerm] = useState('');
+  const [bannedFilterReason, setBannedFilterReason] = useState('all');
+  const [bannedCurrentPage, setBannedCurrentPage] = useState(1);
+  const [bannedItemsPerPage] = useState(10);
 
   const fetchLogs = async () => {
     setLoading(true);
     try {
-      const res = await fetch(apiUrl('/api/discord/logs'));
-      if (res.ok) {
-        const data = await res.json();
-        setLogs(data.logs || []);
-      } else {
-        console.warn('Logs endpoint not available:', res.status);
-        setLogs([]);
+      // Intentar obtener más logs de auditoría
+      const [logsRes, auditRes] = await Promise.all([
+        fetch(apiUrl('/api/discord/logs')),
+        fetch(apiUrl('/api/discord/audit-logs')).catch(() => null)
+      ]);
+      
+      let allLogs = [];
+      
+      if (logsRes.ok) {
+        const logsData = await logsRes.json();
+        allLogs = [...(logsData.logs || [])];
       }
+      
+      if (auditRes && auditRes.ok) {
+        const auditData = await auditRes.json();
+        allLogs = [...allLogs, ...(auditData.logs || [])];
+      }
+      
+      // Ordenar por timestamp descendente
+      allLogs.sort((a, b) => {
+        const timeA = new Date(a.timestamp || a.createdAt || 0).getTime();
+        const timeB = new Date(b.timestamp || b.createdAt || 0).getTime();
+        return timeB - timeA;
+      });
+      
+      setLogs(allLogs);
     } catch (err) {
       console.error('Error fetching logs:', err);
       setLogs([]);
@@ -1636,6 +1647,11 @@ function LogsTab() {
       setLoading(false);
     }
   };
+
+  // Cargar lista de baneados al montar el componente
+  useEffect(() => {
+    fetchBannedList();
+  }, []);
 
   const filteredLogs = logs.filter(log => 
     filter === 'all' || log.action.toLowerCase().includes(filter.toLowerCase())
@@ -1727,119 +1743,175 @@ function LogsTab() {
 
         <div className="tool-section">
           <h3><FaBan /> Lista de Baneados</h3>
-          <div className="banned-list">
-            <button onClick={fetchBannedList} className="btn-primary" disabled={loading}>
+          <div className="banned-list-container">
+            <button onClick={fetchBannedList} className="btn-primary" disabled={loading} style={{ marginBottom: '1.5rem' }}>
               <FaBan /> {loading ? 'Cargando...' : 'Cargar Lista de Baneados'}
             </button>
-            <div className="logs-list">
-              {bannedList.length > 0 ? (
-                <div className="banned-grid">
-                  {bannedList.filter(ban => ban && ban.user).map((ban, i) => (
-                    <div key={i} className="banned-card" style={{
-                      background: 'linear-gradient(135deg, #2c1810 0%, #3d2317 100%)',
-                      border: '2px solid #8b4513',
-                      borderRadius: '12px',
-                      padding: '1.5rem',
-                      margin: '1rem 0',
-                      boxShadow: '0 8px 32px rgba(139, 69, 19, 0.3)',
-                      color: '#ffffff',
-                      position: 'relative',
-                      overflow: 'hidden'
-                    }}>
-                      <div className="banned-avatar" style={{
-                        width: '60px',
-                        height: '60px',
-                        borderRadius: '50%',
-                        overflow: 'hidden',
-                        marginBottom: '1rem',
-                        border: '3px solid #8b4513',
-                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
-                      }}>
-                        <img 
-                          src={ban.avatar || `https://cdn.discordapp.com/embed/avatars/${ban.user?.discriminator % 5 || 0}.png`} 
-                          alt={ban.user?.username || 'Usuario desconocido'}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                          onError={(e) => {
-                            e.target.src = `https://cdn.discordapp.com/embed/avatars/${ban.user?.discriminator % 5 || 0}.png`;
-                          }}
-                        />
+            
+            {bannedList.length > 0 && (
+              <>
+                <div className="banned-filters">
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label><FaSearch /> Buscar</label>
+                    <input
+                      type="text"
+                      value={bannedSearchTerm}
+                      onChange={(e) => {
+                        setBannedSearchTerm(e.target.value);
+                        setBannedCurrentPage(1);
+                      }}
+                      placeholder="Buscar por nombre, ID o motivo..."
+                      className="form-group input"
+                    />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label><FaFilter /> Filtrar por motivo</label>
+                    <select
+                      value={bannedFilterReason}
+                      onChange={(e) => {
+                        setBannedFilterReason(e.target.value);
+                        setBannedCurrentPage(1);
+                      }}
+                      className="form-group select"
+                    >
+                      <option value="all">Todos los motivos</option>
+                      <option value="perma">Permanente</option>
+                      <option value="temporal">Temporal</option>
+                      <option value="spam">Spam</option>
+                      <option value="toxicidad">Toxicidad</option>
+                      <option value="corrupto">Corrupto</option>
+                    </select>
+                  </div>
+                </div>
+                
+                {(() => {
+                  // Filtrar bans
+                  let filteredBans = bannedList.filter(ban => ban && ban.user);
+                  
+                  if (bannedSearchTerm) {
+                    const searchLower = bannedSearchTerm.toLowerCase();
+                    filteredBans = filteredBans.filter(ban => 
+                      (ban.user?.username && ban.user.username.toLowerCase().includes(searchLower)) ||
+                      (ban.user?.id && ban.user.id.includes(searchLower)) ||
+                      (ban.reason && ban.reason.toLowerCase().includes(searchLower))
+                    );
+                  }
+                  
+                  if (bannedFilterReason !== 'all') {
+                    const filterLower = bannedFilterReason.toLowerCase();
+                    filteredBans = filteredBans.filter(ban => 
+                      ban.reason && ban.reason.toLowerCase().includes(filterLower)
+                    );
+                  }
+                  
+                  // Paginación
+                  const totalPages = Math.ceil(filteredBans.length / bannedItemsPerPage);
+                  const startIndex = (bannedCurrentPage - 1) * bannedItemsPerPage;
+                  const endIndex = startIndex + bannedItemsPerPage;
+                  const paginatedBans = filteredBans.slice(startIndex, endIndex);
+                  
+                  return (
+                    <>
+                      <div className="banned-grid">
+                        {paginatedBans.map((ban, i) => (
+                          <div key={ban.id || i} className="banned-card">
+                            <div className="banned-avatar">
+                              <img 
+                                src={ban.avatar || `https://cdn.discordapp.com/avatars/${ban.id}/${ban.avatar}.png?size=128`} 
+                                alt={ban.username || 'Usuario desconocido'}
+                                onError={(e) => {
+                                  e.target.src = `https://cdn.discordapp.com/embed/avatars/${parseInt(ban.id || '0') % 5}.png`;
+                                }}
+                              />
+                            </div>
+                            <div className="banned-info">
+                              <h4>
+                                {ban.username || 'Usuario desconocido'}
+                                {ban.discriminator && ban.discriminator !== '0' && `#${ban.discriminator}`}
+                              </h4>
+                              <p className="banned-id">ID: {ban.id || 'N/A'}</p>
+                              <p className="banned-reason">
+                                <strong>Motivo:</strong> {ban.reason || 'Sin motivo especificado'}
+                              </p>
+                              <p className="banned-date">
+                                <strong>Baneado:</strong> {ban.bannedAt ? new Date(ban.bannedAt).toLocaleString('es-ES') : 'Fecha desconocida'}
+                              </p>
+                              <div className="banned-actions">
+                                <button 
+                                  className="btn-secondary btn-sm"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(ban.id);
+                                    if (window.showAdminToast) {
+                                      window.showAdminToast('ID copiado al portapapeles', 'success');
+                                    }
+                                  }}
+                                >
+                                  <FaCopy /> Copiar ID
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                      <div className="banned-info" style={{ color: '#ffffff' }}>
-                        <h4 style={{ 
-                          color: '#ff6b6b', 
-                          margin: '0 0 0.5rem 0', 
-                          fontSize: '1.2rem',
-                          fontWeight: '700',
-                          textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)'
-                        }}>
-                          {ban.user?.username || 'Usuario desconocido'}#{ban.user?.discriminator || '0000'}
-                        </h4>
-                        <p className="banned-id" style={{ 
-                          color: '#cccccc', 
-                          margin: '0.3rem 0',
-                          fontFamily: 'monospace',
-                          fontSize: '0.9rem'
-                        }}>
-                          ID: {ban.user?.id || 'N/A'}
-                        </p>
-                        <p className="banned-reason" style={{ 
-                          color: '#ffffff', 
-                          margin: '0.5rem 0',
-                          background: 'rgba(139, 69, 19, 0.2)',
-                          padding: '0.5rem',
-                          borderRadius: '6px',
-                          border: '1px solid #8b4513'
-                        }}>
-                          <strong style={{ color: '#ffd700' }}>Motivo:</strong> {ban.reason || 'Sin motivo especificado'}
-                        </p>
-                        <p className="banned-date" style={{ 
-                          color: '#cccccc', 
-                          margin: '0.3rem 0',
-                          fontSize: '0.9rem'
-                        }}>
-                          <strong style={{ color: '#ffd700' }}>Baneado:</strong> {ban.bannedAt ? new Date(ban.bannedAt).toLocaleString() : 'Fecha desconocida'}
-                        </p>
-                        <div className="banned-actions" style={{ marginTop: '1rem' }}>
-                          <button 
-                            className="btn-secondary btn-sm"
-                            style={{
-                              background: 'linear-gradient(135deg, #8b4513, #a0522d)',
-                              color: '#ffffff',
-                              border: '1px solid #8b4513',
-                              padding: '0.5rem 1rem',
-                              borderRadius: '6px',
-                              cursor: 'pointer',
-                              fontWeight: '600',
-                              boxShadow: '0 2px 8px rgba(139, 69, 19, 0.3)',
-                              transition: 'all 0.3s ease'
-                            }}
-                            onMouseOver={(e) => {
-                              e.target.style.background = 'linear-gradient(135deg, #a0522d, #8b4513)';
-                              e.target.style.transform = 'translateY(-2px)';
-                            }}
-                            onMouseOut={(e) => {
-                              e.target.style.background = 'linear-gradient(135deg, #8b4513, #a0522d)';
-                              e.target.style.transform = 'translateY(0)';
-                            }}
-                            onClick={() => {
-                              navigator.clipboard.writeText(ban.user.id);
-                              showToast('ID copiado al portapapeles');
-                            }}
+                      
+                      {totalPages > 1 && (
+                        <div className="banned-pagination">
+                          <button
+                            className="pagination-btn"
+                            onClick={() => setBannedCurrentPage(prev => Math.max(1, prev - 1))}
+                            disabled={bannedCurrentPage === 1}
                           >
-                            <FaCopy /> Copiar ID
+                            <FaChevronLeft /> Anterior
+                          </button>
+                          
+                          <div className="pagination-info">
+                            Página {bannedCurrentPage} de {totalPages} ({filteredBans.length} total)
+                          </div>
+                          
+                          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                            let pageNum;
+                            if (totalPages <= 5) {
+                              pageNum = i + 1;
+                            } else if (bannedCurrentPage <= 3) {
+                              pageNum = i + 1;
+                            } else if (bannedCurrentPage >= totalPages - 2) {
+                              pageNum = totalPages - 4 + i;
+                            } else {
+                              pageNum = bannedCurrentPage - 2 + i;
+                            }
+                            
+                            return (
+                              <button
+                                key={pageNum}
+                                className={`pagination-btn ${bannedCurrentPage === pageNum ? 'active' : ''}`}
+                                onClick={() => setBannedCurrentPage(pageNum)}
+                              >
+                                {pageNum}
+                              </button>
+                            );
+                          })}
+                          
+                          <button
+                            className="pagination-btn"
+                            onClick={() => setBannedCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            disabled={bannedCurrentPage === totalPages}
+                          >
+                            Siguiente <FaChevronRight />
                           </button>
                         </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="no-data">
-                  <FaBan size={48} />
-                  <p>No hay usuarios baneados</p>
-                </div>
-              )}
-            </div>
+                      )}
+                    </>
+                  );
+                })()}
+              </>
+            )}
+            
+            {bannedList.length === 0 && !loading && (
+              <div className="no-data">
+                <FaBan size={48} />
+                <p>No hay usuarios baneados</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

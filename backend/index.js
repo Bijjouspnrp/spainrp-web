@@ -1296,7 +1296,7 @@ app.use((req, res, next) => {
   }
   next();
 });
-// MongoDB connection para calendario persistente
+// MongoDB connection para calendario persistente y IP tracking
 let mongoConnected = false;
 if (process.env.MONGO_URI) {
   mongoose.connect(process.env.MONGO_URI, {
@@ -1304,22 +1304,26 @@ if (process.env.MONGO_URI) {
     useUnifiedTopology: true,
   }).then(async () => {
     mongoConnected = true;
-    console.log('[MONGO] ✅ Conectado a MongoDB para calendario persistente');
+    console.log('[MONGO] ✅ Conectado a MongoDB para calendario, IP tracking y bans');
     
     // Asegurar que los índices se creen automáticamente
     try {
       const { CalendarClaim, CalendarStreak } = require('./models/Calendar');
+      const IPTracking = require('./models/IPTracking');
+      const WebBans = require('./models/WebBans');
       // Los índices se crean automáticamente cuando se define el schema
       // Pero los forzamos a crearse explícitamente para asegurar que existan
       await CalendarClaim.createIndexes();
       await CalendarStreak.createIndexes();
-      console.log('[MONGO] ✅ Índices del calendario creados/verificados');
+      await IPTracking.createIndexes();
+      await WebBans.createIndexes();
+      console.log('[MONGO] ✅ Índices del calendario, IP tracking y bans creados/verificados');
     } catch (indexErr) {
       console.warn('[MONGO] ⚠️ Error creando índices (se crearán automáticamente):', indexErr.message);
     }
   }).catch(err => {
     console.error('[MONGO] ❌ Error conectando a MongoDB:', err.message);
-    console.warn('[MONGO] ⚠️ El calendario usará SQLite como fallback');
+    console.warn('[MONGO] ⚠️ El calendario, IP tracking y bans usará SQLite como fallback');
   });
 } else {
   console.warn('[MONGO] ⚠️ MONGO_URI no configurado, usando SQLite como fallback');
@@ -2422,6 +2426,27 @@ function getRealIP(req) {
 // Función para verificar si una IP está baneada
 async function isIPBanned(ip) {
   try {
+    // Intentar usar MongoDB primero
+    if (mongoConnected) {
+      try {
+        const WebBans = require('./models/WebBans');
+        const now = new Date();
+        const ban = await WebBans.findOne({
+          type: 'ip',
+          value: ip,
+          isActive: true,
+          $or: [
+            { expiresAt: null },
+            { expiresAt: { $gt: now } }
+          ]
+        }).lean();
+        return ban || null;
+      } catch (mongoError) {
+        console.error('[BAN SYSTEM] Error en MongoDB, usando SQLite fallback:', mongoError.message);
+      }
+    }
+    
+    // Fallback a SQLite
     const { getQuery } = require('./db/database');
     const ban = await getQuery(
       'SELECT * FROM web_bans WHERE type = ? AND value = ? AND isActive = 1 AND (expiresAt IS NULL OR expiresAt > ?)',
@@ -2437,6 +2462,27 @@ async function isIPBanned(ip) {
 // Función para verificar si un usuario de Discord está baneado
 async function isDiscordUserBanned(userId) {
   try {
+    // Intentar usar MongoDB primero
+    if (mongoConnected) {
+      try {
+        const WebBans = require('./models/WebBans');
+        const now = new Date();
+        const ban = await WebBans.findOne({
+          type: 'discord',
+          value: userId,
+          isActive: true,
+          $or: [
+            { expiresAt: null },
+            { expiresAt: { $gt: now } }
+          ]
+        }).lean();
+        return ban || null;
+      } catch (mongoError) {
+        console.error('[BAN SYSTEM] Error en MongoDB, usando SQLite fallback:', mongoError.message);
+      }
+    }
+    
+    // Fallback a SQLite
     const { getQuery } = require('./db/database');
     const ban = await getQuery(
       'SELECT * FROM web_bans WHERE type = ? AND value = ? AND isActive = 1 AND (expiresAt IS NULL OR expiresAt > ?)',
@@ -2452,6 +2498,31 @@ async function isDiscordUserBanned(userId) {
 // Función para limpiar bans expirados
 async function cleanupExpiredBans() {
   try {
+    // Intentar usar MongoDB primero
+    if (mongoConnected) {
+      try {
+        const WebBans = require('./models/WebBans');
+        const now = new Date();
+        const result = await WebBans.updateMany(
+          {
+            isActive: true,
+            expiresAt: { $ne: null, $lte: now }
+          },
+          {
+            $set: { isActive: false }
+          }
+        );
+        
+        if (result.modifiedCount > 0) {
+          console.log(`[BAN CLEANUP] ${result.modifiedCount} bans expirados desactivados en MongoDB`);
+        }
+        return;
+      } catch (mongoError) {
+        console.error('[BAN CLEANUP] Error en MongoDB, usando SQLite fallback:', mongoError.message);
+      }
+    }
+    
+    // Fallback a SQLite
     const { runQuery } = require('./db/database');
     const now = new Date().toISOString();
     
@@ -2461,7 +2532,7 @@ async function cleanupExpiredBans() {
     );
     
     if (result.changes > 0) {
-      console.log(`[BAN CLEANUP] ${result.changes} bans expirados desactivados`);
+      console.log(`[BAN CLEANUP] ${result.changes} bans expirados desactivados en SQLite`);
     }
   } catch (error) {
     console.error('[BAN CLEANUP] Error limpiando bans expirados:', error);
@@ -2792,10 +2863,76 @@ async function processIPQueue() {
 // Función para procesar una IP individual
 async function processSingleIP(ipData) {
   try {
-    const { getQuery, runQuery } = require('./db/database');
     const { ip, userId, userInfo, userAgent, deviceInfo, now } = ipData;
     
-    // Verificar si la IP ya existe
+    // Intentar usar MongoDB si está disponible
+    if (mongoConnected) {
+      try {
+        const IPTracking = require('./models/IPTracking');
+        
+        const updateData = {
+          lastSeen: new Date(now),
+          visitCount: 1,
+          userAgent: userAgent,
+          browser: deviceInfo.browser || 'Unknown',
+          browserVersion: deviceInfo.browserVersion || 'Unknown',
+          os: deviceInfo.os || 'Unknown',
+          osVersion: deviceInfo.osVersion || 'Unknown',
+          device: deviceInfo.device || 'Unknown',
+          deviceType: deviceInfo.deviceType || 'Unknown',
+          screenResolution: deviceInfo.screenResolution || 'Unknown',
+          language: deviceInfo.language || 'Unknown',
+          country: deviceInfo.country || 'Unknown',
+          countryCode: deviceInfo.countryCode || 'Unknown',
+          city: deviceInfo.city || 'Unknown',
+          region: deviceInfo.region || 'Unknown',
+          timezone: deviceInfo.timezone || 'Unknown',
+          latitude: deviceInfo.latitude || null,
+          longitude: deviceInfo.longitude || null,
+          isp: deviceInfo.isp || 'Unknown',
+          accuracy: deviceInfo.accuracy || 'Unknown',
+          isActive: true
+        };
+        
+        // Actualizar información del usuario si está disponible
+        if (userId) {
+          updateData.userId = userId;
+        }
+        if (userInfo?.username) {
+          updateData.username = userInfo.username;
+        }
+        if (userInfo?.discriminator) {
+          updateData.discriminator = userInfo.discriminator;
+        }
+        if (userInfo?.avatar) {
+          updateData.avatar = userInfo.avatar;
+        }
+        
+        const result = await IPTracking.findOneAndUpdate(
+          { ip },
+          {
+            $set: updateData,
+            $inc: { visitCount: 1 },
+            $setOnInsert: {
+              firstSeen: new Date(now),
+              ip
+            }
+          },
+          { upsert: true, new: true }
+        );
+        
+        if (process.env.DEBUG_IP_TRACKING === 'true') {
+          console.log(`[IP TRACKING] ✅ IP procesada en MongoDB: ${ip}`);
+        }
+        return;
+      } catch (mongoError) {
+        console.error(`[IP TRACKING] ⚠️ Error en MongoDB, usando SQLite fallback:`, mongoError.message);
+      }
+    }
+    
+    // Fallback a SQLite
+    const { getQuery, runQuery } = require('./db/database');
+    
     const existing = await getQuery(
       'SELECT * FROM ip_tracking WHERE ip = ?',
       [ip]
@@ -2827,15 +2964,14 @@ async function processSingleIP(ipData) {
         WHERE ip = ?`,
         [
           now, userId, userInfo?.username, userInfo?.discriminator, userInfo?.avatar, 
-          userAgent, deviceInfo.browser, deviceInfo.os, deviceInfo.device,
-          deviceInfo.country, deviceInfo.countryCode, deviceInfo.city, 
-          deviceInfo.region, deviceInfo.timezone, deviceInfo.latitude, 
-          deviceInfo.longitude, deviceInfo.isp, ip
+          userAgent, deviceInfo.browser || 'Unknown', deviceInfo.os || 'Unknown', deviceInfo.device || 'Unknown',
+          deviceInfo.country || 'Unknown', deviceInfo.countryCode || 'Unknown', deviceInfo.city || 'Unknown', 
+          deviceInfo.region || 'Unknown', deviceInfo.timezone || 'Unknown', deviceInfo.latitude || null, 
+          deviceInfo.longitude || null, deviceInfo.isp || 'Unknown', ip
         ]
       );
-      // Log solo en modo debug
       if (process.env.DEBUG_IP_TRACKING === 'true') {
-        console.log(`[IP TRACKING] ✅ IP actualizada: ${ip}`);
+        console.log(`[IP TRACKING] ✅ IP actualizada en SQLite: ${ip}`);
       }
     } else {
       // Crear nueva entrada de IP
@@ -2848,13 +2984,13 @@ async function processSingleIP(ipData) {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1)`,
         [
           ip, userId, userInfo?.username, userInfo?.discriminator, userInfo?.avatar, 
-          userAgent, deviceInfo.browser, deviceInfo.os, deviceInfo.device,
-          deviceInfo.country, deviceInfo.countryCode, deviceInfo.city, 
-          deviceInfo.region, deviceInfo.timezone, deviceInfo.latitude, 
-          deviceInfo.longitude, deviceInfo.isp, now, now
+          userAgent, deviceInfo.browser || 'Unknown', deviceInfo.os || 'Unknown', deviceInfo.device || 'Unknown',
+          deviceInfo.country || 'Unknown', deviceInfo.countryCode || 'Unknown', deviceInfo.city || 'Unknown', 
+          deviceInfo.region || 'Unknown', deviceInfo.timezone || 'Unknown', deviceInfo.latitude || null, 
+          deviceInfo.longitude || null, deviceInfo.isp || 'Unknown', now, now
         ]
       );
-      console.log(`[IP TRACKING] ✅ Nueva IP registrada: ${ip}`);
+      console.log(`[IP TRACKING] ✅ Nueva IP registrada en SQLite: ${ip}`);
     }
   } catch (error) {
     console.error(`[IP TRACKING] ❌ Error procesando IP ${ipData.ip}:`, error.message);
@@ -2889,14 +3025,8 @@ async function trackIP(req, userId = null) {
       }
     }
     
-    // Simplificar tracking - solo información básica
-    const deviceInfo = {
-      browser: userAgent.includes('Chrome') ? 'Chrome' : 
-              userAgent.includes('Firefox') ? 'Firefox' : 
-              userAgent.includes('Safari') ? 'Safari' : 'Other',
-      country: 'Unknown',
-      city: 'Unknown'
-    };
+    // Obtener información completa del dispositivo y ubicación
+    const deviceInfo = await parseUserAgent(userAgent, req, ip);
     
     // Obtener información básica del usuario si está disponible
     let userInfo = null;
@@ -2906,14 +3036,21 @@ async function trackIP(req, userId = null) {
         discriminator: req.user.discriminator || '0000',
         avatar: req.user.avatar
       };
+    } else if (userId && req.user) {
+      // Intentar obtener info del usuario desde Discord si está disponible
+      userInfo = {
+        username: req.user.username || null,
+        discriminator: req.user.discriminator || '0000',
+        avatar: req.user.avatar || null
+      };
     }
     
     // Log solo en modo debug
     if (process.env.DEBUG_IP_TRACKING === 'true') {
-      console.log('[IP TRACKING] 📊 Tracking IP:', { ip, userId, userInfo: userInfo ? 'Disponible' : 'No disponible' });
+      console.log('[IP TRACKING] 📊 Tracking IP:', { ip, userId, userInfo: userInfo ? 'Disponible' : 'No disponible', deviceInfo });
     }
     
-    // Agregar a la cola de procesamiento (simplificada)
+    // Agregar a la cola de procesamiento con datos enriquecidos
     ipProcessingQueue.push({
       ip,
       userId,
@@ -9000,41 +9137,104 @@ app.post('/api/admin/ban/cleanup', ensureAuthOrJWT, ensureExclusiveAdmin, async 
 // Obtener todas las IPs trackeadas
 app.get('/api/admin/ban/ips', ensureAuthOrJWT, ensureExclusiveAdmin, async (req, res) => {
   try {
-    const { getQuery, allQuery } = require('./db/database');
     const { page = 1, limit = 50, active = 'true' } = req.query;
-    const offset = (page - 1) * limit;
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
     
-    console.log('[BAN ADMIN] Obteniendo IPs - Parámetros:', { page, limit, active, offset });
+    console.log('[BAN ADMIN] Obteniendo IPs - Parámetros:', { page: pageNum, limit: limitNum, active, skip });
     
-    let query = 'SELECT * FROM ip_tracking';
-    let params = [];
+    let ips = [];
+    let total = 0;
     
-    if (active === 'true') {
-      query += ' WHERE isActive = 1';
+    // Intentar usar MongoDB si está disponible
+    if (mongoConnected) {
+      try {
+        const IPTracking = require('./models/IPTracking');
+        
+        const query = active === 'true' ? { isActive: true } : {};
+        
+        const [results, count] = await Promise.all([
+          IPTracking.find(query)
+            .sort({ lastSeen: -1 })
+            .skip(skip)
+            .limit(limitNum)
+            .lean(),
+          IPTracking.countDocuments(query)
+        ]);
+        
+        ips = results.map(ip => ({
+          ip: ip.ip,
+          userId: ip.userId || null,
+          username: ip.username || null,
+          discriminator: ip.discriminator || null,
+          avatar: ip.avatar || null,
+          userAgent: ip.userAgent || 'Unknown',
+          browser: ip.browser || 'Unknown',
+          browserVersion: ip.browserVersion || 'Unknown',
+          os: ip.os || 'Unknown',
+          osVersion: ip.osVersion || 'Unknown',
+          device: ip.device || 'Unknown',
+          deviceType: ip.deviceType || 'Unknown',
+          screenResolution: ip.screenResolution || 'Unknown',
+          language: ip.language || 'Unknown',
+          country: ip.country || 'Unknown',
+          countryCode: ip.countryCode || 'Unknown',
+          city: ip.city || 'Unknown',
+          region: ip.region || 'Unknown',
+          timezone: ip.timezone || 'Unknown',
+          latitude: ip.latitude || null,
+          longitude: ip.longitude || null,
+          isp: ip.isp || 'Unknown',
+          accuracy: ip.accuracy || 'Unknown',
+          firstSeen: ip.firstSeen ? ip.firstSeen.toISOString() : null,
+          lastSeen: ip.lastSeen ? ip.lastSeen.toISOString() : null,
+          visitCount: ip.visitCount || 1,
+          isActive: ip.isActive ? 1 : 0
+        }));
+        
+        total = count;
+        console.log('[BAN ADMIN] IPs encontradas en MongoDB:', ips.length);
+      } catch (mongoError) {
+        console.error('[BAN ADMIN] ⚠️ Error en MongoDB, usando SQLite fallback:', mongoError.message);
+        throw mongoError; // Caer al fallback SQLite
+      }
     }
     
-    query += ' ORDER BY lastSeen DESC LIMIT ? OFFSET ?';
-    params.push(parseInt(limit), parseInt(offset));
-    
-    console.log('[BAN ADMIN] Query SQL:', query);
-    console.log('[BAN ADMIN] Parámetros:', params);
-    
-    const ips = await allQuery(query, params);
-    console.log('[BAN ADMIN] IPs encontradas:', ips.length);
-    
-    // Obtener total de IPs
-    const totalQuery = active === 'true' ? 
-      'SELECT COUNT(*) as total FROM ip_tracking WHERE isActive = 1' :
-      'SELECT COUNT(*) as total FROM ip_tracking';
-    const totalResult = await getQuery(totalQuery);
+    // Fallback a SQLite si MongoDB no está disponible o falló
+    if (!mongoConnected || ips.length === 0) {
+      const { getQuery, allQuery } = require('./db/database');
+      const offset = skip;
+      
+      let query = 'SELECT * FROM ip_tracking';
+      let params = [];
+      
+      if (active === 'true') {
+        query += ' WHERE isActive = 1';
+      }
+      
+      query += ' ORDER BY lastSeen DESC LIMIT ? OFFSET ?';
+      params.push(limitNum, offset);
+      
+      ips = await allQuery(query, params);
+      
+      // Obtener total de IPs
+      const totalQuery = active === 'true' ? 
+        'SELECT COUNT(*) as total FROM ip_tracking WHERE isActive = 1' :
+        'SELECT COUNT(*) as total FROM ip_tracking';
+      const totalResult = await getQuery(totalQuery);
+      total = totalResult.total;
+      
+      console.log('[BAN ADMIN] IPs encontradas en SQLite:', ips.length);
+    }
     
     res.json({
       ips,
       pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total: totalResult.total,
-        pages: Math.ceil(totalResult.total / limit)
+        page: pageNum,
+        limit: limitNum,
+        total: total,
+        pages: Math.ceil(total / limitNum)
       }
     });
   } catch (error) {
@@ -9046,32 +9246,69 @@ app.get('/api/admin/ban/ips', ensureAuthOrJWT, ensureExclusiveAdmin, async (req,
 // Obtener todos los bans
 app.get('/api/admin/ban/bans', ensureAuthOrJWT, ensureExclusiveAdmin, async (req, res) => {
   try {
-    const { allQuery } = require('./db/database');
     const { type, active = 'true' } = req.query;
+    let bans = [];
     
-    let query = 'SELECT * FROM web_bans';
-    let params = [];
-    
-    const conditions = [];
-    if (active === 'true') {
-      conditions.push('isActive = 1');
+    // Intentar usar MongoDB primero
+    if (mongoConnected) {
+      try {
+        const WebBans = require('./models/WebBans');
+        const query = {};
+        
+        if (active === 'true') {
+          query.isActive = true;
+        }
+        if (type) {
+          query.type = type;
+        }
+        
+        const results = await WebBans.find(query)
+          .sort({ bannedAt: -1 })
+          .lean();
+        
+        bans = results.map(ban => ({
+          id: ban._id.toString(),
+          type: ban.type,
+          value: ban.value,
+          reason: ban.reason || null,
+          bannedBy: ban.bannedBy,
+          bannedAt: ban.bannedAt ? ban.bannedAt.toISOString() : null,
+          expiresAt: ban.expiresAt ? ban.expiresAt.toISOString() : null,
+          isActive: ban.isActive ? 1 : 0
+        }));
+        
+        console.log(`[BAN ADMIN] Bans encontrados en MongoDB: ${bans.length}`);
+      } catch (mongoError) {
+        console.error('[BAN ADMIN] ⚠️ Error en MongoDB, usando SQLite fallback:', mongoError.message);
+        // Continuar al fallback SQLite
+      }
     }
-    if (type) {
-      conditions.push('type = ?');
-      params.push(type);
+    
+    // Fallback a SQLite si MongoDB no está disponible o falló
+    if (!mongoConnected || bans.length === 0) {
+      const { allQuery } = require('./db/database');
+      
+      let query = 'SELECT * FROM web_bans';
+      let params = [];
+      
+      const conditions = [];
+      if (active === 'true') {
+        conditions.push('isActive = 1');
+      }
+      if (type) {
+        conditions.push('type = ?');
+        params.push(type);
+      }
+      
+      if (conditions.length > 0) {
+        query += ' WHERE ' + conditions.join(' AND ');
+      }
+      
+      query += ' ORDER BY bannedAt DESC';
+      
+      bans = await allQuery(query, params);
+      console.log(`[BAN ADMIN] Bans encontrados en SQLite: ${bans.length}`);
     }
-    
-    if (conditions.length > 0) {
-      query += ' WHERE ' + conditions.join(' AND ');
-    }
-    
-    query += ' ORDER BY bannedAt DESC';
-    
-    const bans = await allQuery(query, params);
-    console.log(`[BAN ADMIN] Bans encontrados: ${bans.length}`);
-    console.log(`[BAN ADMIN] Query ejecutada: ${query}`);
-    console.log(`[BAN ADMIN] Parámetros: ${JSON.stringify(params)}`);
-    console.log(`[BAN ADMIN] Bans data:`, bans);
     
     res.json({
       success: true,
@@ -9084,10 +9321,106 @@ app.get('/api/admin/ban/bans', ensureAuthOrJWT, ensureExclusiveAdmin, async (req
   }
 });
 
+// Endpoint para obtener usuarios conectados actualmente con datos enriquecidos
+app.get('/api/admin/ban/connected-users', ensureAuthOrJWT, ensureExclusiveAdmin, async (req, res) => {
+  try {
+    const ttlMs = 5 * 60 * 1000; // Últimos 5 minutos
+    const threshold = Date.now() - ttlMs;
+    
+    // Obtener sesiones activas de SQLite
+    const { allQuery } = require('./db/database');
+    const sessions = await allQuery(
+      'SELECT * FROM sessions WHERE lastSeen >= ? AND userId IS NOT NULL ORDER BY lastSeen DESC',
+      [threshold]
+    );
+    
+    // Enriquecer con información de Discord y IPs
+    const enrichedUsers = await Promise.all(sessions.map(async (session) => {
+      const userData = {
+        sessionId: session.sessionId,
+        userId: session.userId,
+        username: session.username,
+        avatar: session.avatar,
+        ip: session.ip,
+        userAgent: session.userAgent,
+        lastSeen: session.lastSeen
+      };
+      
+      // Obtener información de la IP si está disponible
+      if (session.ip && mongoConnected) {
+        try {
+          const IPTracking = require('./models/IPTracking');
+          const ipData = await IPTracking.findOne({ ip: session.ip }).lean();
+          if (ipData) {
+            userData.location = {
+              country: ipData.country || 'Unknown',
+              countryCode: ipData.countryCode || 'Unknown',
+              city: ipData.city || 'Unknown',
+              region: ipData.region || 'Unknown',
+              timezone: ipData.timezone || 'Unknown',
+              isp: ipData.isp || 'Unknown'
+            };
+            userData.device = {
+              browser: ipData.browser || 'Unknown',
+              browserVersion: ipData.browserVersion || 'Unknown',
+              os: ipData.os || 'Unknown',
+              osVersion: ipData.osVersion || 'Unknown',
+              device: ipData.device || 'Unknown',
+              deviceType: ipData.deviceType || 'Unknown',
+              language: ipData.language || 'Unknown'
+            };
+          }
+        } catch (error) {
+          console.error('[CONNECTED USERS] Error obteniendo datos de IP:', error);
+        }
+      }
+      
+      // Intentar obtener información adicional de Discord si está disponible
+      if (session.userId && discordClient) {
+        try {
+          const guildId = process.env.DISCORD_GUILD_ID || '1351991000903004241';
+          const guild = discordClient.guilds.cache.get(guildId);
+          if (guild) {
+            const member = guild.members.cache.get(session.userId);
+            if (member) {
+              userData.discordMember = {
+                displayName: member.displayName,
+                roles: member.roles.cache.map(role => ({
+                  id: role.id,
+                  name: role.name,
+                  color: role.hexColor
+                })),
+                joinedAt: member.joinedAt ? member.joinedAt.toISOString() : null,
+                presence: member.presence ? {
+                  status: member.presence.status,
+                  activities: member.presence.activities || []
+                } : null
+              };
+            }
+          }
+        } catch (error) {
+          console.error('[CONNECTED USERS] Error obteniendo datos de Discord:', error);
+        }
+      }
+      
+      return userData;
+    }));
+    
+    res.json({
+      success: true,
+      users: enrichedUsers,
+      total: enrichedUsers.length,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[CONNECTED USERS] Error obteniendo usuarios conectados:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
 // Banear IP
 app.post('/api/admin/ban/ip', ensureAuthOrJWT, ensureExclusiveAdmin, express.json(), async (req, res) => {
   try {
-    const { getQuery, runQuery } = require('./db/database');
     const { ip, reason, expiresAt } = req.body;
     
     if (!ip) {
@@ -9106,40 +9439,96 @@ app.post('/api/admin/ban/ip', ensureAuthOrJWT, ensureExclusiveAdmin, express.jso
       });
     }
     
-    const now = new Date().toISOString();
+    const now = new Date();
+    const expiresAtDate = expiresAt ? new Date(expiresAt) : null;
     
-    // Verificar si ya está baneada
-    const existing = await getQuery(
-      'SELECT id FROM web_bans WHERE type = ? AND value = ?',
-      ['ip', ip]
-    );
-    
-    if (existing) {
-      // Reactivar ban existente
-      await runQuery(
-        'UPDATE web_bans SET isActive = 1, reason = ?, bannedBy = ?, bannedAt = ?, expiresAt = ? WHERE type = ? AND value = ?',
-        [reason, req.user.id, now, expiresAt || null, 'ip', ip]
-      );
-    } else {
-      // Crear nuevo ban
-      await runQuery(
-        'INSERT INTO web_bans (type, value, reason, bannedBy, bannedAt, expiresAt, isActive) VALUES (?, ?, ?, ?, ?, ?, 1)',
-        ['ip', ip, reason, req.user.id, now, expiresAt || null]
-      );
+    // Intentar usar MongoDB primero
+    if (mongoConnected) {
+      try {
+        const WebBans = require('./models/WebBans');
+        
+        const banData = {
+          type: 'ip',
+          value: ip,
+          reason: reason,
+          bannedBy: req.user.id,
+          bannedAt: now,
+          expiresAt: expiresAtDate,
+          isActive: true
+        };
+        
+        await WebBans.findOneAndUpdate(
+          { type: 'ip', value: ip },
+          banData,
+          { upsert: true, new: true }
+        );
+        
+        console.log(`[BAN ADMIN] IP ${ip} banned by ${req.user.id} en MongoDB: ${reason}`);
+      } catch (mongoError) {
+        console.error('[BAN ADMIN] ⚠️ Error en MongoDB, usando SQLite fallback:', mongoError.message);
+        // Continuar al fallback SQLite
+      }
     }
     
-    console.log(`[BAN ADMIN] IP ${ip} banned by ${req.user.id}: ${reason}`);
+    // Fallback a SQLite si MongoDB no está disponible o falló
+    if (!mongoConnected) {
+      const { getQuery, runQuery } = require('./db/database');
+      const nowISO = now.toISOString();
+      
+      // Verificar si ya está baneada
+      const existing = await getQuery(
+        'SELECT id FROM web_bans WHERE type = ? AND value = ?',
+        ['ip', ip]
+      );
+      
+      if (existing) {
+        // Reactivar ban existente
+        await runQuery(
+          'UPDATE web_bans SET isActive = 1, reason = ?, bannedBy = ?, bannedAt = ?, expiresAt = ? WHERE type = ? AND value = ?',
+          [reason, req.user.id, nowISO, expiresAt || null, 'ip', ip]
+        );
+      } else {
+        // Crear nuevo ban
+        await runQuery(
+          'INSERT INTO web_bans (type, value, reason, bannedBy, bannedAt, expiresAt, isActive) VALUES (?, ?, ?, ?, ?, ?, 1)',
+          ['ip', ip, reason, req.user.id, nowISO, expiresAt || null]
+        );
+      }
+      
+      console.log(`[BAN ADMIN] IP ${ip} banned by ${req.user.id} en SQLite: ${reason}`);
+    }
     
     // Intentar enviar notificación DM si hay un usuario asociado a esta IP
     try {
-      const { getQuery } = require('./db/database');
-      const ipData = await getQuery(
-        'SELECT userId FROM ip_tracking WHERE ip = ? AND userId IS NOT NULL ORDER BY lastSeen DESC LIMIT 1',
-        [ip]
-      );
+      let userId = null;
       
-      if (ipData && ipData.userId) {
-        await sendBanNotification(ipData.userId, 'ip', reason, expiresAt, req.user.id);
+      if (mongoConnected) {
+        try {
+          const IPTracking = require('./models/IPTracking');
+          const ipData = await IPTracking.findOne({ ip: ip, userId: { $ne: null } })
+            .sort({ lastSeen: -1 })
+            .lean();
+          if (ipData && ipData.userId) {
+            userId = ipData.userId;
+          }
+        } catch (mongoError) {
+          // Fallback a SQLite
+        }
+      }
+      
+      if (!userId) {
+        const { getQuery } = require('./db/database');
+        const ipData = await getQuery(
+          'SELECT userId FROM ip_tracking WHERE ip = ? AND userId IS NOT NULL ORDER BY lastSeen DESC LIMIT 1',
+          [ip]
+        );
+        if (ipData && ipData.userId) {
+          userId = ipData.userId;
+        }
+      }
+      
+      if (userId) {
+        await sendBanNotification(userId, 'ip', reason, expiresAt, req.user.id);
       } else {
         console.log(`[BAN ADMIN] No se encontró usuario asociado a la IP ${ip} para enviar DM`);
       }
@@ -9158,7 +9547,6 @@ app.post('/api/admin/ban/ip', ensureAuthOrJWT, ensureExclusiveAdmin, express.jso
 // Banear usuario de Discord
 app.post('/api/admin/ban/discord', ensureAuthOrJWT, ensureExclusiveAdmin, express.json(), async (req, res) => {
   try {
-    const { getQuery, runQuery } = require('./db/database');
     const { userId, reason, expiresAt } = req.body;
     
     if (!userId) {
@@ -9174,29 +9562,64 @@ app.post('/api/admin/ban/discord', ensureAuthOrJWT, ensureExclusiveAdmin, expres
       });
     }
     
-    const now = new Date().toISOString();
+    const now = new Date();
+    const expiresAtDate = expiresAt ? new Date(expiresAt) : null;
     
-    // Verificar si ya está baneado
-    const existing = await getQuery(
-      'SELECT id FROM web_bans WHERE type = ? AND value = ?',
-      ['discord', userId]
-    );
-    
-    if (existing) {
-      // Reactivar ban existente
-      await runQuery(
-        'UPDATE web_bans SET isActive = 1, reason = ?, bannedBy = ?, bannedAt = ?, expiresAt = ? WHERE type = ? AND value = ?',
-        [reason, req.user.id, now, expiresAt || null, 'discord', userId]
-      );
-    } else {
-      // Crear nuevo ban
-      await runQuery(
-        'INSERT INTO web_bans (type, value, reason, bannedBy, bannedAt, expiresAt, isActive) VALUES (?, ?, ?, ?, ?, ?, 1)',
-        ['discord', userId, reason, req.user.id, now, expiresAt || null]
-      );
+    // Intentar usar MongoDB primero
+    if (mongoConnected) {
+      try {
+        const WebBans = require('./models/WebBans');
+        
+        const banData = {
+          type: 'discord',
+          value: userId,
+          reason: reason,
+          bannedBy: req.user.id,
+          bannedAt: now,
+          expiresAt: expiresAtDate,
+          isActive: true
+        };
+        
+        await WebBans.findOneAndUpdate(
+          { type: 'discord', value: userId },
+          banData,
+          { upsert: true, new: true }
+        );
+        
+        console.log(`[BAN ADMIN] Discord user ${userId} banned by ${req.user.id} en MongoDB: ${reason}`);
+      } catch (mongoError) {
+        console.error('[BAN ADMIN] ⚠️ Error en MongoDB, usando SQLite fallback:', mongoError.message);
+        // Continuar al fallback SQLite
+      }
     }
     
-    console.log(`[BAN ADMIN] Discord user ${userId} banned by ${req.user.id}: ${reason}`);
+    // Fallback a SQLite si MongoDB no está disponible o falló
+    if (!mongoConnected) {
+      const { getQuery, runQuery } = require('./db/database');
+      const nowISO = now.toISOString();
+      
+      // Verificar si ya está baneado
+      const existing = await getQuery(
+        'SELECT id FROM web_bans WHERE type = ? AND value = ?',
+        ['discord', userId]
+      );
+      
+      if (existing) {
+        // Reactivar ban existente
+        await runQuery(
+          'UPDATE web_bans SET isActive = 1, reason = ?, bannedBy = ?, bannedAt = ?, expiresAt = ? WHERE type = ? AND value = ?',
+          [reason, req.user.id, nowISO, expiresAt || null, 'discord', userId]
+        );
+      } else {
+        // Crear nuevo ban
+        await runQuery(
+          'INSERT INTO web_bans (type, value, reason, bannedBy, bannedAt, expiresAt, isActive) VALUES (?, ?, ?, ?, ?, ?, 1)',
+          ['discord', userId, reason, req.user.id, nowISO, expiresAt || null]
+        );
+      }
+      
+      console.log(`[BAN ADMIN] Discord user ${userId} banned by ${req.user.id} en SQLite: ${reason}`);
+    }
     
     // Enviar notificación DM al usuario baneado
     try {
@@ -9216,7 +9639,6 @@ app.post('/api/admin/ban/discord', ensureAuthOrJWT, ensureExclusiveAdmin, expres
 // Desbanear IP o usuario
 app.delete('/api/admin/ban/:type/:value', ensureAuthOrJWT, ensureExclusiveAdmin, async (req, res) => {
   try {
-    const { runQuery } = require('./db/database');
     const { type, value } = req.params;
     
     console.log(`[BAN ADMIN] DELETE request - Type: ${type}, Value: ${value}, User: ${req.user?.id}`);
@@ -9225,12 +9647,40 @@ app.delete('/api/admin/ban/:type/:value', ensureAuthOrJWT, ensureExclusiveAdmin,
       return res.status(400).json({ error: 'Tipo de ban inválido' });
     }
     
-    await runQuery(
-      'UPDATE web_bans SET isActive = 0 WHERE type = ? AND value = ?',
-      [type, value]
-    );
+    // Intentar usar MongoDB primero
+    if (mongoConnected) {
+      try {
+        const WebBans = require('./models/WebBans');
+        const result = await WebBans.updateOne(
+          { type: type, value: value },
+          { $set: { isActive: false } }
+        );
+        
+        if (result.matchedCount === 0) {
+          return res.status(404).json({ error: 'Ban no encontrado' });
+        }
+        
+        console.log(`[BAN ADMIN] ${type} ${value} unbanned by ${req.user.id} en MongoDB`);
+      } catch (mongoError) {
+        console.error('[BAN ADMIN] ⚠️ Error en MongoDB, usando SQLite fallback:', mongoError.message);
+        // Continuar al fallback SQLite
+      }
+    }
     
-    console.log(`[BAN ADMIN] ${type} ${value} unbanned by ${req.user.id}`);
+    // Fallback a SQLite si MongoDB no está disponible o falló
+    if (!mongoConnected) {
+      const { runQuery } = require('./db/database');
+      const result = await runQuery(
+        'UPDATE web_bans SET isActive = 0 WHERE type = ? AND value = ?',
+        [type, value]
+      );
+      
+      if (result.changes === 0) {
+        return res.status(404).json({ error: 'Ban no encontrado' });
+      }
+      
+      console.log(`[BAN ADMIN] ${type} ${value} unbanned by ${req.user.id} en SQLite`);
+    }
     
     // Enviar notificación DM si es un ban de Discord o si hay usuario asociado a la IP
     try {
@@ -9238,14 +9688,35 @@ app.delete('/api/admin/ban/:type/:value', ensureAuthOrJWT, ensureExclusiveAdmin,
         await sendUnbanNotification(value, 'discord', req.user.id);
       } else if (type === 'ip') {
         // Buscar usuario asociado a la IP
-        const { getQuery } = require('./db/database');
-        const ipData = await getQuery(
-          'SELECT userId FROM ip_tracking WHERE ip = ? AND userId IS NOT NULL ORDER BY lastSeen DESC LIMIT 1',
-          [value]
-        );
+        let userId = null;
         
-        if (ipData && ipData.userId) {
-          await sendUnbanNotification(ipData.userId, 'ip', req.user.id);
+        if (mongoConnected) {
+          try {
+            const IPTracking = require('./models/IPTracking');
+            const ipData = await IPTracking.findOne({ ip: value, userId: { $ne: null } })
+              .sort({ lastSeen: -1 })
+              .lean();
+            if (ipData && ipData.userId) {
+              userId = ipData.userId;
+            }
+          } catch (mongoError) {
+            // Fallback a SQLite
+          }
+        }
+        
+        if (!userId) {
+          const { getQuery } = require('./db/database');
+          const ipData = await getQuery(
+            'SELECT userId FROM ip_tracking WHERE ip = ? AND userId IS NOT NULL ORDER BY lastSeen DESC LIMIT 1',
+            [value]
+          );
+          if (ipData && ipData.userId) {
+            userId = ipData.userId;
+          }
+        }
+        
+        if (userId) {
+          await sendUnbanNotification(userId, 'ip', req.user.id);
         } else {
           console.log(`[BAN ADMIN] No se encontró usuario asociado a la IP ${value} para enviar DM de unban`);
         }

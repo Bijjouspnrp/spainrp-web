@@ -155,7 +155,7 @@ const AppsMenu = () => {
                   <div className="bar"></div>
                   <div className="bar"></div>
                 </div>
-                <div className="wifi-icon">📶</div>
+                <div className="wifi-icon"></div>
                 <div className="battery">
                   <div className="battery-level"></div>
                   <div className="battery-tip"></div>

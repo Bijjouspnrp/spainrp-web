@@ -37,7 +37,8 @@ import {
   FaList,
   FaTh,
   FaTrashAlt,
-  FaKey
+  FaKey,
+  FaUsers
 } from 'react-icons/fa';
 import './BanManagement.css';
 
@@ -45,6 +46,7 @@ const BanManagement = () => {
   const [activeTab, setActiveTab] = useState('ips');
   const [ips, setIps] = useState([]);
   const [bans, setBans] = useState([]);
+  const [connectedUsers, setConnectedUsers] = useState([]);
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(false);
   const [showBanModal, setShowBanModal] = useState(false);
@@ -77,8 +79,10 @@ const BanManagement = () => {
     loadStats();
     if (activeTab === 'ips') {
       loadIPs();
-    } else {
+    } else if (activeTab === 'bans') {
       loadBans();
+    } else if (activeTab === 'connected') {
+      loadConnectedUsers();
     }
   }, [activeTab]);
 
@@ -87,8 +91,10 @@ const BanManagement = () => {
     const interval = setInterval(() => {
       if (activeTab === 'ips') {
         loadIPs();
-      } else {
+      } else if (activeTab === 'bans') {
         loadBans();
+      } else if (activeTab === 'connected') {
+        loadConnectedUsers();
       }
       loadStats();
     }, 30000);
@@ -244,6 +250,33 @@ const BanManagement = () => {
       console.error('[BAN MANAGEMENT] Error loading bans:', error);
       setConnectionStatus('disconnected');
       error('❌ Error de conexión al cargar bans', 5000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadConnectedUsers = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(apiUrl('/api/admin/ban/connected-users'), {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('spainrp_token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('[BAN MANAGEMENT] Usuarios conectados cargados:', data);
+        setConnectedUsers(data.users || []);
+      } else {
+        const errorData = await response.json();
+        console.error('[BAN MANAGEMENT] Error cargando usuarios conectados:', errorData);
+        error(`❌ Error cargando usuarios conectados: ${errorData.error || 'Error desconocido'}`, 5000);
+      }
+    } catch (error) {
+      console.error('[BAN MANAGEMENT] Error loading connected users:', error);
+      error('❌ Error de conexión al cargar usuarios conectados', 5000);
     } finally {
       setLoading(false);
     }
@@ -512,6 +545,14 @@ const BanManagement = () => {
             <span>Bans Activos</span>
             <span className="tab-count">{bans.length}</span>
           </button>
+          <button 
+            className={`tab ${activeTab === 'connected' ? 'active' : ''}`}
+            onClick={() => setActiveTab('connected')}
+          >
+            <FaUsers />
+            <span>Usuarios Conectados</span>
+            <span className="tab-count">{connectedUsers.length}</span>
+          </button>
         </div>
       </div>
 
@@ -708,7 +749,7 @@ const BanManagement = () => {
               </div>
             )}
           </div>
-        ) : (
+        ) : activeTab === 'bans' ? (
           <div className="bans-container">
             {loading ? (
               <div className="loading-state">
@@ -811,7 +852,216 @@ const BanManagement = () => {
               </div>
             )}
           </div>
-        )}
+        ) : activeTab === 'connected' ? (
+          <div className="connected-users-container">
+            {loading ? (
+              <div className="loading-state">
+                <div className="spinner"></div>
+                <p>Cargando usuarios conectados...</p>
+              </div>
+            ) : connectedUsers.length === 0 ? (
+              <div className="empty-state">
+                <FaUsers className="empty-icon" />
+                <h3>No hay usuarios conectados</h3>
+                <p>Los usuarios aparecerán aquí cuando estén activos en la página</p>
+                <button 
+                  className="btn-primary"
+                  onClick={loadConnectedUsers}
+                >
+                  <FaRedo />
+                  Recargar
+                </button>
+              </div>
+            ) : (
+              <div className="connected-users-grid">
+                {connectedUsers
+                  .filter(user => 
+                    !searchTerm || 
+                    (user.username && user.username.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                    (user.userId && user.userId.includes(searchTerm)) ||
+                    (user.ip && user.ip.includes(searchTerm))
+                  )
+                  .map(user => (
+                    <div key={user.sessionId} className="connected-user-card">
+                      <div className="card-header">
+                        <div className="user-info-header">
+                          {user.avatar ? (
+                            <img 
+                              src={`https://cdn.discordapp.com/avatars/${user.userId}/${user.avatar}.png?size=64`} 
+                              alt="Avatar" 
+                              className="user-avatar-large"
+                              onError={(e) => e.target.style.display = 'none'}
+                            />
+                          ) : (
+                            <div className="user-avatar-placeholder-large">
+                              <FaUser />
+                            </div>
+                          )}
+                          <div className="user-details-header">
+                            <div className="username-large">
+                              {user.username || 'Usuario Desconocido'}
+                              {user.discriminator && user.discriminator !== '0000' && `#${user.discriminator}`}
+                            </div>
+                            {user.userId && (
+                              <div className="user-id-header">
+                                ID: {user.userId}
+                                <button 
+                                  className="copy-btn-small"
+                                  onClick={() => copyToClipboard(user.userId)}
+                                  title="Copiar ID"
+                                >
+                                  <FaCopy size={12} />
+                                </button>
+                              </div>
+                            )}
+                            {user.discordMember && (
+                              <div className="discord-member-info">
+                                <FaDiscord />
+                                <span>{user.discordMember.displayName}</span>
+                                {user.discordMember.presence && (
+                                  <span className={`presence-status ${user.discordMember.presence.status}`}>
+                                    {user.discordMember.presence.status}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="card-actions">
+                          <button 
+                            className="btn-ban"
+                            onClick={() => {
+                              setBanForm({
+                                type: 'discord',
+                                value: user.userId,
+                                reason: '',
+                                expiresAt: ''
+                              });
+                              setShowBanModal(true);
+                            }}
+                            title="Banear Usuario"
+                          >
+                            <FaBan />
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <div className="card-content">
+                        <div className="ip-info-section">
+                          <FaGlobe />
+                          <div className="ip-details">
+                            <div className="ip-address-main">{user.ip}</div>
+                            <button 
+                              className="copy-btn-small"
+                              onClick={() => copyToClipboard(user.ip)}
+                              title="Copiar IP"
+                            >
+                              <FaCopy size={12} />
+                            </button>
+                            <button 
+                              className="btn-ban-small"
+                              onClick={() => {
+                                setBanForm({
+                                  type: 'ip',
+                                  value: user.ip,
+                                  reason: '',
+                                  expiresAt: ''
+                                });
+                                setShowBanModal(true);
+                              }}
+                              title="Banear IP"
+                            >
+                              <FaBan size={12} />
+                            </button>
+                          </div>
+                        </div>
+                        
+                        {user.location && (
+                          <div className="location-info-section">
+                            <FaGlobe />
+                            <div className="location-details-full">
+                              <div className="location-main">
+                                {user.location.country !== 'Unknown' && (
+                                  <>
+                                    {user.location.country}
+                                    {user.location.countryCode && user.location.countryCode !== 'Unknown' && ` (${user.location.countryCode})`}
+                                  </>
+                                )}
+                                {user.location.city && user.location.city !== 'Unknown' && ` - ${user.location.city}`}
+                                {user.location.region && user.location.region !== 'Unknown' && `, ${user.location.region}`}
+                              </div>
+                              {user.location.isp && user.location.isp !== 'Unknown' && (
+                                <div className="location-isp">
+                                  ISP: {user.location.isp}
+                                </div>
+                              )}
+                              {user.location.timezone && user.location.timezone !== 'Unknown' && (
+                                <div className="location-timezone">
+                                  TZ: {user.location.timezone}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {user.device && (
+                          <div className="device-info-section">
+                            <div className="device-details-full">
+                              <span className="device-badge browser">
+                                {user.device.browser !== 'Unknown' ? user.device.browser : 'Unknown Browser'}
+                                {user.device.browserVersion && user.device.browserVersion !== 'Unknown' && ` ${user.device.browserVersion}`}
+                              </span>
+                              <span className="os-badge">
+                                {user.device.os !== 'Unknown' ? user.device.os : 'Unknown OS'}
+                                {user.device.osVersion && user.device.osVersion !== 'Unknown' && ` ${user.device.osVersion}`}
+                              </span>
+                              <span className="device-type-badge">
+                                {user.device.deviceType !== 'Unknown' ? user.device.deviceType : 'Unknown Device'}
+                              </span>
+                              {user.device.language && user.device.language !== 'Unknown' && (
+                                <span className="language-badge">🌐 {user.device.language}</span>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {user.discordMember && user.discordMember.roles && user.discordMember.roles.length > 0 && (
+                          <div className="discord-roles-section">
+                            <FaShieldAlt />
+                            <div className="roles-list">
+                              {user.discordMember.roles.slice(0, 5).map(role => (
+                                <span 
+                                  key={role.id} 
+                                  className="role-badge"
+                                  style={{ borderColor: role.color !== '#000000' ? role.color : undefined }}
+                                >
+                                  {role.name}
+                                </span>
+                              ))}
+                              {user.discordMember.roles.length > 5 && (
+                                <span className="role-badge-more">
+                                  +{user.discordMember.roles.length - 5} más
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="card-footer">
+                        <div className="time-info">
+                          <FaClock />
+                          <span title={formatDate(new Date(user.lastSeen))}>
+                            {formatDuration(new Date(user.lastSeen))} ago
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
+        ) : null}
       </div>
 
       {/* Modal de nuevo ban */}
