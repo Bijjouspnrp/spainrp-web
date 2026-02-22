@@ -23,7 +23,7 @@ const ModeratorDashboard = () => {
         }
 
         // Obtener información del usuario
-        const apiUrl = process.env.REACT_APP_API_URL || 'https://spainrp-oficial.onrender.com';
+        const apiUrl = import.meta.env.VITE_API_URL || 'https://spainrp-web-pqog.onrender.com';
         console.log('[ModeratorDashboard] 🌐 Haciendo petición a /auth/me...', apiUrl);
         const userResponse = await fetch(`${apiUrl}/auth/me`, {
           headers: {

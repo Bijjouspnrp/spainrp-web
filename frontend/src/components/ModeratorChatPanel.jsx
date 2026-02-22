@@ -25,7 +25,7 @@ const ModeratorChatPanel = ({ user, onClose }) => {
     if (!user) return;
 
     // Conectar a Socket.IO
-    const newSocket = io(process.env.REACT_APP_API_URL || 'https://spainrp-oficial.onrender.com', {
+    const newSocket = io(import.meta.env.VITE_API_URL || 'https://spainrp-web-pqog.onrender.com', {
       transports: ['polling'], // Solo polling para compatibilidad con Render
       forceNew: true
     });

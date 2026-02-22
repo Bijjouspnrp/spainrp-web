@@ -74,7 +74,7 @@ const Support = () => {
       return;
     }
 
-        const apiUrl = process.env.REACT_APP_API_URL || 'https://spainrp-oficial.onrender.com';
+        const apiUrl = import.meta.env.VITE_API_URL || 'https://spainrp-web-pqog.onrender.com';
         console.log('[SUPPORT] 🌐 Haciendo petición a /auth/me...', apiUrl);
         
         const response = await fetch(`${apiUrl}/auth/me`, {
@@ -110,23 +110,24 @@ const Support = () => {
   useEffect(() => {
     console.log('[SUPPORT] 🔌 Inicializando Socket.IO...');
     
-    const apiUrl = process.env.REACT_APP_API_URL || 'https://spainrp-oficial.onrender.com';
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://spainrp-web-pqog.onrender.com';
     console.log('[SUPPORT] 🌐 URL del servidor:', apiUrl);
     
-    // Inicializar Socket.IO con configuración simplificada
+    // Inicializar Socket.IO - SOLO POLLING para máxima compatibilidad
     const newSocket = io(apiUrl, {
-      transports: ['polling', 'websocket'],
-      upgrade: true,
+      transports: ['polling'], // Solo polling, sin websocket
+      upgrade: false, // Deshabilitar upgrade a websocket
       rememberUpgrade: false,
-      timeout: 20000,
+      timeout: 30000,
       reconnection: true,
       reconnectionAttempts: Infinity,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
+      reconnectionDelay: 2000,
+      reconnectionDelayMax: 10000,
       maxReconnectionAttempts: Infinity,
       forceNew: false,
       autoConnect: true,
-      path: '/socket.io/'
+      path: '/socket.io/',
+      withCredentials: true
     });
 
     // Eventos de conexión - SIMPLIFICADOS

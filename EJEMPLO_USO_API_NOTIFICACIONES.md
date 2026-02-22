@@ -65,7 +65,7 @@ const sendNotificationDirect = async () => {
   }
 
   try {
-    const response = await fetch('https://spainrp-web.onrender.com/api/notifications/send', {
+    const response = await fetch('https://spainrp-web-pqog.onrender.com/api/notifications/send', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -143,7 +143,7 @@ const testNotificationAPI = async () => {
   }
 
   try {
-    const response = await fetch('https://spainrp-web.onrender.com/api/notifications/send', {
+    const response = await fetch('https://spainrp-web-pqog.onrender.com/api/notifications/send', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

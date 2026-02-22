@@ -3,7 +3,7 @@
 ## 📋 Información General
 
 **Proyecto:** SpainRP Web Platform  
-**URL de Producción:** https://spainrp-oficial.onrender.com  
+**URL de Producción:** https://spainrp-oficial-1uly.onrender.com  
 **Tipo:** Plataforma web completa para servidor de roleplay ERLC  
 **Tecnologías:** React, Node.js, SQLite, Discord OAuth  
 
@@ -392,7 +392,7 @@ Verificar que todas las funcionalidades de la plataforma web de SpainRP funcione
 
 - **Discord:** https://discord.gg/sMzFgFQHXA
 - **Desarrollador Principal:** BijjouPro08
-- **Plataforma:** https://spainrp-oficial.onrender.com
+- **Plataforma:** https://spainrp-oficial-1uly.onrender.com
 
 ---
 

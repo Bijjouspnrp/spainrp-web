@@ -10,7 +10,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: PUBLIC_BASE_URL
-        value: https://spainrp-web.onrender.com
+        value: https://spainrp-web-pqog.onrender.com
       # Cambia las siguientes URLs por las públicas de Render si tienes los servicios desplegados
       - key: BOT_API_URL
         value: https://spainrp-bot.onrender.com
@@ -23,7 +23,7 @@ services:
       - key: DISCORD_CLIENT_SECRET
         sync: false
       - key: DISCORD_REDIRECT_URI
-        value: https://spainrp-web.onrender.com/auth/callback
+        value: https://spainrp-web-pqog.onrender.com/auth/callback
       - key: DISCORD_GUILD_ID
         sync: false
       - key: JWT_SECRET
@@ -31,7 +31,7 @@ services:
       - key: SESSION_SECRET
         sync: false
       - key: VITE_API_URL
-        value: https://spainrp-web.onrender.com
+        value: https://spainrp-web-pqog.onrender.com
       - key: VITE_BOT_URL
         value: https://spainrp-bot.onrender.com
       - key: VITE_SHOP_URL

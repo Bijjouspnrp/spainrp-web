@@ -68,12 +68,12 @@ CREATE TABLE moderators_online (
 DISCORD_GUILD_ID=1212556680911650866
 DISCORD_BOT_TOKEN=tu_token_del_bot
 MODERATOR_ROLE_ID=1384340649205301359
-REACT_APP_API_URL=https://spainrp-web.onrender.com
+REACT_APP_API_URL=https://spainrp-web-pqog.onrender.com
 ```
 
 #### Frontend
 ```env
-REACT_APP_API_URL=https://spainrp-web.onrender.com
+REACT_APP_API_URL=https://spainrp-web-pqog.onrender.com
 ```
 
 ### Dependencias

@@ -9,7 +9,7 @@ const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch
 
 // Configuración
 const EXTERNAL_API = process.env.ECONOMIA_API_URL || 'http://37.27.21.91:5021';
-const INTERNAL_API = process.env.INTERNAL_API_URL || 'https://spainrp-web.onrender.com';
+const INTERNAL_API = process.env.INTERNAL_API_URL || 'https://spainrp-web-pqog.onrender.com';
 const TEST_USER_ID = '710112055985963090'; // Cambia esto por un ID válido
 
 // Colores para la consola

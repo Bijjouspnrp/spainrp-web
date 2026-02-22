@@ -9,9 +9,9 @@ const router = express.Router();
 // En producción, usar variables de entorno
 const CLIENT_ID = process.env.DISCORD_CLIENT_ID || '1387150250334097624';
 const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET || 'i5vVTN3rl757mW5dMFkwV8nwAnkbVk1B';
-const CALLBACK_URL = process.env.DISCORD_CALLBACK_URL || 'https://spainrp-web.onrender.com/auth/discord/callback';
+const CALLBACK_URL = process.env.DISCORD_CALLBACK_URL || 'https://spainrp-web-pqog.onrender.com/auth/discord/callback';
 const GUILD_ID = process.env.DISCORD_GUILD_ID || '1351991000903004241';
-const FRONTEND_URL = process.env.FRONTEND_URL || 'https://spainrp-oficial.onrender.com';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://spainrp-oficial-1uly.onrender.com';
 
 const scopes = ['identify', 'guilds'];
 const ADMIN_USER_IDS = (process.env.ADMIN_USER_IDS || '710112055985963090')

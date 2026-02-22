@@ -792,7 +792,7 @@ export default function BlackMarket() {
   const refreshStock = async () => {
     try {
       console.log('[BlackMarket] 🔄 Refrescando stock...');
-      const resp = await fetch('https://spainrp-web.onrender.com/api/blackmarket/stock');
+      const resp = await fetch('https://spainrp-web-pqog.onrender.com/api/blackmarket/stock');
       const data = await resp.json();
       
       if (resp.ok && data && data.stock && Array.isArray(data.stock)) {
@@ -824,7 +824,7 @@ export default function BlackMarket() {
   const loadUserSales = async () => {
     try {
       console.log('[BlackMarket] 📋 Cargando ventas de usuarios...');
-      const resp = await fetch('https://spainrp-web.onrender.com/api/blackmarket/sales');
+      const resp = await fetch('https://spainrp-web-pqog.onrender.com/api/blackmarket/sales');
       const data = await resp.json();
       
       if (resp.ok && data && data.sales && Array.isArray(data.sales)) {
@@ -846,7 +846,7 @@ export default function BlackMarket() {
     
     try {
       console.log('[BlackMarket] 💰 Poniendo item en venta...');
-      const resp = await fetch('https://spainrp-web.onrender.com/api/blackmarket/sell-to-user', {
+      const resp = await fetch('https://spainrp-web-pqog.onrender.com/api/blackmarket/sell-to-user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -883,7 +883,7 @@ export default function BlackMarket() {
   const handleBuyFromUser = async (saleId, amount) => {
     try {
       console.log('[BlackMarket] 🛒 Comprando de usuario...');
-      const resp = await fetch('https://spainrp-web.onrender.com/api/blackmarket/buy-from-user', {
+      const resp = await fetch('https://spainrp-web-pqog.onrender.com/api/blackmarket/buy-from-user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -918,8 +918,8 @@ export default function BlackMarket() {
     try {
       console.log('[BlackMarket] 📦 Gestionando stock...');
       const endpoint = stockManagerAction === 'add' 
-        ? 'https://spainrp-web.onrender.com/api/blackmarket/admin/add-stock'
-        : 'https://spainrp-web.onrender.com/api/blackmarket/admin/stock';
+        ? 'https://spainrp-web-pqog.onrender.com/api/blackmarket/admin/add-stock'
+        : 'https://spainrp-web-pqog.onrender.com/api/blackmarket/admin/stock';
       
       const body = stockManagerAction === 'add' 
         ? { itemId: stockManagerItem, amount: stockManagerAmount }
@@ -976,7 +976,7 @@ export default function BlackMarket() {
       // Obtener saldo actual del usuario antes de modificarlo
       let currentBalance = null;
       try {
-        const balanceResp = await fetch(`https://spainrp-web.onrender.com/api/proxy/admin/balance/${quickId}?adminUserId=${user?.id}`);
+        const balanceResp = await fetch(`https://spainrp-web-pqog.onrender.com/api/proxy/admin/balance/${quickId}?adminUserId=${user?.id}`);
         if (balanceResp.ok) {
           currentBalance = await balanceResp.json();
         }
@@ -1005,9 +1005,9 @@ export default function BlackMarket() {
       };
       
       console.log('[QuickBalance] Datos de la petición:', requestData);
-      console.log('[QuickBalance] URL:', 'https://spainrp-web.onrender.com/api/proxy/admin/setbalance');
+      console.log('[QuickBalance] URL:', 'https://spainrp-web-pqog.onrender.com/api/proxy/admin/setbalance');
       
-      const resp = await fetch('https://spainrp-web.onrender.com/api/proxy/admin/setbalance', {
+      const resp = await fetch('https://spainrp-web-pqog.onrender.com/api/proxy/admin/setbalance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestData)
@@ -1118,7 +1118,7 @@ export default function BlackMarket() {
               console.log('[BlackMarket] 🔍 Verificando membresía...');
               
               const memberRes = await Promise.race([
-                fetch(`https://spainrp-web.onrender.com/api/proxy/discord/ismember/${encodeURIComponent(data.user.id)}`),
+                fetch(`https://spainrp-web-pqog.onrender.com/api/proxy/discord/ismember/${encodeURIComponent(data.user.id)}`),
                 new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
               ]);
               
@@ -1134,7 +1134,7 @@ export default function BlackMarket() {
               if (ok) {
                 console.log('[BlackMarket] 🔍 Verificando rol criminal...');
                 const roleRes = await Promise.race([
-                  fetch(`https://spainrp-web.onrender.com/api/proxy/discord/hasrole/${encodeURIComponent(data.user.id)}/${REQUIRED_ROLE_ID}`),
+                  fetch(`https://spainrp-web-pqog.onrender.com/api/proxy/discord/hasrole/${encodeURIComponent(data.user.id)}/${REQUIRED_ROLE_ID}`),
                   new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
                 ]);
                 
@@ -1166,7 +1166,7 @@ export default function BlackMarket() {
                 try {
                   console.log('[BlackMarket] 💰 Cargando saldo...');
                   const saldoRes = await Promise.race([
-                    fetch(`https://spainrp-web.onrender.com/api/proxy/blackmarket/saldo/${encodeURIComponent(data.user.id)}`),
+                    fetch(`https://spainrp-web-pqog.onrender.com/api/proxy/blackmarket/saldo/${encodeURIComponent(data.user.id)}`),
                     new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
                   ]);
                   
@@ -1184,7 +1184,7 @@ export default function BlackMarket() {
                   setAdminChecking(true);
                   console.log('[BlackMarket] 🔍 Verificando permisos de admin...');
                   const adminRes = await Promise.race([
-                    fetch(`https://spainrp-web.onrender.com/api/proxy/admin/isadmin/${encodeURIComponent(data.user.id)}`),
+                    fetch(`https://spainrp-web-pqog.onrender.com/api/proxy/admin/isadmin/${encodeURIComponent(data.user.id)}`),
                     new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
                   ]);
                   
@@ -1243,8 +1243,8 @@ export default function BlackMarket() {
         
         // Cargar catálogo y stock en paralelo
         const [catalogResp, stockResp] = await Promise.allSettled([
-          fetch('https://spainrp-web.onrender.com/api/proxy/blackmarket/items'),
-          fetch('https://spainrp-web.onrender.com/api/blackmarket/stock')
+          fetch('https://spainrp-web-pqog.onrender.com/api/proxy/blackmarket/items'),
+          fetch('https://spainrp-web-pqog.onrender.com/api/blackmarket/stock')
         ]);
         
         // Procesar catálogo
@@ -1317,13 +1317,13 @@ export default function BlackMarket() {
       let response;
       let users = [];
       try {
-        response = await fetch(`https://spainrp-web.onrender.com/api/proxy/admin/search/${encodeURIComponent(query)}?adminUserId=${user.id}`);
+        response = await fetch(`https://spainrp-web-pqog.onrender.com/api/proxy/admin/search/${encodeURIComponent(query)}?adminUserId=${user.id}`);
         if (!response.ok || response.headers.get('content-type')?.includes('text/html')) {
           throw new Error('API externa no disponible');
         }
       } catch (e) {
         console.log('[BlackMarket] API externa no disponible, usando backend local');
-        response = await fetch(`https://spainrp-web.onrender.com/api/proxy/admin/search/${encodeURIComponent(query)}?adminUserId=${user.id}`);
+        response = await fetch(`https://spainrp-web-pqog.onrender.com/api/proxy/admin/search/${encodeURIComponent(query)}?adminUserId=${user.id}`);
       }
       const data = await response.json();
       if (response.ok) {
@@ -1379,13 +1379,13 @@ export default function BlackMarket() {
       // Cargar inventario del usuario
       let inventoryRes;
       try {
-        inventoryRes = await fetch(`https://spainrp-web.onrender.com/api/proxy/admin/inventory/${user.id || user.userId}?adminUserId=${user.id || user.userId}`);
+        inventoryRes = await fetch(`https://spainrp-web-pqog.onrender.com/api/proxy/admin/inventory/${user.id || user.userId}?adminUserId=${user.id || user.userId}`);
         if (!inventoryRes.ok || inventoryRes.headers.get('content-type')?.includes('text/html')) {
           throw new Error('API externa no disponible');
         }
       } catch (e) {
         console.log('[BlackMarket] API externa no disponible para inventario, usando backend local');
-        inventoryRes = await fetch(`https://spainrp-web.onrender.com/api/proxy/admin/inventory/${user.id || user.userId}?adminUserId=${user.id || user.userId}`);
+        inventoryRes = await fetch(`https://spainrp-web-pqog.onrender.com/api/proxy/admin/inventory/${user.id || user.userId}?adminUserId=${user.id || user.userId}`);
       }
       const inventoryData = await inventoryRes.json();
       if (inventoryRes.ok) {
@@ -1395,13 +1395,13 @@ export default function BlackMarket() {
       // Cargar saldo del usuario
       let balanceRes;
       try {
-        balanceRes = await fetch(`https://spainrp-web.onrender.com/api/proxy/admin/balance/${user.id || user.userId}?adminUserId=${user.id || user.userId}`);
+        balanceRes = await fetch(`https://spainrp-web-pqog.onrender.com/api/proxy/admin/balance/${user.id || user.userId}?adminUserId=${user.id || user.userId}`);
         if (!balanceRes.ok || balanceRes.headers.get('content-type')?.includes('text/html')) {
           throw new Error('API externa no disponible');
         }
       } catch (e) {
         console.log('[BlackMarket] API externa no disponible para saldo, usando backend local');
-        balanceRes = await fetch(`https://spainrp-web.onrender.com/api/proxy/admin/balance/${user.id || user.userId}?adminUserId=${user.id || user.userId}`);
+        balanceRes = await fetch(`https://spainrp-web-pqog.onrender.com/api/proxy/admin/balance/${user.id || user.userId}?adminUserId=${user.id || user.userId}`);
       }
       const balanceData = await balanceRes.json();
       if (balanceRes.ok) {
@@ -1421,7 +1421,7 @@ export default function BlackMarket() {
     try {
       console.log('[BlackMarket] Agregando item:', { targetUserId: uid, itemId, amount, adminUserId: user.id });
       
-      const response = await fetch('https://spainrp-web.onrender.com/api/proxy/admin/additem', {
+      const response = await fetch('https://spainrp-web-pqog.onrender.com/api/proxy/admin/additem', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1458,7 +1458,7 @@ export default function BlackMarket() {
     try {
       console.log('[BlackMarket] Retirando item:', { targetUserId: uid, itemId, amount, adminUserId: user.id });
       
-      const response = await fetch('https://spainrp-web.onrender.com/api/proxy/admin/removeitem', {
+      const response = await fetch('https://spainrp-web-pqog.onrender.com/api/proxy/admin/removeitem', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1495,7 +1495,7 @@ export default function BlackMarket() {
     try {
       let response;
       try {
-        response = await fetch('https://spainrp-web.onrender.com/api/proxy/admin/setbalance', {
+        response = await fetch('https://spainrp-web-pqog.onrender.com/api/proxy/admin/setbalance', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1510,7 +1510,7 @@ export default function BlackMarket() {
         }
       } catch (e) {
         console.log('[BlackMarket] API externa no disponible para setbalance, usando backend local');
-        response = await fetch('https://spainrp-web.onrender.com/api/proxy/admin/setbalance', {
+        response = await fetch('https://spainrp-web-pqog.onrender.com/api/proxy/admin/setbalance', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1748,7 +1748,7 @@ if (!user) {
               setInventoryLoading(true);
               setInventoryError('');
               console.log('[BlackMarket] Fetch inventario for', user.id);
-              const resp = await fetch(`https://spainrp-web.onrender.com/api/proxy/blackmarket/inventario/${encodeURIComponent(user.id)}`);
+              const resp = await fetch(`https://spainrp-web-pqog.onrender.com/api/proxy/blackmarket/inventario/${encodeURIComponent(user.id)}`);
               const data = await resp.json();
               if (!resp.ok || data?.error) {
                 setInventoryError(data?.error || 'No se pudo recuperar el inventario');
@@ -2526,7 +2526,7 @@ if (!user) {
                 setPurchaseState({ visible: true, status: 'loading', message: 'Procesando compra...' });
                 try {
                   if (modalItem.itemId) {
-                    const resp = await fetch('https://spainrp-web.onrender.com/api/proxy/blackmarket/purchase', {
+                    const resp = await fetch('https://spainrp-web-pqog.onrender.com/api/proxy/blackmarket/purchase', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ userId: user?.id, itemId: modalItem.itemId })
@@ -2586,7 +2586,7 @@ if (!user) {
                       try {
                         setInventoryLoading(true);
                         setInventoryError('');
-                        const resp = await fetch(`https://spainrp-web.onrender.com/api/proxy/blackmarket/inventario/${encodeURIComponent(user.id)}`);
+                        const resp = await fetch(`https://spainrp-web-pqog.onrender.com/api/proxy/blackmarket/inventario/${encodeURIComponent(user.id)}`);
                         const data = await resp.json();
                         if (!resp.ok || data?.error) {
                           setInventoryError(data?.error || 'No se pudo recuperar el inventario');
@@ -2660,7 +2660,7 @@ if (!user) {
                                     onClick={async () => {
                                       try {
                                         setPurchaseState({ visible: true, status: 'loading', message: 'Vendiendo 1 objeto...' });
-                                        const resp = await fetch('https://spainrp-web.onrender.com/api/proxy/blackmarket/sellone', {
+                                        const resp = await fetch('https://spainrp-web-pqog.onrender.com/api/proxy/blackmarket/sellone', {
                                           method: 'POST', headers: { 'Content-Type': 'application/json' },
                                           body: JSON.stringify({ userId: user.id, itemId: it.itemId, amount: 1 })
                                         });
@@ -2672,7 +2672,7 @@ if (!user) {
                                           // refrescar inventario
                                           try {
                                             setInventoryLoading(true);
-                                            const r2 = await fetch(`https://spainrp-web.onrender.com/api/proxy/blackmarket/inventario/${encodeURIComponent(user.id)}`);
+                                            const r2 = await fetch(`https://spainrp-web-pqog.onrender.com/api/proxy/blackmarket/inventario/${encodeURIComponent(user.id)}`);
                                             const d2 = await r2.json();
                                             const arr = Array.isArray(d2?.inventario) ? d2.inventario : [];
                                             const normalized = arr.map((row) => {
@@ -2742,7 +2742,7 @@ if (!user) {
                           .map(it => ({ itemId: it.itemId, amount: it.amount ?? 1 }));
                         if (sellList.length === 0) return;
                         setPurchaseState({ visible: true, status: 'loading', message: 'Procesando venta...' });
-                        const resp = await fetch('https://spainrp-web.onrender.com/api/proxy/blackmarket/sell', {
+                        const resp = await fetch('https://spainrp-web-pqog.onrender.com/api/proxy/blackmarket/sell', {
                           method: 'POST', headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({ userId: user.id, items: sellList })
                         });
@@ -2754,7 +2754,7 @@ if (!user) {
                           // refrescar inventario
                           try {
                             setInventoryLoading(true);
-                            const r2 = await fetch(`https://spainrp-web.onrender.com/api/proxy/blackmarket/inventario/${encodeURIComponent(user.id)}`);
+                            const r2 = await fetch(`https://spainrp-web-pqog.onrender.com/api/proxy/blackmarket/inventario/${encodeURIComponent(user.id)}`);
                             const d2 = await r2.json();
                             const arr = Array.isArray(d2?.inventario) ? d2.inventario : [];
                             const normalized = arr.map((it) => {

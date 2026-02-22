@@ -10,7 +10,7 @@ Variable de entorno: ECONOMIA_API_URL
 
 ### API Interna (Este servidor)
 ```
-Base URL: https://spainrp-web.onrender.com (o tu dominio)
+Base URL: https://spainrp-web-pqog.onrender.com (o tu dominio)
 ```
 
 ---
@@ -127,12 +127,12 @@ GET http://37.27.21.91:5021/api/admin/balance/{userId}
 
 ### 1. Consultar Saldo Propio (GET)
 ```http
-GET https://spainrp-web.onrender.com/api/proxy/balance/{userId}
+GET https://spainrp-web-pqog.onrender.com/api/proxy/balance/{userId}
 ```
 
 **Ejemplo:**
 ```bash
-curl https://spainrp-web.onrender.com/api/proxy/balance/710112055985963090
+curl https://spainrp-web-pqog.onrender.com/api/proxy/balance/710112055985963090
 ```
 
 **Respuesta (con fallback si API externa falla):**
@@ -153,7 +153,7 @@ curl https://spainrp-web.onrender.com/api/proxy/balance/710112055985963090
 
 ### 2. Consultar Saldo Propio (POST)
 ```http
-POST https://spainrp-web.onrender.com/api/proxy/balance
+POST https://spainrp-web-pqog.onrender.com/api/proxy/balance
 Content-Type: application/json
 
 {
@@ -163,7 +163,7 @@ Content-Type: application/json
 
 **Ejemplo con curl:**
 ```bash
-curl -X POST https://spainrp-web.onrender.com/api/proxy/balance \
+curl -X POST https://spainrp-web-pqog.onrender.com/api/proxy/balance \
   -H "Content-Type: application/json" \
   -d '{"userId": "710112055985963090"}'
 ```
@@ -172,19 +172,19 @@ curl -X POST https://spainrp-web.onrender.com/api/proxy/balance \
 
 ### 3. Consultar Saldo (Admin - Proxy)
 ```http
-GET https://spainrp-web.onrender.com/api/proxy/admin/balance/{id}
+GET https://spainrp-web-pqog.onrender.com/api/proxy/admin/balance/{id}
 ```
 
 **Ejemplo:**
 ```bash
-curl https://spainrp-web.onrender.com/api/proxy/admin/balance/710112055985963090
+curl https://spainrp-web-pqog.onrender.com/api/proxy/admin/balance/710112055985963090
 ```
 
 ---
 
 ### 4. Consultar Saldo (Admin - POST)
 ```http
-POST https://spainrp-web.onrender.com/api/proxy/admin/balance
+POST https://spainrp-web-pqog.onrender.com/api/proxy/admin/balance
 Content-Type: application/json
 
 {
@@ -196,7 +196,7 @@ Content-Type: application/json
 
 ### 5. Consultar Saldos Múltiples
 ```http
-POST https://spainrp-web.onrender.com/api/proxy/admin/balances
+POST https://spainrp-web-pqog.onrender.com/api/proxy/admin/balances
 Content-Type: application/json
 
 {
@@ -258,10 +258,10 @@ curl -X POST http://37.27.21.91:5021/api/proxy/admin/transfer \
 #### Probar API Interna (con fallback):
 ```bash
 # GET
-curl https://spainrp-web.onrender.com/api/proxy/balance/710112055985963090
+curl https://spainrp-web-pqog.onrender.com/api/proxy/balance/710112055985963090
 
 # POST
-curl -X POST https://spainrp-web.onrender.com/api/proxy/balance \
+curl -X POST https://spainrp-web-pqog.onrender.com/api/proxy/balance \
   -H "Content-Type: application/json" \
   -d '{"userId": "710112055985963090"}'
 ```
@@ -320,7 +320,7 @@ Abre la consola del navegador (F12) y ejecuta:
 
 ```javascript
 // Probar API interna (con fallback)
-fetch('https://spainrp-web.onrender.com/api/proxy/balance/710112055985963090')
+fetch('https://spainrp-web-pqog.onrender.com/api/proxy/balance/710112055985963090')
   .then(res => res.json())
   .then(data => console.log('Saldo:', data))
   .catch(err => console.error('Error:', err));

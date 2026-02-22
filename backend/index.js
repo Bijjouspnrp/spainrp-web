@@ -89,10 +89,10 @@ const logger = createLogger('SERVER');
 // Configuración de CORS al principio
 app.use(cors({
   origin: [
-    'https://spainrp-oficial.onrender.com', 
-    'https://spainrp-web.onrender.com',
+    'https://spainrp-oficial-1uly.onrender.com', 
+    'https://spainrp-web-pqog.onrender.com',
     'http://127.0.0.1:5173',
-    process.env.PUBLIC_BASE_URL || 'https://spainrp-oficial.onrender.com'
+    process.env.PUBLIC_BASE_URL || 'https://spainrp-oficial-1uly.onrender.com'
   ].filter(Boolean),
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -456,12 +456,13 @@ app.post('/api/admin/notify-balance-change', async (req, res) => {
 });
 
 // --- SOCKET.IO para notificaciones en tiempo real ---
+// IMPORTANTE: Crear el servidor HTTP ANTES de cualquier middleware que pueda interferir
 const server = http.createServer(app);
 
 // Configurar Socket.IO - SIMPLIFICADO Y ROBUSTO
 const allowedOrigins = [
-  'https://spainrp-oficial.onrender.com', 
-  'https://spainrp-web.onrender.com',
+  'https://spainrp-oficial-1uly.onrender.com', 
+  'https://spainrp-web-pqog.onrender.com',
   'http://127.0.0.1:5173',
   'http://localhost:5173',
   process.env.PUBLIC_BASE_URL
@@ -469,31 +470,21 @@ const allowedOrigins = [
 
 const io = new Server(server, {
   cors: {
-    origin: (origin, callback) => {
-      // Permitir conexiones sin origin (mobile apps, Postman, etc.)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.some(allowed => origin.includes(allowed.replace(/https?:\/\//, '')))) {
-        callback(null, true);
-      } else {
-        console.warn('[SOCKET.IO] Origen no permitido:', origin);
-        callback(null, true); // Permitir de todos modos para desarrollo
-      }
-    },
+    origin: true, // Permitir todos los orígenes para evitar problemas de CORS
     credentials: true,
     methods: ['GET', 'POST', 'OPTIONS']
   },
-  transports: ['polling', 'websocket'],
+  transports: ['polling', 'websocket'], // El cliente usará solo polling
   allowEIO3: true,
-  pingTimeout: 20000,
-  pingInterval: 10000,
-  connectTimeout: 20000,
+  pingTimeout: 60000, // Aumentar para polling
+  pingInterval: 25000,
+  connectTimeout: 60000,
   serveClient: false,
-  path: '/socket.io/'
-});
-
-// Endpoint de salud para Socket.IO (antes de cualquier middleware)
-app.get('/socket.io/', (req, res) => {
-  res.json({ status: 'ok', service: 'socket.io' });
+  path: '/socket.io/',
+  allowRequest: (req, callback) => {
+    // Permitir todas las peticiones
+    callback(null, true);
+  }
 });
 
 // Manejar errores de Socket.IO de forma más robusta
@@ -1092,7 +1083,7 @@ function notifyMaintenanceEnded() {
       console.log('[MAINT][MAIL] Lista de suscriptores sin emails válidos.');
       return;
     }
-    const baseUrl = process.env.PUBLIC_BASE_URL || 'https://spainrp-oficial.onrender.com';
+    const baseUrl = process.env.PUBLIC_BASE_URL || 'https://spainrp-oficial-1uly.onrender.com';
     const subject = '🚀 SpainRP vuelve a estar online';
     const text = `Hola,\n\n¡Buenas noticias! Hemos finalizado el mantenimiento y SpainRP ya está disponible de nuevo.\n\nNovedades:\n• Mejoras de rendimiento y estabilidad\n• Corrección de errores reportados\n• Preparativos para nuevas funciones\n\nEntra ahora: ${baseUrl}\nUnirte a Discord: https://discord.com/invite/sMzFgFQHXA\n\nGracias por tu paciencia.\n— Equipo SpainRP`;
     const html = `<!doctype html><html lang="es"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>SpainRP vuelve online</title><style>.btn{display:inline-block;padding:12px 20px;border-radius:10px;font-weight:700;text-decoration:none}</style></head><body style="margin:0;background:#0f1115;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',sans-serif;color:#e5e7eb;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;margin:0 auto;background:#151823;border:1px solid #202434;border-radius:14px;overflow:hidden"><tr><td style="padding:22px 22px 8px 22px;text-align:center;background:linear-gradient(135deg,#23153c 0,#160a10 100%)"><div style="font-size:24px;font-weight:900;color:#ffd54a;letter-spacing:.5px;text-shadow:0 0 14px rgba(255,213,74,.35)">SpainRP</div><div style="color:#b8b8b8;margin-top:6px">Mantenimiento finalizado</div></td></tr><tr><td style="padding:24px"><h1 style="margin:0 0 8px 0;color:#ffffff;font-size:22px;line-height:1.3">¡Ya estamos de vuelta! 🚀</h1><p style="margin:0 0 14px 0;color:#cbd5e1;font-size:15px;line-height:1.6">Hemos completado el mantenimiento y la web de <strong>SpainRP</strong> vuelve a estar disponible. Gracias por tu paciencia.</p><div style="background:#0f131b;border:1px solid #202434;border-radius:12px;padding:14px 16px;margin:12px 0"><div style="color:#9aa4b2;font-weight:700;margin-bottom:8px">Novedades</div><ul style="margin:0;color:#cbd5e1;padding-left:18px"><li>Mejoras de rendimiento y estabilidad</li><li>Corrección de errores reportados</li><li>Preparativos para nuevas funciones</li></ul></div><div style="text-align:center;margin:18px 0 6px 0"><a href="${baseUrl}" class="btn" style="background:#ff1744;color:#fff" target="_blank" rel="noopener">Entrar en SpainRP</a><a href="https://discord.com/invite/sMzFgFQHXA" class="btn" style="background:#232a3a;color:#e5e7eb;margin-left:8px;border:1px solid #334155" target="_blank" rel="noopener">Unirme a Discord</a></div><p style="margin:16px 0 0 0;color:#94a3b8;font-size:13px;line-height:1.6">Si no esperabas este correo, puedes ignorarlo. Este aviso se envió porque te suscribiste durante el mantenimiento.</p><p style="margin:12px 0 0 0;color:#64748b;font-size:12px">© ${new Date().getFullYear()} SpainRP. Todos los derechos reservados.</p></td></tr></table></body></html>`;
@@ -1225,7 +1216,7 @@ app.post('/api/maintenance/subscribe', express.json(), (req, res) => {
 // Servir imágenes de noticias
 app.use('/uploads/news', express.static(path.join(__dirname, '../uploads/news')));
 
-// El frontend se sirve desde spainrp-oficial.onrender.com
+// El frontend se sirve desde spainrp-oficial-1uly.onrender.com
 
 // Utilidad para fetchRoblox (igual que fetchDiscord)
 const fetchRoblox = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
@@ -1250,7 +1241,7 @@ app.get('/api/proxy/bolsa/saldo/:userId', async (req, res) => {
 // Proxy para banear usuario (redirige al endpoint local)
 app.post('/api/proxy/discord/ban', express.json(), async (req, res) => {
   try {
-    const response = await fetch(`${process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/'}/api/discord/ban`, {
+    const response = await fetch(`${process.env.BOT_API_URL || 'https://spainrp-web-pqog.onrender.com/'}/api/discord/ban`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(req.body)
@@ -2750,7 +2741,7 @@ async function sendUnbanNotification(userId, banType, unbannedBy) {
             type: 2, // BUTTON
             style: 5, // LINK
             label: '🌐 Acceder al Sitio Web',
-            url: 'https://spainrp-web.onrender.com',
+            url: 'https://spainrp-web-pqog.onrender.com',
             emoji: {
               name: '🚀'
             }
@@ -2887,7 +2878,7 @@ async function sendBanNotification(userId, banType, reason, expiresAt, bannedBy)
             type: 2, // BUTTON
             style: 5, // LINK
             label: '🌐 Verificar Estado del Ban',
-            url: 'https://spainrp-oficial.onrender.com',
+            url: 'https://spainrp-oficial-1uly.onrender.com',
             emoji: {
               name: '🔍'
             }
@@ -3921,7 +3912,7 @@ app.get('/info', (req, res) => {
     version: '2.0.0',
     author: 'SpainRP Development Team',
     repository: 'https://github.com/Bijjouspnrp/spainrp-web',
-    documentation: 'https://spainrp-oficial.onrender.com/docs',
+    documentation: 'https://spainrp-oficial-1uly.onrender.com/docs',
     support: 'https://discord.com/invite/sMzFgFQHXA',
     features: {
       authentication: 'JWT + Discord OAuth2',
@@ -4074,7 +4065,7 @@ app.get('/api/discord/members-with-roles', ensureAuthenticated, async (req, res)
 app.get('/api/discord/membercount', async (req, res) => {
   try {
     const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-    const botApiUrl = `${process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/'}/api/membercount`;
+    const botApiUrl = `${process.env.BOT_API_URL || 'https://spainrp-web-pqog.onrender.com/'}/api/membercount`;
     const response = await fetch(botApiUrl);
     if (!response.ok) {
       const errText = await response.text();
@@ -4309,7 +4300,7 @@ app.get('/api/discord/widget', async (req, res) => {
   }
 });
 // Proxy para obtener datos de miembro desde el bot
-const BOT_API_URL = process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/';
+const BOT_API_URL = process.env.BOT_API_URL || 'https://spainrp-web-pqog.onrender.com/';
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 app.get('/api/backend/member/:guildId/:userId', async (req, res) => {
@@ -4685,7 +4676,7 @@ app.delete('/api/announcements/:id', async (req, res) => {
   const newsId = req.params.id;
   if (!userId || !newsId) return res.status(400).json({ error: 'Faltan datos' });
   try {
-    const BOT_API_URL = process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/';
+    const BOT_API_URL = process.env.BOT_API_URL || 'https://spainrp-web-pqog.onrender.com/';
     const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
     const resp = await fetch(`${BOT_API_URL}/api/discord/candeletenews/${encodeURIComponent(userId)}`);
     const data = await resp.json();
@@ -4706,7 +4697,7 @@ app.put('/api/announcements/:id', express.json(), async (req, res) => {
   const { title, body, images, company, tags } = req.body;
   if (!userId || !newsId) return res.status(400).json({ error: 'Faltan datos' });
   try {
-    const BOT_API_URL = process.env.BOT_API_URL || 'https://spainrp-web.onrender.com/';
+    const BOT_API_URL = process.env.BOT_API_URL || 'https://spainrp-web-pqog.onrender.com/';
     const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
     const news = await new Promise((resolve, reject) => {
       db.get('SELECT * FROM announcements WHERE id = ?', [newsId], (err, row) => {
@@ -9282,7 +9273,7 @@ app.post('/api/admin/setbalance', express.json(), async (req, res) => {
   }
 });
 
-// El frontend se sirve desde spainrp-oficial.onrender.com
+// El frontend se sirve desde spainrp-oficial-1uly.onrender.com
 
 // ===== MODO MANTENIMIENTO =====
 const maintenanceFile = path.join(__dirname, 'maintenance.lock');
